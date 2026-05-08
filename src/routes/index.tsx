@@ -49,9 +49,9 @@ function Index() {
             Spiritist Center · Est. 1962
           </p>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-light leading-[1.05] text-foreground animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
-            Where the soul
+            Sem caridade
             <br />
-            <span className="text-gradient-aurora font-medium">remembers itself</span>
+            <span className="text-gradient-aurora font-medium">não há salvação</span>
           </h1>
           <p className="mt-8 max-w-xl mx-auto text-base md:text-lg text-muted-foreground font-light animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
             A modern sanctuary for study, mediumship, and service — guided by timeless Spiritist wisdom.
