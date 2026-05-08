@@ -5,6 +5,8 @@ type Props = {
   className?: string;
   /** Duration of crossfade in seconds */
   fade?: number;
+  /** Playback rate (1 = normal, <1 = slower) */
+  rate?: number;
 };
 
 /**
@@ -12,7 +14,7 @@ type Props = {
  * staggered <video> elements. The fade begins `fade` seconds before the
  * active video ends, masking the natural restart.
  */
-export function SeamlessVideo({ src, className, fade = 1.6 }: Props) {
+export function SeamlessVideo({ src, className, fade = 5, rate = 0.5 }: Props) {
   const aRef = useRef<HTMLVideoElement>(null);
   const bRef = useRef<HTMLVideoElement>(null);
   const [activeIsA, setActiveIsA] = useState(true);
@@ -21,6 +23,9 @@ export function SeamlessVideo({ src, className, fade = 1.6 }: Props) {
     const a = aRef.current;
     const b = bRef.current;
     if (!a || !b) return;
+
+    a.playbackRate = rate;
+    b.playbackRate = rate;
 
     let raf = 0;
     let active: HTMLVideoElement = a;
@@ -51,7 +56,7 @@ export function SeamlessVideo({ src, className, fade = 1.6 }: Props) {
     a.play().catch(() => {});
     raf = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(raf);
-  }, [fade]);
+  }, [fade, rate]);
 
   const fadeMs = `${fade * 1000}ms`;
 
@@ -65,7 +70,7 @@ export function SeamlessVideo({ src, className, fade = 1.6 }: Props) {
         className={className}
         style={{
           opacity: activeIsA ? 1 : 0,
-          transition: `opacity ${fadeMs} linear`,
+          transition: `opacity ${fadeMs} ease-in-out`,
         }}
       >
         <source src={src} type="video/mp4" />
@@ -78,7 +83,7 @@ export function SeamlessVideo({ src, className, fade = 1.6 }: Props) {
         className={className}
         style={{
           opacity: activeIsA ? 0 : 1,
-          transition: `opacity ${fadeMs} linear`,
+          transition: `opacity ${fadeMs} ease-in-out`,
         }}
       >
         <source src={src} type="video/mp4" />
