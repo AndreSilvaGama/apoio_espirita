@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import heroVideo from "@/assets/hero-nebula.mp4.asset.json";
 import { Particles } from "@/components/Particles";
+import { SeamlessVideo } from "@/components/SeamlessVideo";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -29,15 +30,10 @@ function Index() {
     <main className="relative min-h-screen overflow-x-hidden">
       {/* HERO */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
+        <SeamlessVideo
+          src={heroVideo.url}
           className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src={heroVideo.url} type="video/mp4" />
-        </video>
+        />
         {/* Cosmic veil */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,oklch(0.13_0.06_270/0.6)_80%)]" />
