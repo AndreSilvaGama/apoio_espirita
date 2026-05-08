@@ -54,7 +54,7 @@ function Index() {
             <span className="text-gradient-aurora font-medium">não há salvação</span>
           </h1>
           <p className="mt-8 max-w-xl mx-auto text-base md:text-lg text-muted-foreground font-light animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
-            A modern sanctuary for study, mediumship, and service — guided by timeless Spiritist wisdom.
+            Ame o Senhor seu Deus de todo o seu coração, de toda a sua alma e de todo o seu entendimento. Ame o seu próximo como a si mesmo.
           </p>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.9s" }}>
