@@ -56,6 +56,9 @@ function Index() {
           <p className="mt-8 max-w-xl mx-auto text-base md:text-lg text-muted-foreground font-light animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
             Ame o Senhor seu Deus de todo o seu coração, de toda a sua alma e de todo o seu entendimento. Ame o seu próximo como a si mesmo.
           </p>
+          <p className="mt-3 max-w-xl mx-auto text-right text-sm uppercase tracking-[0.3em] text-cyan-glow animate-fade-in-up" style={{ animationDelay: "0.75s" }}>
+            — Jesus
+          </p>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.9s" }}>
             <button className="glass px-8 py-4 rounded-full text-sm uppercase tracking-widest text-foreground hover:bg-white/10 transition-colors duration-500">
