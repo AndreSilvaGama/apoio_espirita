@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import heroVideo from "@/assets/hero-nebula.mp4.asset.json";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
@@ -134,7 +134,13 @@ function Index() {
         </div>
 
         <footer className="mt-32 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Luz · Estudo · Serviço
+          <p>Luz · Estudo · Serviço</p>
+          <Link
+            to="/sugestoes"
+            className="mt-4 inline-block text-cyan-glow/70 hover:text-cyan-glow transition-colors"
+          >
+            Sugira uma mudança no site
+          </Link>
         </footer>
       </section>
     </main>
