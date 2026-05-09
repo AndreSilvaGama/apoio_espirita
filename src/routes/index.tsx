@@ -47,7 +47,7 @@ function Index() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
           <p className="mb-6 text-xs uppercase tracking-[0.4em] text-cyan-glow animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-            Centro Espírita · Fundado em 1962
+            Uma perspectiva sobre a vida e a evolução.
           </p>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-light leading-[1.05] text-foreground animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
             Sem caridade
