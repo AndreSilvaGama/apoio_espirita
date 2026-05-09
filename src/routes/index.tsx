@@ -126,7 +126,7 @@ function Index() {
             A porta está <span className="text-gradient-aurora font-medium">aberta</span>
           </h2>
           <p className="text-muted-foreground font-light max-w-xl mx-auto mb-10">
-            Junte-se a nós às terças e quintas, às 19h30, para as sessões públicas. Não é preciso conhecimento prévio — apenas um coração aberto.
+            Junte-se a nós. Não é preciso conhecimento prévio — apenas um coração aberto.
           </p>
           <button className="glass px-10 py-5 rounded-full text-sm uppercase tracking-widest text-foreground hover:bg-white/10 transition-colors duration-500">
             Visite o Centro
