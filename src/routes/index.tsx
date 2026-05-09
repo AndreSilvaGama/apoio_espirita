@@ -9,23 +9,23 @@ export const Route = createFileRoute("/")({
 
 const points = [
   {
-    title: "Estudo",
-    body: "Grupos semanais que exploram as obras fundamentais do Espiritismo — Kardec, Xavier e mestres contemporâneos — com rigor e abertura.",
+    title: "Razão e Lógica",
+    body: "Uma filosofia que convida ao questionamento e caminha lado a lado com a ciência.",
     icon: "✦",
   },
   {
-    title: "Mediunidade",
-    body: "Desenvolvimento disciplinado das faculdades mediúnicas como serviço, fundamentado na ética, na humildade e no contínuo autoconhecimento.",
+    title: "Evolução Contínua",
+    body: "Entendemos a vida como uma jornada de aprendizado e progresso constante do espírito.",
     icon: "◈",
   },
   {
-    title: "Serviço",
-    body: "A caridade como expressão natural da luz interior — ação comunitária, amparo fraterno e cuidado bioenergético a todos que chegam.",
+    title: "Essência e Simplicidade",
+    body: "Sem rituais complexos, dogmas ou cobranças. Foco total no estudo e no acolhimento.",
     icon: "❋",
   },
   {
-    title: "Fraternidade",
-    body: "Um ambiente de acolhimento e amor ao próximo, onde cada encontro é uma oportunidade de crescimento mútuo e apoio espiritual.",
+    title: "Amor em Ação",
+    body: "Acreditamos que o bem ao próximo é o caminho mais rápido para a nossa própria transformação.",
     icon: "♥",
   },
 ];
