@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const pillars = [
+const points = [
   {
     title: "Estudo",
     body: "Grupos semanais que exploram as obras fundamentais do Espiritismo — Kardec, Xavier e mestres contemporâneos — com rigor e abertura.",
@@ -22,6 +22,11 @@ const pillars = [
     title: "Serviço",
     body: "A caridade como expressão natural da luz interior — ação comunitária, amparo fraterno e cuidado bioenergético a todos que chegam.",
     icon: "❋",
+  },
+  {
+    title: "Fraternidade",
+    body: "Um ambiente de acolhimento e amor ao próximo, onde cada encontro é uma oportunidade de crescimento mútuo e apoio espiritual.",
+    icon: "♥",
   },
 ];
 
@@ -72,19 +77,19 @@ function Index() {
         </div>
       </section>
 
-      {/* PILLARS */}
+      {/* FOUR POINTS */}
       <section className="relative py-32 px-6">
         <Particles count={15} />
         <div className="mx-auto max-w-6xl relative z-10">
           <div className="text-center mb-20">
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">Três Pilares</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">Quatro Pontos</p>
             <h2 className="text-4xl md:text-5xl font-light text-foreground">
               Uma prática de <span className="text-gradient-aurora font-medium">luz</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {pillars.map((p, i) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {points.map((p, i) => (
               <article
                 key={p.title}
                 className="glass rounded-3xl p-10 animate-fade-in-up hover:border-cyan-glow/40 transition-all duration-700 hover:-translate-y-2"
