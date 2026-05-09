@@ -134,7 +134,7 @@ function Index() {
         </div>
 
         <footer className="mt-32 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          © Centro Espírita Luminara · Luz · Estudo · Serviço
+          Luz · Estudo · Serviço
         </footer>
       </section>
     </main>
