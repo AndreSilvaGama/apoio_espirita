@@ -58,10 +58,10 @@ function Index() {
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.9s" }}>
             <button className="glass px-8 py-4 rounded-full text-sm uppercase tracking-widest text-foreground hover:bg-white/10 transition-colors duration-500">
-              Begin Your Path
+              Preciso de Ajuda
             </button>
             <button className="px-8 py-4 rounded-full text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 animate-pulse-glow bg-transparent hover:bg-cyan-glow/5 transition-colors duration-500">
-              Attend a Session
+              Já sou Espírita
             </button>
           </div>
         </div>
