@@ -80,6 +80,14 @@ function Index() {
       </section>
 
       {/* FOUR POINTS */}
+      <div
+        aria-hidden
+        className="h-40 md:h-56 w-full"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.18 0.05 270) 0%, oklch(0.45 0.05 285) 45%, oklch(0.78 0.03 290) 80%, oklch(0.985 0.008 290) 100%)",
+        }}
+      />
       <div className="light-section">
       <section className="relative py-32 px-6">
         <Particles count={15} />
