@@ -7,11 +7,36 @@ import { useEffect, useRef, useState } from "react";
 export function AmbientAudio({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const a = audioRef.current;
     if (!a) return;
     a.volume = 0.35;
+
+    // Try to autoplay. Browsers usually block it without prior interaction,
+    // so we fall back to starting on the first user gesture.
+    const tryPlay = async () => {
+      try {
+        await a.play();
+        setPlaying(true);
+      } catch {
+        const start = async () => {
+          try {
+            await a.play();
+            setPlaying(true);
+          } catch {
+            /* ignored */
+          }
+          window.removeEventListener("pointerdown", start);
+          window.removeEventListener("keydown", start);
+        };
+        window.addEventListener("pointerdown", start, { once: true });
+        window.addEventListener("keydown", start, { once: true });
+      }
+    };
+    tryPlay();
   }, []);
 
   const toggle = async () => {
@@ -29,6 +54,8 @@ export function AmbientAudio({ src }: { src: string }) {
       }
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <>
