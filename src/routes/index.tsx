@@ -78,6 +78,7 @@ function Index() {
       </section>
 
       {/* FOUR POINTS */}
+      <div className="light-section">
       <section className="relative py-32 px-6">
         <Particles count={15} />
         <div className="mx-auto max-w-6xl relative z-10">
@@ -108,7 +109,7 @@ function Index() {
 
       {/* QUOTE */}
       <section className="relative py-32 px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.75_0.18_295/0.15),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.75_0.18_295/0.10),transparent_70%)]" />
         <div className="relative z-10 mx-auto max-w-3xl text-center">
           <p className="text-2xl md:text-4xl font-light text-foreground leading-relaxed italic">
             "Fora da caridade não há salvação —
@@ -143,6 +144,7 @@ function Index() {
           </Link>
         </footer>
       </section>
+      </div>
     </main>
   );
 }
