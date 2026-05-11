@@ -188,6 +188,28 @@
   color: transparent;
 }
 
+/* Light, gentle section used below the hero so the page feels welcoming
+   even for visitors going through hard times. */
+.light-section {
+  --background: oklch(0.985 0.008 290);
+  --foreground: oklch(0.28 0.04 280);
+  --muted-foreground: oklch(0.45 0.03 280);
+  --border: oklch(0.28 0.04 280 / 0.12);
+  --card: oklch(1 0 0 / 0.6);
+  --glass-bg: oklch(1 0 0 / 0.55);
+  --glass-border: oklch(0.28 0.04 280 / 0.1);
+  --cyan-glow: oklch(0.55 0.13 230);
+  --violet-glow: oklch(0.55 0.18 295);
+  background: linear-gradient(180deg, oklch(0.985 0.008 290) 0%, oklch(0.96 0.015 295) 100%);
+  color: var(--foreground);
+}
+.light-section .text-gradient-aurora {
+  background: linear-gradient(135deg, oklch(0.55 0.18 295), oklch(0.55 0.13 230));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
