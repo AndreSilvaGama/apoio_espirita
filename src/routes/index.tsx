@@ -3,6 +3,15 @@ import heroVideo from "@/assets/hero-nebula.mp4.asset.json";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
 import { AmbientAudio } from "@/components/AmbientAudio";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Heart, Users } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -64,9 +73,66 @@ function Index() {
           </p>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.9s" }}>
-            <button className="px-8 py-4 rounded-full text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 animate-pulse-glow bg-transparent hover:bg-cyan-glow/5 transition-colors duration-500">
-              Preciso de Ajuda
-            </button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="px-8 py-4 rounded-full text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 animate-pulse-glow bg-transparent hover:bg-cyan-glow/5 transition-colors duration-500">
+                  Preciso de Ajuda
+                </button>
+              </DialogTrigger>
+              <DialogContent className="bg-background/95 backdrop-blur-xl border-cyan-glow/20 max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-light text-foreground text-center">
+                    Você não está <span className="text-gradient-aurora font-medium">sozinho(a)</span>
+                  </DialogTitle>
+                  <DialogDescription className="text-center text-muted-foreground font-light pt-2">
+                    Estamos aqui para te acolher. Escolha como prefere conversar — no seu tempo, do seu jeito.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 mt-4">
+                  <a
+                    href="https://wa.me/?text=Ol%C3%A1%2C%20gostaria%20de%20conversar%20com%20um%20volunt%C3%A1rio."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="glass rounded-2xl p-6 hover:border-cyan-glow/40 transition-all duration-500 hover:-translate-y-1 group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-full p-3 bg-cyan-glow/10 text-cyan-glow group-hover:bg-cyan-glow/20 transition-colors">
+                        <Heart className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium text-foreground mb-1">
+                          Conversar com um voluntário
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-light">
+                          Um momento reservado, só para você. Um coração amigo, pronto a escutar com carinho e sem julgamentos.
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                  <a
+                    href="#sala-de-acolhimento"
+                    className="glass rounded-2xl p-6 hover:border-cyan-glow/40 transition-all duration-500 hover:-translate-y-1 group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-full p-3 bg-cyan-glow/10 text-cyan-glow group-hover:bg-cyan-glow/20 transition-colors">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium text-foreground mb-1">
+                          Entrar na sala de acolhimento
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-light">
+                          Um espaço suave em grupo, onde corações se encontram. Você pode apenas observar, ou compartilhar o que sente.
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+                <p className="text-xs text-center text-muted-foreground/70 font-light mt-2">
+                  Em emergência, ligue 188 (CVV) — disponível 24h, gratuito e sigiloso.
+                </p>
+              </DialogContent>
+            </Dialog>
             <button className="glass px-8 py-4 rounded-full text-sm uppercase tracking-widest text-foreground hover:bg-white/10 transition-colors duration-500">
               Já sou Espírita
             </button>
