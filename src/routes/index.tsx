@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import heroVideo from "@/assets/hero-nebula.mp4.asset.json";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
+import { AmbientAudio } from "@/components/AmbientAudio";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -33,6 +34,7 @@ const points = [
 function Index() {
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      <AmbientAudio src="/audio/ambient-piano.mp3" />
       {/* HERO */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <SeamlessVideo
