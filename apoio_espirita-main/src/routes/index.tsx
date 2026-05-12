@@ -77,7 +77,7 @@ function Index() {
               </button>
             </HelpDialog>
             <Link
-              to={user ? "/painel" : "/login"}
+              to={user ? "/inicio" : "/login"}
               className="glass px-8 py-4 rounded-full text-sm uppercase tracking-widest text-foreground hover:bg-white/10 transition-colors duration-500"
             >
               Trabalhadores da Vinha
