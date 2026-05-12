@@ -81,7 +81,7 @@ function Index() {
             E o segundo é semelhante a ele: Ame o seu próximo como a si mesmo.
           </p>
           <p className="mt-3 max-w-xl mx-auto text-right text-sm uppercase tracking-[0.3em] text-cyan-glow animate-fade-in-up" style={{ animationDelay: "0.75s" }}>
-            — Mateus 22:37-39
+            Mateus 22:37-39
           </p>
 
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.9s" }}>
