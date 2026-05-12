@@ -140,8 +140,6 @@ function RootComponent() {
 /* ── Navbar ── */
 function NavBar() {
   const { user, profile, signOut } = useAuth();
-  const { active, playing, buffering, volume, muted, togglePlay, setVolume, toggleMute } = useRadio();
-
   if (!user) return null;
 
   const isPresident =
@@ -150,96 +148,37 @@ function NavBar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">
-      <div className="mx-4 mt-3 rounded-2xl border border-white/10 bg-background/80 backdrop-blur-md shadow-lg px-4 py-2 flex items-center gap-2">
+      <div className="mx-3 mt-3 rounded-2xl border border-white/10 bg-background/80 backdrop-blur-md shadow-lg px-3 py-2 flex items-center justify-between gap-1">
 
-        {/* Brand */}
-        <Link to="/inicio" className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-glow/90 hover:text-cyan-glow transition-colors shrink-0 mr-2">
+        {/* Brand — oculto no mobile para não cortar */}
+        <Link to="/inicio" className="hidden sm:inline text-xs font-semibold uppercase tracking-[0.2em] text-cyan-glow/90 hover:text-cyan-glow transition-colors shrink-0">
           Apoio Espírita
         </Link>
-
-        {/* Rádio — visível só quando ativa */}
-        {active && (
-          <>
-            <span className="text-white/15 select-none hidden sm:inline">·</span>
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              {/* Ícone + nome */}
-              <Link to="/radio" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                <div className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                  <Radio size={11} strokeWidth={1.5} className={playing ? "text-emerald-600" : "text-muted-foreground/40"} />
-                </div>
-                <span className="text-[11px] text-muted-foreground/70 tracking-wide whitespace-nowrap">Rádio RJ</span>
-              </Link>
-
-              {/* Status ao vivo */}
-              {playing && !buffering && (
-                <span className="flex gap-0.5 items-end h-3">
-                  {[1, 2, 3].map((i) => (
-                    <span key={i} className="w-0.5 rounded-full bg-emerald-500 animate-bounce"
-                      style={{ height: `${4 + i * 2}px`, animationDelay: `${i * 0.12}s` }} />
-                  ))}
-                </span>
-              )}
-              {buffering && <span className="text-[10px] text-muted-foreground/40 animate-pulse">···</span>}
-
-              {/* Play/Pause */}
-              <button
-                onClick={togglePlay}
-                disabled={buffering}
-                className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all shrink-0 ${
-                  playing
-                    ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600"
-                    : "border-emerald-300 text-emerald-600 hover:bg-emerald-50"
-                } disabled:opacity-40`}
-              >
-                {playing
-                  ? <Pause size={10} strokeWidth={2.5} />
-                  : <Play size={10} strokeWidth={2.5} className="ml-px" />
-                }
-              </button>
-
-              {/* Volume */}
-              <button onClick={toggleMute} className="text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors shrink-0">
-                {muted || volume === 0
-                  ? <VolumeX size={13} strokeWidth={1.5} />
-                  : <Volume2 size={13} strokeWidth={1.5} />
-                }
-              </button>
-              <input
-                type="range" min={0} max={1} step={0.01}
-                value={muted ? 0 : volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="w-14 accent-emerald-500 h-0.5 rounded-full cursor-pointer shrink-0 hidden md:block"
-              />
-            </div>
-          </>
-        )}
-
-        {/* Espaçador */}
-        <div className="flex-1" />
+        <div className="hidden sm:block flex-1" />
 
         {/* Nav links */}
-        <div className="flex items-center gap-0.5">
-          <Link to="/inicio" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors">
+        <div className="flex items-center flex-wrap justify-center gap-x-0.5 gap-y-0">
+          <Link to="/inicio" className="px-2 py-1 text-[11px] uppercase tracking-widest text-cyan-glow/80 hover:text-cyan-glow transition-colors whitespace-nowrap">
             Início
           </Link>
           <span className="text-white/15 select-none">·</span>
-          <Link to="/painel" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors">
+          <Link to="/painel" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors whitespace-nowrap">
             Projeto
           </Link>
           {isPresident && (
             <>
               <span className="text-white/15 select-none">·</span>
-              <Link to="/tesouraria" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors">
+              <Link to="/tesouraria" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors whitespace-nowrap">
                 Tesouraria
               </Link>
             </>
           )}
           <span className="text-white/15 select-none">·</span>
-          <Link to="/perfil" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors">
+          <Link to="/perfil" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors whitespace-nowrap">
             Perfil
           </Link>
           <span className="text-white/15 select-none">·</span>
-          <button onClick={() => signOut()} className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <button onClick={() => signOut()} className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors whitespace-nowrap">
             Sair
           </button>
         </div>
@@ -252,41 +191,81 @@ function NavBar() {
 /* ── Footer ── */
 function Footer() {
   const { user } = useAuth();
+  const { active, playing, buffering, volume, muted, activate, togglePlay, setVolume, toggleMute } = useRadio();
   if (!user) return null;
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-40">
-      <div className="mx-4 mb-3 rounded-2xl border border-white/10 bg-background/80 backdrop-blur-md shadow-lg px-5 py-2.5 flex items-center gap-4 flex-wrap">
+      <div className="mx-3 mb-3 rounded-2xl border border-white/10 bg-background/80 backdrop-blur-md shadow-lg px-4 py-2.5 flex items-center gap-3">
 
-        {/* Nav rápida */}
-        <div className="flex items-center gap-0.5 flex-wrap">
-          <Link to="/inicio" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors">
-            Início
+        {/* Rádio */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center border ${playing ? "bg-emerald-50 border-emerald-200" : "bg-white/5 border-white/10"}`}>
+            <Radio size={13} strokeWidth={1.5} className={playing ? "text-emerald-600" : "text-muted-foreground/30"} />
+          </div>
+
+          <Link to="/radio" className="min-w-0 hover:opacity-80 transition-opacity">
+            <p className="text-[11px] font-medium text-foreground/80 truncate leading-none">Rádio Rio de Janeiro</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              {buffering && <span className="text-[10px] text-muted-foreground/40 animate-pulse">Conectando...</span>}
+              {!buffering && playing && (
+                <>
+                  <span className="flex gap-0.5 items-end h-2.5">
+                    {[1, 2, 3].map((i) => (
+                      <span key={i} className="w-0.5 rounded-full bg-emerald-500 animate-bounce"
+                        style={{ height: `${3 + i * 2}px`, animationDelay: `${i * 0.12}s` }} />
+                    ))}
+                  </span>
+                  <span className="text-[10px] text-emerald-600 uppercase tracking-widest">Ao vivo</span>
+                </>
+              )}
+              {!buffering && !playing && (
+                <span className="text-[10px] text-muted-foreground/35 uppercase tracking-widest">
+                  {active ? "Pausado" : "1400 AM"}
+                </span>
+              )}
+            </div>
           </Link>
-          <span className="text-white/15 select-none">·</span>
-          <Link to="/painel" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors">
-            Projeto
-          </Link>
-          <span className="text-white/15 select-none">·</span>
-          <Link to="/radio" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors">
-            Rádio
-          </Link>
-          <span className="text-white/15 select-none">·</span>
-          <Link to="/perfil" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors">
-            Perfil
-          </Link>
+
+          <button
+            onClick={active ? togglePlay : activate}
+            disabled={buffering}
+            className={`shrink-0 w-7 h-7 rounded-full border flex items-center justify-center transition-all ${
+              playing
+                ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600"
+                : "border-emerald-300 text-emerald-600 hover:bg-emerald-50 bg-white/5"
+            } disabled:opacity-40`}
+          >
+            {playing
+              ? <Pause size={11} strokeWidth={2.5} />
+              : <Play size={11} strokeWidth={2.5} className="ml-px" />
+            }
+          </button>
+
+          {/* Volume — só desktop */}
+          <div className="hidden md:flex items-center gap-1.5 shrink-0">
+            <button onClick={toggleMute} className="text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors">
+              {muted || volume === 0 ? <VolumeX size={13} strokeWidth={1.5} /> : <Volume2 size={13} strokeWidth={1.5} />}
+            </button>
+            <input
+              type="range" min={0} max={1} step={0.01}
+              value={muted ? 0 : volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="w-16 accent-emerald-500 h-1 rounded-full cursor-pointer"
+            />
+          </div>
         </div>
 
-        {/* Espaçador */}
-        <div className="flex-1" />
+        {/* Separador */}
+        <span className="text-white/10 select-none shrink-0">|</span>
 
         {/* Links institucionais */}
-        <div className="flex items-center gap-0.5">
-          <Link to="/transparencia" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Link to="/transparencia" className="px-1.5 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors whitespace-nowrap">
             Transparência
           </Link>
           <span className="text-white/15 select-none">·</span>
-          <Link to="/sugestoes" className="px-2 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <Link to="/sugestoes" className="px-1.5 py-1 text-[11px] uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors whitespace-nowrap">
             Sugestões
           </Link>
         </div>
