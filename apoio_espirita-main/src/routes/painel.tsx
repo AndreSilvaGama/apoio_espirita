@@ -174,21 +174,7 @@ function Painel() {
             {profile?.sigla_casa && (
               <p className="mt-1 text-sm text-muted-foreground font-light">
                 Casa: <span className="text-cyan-glow font-medium tracking-widest">{profile.sigla_casa}</span>
-                {profile.cargo_principal && (
-                  <span className="ml-2 text-xs uppercase tracking-widest text-muted-foreground/50">
-                    · {profile.cargo_principal}
-                  </span>
-                )}
               </p>
-            )}
-            {profile?.atividades && profile.atividades.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {profile.atividades.map((a) => (
-                  <span key={a} className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-cyan-glow/20 text-cyan-glow/60">
-                    {a}
-                  </span>
-                ))}
-              </div>
             )}
           </div>
           <button

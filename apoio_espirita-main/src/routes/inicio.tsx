@@ -192,17 +192,6 @@ function Inicio() {
               {profile?.sigla_casa}
             </span>
           </h1>
-          {profile?.cargo_principal && (
-            <p className="mt-1 text-sm text-muted-foreground/70">
-              {profile.cargo_principal}
-              {profile.atividades?.length > 0 && (
-                <span className="ml-2 text-muted-foreground/40">
-                  · {profile.atividades.slice(0, 3).join(" · ")}
-                  {profile.atividades.length > 3 && ` +${profile.atividades.length - 3}`}
-                </span>
-              )}
-            </p>
-          )}
         </div>
 
         {/* ── Mensagem do Dia ── */}
