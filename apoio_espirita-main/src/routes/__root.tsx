@@ -4,9 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+
+const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { Radio, Play, Pause, Volume2, VolumeX } from "lucide-react";
@@ -140,7 +143,8 @@ function RootComponent() {
 /* ── Navbar ── */
 function NavBar() {
   const { user, profile, signOut } = useAuth();
-  if (!user) return null;
+  const { location } = useRouterState();
+  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
 
   const isPresident =
     profile?.cargo_principal === "Presidente" ||
@@ -189,7 +193,8 @@ function NavBar() {
 function Footer() {
   const { user } = useAuth();
   const { active, playing, buffering, volume, muted, activate, togglePlay, setVolume, toggleMute } = useRadio();
-  if (!user) return null;
+  const { location } = useRouterState();
+  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
