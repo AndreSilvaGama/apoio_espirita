@@ -6,7 +6,7 @@ import {
   CalendarDays, Cast, Video, Film, Radio, MonitorPlay, CircleHelp,
   BarChart3, ClipboardList, Wallet,
   BookOpen, BookMarked, Shirt, Footprints,
-  Star,
+  Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,20 +55,24 @@ interface FeatureItem {
 
 interface FeatureCategory {
   label: string;
+  SectionIcon: LucideIcon;
   color: string;
   iconColor: string;
   bg: string;
   border: string;
+  borderB: string;
   items: FeatureItem[];
 }
 
 const FEATURES: FeatureCategory[] = [
   {
     label: "Vida Espiritual",
-    color: "text-violet-600",
+    SectionIcon: Flame,
+    color: "text-violet-700",
     iconColor: "text-violet-600",
     bg: "bg-violet-50",
     border: "border-violet-200",
+    borderB: "border-violet-200",
     items: [
       { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
       { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui Rádio Rio de Janeiro.", status: "breve" },
@@ -80,10 +84,12 @@ const FEATURES: FeatureCategory[] = [
   },
   {
     label: "Nossa Comunidade",
+    SectionIcon: UsersRound,
     color: "text-cyan-700",
     iconColor: "text-cyan-700",
     bg: "bg-cyan-50",
     border: "border-cyan-200",
+    borderB: "border-cyan-200",
     items: [
       { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
       { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
@@ -95,10 +101,12 @@ const FEATURES: FeatureCategory[] = [
   },
   {
     label: "Agenda & Eventos",
+    SectionIcon: CalendarCheck,
     color: "text-amber-700",
     iconColor: "text-amber-600",
     bg: "bg-amber-50",
     border: "border-amber-200",
+    borderB: "border-amber-200",
     items: [
       { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença, voluntariado e geração de atas.", status: "breve", casa: true },
       { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
@@ -108,10 +116,12 @@ const FEATURES: FeatureCategory[] = [
   },
   {
     label: "Recursos & Ferramentas",
+    SectionIcon: Wrench,
     color: "text-emerald-700",
     iconColor: "text-emerald-700",
     bg: "bg-emerald-50",
     border: "border-emerald-200",
+    borderB: "border-emerald-200",
     items: [
       { Icon: Radio,      title: "Rádio Rio de Janeiro",   desc: "Ouça ao vivo a Rádio Rio de Janeiro diretamente pela plataforma.", status: "breve" },
       { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
@@ -246,8 +256,16 @@ function Inicio() {
         </div>
 
         {/* ── Gestão ── */}
-        <section className="mb-14">
-          <SectionTitle label="Gestão" color="text-slate-600" />
+        <section className="mb-16">
+          <SectionHeader
+            Icon={LayoutDashboard}
+            label="Gestão"
+            color="text-slate-700"
+            iconColor="text-slate-500"
+            bg="bg-slate-50"
+            border="border-slate-200"
+            borderB="border-slate-200"
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <DashCard
               Icon={BarChart3}
@@ -279,8 +297,16 @@ function Inicio() {
 
         {/* ── Grade de funcionalidades ── */}
         {FEATURES.map((cat) => (
-          <section key={cat.label} className="mb-14">
-            <SectionTitle label={cat.label} color={cat.color} />
+          <section key={cat.label} className="mb-16">
+            <SectionHeader
+              Icon={cat.SectionIcon}
+              label={cat.label}
+              color={cat.color}
+              iconColor={cat.iconColor}
+              bg={cat.bg}
+              border={cat.border}
+              borderB={cat.borderB}
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {cat.items.map((item) => (
                 <FeatureCard key={item.title} item={item} cat={cat} />
@@ -290,15 +316,23 @@ function Inicio() {
         ))}
 
         {/* ── Bazar ── */}
-        <section id="bazar" className="mb-14">
-          <SectionTitle label="Bazar On-line" color="text-cyan-700">
-            <span className="ml-3 text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-normal tracking-normal">
+        <section id="bazar" className="mb-16">
+          <SectionHeader
+            Icon={ShoppingBag}
+            label="Bazar On-line"
+            color="text-cyan-700"
+            iconColor="text-cyan-700"
+            bg="bg-cyan-50"
+            border="border-cyan-200"
+            borderB="border-cyan-200"
+          >
+            <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
               Disponível
             </span>
-            <span className="ml-2 text-xs text-muted-foreground/50 bg-white/60 border border-border px-2 py-0.5 rounded-full font-normal tracking-normal">
+            <span className="text-xs text-muted-foreground/50 bg-white/60 border border-border px-2 py-0.5 rounded-full">
               Por casa espírita
             </span>
-          </SectionTitle>
+          </SectionHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {BAZAR.map((item) => (
               <BazarCard key={item.name} item={item} />
@@ -316,12 +350,17 @@ function Inicio() {
 
 /* ── Sub-components ── */
 
-function SectionTitle({ label, color, children }: { label: string; color: string; children?: ReactNode }) {
+function SectionHeader({ Icon, label, color, iconColor, bg, border, borderB, children }: {
+  Icon: LucideIcon; label: string; color: string; iconColor: string;
+  bg: string; border: string; borderB: string; children?: ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-3 mb-5">
-      <h2 className={`text-xs uppercase tracking-[0.35em] font-medium ${color}`}>{label}</h2>
-      <div className="flex-1 h-px bg-border/60" />
-      {children}
+    <div className={`flex items-center gap-4 mb-6 pb-4 border-b-2 ${borderB}`}>
+      <div className={`w-10 h-10 rounded-xl ${bg} border ${border} flex items-center justify-center shrink-0`}>
+        <Icon size={20} strokeWidth={1.5} className={iconColor} />
+      </div>
+      <h2 className={`text-base font-semibold ${color} tracking-wide`}>{label}</h2>
+      {children && <div className="ml-auto flex items-center gap-2">{children}</div>}
     </div>
   );
 }
