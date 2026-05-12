@@ -1,33 +1,34 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Heart, Star, Gem, Flower2, SlidersHorizontal, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/transparencia")({
   component: Transparencia,
 });
 
-const sections = [
+const sections: { Icon: LucideIcon; title: string; body?: string | null; list?: string[] }[] = [
   {
-    icon: "♥",
+    Icon: Heart,
     title: "Um trabalho de caridade",
     body: `Este espaço foi construído com um único propósito: servir. Não a uma pessoa, não a uma instituição — mas a todos que, em algum momento da jornada, precisarem de amparo, orientação ou simplesmente de saber que não estão sozinhos.
 
 Nenhuma cobrança jamais será feita. Nenhum espaço comercial será cedido. Este é um trabalho de caridade — e a caridade, quando verdadeira, não conhece preço nem aguarda reconhecimento.`,
   },
   {
-    icon: "✦",
+    Icon: Star,
     title: "O bem não tem dono",
     body: `Os códigos-fonte deste projeto estão disponíveis publicamente no GitHub e podem ser baixados, adaptados e continuados por qualquer pessoa ou instituição que deseje servir de forma semelhante.
 
 O desenvolvedor ainda está trabalhando no projeto, mas desde o primeiro momento abriu mão de qualquer exclusividade. As ferramentas utilizadas — GitHub, Supabase, Cloudflare, Resend e outras — precisarão ser adquiridas e configuradas por quem optar por dar continuidade ao trabalho. O que se oferece aqui é o caminho já percorrido, para que outros não precisem começar do zero.`,
   },
   {
-    icon: "◈",
+    Icon: Gem,
     title: "À Federação Espírita Brasileira",
     body: `A Federação Espírita Brasileira está, desde já, autorizada a tomar posse deste domínio. Sua transferência será feita a qualquer momento, mediante simples solicitação — formal ou informal —, como doação voluntária, sem ônus, sem condições e sem arrependimentos.
 
 Que este pequeno tijolo possa ser útil à construção da grande obra.`,
   },
   {
-    icon: "❋",
+    Icon: Flower2,
     title: "Para que este site existe",
     body: null,
     list: [
@@ -39,7 +40,7 @@ Que este pequeno tijolo possa ser útil à construção da grande obra.`,
     ],
   },
   {
-    icon: "◉",
+    Icon: SlidersHorizontal,
     title: "Autonomia para cada casa",
     body: `Não há regras impostas de fora. Cada presidente de casa espírita pode configurar o site conforme as necessidades e a realidade de sua instituição. Somente o presidente e os coordenadores por ele indicados poderão habilitar ou restringir funcionalidades — respeitando a autonomia, o discernimento e o ritmo de cada grupo.
 
@@ -72,11 +73,8 @@ function Transparencia() {
         <div className="space-y-12">
           {sections.map((s) => (
             <article key={s.title} className="glass rounded-3xl p-8 md:p-10">
-              <div
-                className="text-3xl text-cyan-glow mb-5"
-                style={{ textShadow: "0 0 20px currentColor" }}
-              >
-                {s.icon}
+              <div className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-100 flex items-center justify-center mb-5">
+                <s.Icon size={22} strokeWidth={1.5} className="text-cyan-700" />
               </div>
               <h2 className="text-xl font-medium text-foreground mb-4">{s.title}</h2>
               {s.body &&

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/tesouraria")({
@@ -56,7 +57,9 @@ function Tesouraria() {
         </div>
 
         <div className="mt-16 glass rounded-3xl p-10 text-center">
-          <div className="text-5xl mb-6">◈</div>
+          <div className="flex justify-center mb-6">
+            <Wallet size={40} strokeWidth={1.5} className="text-cyan-glow" />
+          </div>
           <p className="text-muted-foreground font-light leading-relaxed">
             Esta área está sendo desenvolvida com cuidado. Em breve estará disponível para presidentes e tesoureiros autorizados.
           </p>

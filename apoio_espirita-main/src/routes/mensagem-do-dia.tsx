@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { z } from "zod";
+import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -194,11 +195,8 @@ function MensagemDoDia() {
         {tab === "enviar" && (
           submitStatus === "success" ? (
             <div className="glass rounded-3xl p-10 text-center">
-              <div
-                className="text-4xl text-cyan-glow mb-4"
-                style={{ textShadow: "0 0 20px currentColor" }}
-              >
-                ✦
+              <div className="flex justify-center mb-4">
+                <CheckCircle2 size={40} strokeWidth={1.5} className="text-cyan-glow" />
               </div>
               <h2 className="text-2xl font-medium text-foreground mb-3">Mensagem recebida</h2>
               <p className="text-muted-foreground font-light">

@@ -1,7 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import {
+  PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
+  MessageCircle, Users, HeartHandshake, ShoppingBag,
+  CalendarDays, Cast, Video, Film, Radio, MonitorPlay, CircleHelp,
+  BarChart3, ClipboardList, Wallet,
+  BookOpen, BookMarked, Shirt, Footprints,
+  Star,
+  type LucideIcon,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
+export const Route = createFileRoute("/inicio")({
+  component: Inicio,
+});
 
 interface TodayMsg {
   texto: string;
@@ -9,10 +22,6 @@ interface TodayMsg {
   autor_nome: string;
   sigla_casa: string | null;
 }
-
-export const Route = createFileRoute("/inicio")({
-  component: Inicio,
-});
 
 const DAILY_MESSAGES = [
   { text: "Fora da caridade não há salvação.", author: "Allan Kardec" },
@@ -24,19 +33,19 @@ const DAILY_MESSAGES = [
   { text: "O verdadeiro espiritismo é aquele que tem por divisa: fora da caridade não há salvação.", author: "Allan Kardec · A Gênese" },
 ];
 
-const BAZAR = [
-  { icon: "📖", name: "O Livro dos Espíritos", category: "Livro", price: "R$ 35,00", desc: "Allan Kardec · Edição FEB" },
-  { icon: "📗", name: "O Evangelho segundo o Espiritismo", category: "Livro", price: "R$ 30,00", desc: "Allan Kardec · Edição FEB" },
-  { icon: "👖", name: "Calça", category: "Vestuário", price: "R$ 45,00", desc: "Tamanho M · boa conservação" },
-  { icon: "👕", name: "Camisa", category: "Vestuário", price: "R$ 20,00", desc: "Tamanho G · algodão" },
-  { icon: "🧥", name: "Blusa", category: "Vestuário", price: "R$ 25,00", desc: "Tamanho P · malha" },
-  { icon: "👟", name: "Sapato", category: "Calçado", price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
+const BAZAR: { Icon: LucideIcon; name: string; category: string; price: string; desc: string }[] = [
+  { Icon: BookOpen,  name: "O Livro dos Espíritos",              category: "Livro",     price: "R$ 35,00", desc: "Allan Kardec · Edição FEB" },
+  { Icon: BookMarked, name: "O Evangelho segundo o Espiritismo", category: "Livro",     price: "R$ 30,00", desc: "Allan Kardec · Edição FEB" },
+  { Icon: Shirt,     name: "Calça",                              category: "Vestuário", price: "R$ 45,00", desc: "Tamanho M · boa conservação" },
+  { Icon: Shirt,     name: "Camisa",                             category: "Vestuário", price: "R$ 20,00", desc: "Tamanho G · algodão" },
+  { Icon: Shirt,     name: "Blusa",                              category: "Vestuário", price: "R$ 25,00", desc: "Tamanho P · malha" },
+  { Icon: Footprints, name: "Sapato",                            category: "Calçado",   price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
 ];
 
 type Status = "disponivel" | "breve" | "beta";
 
 interface FeatureItem {
-  icon: string;
+  Icon: LucideIcon;
   title: string;
   desc: string;
   status: Status;
@@ -47,6 +56,7 @@ interface FeatureItem {
 interface FeatureCategory {
   label: string;
   color: string;
+  iconColor: string;
   bg: string;
   border: string;
   items: FeatureItem[];
@@ -56,50 +66,54 @@ const FEATURES: FeatureCategory[] = [
   {
     label: "Vida Espiritual",
     color: "text-violet-600",
+    iconColor: "text-violet-600",
     bg: "bg-violet-50",
     border: "border-violet-200",
     items: [
-      { icon: "✍️", title: "Artigos e Colunistas", desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
-      { icon: "🎵", title: "Área de Músicas", desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui Rádio Rio de Janeiro.", status: "breve" },
-      { icon: "🎸", title: "Área de Cifras", desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
-      { icon: "🌱", title: "Evangelização Infantil", desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
-      { icon: "✨", title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
-      { icon: "🎮", title: "Jogos Educativos", desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "breve" },
+      { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
+      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui Rádio Rio de Janeiro.", status: "breve" },
+      { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
+      { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
+      { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
+      { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "breve" },
     ],
   },
   {
     label: "Nossa Comunidade",
     color: "text-cyan-700",
+    iconColor: "text-cyan-700",
     bg: "bg-cyan-50",
     border: "border-cyan-200",
     items: [
-      { icon: "💬", title: "Fórum de Apoio", desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
-      { icon: "📱", title: "Comunicação em Grupos", desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
-      { icon: "🤝", title: "Localização de Voluntariado", desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve", casa: true },
-      { icon: "🛍️", title: "Bazar On-line", desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "disponivel", casa: true, href: "#bazar" },
+      { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
+      { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
+      { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve", casa: true },
+      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "disponivel", casa: true, href: "#bazar" },
     ],
   },
   {
     label: "Agenda & Eventos",
     color: "text-amber-700",
+    iconColor: "text-amber-600",
     bg: "bg-amber-50",
     border: "border-amber-200",
     items: [
-      { icon: "📅", title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença, voluntariado e geração de atas.", status: "breve", casa: true },
-      { icon: "🔴", title: "Live Streaming", desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
-      { icon: "🎥", title: "Google Meet", desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
-      { icon: "📹", title: "Integração de Vídeos", desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
+      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença, voluntariado e geração de atas.", status: "breve", casa: true },
+      { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
+      { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
+      { Icon: Film,         title: "Integração de Vídeos",         desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
     ],
   },
   {
     label: "Recursos & Ferramentas",
     color: "text-emerald-700",
+    iconColor: "text-emerald-700",
     bg: "bg-emerald-50",
     border: "border-emerald-200",
     items: [
-      { icon: "📻", title: "Rádio Rio de Janeiro", desc: "Ouça ao vivo a Rádio Rio de Janeiro diretamente pela plataforma.", status: "breve" },
-      { icon: "📊", title: "Player de PowerPoint", desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
-      { icon: "❓", title: "FAQ", desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "breve" },
+      { Icon: Radio,      title: "Rádio Rio de Janeiro",   desc: "Ouça ao vivo a Rádio Rio de Janeiro diretamente pela plataforma.", status: "breve" },
+      { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
+      { Icon: CircleHelp, title: "FAQ",                    desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "breve" },
     ],
   },
 ];
@@ -151,7 +165,7 @@ function Inicio() {
     <main className="page-light min-h-screen pt-20 pb-20 px-4 md:px-8">
       <div className="mx-auto max-w-7xl">
 
-        {/* ── Welcome ── */}
+        {/* ── Boas-vindas ── */}
         <div className="mb-10 mt-4">
           <p className="text-xs uppercase tracking-[0.35em] text-cyan-glow mb-1">{greeting}</p>
           <h1 className="text-3xl md:text-4xl font-light text-foreground">
@@ -180,25 +194,18 @@ function Inicio() {
           style={{ background: "linear-gradient(135deg, oklch(0.97 0.02 295) 0%, oklch(0.97 0.015 260) 100%)" }}
         >
           <div className="px-8 py-7 md:px-12 md:py-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div
-              className="text-5xl shrink-0"
-              style={{ filter: "drop-shadow(0 0 12px oklch(0.70 0.18 295 / 0.4))" }}
-            >
-              ✦
+            <div className="shrink-0 w-14 h-14 rounded-2xl bg-violet-100 border border-violet-200 flex items-center justify-center">
+              <Star size={26} strokeWidth={1.5} className="text-violet-500" />
             </div>
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-violet-500 mb-3">
-                Mensagem do Dia
-              </p>
+              <p className="text-xs uppercase tracking-[0.35em] text-violet-500 mb-3">Mensagem do Dia</p>
               {todayMsg ? (
                 <>
                   <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
                     "{todayMsg.texto}"
                   </blockquote>
                   {todayMsg.referencia && (
-                    <p className="mt-3 text-sm text-muted-foreground/60 italic">
-                      — {todayMsg.referencia}
-                    </p>
+                    <p className="mt-3 text-sm text-muted-foreground/60 italic">— {todayMsg.referencia}</p>
                   )}
                   <div className="mt-4 flex items-center gap-3 flex-wrap">
                     <span className="text-xs text-violet-600">{todayMsg.autor_nome}</span>
@@ -236,19 +243,19 @@ function Inicio() {
           </div>
         </div>
 
-        {/* ── Dashboard pessoal ── */}
+        {/* ── Gestão ── */}
         <section className="mb-14">
           <SectionTitle label="Gestão" color="text-slate-600" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <DashCard
-              icon="📊"
+              Icon={BarChart3}
               title="Meu Dashboard"
               desc="Dados e métricas relevantes ao seu papel na casa espírita."
               status="breve"
               accent="slate"
             />
             <DashCard
-              icon="📋"
+              Icon={ClipboardList}
               title="Acompanhamento do Projeto"
               desc="Veja o roadmap da plataforma e solicite novos desenvolvimentos."
               status="disponivel"
@@ -257,7 +264,7 @@ function Inicio() {
             />
             {isPresident && (
               <DashCard
-                icon="💰"
+                Icon={Wallet}
                 title="Tesouraria"
                 desc="Contas a pagar e receber, bazar e gestão financeira simplificada da casa."
                 status="breve"
@@ -268,7 +275,7 @@ function Inicio() {
           </div>
         </section>
 
-        {/* ── Feature Grids ── */}
+        {/* ── Grade de funcionalidades ── */}
         {FEATURES.map((cat) => (
           <section key={cat.label} className="mb-14">
             <SectionTitle label={cat.label} color={cat.color} />
@@ -317,21 +324,25 @@ function SectionTitle({ label, color, children }: { label: string; color: string
   );
 }
 
-function DashCard({ icon, title, desc, status, accent, href, casa }: {
-  icon: string; title: string; desc: string; status: Status;
+function DashCard({ Icon, title, desc, status, accent, href, casa }: {
+  Icon: LucideIcon; title: string; desc: string; status: Status;
   accent: string; href?: string; casa?: boolean;
 }) {
-  const accentMap: Record<string, string> = {
+  const borderMap: Record<string, string> = {
     slate: "border-t-slate-300",
     amber: "border-t-amber-300",
   };
+  const iconMap: Record<string, string> = {
+    slate: "bg-slate-50 border-slate-200 text-slate-500",
+    amber: "bg-amber-50 border-amber-200 text-amber-600",
+  };
   const content = (
-    <div className={`glass rounded-2xl p-6 border-t-2 ${accentMap[accent] ?? "border-t-slate-300"} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-3`}>
-      <span className="text-3xl">{icon}</span>
+    <div className={`glass rounded-2xl p-6 border-t-2 ${borderMap[accent] ?? "border-t-slate-300"} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4`}>
+      <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
+        <Icon size={20} strokeWidth={1.5} />
+      </div>
       <div className="flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-sm font-medium text-foreground leading-snug">{title}</h3>
-        </div>
+        <h3 className="text-sm font-medium text-foreground leading-snug mb-1">{title}</h3>
         <p className="text-xs text-muted-foreground/70 leading-relaxed">{desc}</p>
       </div>
       <div className="flex items-center gap-2 flex-wrap">
@@ -353,9 +364,9 @@ function DashCard({ icon, title, desc, status, accent, href, casa }: {
 function FeatureCard({ item, cat }: { item: FeatureItem; cat: FeatureCategory }) {
   const isAvailable = item.status === "disponivel";
   const inner = (
-    <div className={`group glass rounded-2xl p-5 flex flex-col gap-3 h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${!isAvailable ? "opacity-80" : ""}`}>
-      <div className={`w-10 h-10 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center text-xl`}>
-        {item.icon}
+    <div className={`group glass rounded-2xl p-5 flex flex-col gap-4 h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${!isAvailable ? "opacity-80" : ""}`}>
+      <div className={`w-10 h-10 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}>
+        <item.Icon size={20} strokeWidth={1.5} className={cat.iconColor} />
       </div>
       <div className="flex-1">
         <h3 className="text-sm font-medium text-foreground leading-snug mb-1">{item.title}</h3>
@@ -380,8 +391,8 @@ function FeatureCard({ item, cat }: { item: FeatureItem; cat: FeatureCategory })
 function BazarCard({ item }: { item: typeof BAZAR[0] }) {
   return (
     <div className="glass rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-      <div className="w-12 h-12 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center text-2xl mx-auto">
-        {item.icon}
+      <div className="w-12 h-12 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center mx-auto">
+        <item.Icon size={22} strokeWidth={1.5} className="text-cyan-700" />
       </div>
       <div className="text-center flex-1">
         <p className="text-xs text-muted-foreground/50 mb-0.5">{item.category}</p>

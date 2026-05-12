@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
+import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Particles } from "@/components/Particles";
 
@@ -70,8 +71,8 @@ function SuggestionsPage() {
 
         {status === "success" ? (
           <div className="glass rounded-3xl p-10 text-center animate-fade-in-up">
-            <div className="text-4xl text-cyan-glow mb-4" style={{ textShadow: "0 0 20px currentColor" }}>
-              ✦
+            <div className="flex justify-center mb-4">
+              <CheckCircle2 size={40} strokeWidth={1.5} className="text-cyan-glow" />
             </div>
             <h2 className="text-2xl font-medium text-foreground mb-3">Recebido com gratidão</h2>
             <p className="text-muted-foreground font-light">

@@ -34,7 +34,7 @@ const roadmap: Item[] = [
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site" },
-  { status: "planejado", titulo: "Filtro fraternal — verificação de tom em todos os textos por IA", descricao: "Linguagem sempre amorosa e fraterna; alerta automático em caso de desvio" },
+  { status: "planejado", titulo: "Filtro fraternal — verificação de tom em todos os textos", descricao: "Linguagem sempre amorosa e fraterna; alerta automático em caso de desvio" },
   { status: "planejado", titulo: "Acessibilidade — usabilidade para idosos e pessoas com dificuldades tecnológicas" },
   { status: "planejado", titulo: "Aviso de independência institucional na página principal", descricao: "Sem vínculo com a FEB, UFE ou qualquer associação — plataforma livre como uma rede social" },
   { status: "planejado", titulo: "FAQ — Perguntas e respostas detalhadas sobre o uso do site" },

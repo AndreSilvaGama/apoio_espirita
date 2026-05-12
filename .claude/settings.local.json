@@ -29,7 +29,8 @@
       "Bash(git remote *)",
       "Bash(git push *)",
       "mcp__claude_ai_Supabase__deploy_edge_function",
-      "mcp__claude_ai_Supabase__apply_migration"
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__list_projects"
     ]
   }
 }
