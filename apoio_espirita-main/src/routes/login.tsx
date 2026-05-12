@@ -24,7 +24,7 @@ function Login() {
       if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal) {
         navigate({ to: "/completar-perfil" });
       } else {
-        navigate({ to: "/painel" });
+        navigate({ to: "/inicio" });
       }
     }
   }, [user, profile, loading, navigate]);
@@ -33,7 +33,7 @@ function Login() {
     setError("");
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/painel` },
+      options: { redirectTo: `${window.location.origin}/inicio` },
     });
   };
 

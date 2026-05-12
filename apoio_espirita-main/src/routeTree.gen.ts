@@ -10,16 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransparenciaRouteImport } from './routes/transparencia'
+import { Route as TesourariaRouteImport } from './routes/tesouraria'
 import { Route as SugestoesRouteImport } from './routes/sugestoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
   path: '/transparencia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TesourariaRoute = TesourariaRouteImport.update({
+  id: '/tesouraria',
+  path: '/tesouraria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SugestoesRoute = SugestoesRouteImport.update({
@@ -42,6 +49,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InicioRoute = InicioRouteImport.update({
+  id: '/inicio',
+  path: '/inicio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
   id: '/completar-perfil',
   path: '/completar-perfil',
@@ -56,29 +68,35 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
+  '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
+  '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
+  '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
 }
 export interface FileRouteTypes {
@@ -86,38 +104,46 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/completar-perfil'
+    | '/inicio'
     | '/login'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
+    | '/tesouraria'
     | '/transparencia'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/completar-perfil'
+    | '/inicio'
     | '/login'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
+    | '/tesouraria'
     | '/transparencia'
   id:
     | '__root__'
     | '/'
     | '/completar-perfil'
+    | '/inicio'
     | '/login'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
+    | '/tesouraria'
     | '/transparencia'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
+  InicioRoute: typeof InicioRoute
   LoginRoute: typeof LoginRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
   SugestoesRoute: typeof SugestoesRoute
+  TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
 }
 
@@ -128,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/transparencia'
       fullPath: '/transparencia'
       preLoaderRoute: typeof TransparenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tesouraria': {
+      id: '/tesouraria'
+      path: '/tesouraria'
+      fullPath: '/tesouraria'
+      preLoaderRoute: typeof TesourariaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sugestoes': {
@@ -158,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inicio': {
+      id: '/inicio'
+      path: '/inicio'
+      fullPath: '/inicio'
+      preLoaderRoute: typeof InicioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/completar-perfil': {
       id: '/completar-perfil'
       path: '/completar-perfil'
@@ -178,10 +218,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
+  InicioRoute: InicioRoute,
   LoginRoute: LoginRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
   SugestoesRoute: SugestoesRoute,
+  TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
 }
 export const routeTree = rootRouteImport

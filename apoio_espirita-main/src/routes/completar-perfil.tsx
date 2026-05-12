@@ -43,7 +43,7 @@ function CompletarPerfil() {
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
     if (!loading && user && profile?.sigla_casa && profile?.nome && profile?.cargo_principal) {
-      navigate({ to: "/painel" });
+      navigate({ to: "/inicio" });
     }
   }, [user, profile, loading, navigate]);
 
@@ -104,7 +104,7 @@ function CompletarPerfil() {
         .eq("id", user.id);
       if (pe) throw pe;
       await refreshProfile();
-      navigate({ to: "/painel" });
+      navigate({ to: "/inicio" });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao salvar. Tente novamente.");
     } finally {
