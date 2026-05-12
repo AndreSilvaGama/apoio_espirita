@@ -122,6 +122,9 @@ function Painel() {
         .from("solicitacoes_dev")
         .insert({ user_id: user.id, titulo: solTitulo.trim(), descricao: solDesc.trim() || null });
       if (error) throw error;
+      supabase.functions.invoke("send-notification", {
+        body: { type: "solicitacao", data: { titulo: solTitulo.trim(), descricao: solDesc.trim() || null, user_email: user.email } },
+      });
       setSolTitulo("");
       setSolDesc("");
       setSolOk(true);

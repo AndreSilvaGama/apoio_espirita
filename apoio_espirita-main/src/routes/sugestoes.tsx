@@ -36,6 +36,9 @@ function SuggestionsPage() {
       setError("Não foi possível enviar. Tente novamente.");
       return;
     }
+    supabase.functions.invoke("send-notification", {
+      body: { type: "sugestao", data: parsed.data },
+    });
     setStatus("success");
     setForm({ name: "", email: "", suggestion: "" });
   }
