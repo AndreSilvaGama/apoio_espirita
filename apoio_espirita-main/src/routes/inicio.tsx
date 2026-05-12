@@ -7,6 +7,7 @@ import {
   BarChart3, ClipboardList, Wallet,
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
+  Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,6 +81,8 @@ const FEATURES: FeatureCategory[] = [
       { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
       { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
       { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "breve" },
+      { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve", casa: true },
+      { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve", casa: true },
     ],
   },
   {
@@ -97,6 +100,8 @@ const FEATURES: FeatureCategory[] = [
       { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "disponivel", casa: true, href: "#bazar" },
       { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
       { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve", casa: true },
+      { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve", casa: true },
+      { Icon: FileHeart,      title: "Ficha de Atendimento Fraterno", desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.", status: "breve", casa: true },
     ],
   },
   {
@@ -111,7 +116,9 @@ const FEATURES: FeatureCategory[] = [
       { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença, voluntariado e geração de atas.", status: "breve", casa: true },
       { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
       { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
-      { Icon: Film,         title: "Integração de Vídeos",         desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
+      { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
+      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "breve", casa: true },
+      { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve", casa: true },
     ],
   },
   {

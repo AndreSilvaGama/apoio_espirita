@@ -17,17 +17,17 @@ interface Item {
 
 const roadmap: Item[] = [
   // FEITO
-  { status: "feito", titulo: "Página inicial com hero, partículas animadas e vídeo de voo sobre as nuvens" },
-  { status: "feito", titulo: "Música ambiente (piano) com botão de controle" },
-  { status: "feito", titulo: "Favicon — cepa de videira (ramo de uva)" },
+  { status: "feito", titulo: "Página inicial com hero, partículas animadas e vídeo de voo sobre as nuvens", descricao: "Animação de fundo com vídeo de nebulosa em loop · Partículas flutuantes · Design responsivo para todos os dispositivos" },
+  { status: "feito", titulo: "Música ambiente (piano) com botão de controle", descricao: "Toca automaticamente em volume suave · Botão discreto para pausar e retomar · Não interrompe a navegação" },
+  { status: "feito", titulo: "Favicon — cepa de videira (ramo de uva)", descricao: "Ícone personalizado exibido na aba do navegador e ao salvar na tela inicial do celular" },
   { status: "feito", titulo: "Assistente 'Preciso de Ajuda'", descricao: "Apoio emocional (CVV) · Busca de alimentação por CEP · Busca de casa espírita por CEP ou cidade/bairro" },
   { status: "feito", titulo: "Página Transparência & Propósito", descricao: "Declaração de independência — sem vínculo com a FEB ou qualquer associação oficial" },
-  { status: "feito", titulo: "Página de Sugestões integrada ao banco de dados" },
+  { status: "feito", titulo: "Página de Sugestões integrada ao banco de dados", descricao: "Formulário público para envio de sugestões · Notificação automática por e-mail ao receber nova mensagem" },
   { status: "feito", titulo: "Autenticação completa", descricao: "Login com Google · E-mail e senha · Seleção e cadastro de sigla da casa espírita" },
-  { status: "feito", titulo: "Painel de acompanhamento do projeto (você está aqui)" },
-  { status: "feito", titulo: "Exclusão de conta pelo próprio usuário" },
-  { status: "feito", titulo: "Deploy na Cloudflare Workers — apoioespirita.com.br" },
-  { status: "feito", titulo: "Autenticação com Google (OAuth)" },
+  { status: "feito", titulo: "Painel de acompanhamento do projeto (você está aqui)", descricao: "Lista todos os itens planejados, em andamento e concluídos · Barra de progresso · Formulário de solicitação de novos desenvolvimentos" },
+  { status: "feito", titulo: "Exclusão de conta pelo próprio usuário", descricao: "Usuário remove permanentemente todos os seus dados pela página de perfil" },
+  { status: "feito", titulo: "Deploy na Cloudflare Workers — apoioespirita.com.br", descricao: "Hospedagem na rede de borda da Cloudflare · HTTPS automático · Domínio próprio apoioespirita.com.br" },
+  { status: "feito", titulo: "Autenticação com Google (OAuth)", descricao: "Login com um clique usando conta Google · Redirecionamento automático para preenchimento de perfil no primeiro acesso" },
   { status: "feito", titulo: "Cadastro de casas espíritas no banco de dados", descricao: "Tabelas: casas_espirita · siglas_casas · profiles" },
   { status: "feito", titulo: "Página de perfil do usuário", descricao: "Edição de dados pessoais · Alteração de senha · Exclusão de conta" },
   { status: "feito", titulo: "Notificações por e-mail via Brevo", descricao: "E-mail automático ao receber sugestão ou solicitação de desenvolvimento" },
@@ -35,21 +35,21 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Página inicial pós-login com painel de funcionalidades", descricao: "Dashboard com grade de recursos, bazar on-line e mensagem do dia" },
   { status: "feito", titulo: "Mensagem do Dia enviada pela comunidade com fila de exibição", descricao: "Membros enviam mensagens com referência · Algoritmo evita repetir a mesma casa em dias consecutivos · Somente uma mensagem por dia" },
   { status: "feito", titulo: "Ícones profissionais Lucide em todas as páginas", descricao: "Substituição de emojis por ícones vetoriais com traço consistente" },
-  { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes" },
+  { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes", descricao: "Item no menu de navegação acessível apenas por presidentes e vice-presidentes · Módulo financeiro a ser implementado" },
 
   // PLANEJADO — Fundação (base para tudo)
-  { status: "planejado", titulo: "Revisão e correção de redundâncias no site" },
+  { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
   { status: "planejado", titulo: "Filtro fraternal — verificação de tom em todos os textos", descricao: "Linguagem sempre amorosa e fraterna; alerta automático em caso de desvio" },
-  { status: "planejado", titulo: "Acessibilidade — usabilidade para idosos e pessoas com dificuldades tecnológicas" },
+  { status: "planejado", titulo: "Acessibilidade — usabilidade para idosos e pessoas com dificuldades tecnológicas", descricao: "Contraste adequado · Fontes legíveis · Navegação por teclado · Tamanhos de toque acessíveis no celular" },
   { status: "planejado", titulo: "Aviso de independência institucional na página principal", descricao: "Sem vínculo com a FEB, UFE ou qualquer associação — plataforma livre como uma rede social" },
-  { status: "planejado", titulo: "FAQ — Perguntas e respostas detalhadas sobre o uso do site" },
-  { status: "planejado", titulo: "Menu de navegação completo + campo de busca global" },
+  { status: "planejado", titulo: "FAQ — Perguntas e respostas detalhadas sobre o uso do site", descricao: "Dúvidas sobre cadastro, uso da plataforma e princípios espíritas · Organizado por categoria" },
+  { status: "planejado", titulo: "Menu de navegação completo + campo de busca global", descricao: "Menu responsivo com todas as seções · Campo de busca para localizar conteúdo, membros e casas" },
 
   // PLANEJADO — Perfil e cadastro
   { status: "planejado", titulo: "Cargo do usuário no centro espírita", descricao: "Presidente · Coordenador · Palestrante · Tarefeiro — controla permissões de edição e visualização" },
   { status: "planejado", titulo: "Perfil de habilidades, currículo e disponibilidade do membro", descricao: "LinkedIn · Situação de emprego · Disponibilidade para voluntariado · Pedido de ajuda privado ou público" },
-  { status: "planejado", titulo: "Cadastro e gerenciamento de casas espíritas" },
-  { status: "planejado", titulo: "Mapa de casas espíritas" },
+  { status: "planejado", titulo: "Cadastro e gerenciamento de casas espíritas", descricao: "Presidentes cadastram dados da casa, endereço, contato e foto · Membros se associam à casa por sigla" },
+  { status: "planejado", titulo: "Mapa de casas espíritas", descricao: "Visualização geográfica das casas cadastradas · Filtros por cidade e estado · Abertura no Google Maps" },
   { status: "planejado", titulo: "Chave PIX da casa espírita para doações e bazar online", descricao: "Geração de QR Code para impressão e uso no espaço físico" },
 
   // PLANEJADO — Conteúdo e espiritualidade
@@ -57,43 +57,51 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Colunas autorais com sistema de medalhas virtuais", descricao: "Identificação do autor e do centro espírita · Reações exclusivas (sem imitar outras redes) · Contagem de curtidas" },
   { status: "planejado", titulo: "Área de perguntas e respostas para aprofundamento do conhecimento", descricao: "Usuários podem criar e responder perguntas" },
   { status: "planejado", titulo: "Cifras e partituras de músicas espíritas", descricao: "Usuários logados enviam composições · Qualquer visitante pode ouvir e curtir" },
-  { status: "planejado", titulo: "Playlists espíritas — Recepção e Hora do Passe" },
+  { status: "planejado", titulo: "Playlists espíritas — Recepção e Hora do Passe", descricao: "Playlists curadas pela comunidade · Reprodução direto pelo navegador · Categorizadas por momento da reunião" },
   { status: "planejado", titulo: "Rádio Rio de Janeiro integrada", descricao: "Para automaticamente a música de piano ao ser ativada" },
   { status: "planejado", titulo: "Área de palestras com suporte a arquivos PowerPoint", descricao: "Recurso de apresentação com player integrado" },
+
+  // PLANEJADO — Vida espiritual e comunidade
+  { status: "planejado", titulo: "Aniversariantes do Mês", descricao: "Calendário de aniversários dos membros da casa · Aparece em destaque no topo da home no mês do aniversário · Notificação automática ao coordenador" },
+  { status: "planejado", titulo: "Plantão de Orações", descricao: "Membros se inscrevem em horários de oração coletiva à distância · Agenda semanal visível para todos · Confirmação de participação e histórico" },
+  { status: "planejado", titulo: "Mural de Avisos", descricao: "Quadro digital da casa · Presidentes e coordenadores publicam comunicados · Membros visualizam ao entrar na plataforma · Avisos com data de expiração" },
+  { status: "planejado", titulo: "Ficha de Atendimento Fraterno", descricao: "Formulário confidencial para registro de pessoas atendidas · Histórico de atendimentos · Acessível apenas pelo coordenador de assistência fraterna" },
 
   // PLANEJADO — Solidariedade e mobilidade
   { status: "planejado", titulo: "Carona Solidária", descricao: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa espírita ou de outra · Solicitação, confirmação e histórico de caronas" },
   { status: "planejado", titulo: "Entrega Solidária", descricao: "Voluntários se oferecem para entregar itens comprados no bazar on-line · Agendamento, confirmação e rastreamento simplificado" },
 
   // PLANEJADO — Organização do centro
+  { status: "planejado", titulo: "Caderno de Presença Digital", descricao: "Membros marcam presença nas reuniões pelo celular com um toque · Coordenador vê relatório por reunião e por membro · Histórico exportável" },
+  { status: "planejado", titulo: "Escala de Trabalho", descricao: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros · Cada membro recebe notificação e vê sua escala pelo celular" },
   { status: "planejado", titulo: "Grade de atividades e eventos do centro espírita", descricao: "Membros podem se candidatar como voluntários para cada tarefa ou evento" },
   { status: "planejado", titulo: "Livro de presença digital para reuniões", descricao: "Controlado pelo coordenador · Integrado à lista de confirmações" },
   { status: "planejado", titulo: "Reuniões com confirmação de presença, ata e livro de presença", descricao: "Reuniões abertas ou fechadas · Geração de ata ao término" },
   { status: "planejado", titulo: "Cruzamento de habilidades de membros com necessidades do centro", descricao: "Alertas para membros voluntários quando alguém precisar de ajuda" },
   { status: "planejado", titulo: "Sistema de sugestões com progresso, curtidas e comentários", descricao: "Acompanhamento por datas · Autor identificado · Motivação registrada" },
   { status: "planejado", titulo: "Grupos de comunicação interna por tipo de atividade", descricao: "Semelhante a grupos do WhatsApp — dentro da plataforma" },
-  { status: "planejado", titulo: "Notificações internas e via WhatsApp para coordenadores e presidentes" },
-  { status: "planejado", titulo: "PWA — acesso via celular como aplicativo" },
+  { status: "planejado", titulo: "Notificações internas e via WhatsApp para coordenadores e presidentes", descricao: "Alertas de eventos, ausências, aprovações e solicitações · Integração com WhatsApp Business API" },
+  { status: "planejado", titulo: "PWA — acesso via celular como aplicativo", descricao: "Instalação do site como app no celular sem loja de aplicativos · Ícone na tela inicial · Funcionamento offline parcial" },
 
   // PLANEJADO — Tesouraria e financeiro
   { status: "planejado", titulo: "Tesouraria simplificada — contas a pagar e receber", descricao: "Interface acessível mesmo para usuários com pouca familiaridade com tecnologia · Acesso controlado pelo presidente" },
-  { status: "planejado", titulo: "Bazar online com integração PIX" },
+  { status: "planejado", titulo: "Bazar online com integração PIX", descricao: "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado automaticamente · Gestão de estoque pelo administrador" },
 
   // PLANEJADO — Painéis de gestão
   { status: "planejado", titulo: "Dashboard do Presidente", descricao: "Dados financeiros · Tarefeiros · Funcionamento geral da casa" },
   { status: "planejado", titulo: "Dashboard do Coordenador", descricao: "Movimentações da coordenação" },
-  { status: "planejado", titulo: "Dashboard do Tesoureiro" },
+  { status: "planejado", titulo: "Dashboard do Tesoureiro", descricao: "Resumo de entradas e saídas · Relatório mensal · Exportação para planilha" },
   { status: "planejado", titulo: "Parametrização pelo Presidente", descricao: "Três estados por recurso: Desabilitado · Opcional · Obrigatório · Inclui sistema de votação para decisões da casa" },
 
   // PLANEJADO — Comunicação e transmissão
   { status: "planejado", titulo: "Transmissão de palestras ao vivo pelo celular", descricao: "Um celular transmite; todos logados no centro podem assistir" },
-  { status: "planejado", titulo: "Integração com Google Meet ou solução própria de videoconferência" },
-  { status: "planejado", titulo: "Integração com StreamYard ou solução própria de transmissão ao vivo" },
+  { status: "planejado", titulo: "Integração com Google Meet ou solução própria de videoconferência", descricao: "Criação de sala com link compartilhável diretamente pela plataforma" },
+  { status: "planejado", titulo: "Integração com StreamYard ou solução própria de transmissão ao vivo", descricao: "Conexão com streaming profissional para transmissão das palestras" },
 
   // PLANEJADO — Educação
-  { status: "planejado", titulo: "Recursos para evangelização infantil — módulo escolar" },
-  { status: "planejado", titulo: "Jogos educativos sobre os livros da codificação espírita" },
-  { status: "planejado", titulo: "Jogos educativos para a infância" },
+  { status: "planejado", titulo: "Recursos para evangelização infantil — módulo escolar", descricao: "Planos de aula, histórias e atividades para professores da evangelização · Material organizado por faixa etária" },
+  { status: "planejado", titulo: "Jogos educativos sobre os livros da codificação espírita", descricao: "Quiz e atividades interativas baseadas no Livro dos Espíritos, Evangelho e outros livros da codificação" },
+  { status: "planejado", titulo: "Jogos educativos para a infância", descricao: "Atividades lúdicas adaptadas para crianças da evangelização — memória, palavras cruzadas e histórias animadas" },
 ];
 
 const badge: Record<Status, { label: string; color: string }> = {
