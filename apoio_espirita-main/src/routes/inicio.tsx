@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
-  MessageCircle, Users, HeartHandshake, ShoppingBag,
+  MessageCircle, Users, HeartHandshake, ShoppingBag, Car, Truck,
   CalendarDays, Cast, Video, Film, Radio, MonitorPlay, CircleHelp,
   BarChart3, ClipboardList, Wallet,
   BookOpen, BookMarked, Shirt, Footprints,
@@ -89,6 +89,8 @@ const FEATURES: FeatureCategory[] = [
       { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
       { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve", casa: true },
       { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "disponivel", casa: true, href: "#bazar" },
+      { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
+      { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve", casa: true },
     ],
   },
   {

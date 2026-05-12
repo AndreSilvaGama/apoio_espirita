@@ -31,6 +31,11 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Cadastro de casas espíritas no banco de dados", descricao: "Tabelas: casas_espirita · siglas_casas · profiles" },
   { status: "feito", titulo: "Página de perfil do usuário", descricao: "Edição de dados pessoais · Alteração de senha · Exclusão de conta" },
   { status: "feito", titulo: "Notificações por e-mail via Brevo", descricao: "E-mail automático ao receber sugestão ou solicitação de desenvolvimento" },
+  { status: "feito", titulo: "Seleção obrigatória de cargo e atividades no primeiro acesso", descricao: "Cargos: Presidente, Vice, Dirigente, Diretoria, Coordenadoria, Tarefeiro, Frequentador, Visitante · 15 atividades selecionáveis" },
+  { status: "feito", titulo: "Página inicial pós-login com painel de funcionalidades", descricao: "Dashboard com grade de recursos, bazar on-line e mensagem do dia" },
+  { status: "feito", titulo: "Mensagem do Dia enviada pela comunidade com fila de exibição", descricao: "Membros enviam mensagens com referência · Algoritmo evita repetir a mesma casa em dias consecutivos · Somente uma mensagem por dia" },
+  { status: "feito", titulo: "Ícones profissionais Lucide em todas as páginas", descricao: "Substituição de emojis por ícones vetoriais com traço consistente" },
+  { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site" },
@@ -55,6 +60,10 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Playlists espíritas — Recepção e Hora do Passe" },
   { status: "planejado", titulo: "Rádio Rio de Janeiro integrada", descricao: "Para automaticamente a música de piano ao ser ativada" },
   { status: "planejado", titulo: "Área de palestras com suporte a arquivos PowerPoint", descricao: "Recurso de apresentação com player integrado" },
+
+  // PLANEJADO — Solidariedade e mobilidade
+  { status: "planejado", titulo: "Carona Solidária", descricao: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa espírita ou de outra · Solicitação, confirmação e histórico de caronas" },
+  { status: "planejado", titulo: "Entrega Solidária", descricao: "Voluntários se oferecem para entregar itens comprados no bazar on-line · Agendamento, confirmação e rastreamento simplificado" },
 
   // PLANEJADO — Organização do centro
   { status: "planejado", titulo: "Grade de atividades e eventos do centro espírita", descricao: "Membros podem se candidatar como voluntários para cada tarefa ou evento" },
