@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+export const DEV_EMAIL = "gama.andre@gmail.com";
+
 interface Profile {
   id: string;
   sigla_casa: string | null;
@@ -18,6 +20,8 @@ interface AuthContextValue {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  isDev: boolean;
+  isPresident: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -26,6 +30,8 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   profile: null,
   loading: true,
+  isDev: false,
+  isPresident: false,
   refreshProfile: async () => {},
   signOut: async () => {},
 });
@@ -76,8 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   };
 
+  const isDev = user?.email === DEV_EMAIL && profile?.cargo_principal === "DEV";
+  const isPresident =
+    isDev ||
+    profile?.cargo_principal === "Presidente" ||
+    profile?.cargo_principal === "Vice-presidente";
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

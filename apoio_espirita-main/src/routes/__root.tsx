@@ -142,13 +142,9 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, profile, signOut } = useAuth();
+  const { user, isPresident, signOut } = useAuth();
   const { location } = useRouterState();
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
-
-  const isPresident =
-    profile?.cargo_principal === "Presidente" ||
-    profile?.cargo_principal === "Vice-presidente";
 
   return (
     <header className="fixed top-0 left-0 right-0 h-14 z-50 bg-white border-b border-gray-200 shadow-sm">

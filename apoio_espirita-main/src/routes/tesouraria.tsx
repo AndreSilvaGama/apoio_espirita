@@ -9,15 +9,11 @@ export const Route = createFileRoute("/tesouraria")({
 
 function Tesouraria() {
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, loading, isPresident } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
   }, [user, loading, navigate]);
-
-  const isPresident =
-    profile?.cargo_principal === "Presidente" ||
-    profile?.cargo_principal === "Vice-presidente";
 
   if (loading || !user) return null;
 

@@ -150,7 +150,7 @@ const STATUS_STYLE: Record<Status, string> = {
 
 function Inicio() {
   const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isPresident } = useAuth();
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
 
   useEffect(() => {
@@ -178,8 +178,6 @@ function Inicio() {
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const fallbackMsg = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
-  const isPresident = profile?.cargo_principal === "Presidente" || profile?.cargo_principal === "Vice-presidente";
-
   return (
     <main className="page-light min-h-screen pt-20 pb-20 px-4 md:px-8">
       <div className="mx-auto max-w-7xl">

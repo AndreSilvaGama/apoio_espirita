@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, DEV_EMAIL } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/perfil")({
   component: Perfil,
@@ -13,7 +13,7 @@ const UFS = [
   "RS","RO","RR","SC","SP","SE","TO",
 ];
 
-const CARGOS = [
+const CARGOS_BASE = [
   "Presidente","Vice-presidente","Dirigente","Diretoria",
   "Coordenadoria","Tarefeiro","Frequentador","Visitante",
 ];
@@ -28,6 +28,9 @@ const ATIVIDADES = [
 function Perfil() {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
+
+  const isDevUser = user?.email === DEV_EMAIL;
+  const CARGOS = isDevUser ? ["DEV", ...CARGOS_BASE] : CARGOS_BASE;
 
   // Perfil
   const [siglas, setSiglas] = useState<string[]>([]);
@@ -97,6 +100,7 @@ function Perfil() {
     if (!bairro.trim()) { setPerfilError("Informe o bairro."); return; }
     if (!selected || selected.length !== 5) { setPerfilError("Selecione ou cadastre uma sigla de 5 letras."); return; }
     if (!cargo) { setPerfilError("Selecione sua função na casa espírita."); return; }
+    if (cargo === "DEV" && !isDevUser) { setPerfilError("Cargo inválido."); return; }
     if (!user) return;
 
     setSavingPerfil(true);
