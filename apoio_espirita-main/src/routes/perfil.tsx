@@ -13,6 +13,18 @@ const UFS = [
   "RS","RO","RR","SC","SP","SE","TO",
 ];
 
+const CARGOS = [
+  "Presidente","Vice-presidente","Dirigente","Diretoria",
+  "Coordenadoria","Tarefeiro","Frequentador","Visitante",
+];
+
+const ATIVIDADES = [
+  "Trabalhador","Expositor","Palestrante","Facilitador",
+  "Dirigente de reunião mediúnica","Médium","Passista",
+  "Evangelizador","Estudante","Participante de estudo",
+  "Assistido","Atendente fraterno","Colaborador","Sócio","Associado",
+];
+
 function Perfil() {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
@@ -23,6 +35,8 @@ function Perfil() {
   const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
   const [bairro, setBairro] = useState("");
+  const [cargo, setCargo] = useState("");
+  const [atividades, setAtividades] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState("");
   const [open, setOpen] = useState(false);
@@ -55,6 +69,8 @@ function Perfil() {
       setBairro(profile.bairro ?? "");
       setQuery(profile.sigla_casa ?? "");
       setSelected(profile.sigla_casa ?? "");
+      setCargo(profile.cargo_principal ?? "");
+      setAtividades(profile.atividades ?? []);
     }
   }, [profile]);
 
@@ -80,6 +96,7 @@ function Perfil() {
     if (!cidade.trim()) { setPerfilError("Informe a cidade."); return; }
     if (!bairro.trim()) { setPerfilError("Informe o bairro."); return; }
     if (!selected || selected.length !== 5) { setPerfilError("Selecione ou cadastre uma sigla de 5 letras."); return; }
+    if (!cargo) { setPerfilError("Selecione sua função na casa espírita."); return; }
     if (!user) return;
 
     setSavingPerfil(true);
@@ -92,7 +109,7 @@ function Perfil() {
       }
       const { error: pe } = await supabase
         .from("profiles")
-        .update({ nome: nome.trim(), uf, cidade: cidade.trim(), bairro: bairro.trim(), sigla_casa: selected, updated_at: new Date().toISOString() })
+        .update({ nome: nome.trim(), uf, cidade: cidade.trim(), bairro: bairro.trim(), sigla_casa: selected, cargo_principal: cargo, atividades, updated_at: new Date().toISOString() })
         .eq("id", user.id);
       if (pe) throw pe;
       await refreshProfile();
@@ -203,6 +220,47 @@ function Perfil() {
               onChange={(e) => { setBairro(e.target.value); setPerfilError(""); setPerfilOk(false); }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
+          </div>
+
+          {/* Cargo */}
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Função na Casa Espírita <span className="text-cyan-glow">*</span>
+            </label>
+            <select
+              value={cargo}
+              onChange={(e) => { setCargo(e.target.value); setPerfilError(""); setPerfilOk(false); }}
+              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
+            >
+              <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>Selecione…</option>
+              {CARGOS.map((c) => (
+                <option key={c} value={c} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Atividades */}
+          <div className="pt-2 border-t border-white/5">
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-3">
+              Atividades que participa <span className="text-muted-foreground/40 normal-case tracking-normal text-[10px]">(selecione quantas quiser)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {ATIVIDADES.map((a) => (
+                <label key={a} className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={atividades.includes(a)}
+                    onChange={(e) => {
+                      setAtividades(e.target.checked ? [...atividades, a] : atividades.filter((x) => x !== a));
+                      setPerfilError(""); setPerfilOk(false);
+                    }}
+                    className="accent-cyan-500 w-4 h-4 rounded"
+                  />
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{a}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Sigla */}

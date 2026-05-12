@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone *)",
+      "Bash(git -C \"d:/WEB/APOIO_ESPIRITA\" remote -v)",
+      "PowerShell(git -C \"D:\\\\WEB\\\\APOIO_ESPIRITA\" remote -v)",
+      "PowerShell(git -C \"D:\\\\WEB\\\\APOIO_ESPIRITA\" log --oneline -5 2>&1)",
+      "PowerShell(git -C \"D:\\\\WEB\\\\APOIO_ESPIRITA\" status 2>&1)",
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(bun --version 2>&1)",
+      "PowerShell(node --version 2>&1)",
+      "PowerShell(npx wrangler --version 2>&1)",
+      "Bash(Get-Content \"C:\\\\Users\\\\ANDRGA~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--WEB-APOIO-ESPIRITA\\\\8da3716c-8340-41b3-86dd-fd678c4bf1b2\\\\tasks\\\\bg4bsujfx.output\" -Wait)",
+      "Bash(Select-String -Pattern \"install|error|warn|done|packages\" --SimpleMatch)",
+      "PowerShell(\\(Get-ChildItem \"D:\\\\WEB\\\\APOIO_ESPIRITA\\\\apoio_espirita-main\\\\node_modules\" -Directory\\).Count)",
+      "WebFetch(domain:lovable.dev)",
+      "Bash(bun run *)",
+      "Bash(bunx wrangler *)",
+      "Bash(dir \"D:\\\\WEB\\\\APOIO_ESPIRITA\\\\apoio_espirita-main\\\\public\\\\audio\\\\\" 2>&1)",
+      "Bash(ls -la /mnt/d/WEB/APOIO_ESPIRITA/apoio_espirita-main/public/audio/ 2>&1)",
+      "Read(//mnt/d/WEB/APOIO_ESPIRITA/apoio_espirita-main/public/**)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\WEB\\\\APOIO_ESPIRITA\\\\apoio_espirita-main\\\\public\" -Recurse | ForEach-Object { $_.FullName })",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "mcp__claude_ai_Supabase__deploy_edge_function",
+      "mcp__claude_ai_Supabase__apply_migration"
+    ]
+  }
+}

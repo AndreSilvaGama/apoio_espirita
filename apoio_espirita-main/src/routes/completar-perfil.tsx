@@ -13,6 +13,17 @@ const UFS = [
   "RS","RO","RR","SC","SP","SE","TO",
 ];
 
+const CARGOS = [
+  "Presidente",
+  "Vice-presidente",
+  "Dirigente",
+  "Diretoria",
+  "Coordenadoria",
+  "Tarefeiro",
+  "Frequentador",
+  "Visitante",
+];
+
 function CompletarPerfil() {
   const navigate = useNavigate();
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -24,14 +35,28 @@ function CompletarPerfil() {
   const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
   const [bairro, setBairro] = useState("");
+  const [cargo, setCargo] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && profile?.sigla_casa && profile?.nome) navigate({ to: "/painel" });
+    if (!loading && user && profile?.sigla_casa && profile?.nome && profile?.cargo_principal) {
+      navigate({ to: "/painel" });
+    }
   }, [user, profile, loading, navigate]);
+
+  useEffect(() => {
+    if (profile) {
+      if (profile.nome) setNome(profile.nome);
+      if (profile.uf) setUf(profile.uf);
+      if (profile.cidade) setCidade(profile.cidade);
+      if (profile.bairro) setBairro(profile.bairro);
+      if (profile.sigla_casa) { setQuery(profile.sigla_casa); setSelected(profile.sigla_casa); }
+      if (profile.cargo_principal) setCargo(profile.cargo_principal);
+    }
+  }, [profile]);
 
   useEffect(() => {
     supabase.from("siglas_casas").select("sigla").order("sigla").then(({ data }) => {
@@ -55,6 +80,7 @@ function CompletarPerfil() {
     if (!cidade.trim()) { setError("Informe sua cidade."); return; }
     if (!bairro.trim()) { setError("Informe seu bairro."); return; }
     if (!selected || selected.length !== 5) { setError("Selecione ou cadastre uma sigla de 5 letras."); return; }
+    if (!cargo) { setError("Selecione sua função na casa espírita."); return; }
     if (!user) return;
 
     setSaving(true);
@@ -72,6 +98,7 @@ function CompletarPerfil() {
           cidade: cidade.trim(),
           bairro: bairro.trim(),
           sigla_casa: selected,
+          cargo_principal: cargo,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -210,6 +237,24 @@ function CompletarPerfil() {
                 <p className="text-lg font-medium tracking-[0.4em] text-cyan-glow">{selected}</p>
               </div>
             )}
+          </div>
+
+          {/* Cargo */}
+          <div className="pt-2 border-t border-white/5">
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Função na Casa Espírita <span className="text-cyan-glow">*</span>
+            </label>
+            <select
+              value={cargo}
+              onChange={(e) => { setCargo(e.target.value); setError(""); }}
+              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
+            >
+              <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>Selecione sua função…</option>
+              {CARGOS.map((c) => (
+                <option key={c} value={c} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{c}</option>
+              ))}
+            </select>
           </div>
 
           {error && <p className="text-xs text-red-400 text-center">{error}</p>}

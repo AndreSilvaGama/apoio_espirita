@@ -21,7 +21,7 @@ function Login() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (!profile?.sigla_casa || !profile?.nome) {
+      if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal) {
         navigate({ to: "/completar-perfil" });
       } else {
         navigate({ to: "/painel" });
