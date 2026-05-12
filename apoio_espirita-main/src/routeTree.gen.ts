@@ -14,6 +14,7 @@ import { Route as TesourariaRouteImport } from './routes/tesouraria'
 import { Route as SugestoesRouteImport } from './routes/sugestoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
@@ -44,6 +45,11 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MensagemDoDiaRoute = MensagemDoDiaRouteImport.update({
+  id: '/mensagem-do-dia',
+  path: '/mensagem-do-dia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
+  '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
+  '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
+  '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/sugestoes': typeof SugestoesRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/inicio'
     | '/login'
+    | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/inicio'
     | '/login'
+    | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/inicio'
     | '/login'
+    | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
     | '/sugestoes'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   CompletarPerfilRoute: typeof CompletarPerfilRoute
   InicioRoute: typeof InicioRoute
   LoginRoute: typeof LoginRoute
+  MensagemDoDiaRoute: typeof MensagemDoDiaRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
   SugestoesRoute: typeof SugestoesRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mensagem-do-dia': {
+      id: '/mensagem-do-dia'
+      path: '/mensagem-do-dia'
+      fullPath: '/mensagem-do-dia'
+      preLoaderRoute: typeof MensagemDoDiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompletarPerfilRoute: CompletarPerfilRoute,
   InicioRoute: InicioRoute,
   LoginRoute: LoginRoute,
+  MensagemDoDiaRoute: MensagemDoDiaRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
   SugestoesRoute: SugestoesRoute,

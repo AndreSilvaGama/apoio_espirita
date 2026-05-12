@@ -1,6 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
+interface TodayMsg {
+  texto: string;
+  referencia: string | null;
+  autor_nome: string;
+  sigla_casa: string | null;
+}
 
 export const Route = createFileRoute("/inicio")({
   component: Inicio,
@@ -110,6 +118,7 @@ const STATUS_STYLE: Record<Status, string> = {
 function Inicio() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
+  const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -118,12 +127,24 @@ function Inicio() {
     }
   }, [user, profile, loading, navigate]);
 
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    supabase
+      .from("mensagens_do_dia")
+      .select("texto, referencia, autor_nome, sigla_casa")
+      .eq("data_exibicao", today)
+      .eq("aprovada", true)
+      .single()
+      .then(({ data }) => { if (data) setTodayMsg(data); });
+  }, [user]);
+
   if (loading || !user) return null;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  const msg = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
+  const fallbackMsg = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
   const isPresident = profile?.cargo_principal === "Presidente" || profile?.cargo_principal === "Vice-presidente";
 
   return (
@@ -154,17 +175,64 @@ function Inicio() {
         </div>
 
         {/* ── Mensagem do Dia ── */}
-        <div className="mb-12 rounded-3xl overflow-hidden shadow-sm border border-violet-100"
-          style={{ background: "linear-gradient(135deg, oklch(0.97 0.02 295) 0%, oklch(0.97 0.015 260) 100%)" }}>
+        <div
+          className="mb-12 rounded-3xl overflow-hidden shadow-sm border border-violet-100"
+          style={{ background: "linear-gradient(135deg, oklch(0.97 0.02 295) 0%, oklch(0.97 0.015 260) 100%)" }}
+        >
           <div className="px-8 py-7 md:px-12 md:py-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="text-5xl shrink-0" style={{ filter: "drop-shadow(0 0 12px oklch(0.70 0.18 295 / 0.4))" }}>✦</div>
-            <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-violet-500 mb-3">Mensagem do Dia</p>
-              <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
-                "{msg.text}"
-              </blockquote>
-              <p className="mt-3 text-sm text-muted-foreground/60">— {msg.author}</p>
+            <div
+              className="text-5xl shrink-0"
+              style={{ filter: "drop-shadow(0 0 12px oklch(0.70 0.18 295 / 0.4))" }}
+            >
+              ✦
             </div>
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-[0.35em] text-violet-500 mb-3">
+                Mensagem do Dia
+              </p>
+              {todayMsg ? (
+                <>
+                  <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
+                    "{todayMsg.texto}"
+                  </blockquote>
+                  {todayMsg.referencia && (
+                    <p className="mt-3 text-sm text-muted-foreground/60 italic">
+                      — {todayMsg.referencia}
+                    </p>
+                  )}
+                  <div className="mt-4 flex items-center gap-3 flex-wrap">
+                    <span className="text-xs text-violet-600">{todayMsg.autor_nome}</span>
+                    {todayMsg.sigla_casa && (
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 bg-white/70 border border-border/60 px-2 py-0.5 rounded-full">
+                        {todayMsg.sigla_casa}
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
+                    "{fallbackMsg.text}"
+                  </blockquote>
+                  <p className="mt-3 text-sm text-muted-foreground/60">— {fallbackMsg.author}</p>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="px-8 pb-5 md:px-12 flex items-center gap-5 border-t border-violet-100/60 pt-4">
+            <Link
+              to="/mensagem-do-dia"
+              className="text-xs text-violet-500 hover:text-violet-700 transition-colors uppercase tracking-widest"
+            >
+              Enviar mensagem
+            </Link>
+            <Link
+              to="/mensagem-do-dia"
+              search={{ tab: "fila" }}
+              className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors uppercase tracking-widest"
+            >
+              Ver fila
+            </Link>
           </div>
         </div>
 
