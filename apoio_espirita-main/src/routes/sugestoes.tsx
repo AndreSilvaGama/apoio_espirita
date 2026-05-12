@@ -6,6 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Particles } from "@/components/Particles";
 
 export const Route = createFileRoute("/sugestoes")({
+  head: () => ({
+    meta: [
+      { title: "Sugestões — Apoio Espírita" },
+      { name: "description", content: "Envie sua sugestão para melhorar o Apoio Espírita. Sua contribuição é bem-vinda e fraterna." },
+      { property: "og:title", content: "Sugestões — Apoio Espírita" },
+      { property: "og:url", content: "https://apoioespirita.com.br/sugestoes" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://apoioespirita.com.br/sugestoes" },
+    ],
+  }),
   component: SuggestionsPage,
 });
 

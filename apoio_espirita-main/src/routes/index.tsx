@@ -6,6 +6,20 @@ import { HelpDialog } from "@/components/HelpDialog";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Apoio Espírita — Fora da caridade não há salvação" },
+      { name: "description", content: "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais. Fora da caridade não há salvação." },
+      { property: "og:title", content: "Apoio Espírita — Fora da caridade não há salvação" },
+      { property: "og:description", content: "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais." },
+      { property: "og:url", content: "https://apoioespirita.com.br/" },
+      { name: "twitter:title", content: "Apoio Espírita — Fora da caridade não há salvação" },
+      { name: "twitter:description", content: "Plataforma espírita gratuita para membros de casas espíritas." },
+    ],
+    links: [
+      { rel: "canonical", href: "https://apoioespirita.com.br/" },
+    ],
+  }),
   component: Index,
 });
 

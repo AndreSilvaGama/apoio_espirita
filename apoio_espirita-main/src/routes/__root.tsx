@@ -73,25 +73,64 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Apoio Espírita" },
-      { name: "description", content: "Um espaço de acolhimento, estudo e serviço para membros e frequentadores de casas espíritas." },
+      { title: "Apoio Espírita — Acolhimento, Estudo e Serviço" },
+      { name: "description", content: "Plataforma espírita gratuita de acolhimento, estudo e serviço. Encontre sua casa espírita, envie mensagens do dia e conecte-se com a comunidade." },
+      { name: "keywords", content: "espiritismo, casa espírita, kardec, centro espírita, apoio espírita, doutrina espírita, caridade, evangelho" },
       { name: "author", content: "Apoio Espírita" },
-      { property: "og:title", content: "Apoio Espírita" },
-      { property: "og:description", content: "Acolhimento, estudo e serviço — um espaço fraterno para a comunidade espírita." },
+      { name: "robots", content: "index, follow" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:site_name", content: "Apoio Espírita" },
+      { property: "og:locale", content: "pt_BR" },
+      { property: "og:url", content: "https://apoioespirita.com.br/" },
+      { property: "og:title", content: "Apoio Espírita — Acolhimento, Estudo e Serviço" },
+      { property: "og:description", content: "Plataforma espírita gratuita de acolhimento, estudo e serviço. Encontre sua casa espírita, envie mensagens do dia e conecte-se com a comunidade." },
+      { property: "og:image", content: "https://apoioespirita.com.br/og-image.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Apoio Espírita — Acolhimento, Estudo e Serviço" },
+      { name: "twitter:description", content: "Plataforma espírita gratuita de acolhimento, estudo e serviço para membros de casas espíritas." },
+      { name: "twitter:image", content: "https://apoioespirita.com.br/og-image.png" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "canonical", href: "https://apoioespirita.com.br/" },
+      { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Apoio Espírita",
+          "url": "https://apoioespirita.com.br/",
+          "description": "Plataforma espírita gratuita de acolhimento, estudo e serviço para membros de casas espíritas.",
+          "inLanguage": "pt-BR",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://apoioespirita.com.br/?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Apoio Espírita",
+          "url": "https://apoioespirita.com.br/",
+          "logo": "https://apoioespirita.com.br/favicon.png",
+          "sameAs": [],
+          "description": "Plataforma independente, sem vínculo com a FEB ou qualquer federação. Propósito: acolhimento, estudo e serviço.",
+        }),
       },
     ],
   }),
@@ -103,7 +142,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

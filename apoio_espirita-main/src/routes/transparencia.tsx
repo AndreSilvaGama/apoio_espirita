@@ -2,6 +2,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart, Star, Gem, Flower2, SlidersHorizontal, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/transparencia")({
+  head: () => ({
+    meta: [
+      { title: "Transparência & Propósito — Apoio Espírita" },
+      { name: "description", content: "Conheça os valores e a missão do Apoio Espírita. Plataforma independente, sem vínculo com a FEB ou qualquer federação espírita. Transparência total." },
+      { property: "og:title", content: "Transparência & Propósito — Apoio Espírita" },
+      { property: "og:description", content: "Plataforma independente, sem vínculo com a FEB ou qualquer federação. Propósito: acolhimento, estudo e serviço." },
+      { property: "og:url", content: "https://apoioespirita.com.br/transparencia" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://apoioespirita.com.br/transparencia" },
+    ],
+  }),
   component: Transparencia,
 });
 

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /transparencia
+Allow: /sugestoes
+
+Disallow: /inicio
+Disallow: /painel
+Disallow: /perfil
+Disallow: /completar-perfil
+Disallow: /mensagem-do-dia
+Disallow: /tesouraria
+Disallow: /login
+
+Sitemap: https://apoioespirita.com.br/sitemap.xml
