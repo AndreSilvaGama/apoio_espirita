@@ -27,10 +27,10 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Painel de acompanhamento do projeto (você está aqui)" },
   { status: "feito", titulo: "Exclusão de conta pelo próprio usuário" },
   { status: "feito", titulo: "Deploy na Cloudflare Workers — apoioespirita.com.br" },
-
-  // EM ANDAMENTO
-  { status: "andamento", titulo: "Configuração do Google OAuth no Supabase" },
-  { status: "andamento", titulo: "Cadastro de casas espíritas no banco de dados", descricao: "Tabelas: casas_espirita · siglas_casas · profiles" },
+  { status: "feito", titulo: "Autenticação com Google (OAuth)" },
+  { status: "feito", titulo: "Cadastro de casas espíritas no banco de dados", descricao: "Tabelas: casas_espirita · siglas_casas · profiles" },
+  { status: "feito", titulo: "Página de perfil do usuário", descricao: "Edição de dados pessoais · Alteração de senha · Exclusão de conta" },
+  { status: "feito", titulo: "Notificações por e-mail via Brevo", descricao: "E-mail automático ao receber sugestão ou solicitação de desenvolvimento" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site" },
@@ -64,7 +64,6 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Sistema de sugestões com progresso, curtidas e comentários", descricao: "Acompanhamento por datas · Autor identificado · Motivação registrada" },
   { status: "planejado", titulo: "Grupos de comunicação interna por tipo de atividade", descricao: "Semelhante a grupos do WhatsApp — dentro da plataforma" },
   { status: "planejado", titulo: "Notificações internas e via WhatsApp para coordenadores e presidentes" },
-  { status: "planejado", titulo: "E-mails automáticos via Resend" },
   { status: "planejado", titulo: "PWA — acesso via celular como aplicativo" },
 
   // PLANEJADO — Tesouraria e financeiro

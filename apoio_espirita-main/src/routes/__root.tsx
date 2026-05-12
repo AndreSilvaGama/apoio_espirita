@@ -133,25 +133,29 @@ function NavBar() {
   const { user, signOut } = useAuth();
   if (!user) return null;
   return (
-    <nav className="fixed top-0 right-0 z-50 p-4 flex items-center gap-4">
-      <Link
-        to="/painel"
-        className="text-xs uppercase tracking-widest text-cyan-glow/70 hover:text-cyan-glow transition-colors"
-      >
-        Painel
-      </Link>
-      <Link
-        to="/perfil"
-        className="text-xs uppercase tracking-widest text-muted-foreground/60 hover:text-foreground transition-colors"
-      >
-        Meu Perfil
-      </Link>
-      <button
-        onClick={() => signOut()}
-        className="text-xs uppercase tracking-widest text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-      >
-        Sair
-      </button>
+    <nav className="fixed top-0 right-0 z-50 m-4">
+      <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-background/70 backdrop-blur-md px-4 py-2 shadow-lg">
+        <Link
+          to="/painel"
+          className="px-2 py-1 text-xs uppercase tracking-widest text-cyan-glow/80 hover:text-cyan-glow transition-colors"
+        >
+          Painel
+        </Link>
+        <span className="text-white/20 select-none">·</span>
+        <Link
+          to="/perfil"
+          className="px-2 py-1 text-xs uppercase tracking-widest text-muted-foreground/70 hover:text-foreground transition-colors"
+        >
+          Meu Perfil
+        </Link>
+        <span className="text-white/20 select-none">·</span>
+        <button
+          onClick={() => signOut()}
+          className="px-2 py-1 text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        >
+          Sair
+        </button>
+      </div>
     </nav>
   );
 }
