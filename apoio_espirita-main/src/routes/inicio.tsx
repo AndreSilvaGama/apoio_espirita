@@ -19,10 +19,10 @@ const DAILY_MESSAGES = [
 const BAZAR = [
   { icon: "📖", name: "O Livro dos Espíritos", category: "Livro", price: "R$ 35,00", desc: "Allan Kardec · Edição FEB" },
   { icon: "📗", name: "O Evangelho segundo o Espiritismo", category: "Livro", price: "R$ 30,00", desc: "Allan Kardec · Edição FEB" },
-  { icon: "💎", name: "Cristal de Quartzo Rosa", category: "Mineral", price: "R$ 25,00", desc: "Pedra natural · aprox. 80g" },
-  { icon: "🕯️", name: "Vela de Mesa Branca", category: "Ritual", price: "R$ 15,00", desc: "Pacote com 12 unidades" },
-  { icon: "🌿", name: "Incenso Natural Lavanda", category: "Bem-estar", price: "R$ 12,00", desc: "Caixa com 20 varetas" },
-  { icon: "📿", name: "Terço Espírita Artesanal", category: "Artesanato", price: "R$ 20,00", desc: "Feito à mão · madeira natural" },
+  { icon: "👖", name: "Calça", category: "Vestuário", price: "R$ 45,00", desc: "Tamanho M · boa conservação" },
+  { icon: "👕", name: "Camisa", category: "Vestuário", price: "R$ 20,00", desc: "Tamanho G · algodão" },
+  { icon: "🧥", name: "Blusa", category: "Vestuário", price: "R$ 25,00", desc: "Tamanho P · malha" },
+  { icon: "👟", name: "Sapato", category: "Calçado", price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
 ];
 
 type Status = "disponivel" | "breve" | "beta";
