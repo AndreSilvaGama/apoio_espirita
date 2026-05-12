@@ -4,10 +4,13 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { RadioProvider, useRadio } from "@/contexts/RadioContext";
+import { Radio, Play, Pause, Volume2, VolumeX, X } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -160,10 +163,88 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NavBar />
-        <Outlet />
+        <RadioProvider>
+          <NavBar />
+          <Outlet />
+          <MiniPlayer />
+        </RadioProvider>
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function MiniPlayer() {
+  const { user } = useAuth();
+  const { active, playing, buffering, volume, muted, togglePlay, setVolume, toggleMute, dismiss } = useRadio();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  if (!user || !active || pathname === "/radio") return null;
+
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[min(420px,calc(100vw-2rem))]">
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-background/80 backdrop-blur-md px-4 py-3 shadow-xl">
+
+        {/* Ícone + info */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className={`shrink-0 w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center`}>
+            <Radio size={15} strokeWidth={1.5} className={playing ? "text-emerald-600" : "text-muted-foreground/40"} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground truncate leading-tight">Rádio Rio de Janeiro</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              {(playing || buffering) ? (
+                <>
+                  {buffering ? (
+                    <span className="text-[10px] text-muted-foreground/50 animate-pulse">Conectando...</span>
+                  ) : (
+                    <>
+                      <span className="flex gap-0.5 items-end h-3">
+                        {[1, 2, 3].map((i) => (
+                          <span key={i} className="w-0.5 rounded-full bg-emerald-500 animate-bounce"
+                            style={{ height: `${5 + i * 2}px`, animationDelay: `${i * 0.12}s` }} />
+                        ))}
+                      </span>
+                      <span className="text-[10px] text-emerald-600 uppercase tracking-widest">Ao vivo</span>
+                    </>
+                  )}
+                </>
+              ) : (
+                <span className="text-[10px] text-muted-foreground/40 uppercase tracking-widest">Pausado</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Play/Pause */}
+        <button
+          onClick={togglePlay}
+          disabled={buffering}
+          className={`shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
+            playing
+              ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600"
+              : "border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+          } disabled:opacity-40`}
+        >
+          {playing ? <Pause size={14} strokeWidth={2} /> : <Play size={14} strokeWidth={2} className="ml-0.5" />}
+        </button>
+
+        {/* Volume */}
+        <button onClick={toggleMute} className="shrink-0 text-muted-foreground/40 hover:text-foreground transition-colors">
+          {muted || volume === 0 ? <VolumeX size={15} strokeWidth={1.5} /> : <Volume2 size={15} strokeWidth={1.5} />}
+        </button>
+        <input
+          type="range" min={0} max={1} step={0.01}
+          value={muted ? 0 : volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          className="w-16 accent-emerald-500 h-1 rounded-full cursor-pointer shrink-0"
+        />
+
+        {/* Fechar */}
+        <button onClick={dismiss} className="shrink-0 text-muted-foreground/30 hover:text-muted-foreground transition-colors ml-1">
+          <X size={14} strokeWidth={2} />
+        </button>
+      </div>
+    </div>
   );
 }
 
