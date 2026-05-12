@@ -152,11 +152,10 @@ function CompletarPerfil() {
                 value={uf}
                 onChange={(e) => { setUf(e.target.value); setError(""); }}
                 className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
-                style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
               >
-                <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>UF</option>
+                <option value="">UF</option>
                 {UFS.map((u) => (
-                  <option key={u} value={u} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{u}</option>
+                  <option key={u} value={u}>{u}</option>
                 ))}
               </select>
             </div>
@@ -248,11 +247,10 @@ function CompletarPerfil() {
               value={cargo}
               onChange={(e) => { setCargo(e.target.value); setError(""); }}
               className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
-              style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
             >
-              <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>Selecione sua função…</option>
+              <option value="">Selecione sua função…</option>
               {CARGOS.map((c) => (
-                <option key={c} value={c} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{c}</option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>

@@ -191,10 +191,9 @@ function Perfil() {
                 value={uf}
                 onChange={(e) => { setUf(e.target.value); setPerfilError(""); setPerfilOk(false); }}
                 className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
-                style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
               >
-                <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>UF</option>
-                {UFS.map((u) => <option key={u} value={u} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{u}</option>)}
+                <option value="">UF</option>
+                {UFS.map((u) => <option key={u} value={u}>{u}</option>)}
               </select>
             </div>
             <div>
@@ -231,11 +230,10 @@ function Perfil() {
               value={cargo}
               onChange={(e) => { setCargo(e.target.value); setPerfilError(""); setPerfilOk(false); }}
               className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
-              style={{ backgroundColor: "oklch(0.18 0.05 270)", color: "oklch(0.95 0.01 270)" }}
             >
-              <option value="" style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>Selecione…</option>
+              <option value="">Selecione…</option>
               {CARGOS.map((c) => (
-                <option key={c} value={c} style={{ backgroundColor: "oklch(0.18 0.05 270)" }}>{c}</option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
