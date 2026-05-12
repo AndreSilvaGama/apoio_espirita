@@ -1,5 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
 import { AmbientAudio } from "@/components/AmbientAudio";
@@ -49,14 +48,6 @@ const points = [
 
 function Index() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) navigate({ to: "/inicio", replace: true });
-  }, [user]);
-
-  if (user) return null;
-
   return (
     <main className="relative min-h-screen overflow-x-hidden">
       <AmbientAudio src="/audio/ambient-piano.mp3" />
