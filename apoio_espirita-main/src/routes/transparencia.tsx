@@ -49,7 +49,7 @@ O site é um instrumento. Quem o conduz com amor e responsabilidade são os trab
 
 function Transparencia() {
   return (
-    <main className="min-h-screen bg-background px-6 py-20">
+    <main className="page-light min-h-screen px-6 py-20">
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="text-center mb-20">

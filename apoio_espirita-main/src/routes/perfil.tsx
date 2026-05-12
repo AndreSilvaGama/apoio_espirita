@@ -158,7 +158,7 @@ function Perfil() {
   if (loading || !user) return null;
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="page-light min-h-screen px-6 py-16">
       <div className="mx-auto max-w-lg">
         <div className="mb-10">
           <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Configurações</p>

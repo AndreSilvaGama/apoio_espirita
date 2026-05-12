@@ -146,7 +146,7 @@ function Painel() {
   const pct = Math.round((done / total) * 100);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16">
+    <main className="page-light min-h-screen px-6 py-16">
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="flex items-start justify-between mb-12 flex-wrap gap-4">

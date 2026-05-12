@@ -44,9 +44,9 @@ function SuggestionsPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-6 py-24">
+    <main className="page-light relative min-h-screen overflow-hidden px-6 py-24">
       <Particles count={20} />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.75_0.18_295/0.12),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.88_0.03_290/0.5),transparent_70%)]" />
 
       <div className="relative z-10 mx-auto max-w-2xl">
         <Link

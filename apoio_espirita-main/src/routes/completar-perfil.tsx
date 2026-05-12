@@ -115,8 +115,8 @@ function CompletarPerfil() {
   if (loading) return null;
 
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center px-6 py-16">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.15_0.06_270/0.5)_0%,transparent_70%)]" />
+    <main className="page-light min-h-screen flex items-center justify-center px-6 py-16">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.88_0.03_290/0.5)_0%,transparent_70%)]" />
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-10">

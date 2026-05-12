@@ -147,8 +147,8 @@
 }
 
 @theme inline {
-  --font-display: "Rajdhani", "Montserrat", system-ui, sans-serif;
-  --font-sans: "Montserrat", system-ui, sans-serif;
+  --font-display: "Lora", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   --color-violet-glow: var(--violet-glow);
   --color-cyan-glow: var(--cyan-glow);
 }
@@ -183,6 +183,50 @@
 
 .text-gradient-aurora {
   background: var(--gradient-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Páginas internas com fundo claro */
+.page-light {
+  --background: oklch(0.97 0.008 290);
+  --foreground: oklch(0.20 0.04 270);
+  --muted-foreground: oklch(0.42 0.04 280);
+  --border: oklch(0.28 0.04 280 / 0.22);
+  --glass-bg: oklch(1 0 0 / 0.80);
+  --glass-border: oklch(0.28 0.04 280 / 0.12);
+  --cyan-glow: oklch(0.42 0.14 230);
+  --violet-glow: oklch(0.48 0.18 295);
+  background: linear-gradient(160deg, oklch(0.985 0.006 285) 0%, oklch(0.965 0.014 295) 100%);
+  color: var(--foreground);
+}
+.page-light .glass {
+  box-shadow: 0 2px 24px oklch(0.28 0.04 280 / 0.07);
+}
+.page-light input[type="text"],
+.page-light input[type="email"],
+.page-light input[type="password"],
+.page-light textarea {
+  background-color: white !important;
+  border-color: oklch(0.28 0.04 280 / 0.22) !important;
+  color: oklch(0.20 0.04 270) !important;
+}
+.page-light input::placeholder,
+.page-light textarea::placeholder {
+  color: oklch(0.55 0.03 280 / 0.7) !important;
+}
+.page-light select {
+  background-color: white !important;
+  border-color: oklch(0.28 0.04 280 / 0.22) !important;
+  color: oklch(0.20 0.04 270) !important;
+}
+.page-light select option {
+  background-color: white;
+  color: oklch(0.20 0.04 270);
+}
+.page-light .text-gradient-aurora {
+  background: linear-gradient(135deg, oklch(0.48 0.18 295), oklch(0.42 0.14 230));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
