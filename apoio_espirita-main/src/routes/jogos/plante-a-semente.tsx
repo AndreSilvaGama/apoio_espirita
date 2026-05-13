@@ -112,7 +112,6 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
             stroke={completo ? "#2E7D32" : "#43A047"}
             strokeWidth={3 + stage * 0.35}
             strokeLinecap="round"
-            filter={completo ? "url(#ps-glow)" : undefined}
           />
 
           {/* 1° par de folhas (aparece no stage 2) */}
