@@ -48,8 +48,10 @@ cd D:\WEB\APOIO_ESPIRITA\apoio_espirita-main
 | Auth context / perfil do usuário | `src/contexts/AuthContext.tsx` |
 | Supabase client | `src/integrations/supabase/client.ts` |
 | Rotas | `src/routes/*.tsx` |
+| Rotas de jogos | `src/routes/jogos/*.tsx` |
 | Root (meta tags, JSON-LD, layout) | `src/routes/__root.tsx` |
 | Config Cloudflare | `wrangler.jsonc` (raiz) e `dist/server/wrangler.json` (deploy) |
+| Banco de palavras — Plante a Semente | `src/data/palavras-semente.ts` |
 
 ---
 
@@ -83,12 +85,13 @@ Regras de permissão:
 
 ### Página autenticada (tema claro)
 ```tsx
-<main className="page-light min-h-screen px-6 py-16">
+<main className="page-light min-h-screen px-4 pt-20 pb-20">
   <div className="mx-auto max-w-3xl">
     {/* conteúdo */}
   </div>
 </main>
 ```
+> `pt-20 pb-20` é obrigatório para respeitar o header fixo (h-14) e o footer fixo.
 
 ### Página pública (tema escuro)
 ```tsx
@@ -132,7 +135,7 @@ Regras de permissão:
 | Tabela | Uso |
 |---|---|
 | `profiles` | Dados do usuário — cargo, sigla_casa, atividades |
-| `siglas_casas` | Siglas registradas (5 letras maiúsculas) |
+| `siglas_casas` | Siglas registradas (2–6 letras maiúsculas) |
 | `casas_espirita` | Casas com localização (SELECT público, ativa=true) |
 | `mensagens_do_dia` | Fila de mensagens diárias (data_exibicao UNIQUE) |
 | `solicitacoes_dev` | Pedidos de desenvolvimento |
@@ -164,6 +167,8 @@ SELECT * FROM profiles_public;
 | Concluir feature sem atualizar `/painel` | Sempre atualizar o roadmap |
 | Emojis em componentes | Lucide React icons |
 | `git add .` ou `git add -A` | `git add <arquivos específicos>` |
+| `py-10` ou `py-16` em páginas autenticadas | `pt-20 pb-20` — respeita header e footer fixos |
+| SVG `filter` em elemento `<line>` | Aplicar filter apenas em `<rect>`, `<ellipse>`, `<circle>` ou `<path>` — `<line>` tem bounding box degenerado e some |
 
 ---
 
