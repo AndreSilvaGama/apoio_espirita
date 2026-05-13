@@ -102,7 +102,10 @@ const roadmap: Item[] = [
   // PLANEJADO — Educação
   { status: "planejado", titulo: "Recursos para evangelização infantil — módulo escolar", descricao: "Planos de aula, histórias e atividades para professores da evangelização · Material organizado por faixa etária" },
   { status: "feito", titulo: "Plante a Semente — jogo educativo sobre a codificação espírita", descricao: "Jogo no estilo forca onde uma planta cresce à medida que o jogador descobre o termo. Ao completar, revela o significado e a referência exata no livro da codificação." },
-  { status: "planejado", titulo: "Jogos educativos adicionais sobre os livros da codificação espírita", descricao: "Quiz, palavras cruzadas e outras atividades interativas baseadas no Livro dos Espíritos, Evangelho e demais livros" },
+  { status: "planejado", titulo: "Quiz de codificação — perguntas sobre os livros de Kardec", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e demais livros · Placar por rodada · Três níveis de dificuldade: fácil, médio e difícil" },
+  { status: "planejado", titulo: "Jogo da memória — conceitos e respostas da doutrina", descricao: "Pares de cartas com termos e seus significados extraídos da codificação espírita · Tabuleiro embaralhado a cada rodada" },
+  { status: "planejado", titulo: "Palavras cruzadas — termos espíritas", descricao: "Grade de palavras cruzadas com termos e definições da codificação · Gerada dinamicamente com banco de termos dos 5 livros" },
+  { status: "planejado", titulo: "Quiz de versículos — identifique o livro e o capítulo", descricao: "Trecho exibido na tela e o jogador deve identificar de qual livro e capítulo da codificação ele foi extraído" },
   { status: "planejado", titulo: "Jogos educativos para a infância", descricao: "Atividades lúdicas adaptadas para crianças da evangelização — memória, palavras cruzadas e histórias animadas" },
 ];
 
