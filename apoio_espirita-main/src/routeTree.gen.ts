@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransparenciaRouteImport } from './routes/transparencia'
 import { Route as TesourariaRouteImport } from './routes/tesouraria'
 import { Route as SugestoesRouteImport } from './routes/sugestoes'
+import { Route as RadioRouteImport } from './routes/radio'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
@@ -19,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
@@ -33,6 +35,11 @@ const TesourariaRoute = TesourariaRouteImport.update({
 const SugestoesRoute = SugestoesRouteImport.update({
   id: '/sugestoes',
   path: '/sugestoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadioRoute = RadioRouteImport.update({
+  id: '/radio',
+  path: '/radio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -70,6 +77,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JogosPlanteASementeRoute = JogosPlanteASementeRouteImport.update({
+  id: '/jogos/plante-a-semente',
+  path: '/jogos/plante-a-semente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,9 +91,11 @@ export interface FileRoutesByFullPath {
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,9 +105,11 @@ export interface FileRoutesByTo {
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,9 +120,11 @@ export interface FileRoutesById {
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,9 +136,11 @@ export interface FileRouteTypes {
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/jogos/plante-a-semente'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,9 +150,11 @@ export interface FileRouteTypes {
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/jogos/plante-a-semente'
   id:
     | '__root__'
     | '/'
@@ -142,9 +164,11 @@ export interface FileRouteTypes {
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/jogos/plante-a-semente'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -155,9 +179,11 @@ export interface RootRouteChildren {
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
+  RadioRoute: typeof RadioRoute
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
+  JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/sugestoes'
       fullPath: '/sugestoes'
       preLoaderRoute: typeof SugestoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radio': {
+      id: '/radio'
+      path: '/radio'
+      fullPath: '/radio'
+      preLoaderRoute: typeof RadioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -232,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jogos/plante-a-semente': {
+      id: '/jogos/plante-a-semente'
+      path: '/jogos/plante-a-semente'
+      fullPath: '/jogos/plante-a-semente'
+      preLoaderRoute: typeof JogosPlanteASementeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -243,9 +283,11 @@ const rootRouteChildren: RootRouteChildren = {
   MensagemDoDiaRoute: MensagemDoDiaRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
+  RadioRoute: RadioRoute,
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
+  JogosPlanteASementeRoute: JogosPlanteASementeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
