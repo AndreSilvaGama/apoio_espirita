@@ -37,6 +37,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Mensagem do Dia enviada pela comunidade com fila de exibição", descricao: "Membros enviam mensagens com referência · Algoritmo evita repetir a mesma casa em dias consecutivos · Somente uma mensagem por dia" },
   { status: "feito", titulo: "Ícones profissionais Lucide em todas as páginas", descricao: "Substituição de emojis por ícones vetoriais com traço consistente" },
   { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes", descricao: "Item no menu de navegação acessível apenas por presidentes e vice-presidentes · Módulo financeiro a ser implementado" },
+  { status: "feito", titulo: "Rádio Rio de Janeiro integrada", descricao: "Player de rádio integrado · Para automaticamente a música de piano ao ser ativada" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
@@ -59,7 +60,6 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Área de perguntas e respostas para aprofundamento do conhecimento", descricao: "Usuários podem criar e responder perguntas" },
   { status: "planejado", titulo: "Cifras e partituras de músicas espíritas", descricao: "Usuários logados enviam composições · Qualquer visitante pode ouvir e curtir" },
   { status: "planejado", titulo: "Playlists espíritas — Recepção e Hora do Passe", descricao: "Playlists curadas pela comunidade · Reprodução direto pelo navegador · Categorizadas por momento da reunião" },
-  { status: "planejado", titulo: "Rádio Rio de Janeiro integrada", descricao: "Para automaticamente a música de piano ao ser ativada" },
   { status: "planejado", titulo: "Área de palestras com suporte a arquivos PowerPoint", descricao: "Recurso de apresentação com player integrado" },
 
   // PLANEJADO — Vida espiritual e comunidade
