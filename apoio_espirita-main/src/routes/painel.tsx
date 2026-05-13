@@ -38,6 +38,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Ícones profissionais Lucide em todas as páginas", descricao: "Substituição de emojis por ícones vetoriais com traço consistente" },
   { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes", descricao: "Item no menu de navegação acessível apenas por presidentes e vice-presidentes · Módulo financeiro a ser implementado" },
   { status: "feito", titulo: "Rádio Rio de Janeiro integrada", descricao: "Player de rádio integrado · Para automaticamente a música de piano ao ser ativada" },
+  { status: "feito", titulo: "SEO completo", descricao: "Meta tags completas · og:image · twitter:card · JSON-LD WebSite + Organization · robots.txt · sitemap.xml · lang='pt-BR' · canonical URL" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
