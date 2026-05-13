@@ -99,10 +99,7 @@ function Index() {
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-muted-foreground text-xs uppercase tracking-[0.3em] animate-fade-in-up" style={{ animationDelay: "1.4s" }}>
-          ↓ Descer
-        </div>
+
       </section>
 
       {/* FOUR POINTS */}
