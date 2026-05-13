@@ -21,7 +21,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Música ambiente (piano) com botão de controle", descricao: "Toca automaticamente em volume suave · Botão discreto para pausar e retomar · Não interrompe a navegação" },
   { status: "feito", titulo: "Favicon — cepa de videira (ramo de uva)", descricao: "Ícone personalizado exibido na aba do navegador e ao salvar na tela inicial do celular" },
   { status: "feito", titulo: "Assistente 'Preciso de Ajuda'", descricao: "Apoio emocional (CVV) · Busca de alimentação por CEP · Busca de casa espírita por CEP ou cidade/bairro" },
-  { status: "feito", titulo: "Página Transparência & Propósito", descricao: "Declaração de independência — sem vínculo com a FEB ou qualquer associação oficial" },
+  { status: "feito", titulo: "Página Transparência & Propósito — aviso de independência institucional", descricao: "Declaração de independência — sem vínculo com a FEB, UFE ou qualquer associação · Plataforma livre como uma rede social" },
   { status: "feito", titulo: "Página de Sugestões integrada ao banco de dados", descricao: "Formulário público para envio de sugestões · Notificação automática por e-mail ao receber nova mensagem" },
   { status: "feito", titulo: "Autenticação completa", descricao: "Login com Google · E-mail e senha · Seleção e cadastro de sigla da casa espírita" },
   { status: "feito", titulo: "Painel de acompanhamento do projeto (você está aqui)", descricao: "Lista todos os itens planejados, em andamento e concluídos · Barra de progresso · Formulário de solicitação de novos desenvolvimentos" },
@@ -43,7 +43,6 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
   { status: "planejado", titulo: "Filtro fraternal — verificação de tom em todos os textos", descricao: "Linguagem sempre amorosa e fraterna; alerta automático em caso de desvio" },
   { status: "planejado", titulo: "Acessibilidade — usabilidade para idosos e pessoas com dificuldades tecnológicas", descricao: "Contraste adequado · Fontes legíveis · Navegação por teclado · Tamanhos de toque acessíveis no celular" },
-  { status: "planejado", titulo: "Aviso de independência institucional na página principal", descricao: "Sem vínculo com a FEB, UFE ou qualquer associação — plataforma livre como uma rede social" },
   { status: "planejado", titulo: "FAQ — Perguntas e respostas detalhadas sobre o uso do site", descricao: "Dúvidas sobre cadastro, uso da plataforma e princípios espíritas · Organizado por categoria" },
   { status: "planejado", titulo: "Menu de navegação completo + campo de busca global", descricao: "Menu responsivo com todas as seções · Campo de busca para localizar conteúdo, membros e casas" },
 
