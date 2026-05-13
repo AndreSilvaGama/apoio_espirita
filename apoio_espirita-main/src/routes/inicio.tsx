@@ -80,7 +80,7 @@ const FEATURES: FeatureCategory[] = [
       { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
       { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
       { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
-      { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "breve" },
+      { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "disponivel", href: "/jogos/plante-a-semente" },
       { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve", casa: true },
       { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve", casa: true },
     ],
