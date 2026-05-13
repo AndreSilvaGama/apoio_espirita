@@ -254,7 +254,7 @@ function PlanteSemente() {
   if (loading || !user) return null;
 
   return (
-    <main className="page-light min-h-screen px-4 py-10">
+    <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-3xl space-y-6">
 
         {/* Header */}
