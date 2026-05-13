@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
   MessageCircle, Users, HeartHandshake, ShoppingBag, Car, Truck,
-  CalendarDays, Cast, Video, Film, Radio, MonitorPlay, CircleHelp,
+  CalendarDays, Cast, Video, Film, MonitorPlay, CircleHelp,
   BarChart3, ClipboardList, Wallet,
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
@@ -130,8 +130,7 @@ const FEATURES: FeatureCategory[] = [
     border: "border-emerald-200",
     borderB: "border-emerald-200",
     items: [
-      { Icon: Radio,      title: "Rádio Rio de Janeiro",   desc: "Ouça ao vivo a Rádio Rio de Janeiro diretamente pela plataforma.", status: "disponivel", href: "/radio" },
-      { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
+{ Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
       { Icon: CircleHelp, title: "FAQ",                    desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "breve" },
     ],
   },
