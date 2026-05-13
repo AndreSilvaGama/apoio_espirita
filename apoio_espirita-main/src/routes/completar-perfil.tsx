@@ -14,13 +14,34 @@ const UFS = [
 ];
 
 const CARGOS = [
+  // Nível 1
   "Presidente",
+  // Nível 2
   "Vice-presidente",
-  "Dirigente",
+  // Nível 3
+  "Coordenador",
   "Diretoria",
-  "Coordenadoria",
-  "Tarefeiro",
+  "Dirigente",
+  "Dirigente de reunião mediúnica",
+  // Nível 4
+  "Tesoureiro",
+  // Nível 5
+  "Assistido",
+  "Associado",
+  "Atendente fraterno",
+  "Colaborador",
+  "Estudante",
+  "Evangelizador",
+  "Expositor",
+  "Facilitador",
   "Frequentador",
+  "Médium",
+  "Palestrante",
+  "Participante de estudo",
+  "Passista",
+  "Sócio",
+  "Tarefeiro",
+  "Trabalhador",
   "Visitante",
 ];
 

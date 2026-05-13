@@ -14,8 +14,30 @@ const UFS = [
 ];
 
 const CARGOS_BASE = [
-  "Presidente","Vice-presidente","Dirigente","Diretoria",
-  "Coordenadoria","Tarefeiro","Frequentador","Visitante",
+  "Presidente",
+  "Vice-presidente",
+  "Coordenador",
+  "Diretoria",
+  "Dirigente",
+  "Dirigente de reunião mediúnica",
+  "Tesoureiro",
+  "Assistido",
+  "Associado",
+  "Atendente fraterno",
+  "Colaborador",
+  "Estudante",
+  "Evangelizador",
+  "Expositor",
+  "Facilitador",
+  "Frequentador",
+  "Médium",
+  "Palestrante",
+  "Participante de estudo",
+  "Passista",
+  "Sócio",
+  "Tarefeiro",
+  "Trabalhador",
+  "Visitante",
 ];
 
 const ATIVIDADES = [
