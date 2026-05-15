@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Search, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,6 +41,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Tesouraria — menu visível apenas para presidentes e vice-presidentes", descricao: "Item no menu de navegação acessível apenas por presidentes e vice-presidentes · Módulo financeiro a ser implementado" },
   { status: "feito", titulo: "Rádio Rio de Janeiro integrada", descricao: "Player de rádio integrado · Para automaticamente a música de piano ao ser ativada" },
   { status: "feito", titulo: "SEO completo", descricao: "Meta tags completas · og:image · twitter:card · JSON-LD WebSite + Organization · robots.txt · sitemap.xml · lang='pt-BR' · canonical URL" },
+  { status: "feito", titulo: "Busca por palavra no acompanhamento do projeto", descricao: "Campo de busca filtra itens do roadmap em tempo real por título e descrição · Grupos vazios ocultados automaticamente · Contador de resultados" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
@@ -127,6 +129,7 @@ const totals = (status: Status) => roadmap.filter((i) => i.status === status).le
 function Painel() {
   const navigate = useNavigate();
   const { user, profile, loading, signOut } = useAuth();
+  const [busca, setBusca] = useState("");
   const [solTitulo, setSolTitulo] = useState("");
   const [solDesc, setSolDesc] = useState("");
   const [sendingSol, setSendingSol] = useState(false);
@@ -168,8 +171,17 @@ function Painel() {
   const total = roadmap.length;
   const pct = Math.round((done / total) * 100);
 
+  const termo = busca.trim().toLowerCase();
+  const filtered = termo
+    ? roadmap.filter(
+        (i) =>
+          i.titulo.toLowerCase().includes(termo) ||
+          (i.descricao ?? "").toLowerCase().includes(termo)
+      )
+    : roadmap;
+
   return (
-    <main className="page-light min-h-screen px-6 py-16">
+    <main className="page-light min-h-screen px-6 pt-20 pb-20">
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="flex items-start justify-between mb-12 flex-wrap gap-4">
@@ -216,33 +228,66 @@ function Painel() {
           </div>
         </div>
 
+        {/* Busca */}
+        <div className="relative mb-8">
+          <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar por palavra…"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-10 py-3 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+          />
+          {busca && (
+            <button
+              onClick={() => setBusca("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+
+        {/* Contador de resultados */}
+        {termo && (
+          <p className="text-xs text-muted-foreground/50 mb-6 -mt-4">
+            {filtered.length === 0
+              ? "Nenhum item encontrado."
+              : `${filtered.length} item${filtered.length > 1 ? "s" : ""} encontrado${filtered.length > 1 ? "s" : ""}.`}
+          </p>
+        )}
+
         {/* Items by group */}
-        {(["feito", "andamento", "planejado"] as Status[]).map((status) => (
-          <div key={status} className="mb-8">
-            <h2 className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3 flex items-center gap-2">
-              <span className={`text-base ${badge[status].color.split(" ")[0]}`}>{icon[status]}</span>
-              {badge[status].label}
-            </h2>
-            <div className="space-y-2">
-              {roadmap.filter((i) => i.status === status).map((item) => (
-                <div
-                  key={item.titulo}
-                  className="glass rounded-2xl px-5 py-4 flex items-start gap-4"
-                >
-                  <span className={`text-sm mt-0.5 shrink-0 ${badge[status].color.split(" ")[0]}`}>
-                    {icon[status]}
-                  </span>
-                  <div>
-                    <p className="text-sm text-foreground font-light">{item.titulo}</p>
-                    {item.descricao && (
-                      <p className="text-xs text-muted-foreground/60 mt-0.5">{item.descricao}</p>
-                    )}
+        {(["feito", "andamento", "planejado"] as Status[]).map((status) => {
+          const items = filtered.filter((i) => i.status === status);
+          if (items.length === 0) return null;
+          return (
+            <div key={status} className="mb-8">
+              <h2 className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3 flex items-center gap-2">
+                <span className={`text-base ${badge[status].color.split(" ")[0]}`}>{icon[status]}</span>
+                {badge[status].label}
+              </h2>
+              <div className="space-y-2">
+                {items.map((item) => (
+                  <div
+                    key={item.titulo}
+                    className="glass rounded-2xl px-5 py-4 flex items-start gap-4"
+                  >
+                    <span className={`text-sm mt-0.5 shrink-0 ${badge[status].color.split(" ")[0]}`}>
+                      {icon[status]}
+                    </span>
+                    <div>
+                      <p className="text-sm text-foreground font-light">{item.titulo}</p>
+                      {item.descricao && (
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">{item.descricao}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div className="mt-12 text-center space-y-3">
           <Link to="/" className="text-xs text-cyan-glow/60 hover:text-cyan-glow transition-colors">
