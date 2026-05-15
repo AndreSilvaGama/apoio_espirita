@@ -14,6 +14,8 @@ interface Item {
   status: Status;
   titulo: string;
   descricao?: string;
+  solicitante?: string;
+  sigla_casa?: string;
 }
 
 const roadmap: Item[] = [
@@ -43,6 +45,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "SEO completo", descricao: "Meta tags completas · og:image · twitter:card · JSON-LD WebSite + Organization · robots.txt · sitemap.xml · lang='pt-BR' · canonical URL" },
   { status: "feito", titulo: "Busca por palavra no acompanhamento do projeto", descricao: "Campo de busca filtra itens do roadmap em tempo real por título e descrição · Grupos vazios ocultados automaticamente · Contador de resultados" },
   { status: "feito", titulo: "Botão de retornar ao topo em todas as páginas", descricao: "Aparece ao rolar mais de 300 px · Posicionado no canto inferior direito acima do rodapé · Rola suavemente até o início da página · Presente em todas as rotas públicas e autenticadas" },
+  { status: "feito", titulo: "Solicitações de desenvolvimento aparecem no acompanhamento do projeto", descricao: "Ao enviar uma solicitação ela é inserida automaticamente como Pendente no roadmap · Exibe nome e sigla da casa do solicitante · Lista atualiza em tempo real após o envio" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
@@ -125,17 +128,37 @@ const icon: Record<Status, string> = {
   planejado: "○",
 };
 
-const totals = (status: Status) => roadmap.filter((i) => i.status === status).length;
-
 function Painel() {
   const navigate = useNavigate();
   const { user, profile, loading, signOut } = useAuth();
   const [busca, setBusca] = useState("");
+  const [solicitacoes, setSolicitacoes] = useState<Item[]>([]);
   const [solTitulo, setSolTitulo] = useState("");
   const [solDesc, setSolDesc] = useState("");
   const [sendingSol, setSendingSol] = useState(false);
   const [solOk, setSolOk] = useState(false);
   const [solError, setSolError] = useState("");
+
+  const fetchSolicitacoes = async () => {
+    const { data } = await supabase
+      .from("solicitacoes_dev")
+      .select("titulo, descricao, profiles!user_id(nome, sigla_casa)")
+      .order("created_at", { ascending: false });
+    if (data) {
+      setSolicitacoes(
+        data.map((s) => {
+          const p = s.profiles as { nome?: string; sigla_casa?: string } | null;
+          return {
+            status: "planejado" as Status,
+            titulo: s.titulo,
+            descricao: s.descricao ?? undefined,
+            solicitante: p?.nome ?? "Membro",
+            sigla_casa: p?.sigla_casa ?? "",
+          };
+        })
+      );
+    }
+  };
 
   const handleSolicitacao = async () => {
     if (!solTitulo.trim()) { setSolError("Informe o título da solicitação."); return; }
@@ -154,6 +177,7 @@ function Painel() {
       setSolTitulo("");
       setSolDesc("");
       setSolOk(true);
+      fetchSolicitacoes();
     } catch (e: unknown) {
       setSolError(e instanceof Error ? e.message : "Erro ao enviar solicitação.");
     } finally {
@@ -166,20 +190,28 @@ function Painel() {
     if (!loading && user && (!profile?.sigla_casa || !profile?.nome)) navigate({ to: "/completar-perfil" });
   }, [user, profile, loading, navigate]);
 
+  useEffect(() => {
+    if (user) fetchSolicitacoes();
+  }, [user]);
+
   if (loading || !user) return null;
 
+  const allItems = [...roadmap, ...solicitacoes];
+  const totals = (status: Status) => allItems.filter((i) => i.status === status).length;
   const done = totals("feito");
-  const total = roadmap.length;
+  const total = allItems.length;
   const pct = Math.round((done / total) * 100);
 
   const termo = busca.trim().toLowerCase();
   const filtered = termo
-    ? roadmap.filter(
+    ? allItems.filter(
         (i) =>
           i.titulo.toLowerCase().includes(termo) ||
-          (i.descricao ?? "").toLowerCase().includes(termo)
+          (i.descricao ?? "").toLowerCase().includes(termo) ||
+          (i.solicitante ?? "").toLowerCase().includes(termo) ||
+          (i.sigla_casa ?? "").toLowerCase().includes(termo)
       )
-    : roadmap;
+    : allItems;
 
   return (
     <main className="page-light min-h-screen px-6 pt-20 pb-20">
@@ -281,6 +313,11 @@ function Painel() {
                       <p className="text-sm text-foreground font-light">{item.titulo}</p>
                       {item.descricao && (
                         <p className="text-xs text-muted-foreground/60 mt-0.5">{item.descricao}</p>
+                      )}
+                      {item.solicitante && (
+                        <p className="text-xs text-cyan-glow/60 mt-1">
+                          Solicitado por {item.solicitante}{item.sigla_casa ? ` · ${item.sigla_casa}` : ""}
+                        </p>
                       )}
                     </div>
                   </div>
