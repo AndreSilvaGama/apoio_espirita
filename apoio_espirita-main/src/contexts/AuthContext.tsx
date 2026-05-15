@@ -22,6 +22,7 @@ interface AuthContextValue {
   loading: boolean;
   isDev: boolean;
   isPresident: boolean;
+  isTesoureiro: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   isDev: false,
   isPresident: false,
+  isTesoureiro: false,
   refreshProfile: async () => {},
   signOut: async () => {},
 });
@@ -87,9 +89,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isDev ||
     profile?.cargo_principal === "Presidente" ||
     profile?.cargo_principal === "Vice-presidente";
+  const isTesoureiro = isPresident || profile?.cargo_principal === "Tesoureiro";
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, isTesoureiro, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

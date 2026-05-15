@@ -269,7 +269,7 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, isPresident, signOut } = useAuth();
+  const { user, isPresident, isTesoureiro, signOut } = useAuth();
   const { location } = useRouterState();
   const [menuOpen, setMenuOpen] = useState(false);
   const [jogosOpen, setJogosOpen] = useState(false);
@@ -341,7 +341,7 @@ function NavBar() {
             )}
           </div>
 
-          {isPresident && (
+          {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
           <Link to="/painel" className={linkCls("/painel")}>Projeto</Link>
@@ -383,7 +383,7 @@ function NavBar() {
             <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Jogo: Plante a Semente
             </Link>
-            {isPresident && (
+            {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
                 Tesouraria
               </Link>
