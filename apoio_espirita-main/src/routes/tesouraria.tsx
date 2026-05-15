@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Wallet, Plus, TrendingUp, TrendingDown,
-  Trash2, ChevronLeft, ChevronRight, Calendar, Download,
+  Trash2, ChevronLeft, ChevronRight, Calendar, Download, Printer,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,58 +171,102 @@ function Tesouraria() {
     fetchTransacoes();
   };
 
-  const handleExportarXLS = () => {
-    const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    const strCell = (v: string) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;
-    const numCell = (v: number) => `<Cell><Data ss:Type="Number">${v}</Data></Cell>`;
+  const handleExportarXLS = async () => {
+    const XLSX = await import("xlsx");
+    const geradoEm = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    const rows: (string | number)[][] = [
+      [`Tesouraria — Casa Espírita ${profile?.sigla_casa}`],
+      [`Período: ${MESES[mes]} de ${ano}`],
+      [`Emitido por: ${profile?.nome ?? ""}`],
+      [`Gerado em: ${geradoEm}`],
+      [],
+      ["RESUMO DO MÊS"],
+      ["Total Receitas", receitas],
+      ["Total Despesas", despesas],
+      ["Saldo do Mês", saldo],
+      [],
+      ["LANÇAMENTOS"],
+      ["Data", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Responsável", "Observação"],
+      ...transacoes.map((tx) => [
+        fmtData(tx.data),
+        tx.tipo === "receita" ? "Receita" : "Despesa",
+        tx.categoria,
+        tx.descricao,
+        Number(tx.valor),
+        tx.criador_nome ?? "",
+        tx.observacao ?? "",
+      ]),
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tesouraria");
+    XLSX.writeFile(wb, `tesouraria_${profile?.sigla_casa}_${MESES[mes]}_${ano}.xlsx`);
+  };
 
-    const header = ["Data", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Observação"]
-      .map(strCell).join("");
+  const handleImprimir = () => {
+    const dataAtual = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+    const linhas = transacoes.map((tx) => `
+      <tr>
+        <td>${fmtData(tx.data)}</td>
+        <td class="${tx.tipo}">${tx.tipo === "receita" ? "Receita" : "Despesa"}</td>
+        <td>${tx.categoria}</td>
+        <td>${tx.descricao}</td>
+        <td class="${tx.tipo}" style="text-align:right;white-space:nowrap">
+          ${tx.tipo === "receita" ? "+" : "−"}${fmtBRL(Number(tx.valor))}
+        </td>
+        <td>${tx.criador_nome ?? "—"}</td>
+        <td>${tx.observacao ?? "—"}</td>
+      </tr>`).join("");
 
-    const rows = transacoes.map((tx) => {
-      const cells = [
-        strCell(fmtData(tx.data)),
-        strCell(tx.tipo === "receita" ? "Receita" : "Despesa"),
-        strCell(tx.categoria),
-        strCell(tx.descricao),
-        numCell(Number(tx.valor)),
-        strCell(tx.observacao ?? ""),
-      ].join("");
-      return `<Row>${cells}</Row>`;
-    }).join("");
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<title>Tesouraria ${profile?.sigla_casa} — ${MESES[mes]} ${ano}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;font-size:11px;color:#222;padding:24px}
+  h1{font-size:15px;font-weight:bold;margin-bottom:4px}
+  .sub{color:#666;font-size:10px;margin-bottom:18px}
+  .cards{display:flex;gap:12px;margin-bottom:20px}
+  .card{flex:1;border:1px solid #ddd;border-radius:5px;padding:8px 12px}
+  .card .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:3px}
+  .card .val{font-size:13px;font-weight:bold}
+  .receita{color:#059669}.despesa{color:#e11d48}
+  .saldo-p{color:#0e7490}.saldo-n{color:#e11d48}
+  h2{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:6px}
+  table{width:100%;border-collapse:collapse}
+  thead th{background:#f2f2f2;border:1px solid #ccc;padding:5px 7px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#555}
+  tbody td{border:1px solid #e5e5e5;padding:4px 7px;vertical-align:top}
+  tbody tr:nth-child(even){background:#fafafa}
+  .foot{margin-top:18px;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:8px;display:flex;justify-content:space-between}
+  @media print{@page{margin:1.5cm;size:landscape}body{padding:0}}
+</style></head><body>
+<h1>Tesouraria — Casa Espírita ${profile?.sigla_casa}</h1>
+<div class="sub">Período: ${MESES[mes]} de ${ano} &nbsp;·&nbsp; Emitido por: ${profile?.nome ?? ""} &nbsp;·&nbsp; ${dataAtual}</div>
+<div class="cards">
+  <div class="card"><div class="lbl">Saldo</div><div class="val ${saldo >= 0 ? "saldo-p" : "saldo-n"}">${fmtBRL(saldo)}</div></div>
+  <div class="card"><div class="lbl">Receitas</div><div class="val receita">${fmtBRL(receitas)}</div></div>
+  <div class="card"><div class="lbl">Despesas</div><div class="val despesa">${fmtBRL(despesas)}</div></div>
+</div>
+<h2>Lançamentos do período</h2>
+<table>
+  <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Responsável</th><th>Observação</th></tr></thead>
+  <tbody>${linhas}</tbody>
+</table>
+<div class="foot">
+  <span>${transacoes.length} transação${transacoes.length !== 1 ? "ões" : ""} no período</span>
+  <span>Apoio Espírita · apoioespirita.com.br</span>
+</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}</script>
+</body></html>`;
 
-    const totalReceitas = transacoes.filter(t => t.tipo === "receita").reduce((s, t) => s + Number(t.valor), 0);
-    const totalDespesas = transacoes.filter(t => t.tipo === "despesa").reduce((s, t) => s + Number(t.valor), 0);
-    const saldo = totalReceitas - totalDespesas;
-
-    const resumo = [
-      `<Row><Cell ss:MergeAcross="5"><Data ss:Type="String"></Data></Cell></Row>`,
-      `<Row>${strCell("Resumo")}${strCell("")}${strCell("")}${strCell("")}${strCell("")}${strCell("")}</Row>`,
-      `<Row>${strCell("Total Receitas")}${strCell("")}${strCell("")}${strCell("")}${numCell(totalReceitas)}${strCell("")}</Row>`,
-      `<Row>${strCell("Total Despesas")}${strCell("")}${strCell("")}${strCell("")}${numCell(totalDespesas)}${strCell("")}</Row>`,
-      `<Row>${strCell("Saldo")}${strCell("")}${strCell("")}${strCell("")}${numCell(saldo)}${strCell("")}</Row>`,
-    ].join("");
-
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Worksheet ss:Name="Tesouraria">
-  <Table>
-   <Row>${header}</Row>
-   ${rows}
-   ${resumo}
-  </Table>
- </Worksheet>
-</Workbook>`;
-
-    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `tesouraria_${profile?.sigla_casa}_${MESES[mes]}_${ano}.xls`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const w = window.open("", "_blank", "width=960,height=680");
+    if (w) { w.document.write(html); w.document.close(); }
   };
 
   return (
@@ -258,13 +302,22 @@ function Tesouraria() {
           </div>
           <div className="flex items-center gap-1">
             {transacoes.length > 0 && (
-              <button
-                onClick={handleExportarXLS}
-                title="Exportar para Excel"
-                className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
-              >
-                <Download size={16} />
-              </button>
+              <>
+                <button
+                  onClick={handleImprimir}
+                  title="Imprimir relatório"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <Printer size={16} />
+                </button>
+                <button
+                  onClick={handleExportarXLS}
+                  title="Exportar para Excel"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
+                >
+                  <Download size={16} />
+                </button>
+              </>
             )}
             <button
               onClick={() => navegarMes(1)}
@@ -416,6 +469,7 @@ function Tesouraria() {
                   <p className="text-sm font-medium text-gray-800 truncate">{tx.descricao}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {tx.categoria} · {fmtData(tx.data)}
+                    {tx.criador_nome ? ` · ${tx.criador_nome}` : ""}
                   </p>
                   {tx.observacao && (
                     <p className="text-xs text-gray-300 mt-0.5 truncate">{tx.observacao}</p>
