@@ -4,6 +4,7 @@ import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Particles } from "@/components/Particles";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/sugestoes")({
   head: () => ({
@@ -27,6 +28,7 @@ const schema = z.object({
 });
 
 function SuggestionsPage() {
+  const { user } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", suggestion: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ function SuggestionsPage() {
 
       <div className="relative z-10 mx-auto max-w-2xl">
         <Link
-          to="/"
+          to={user ? "/inicio" : "/"}
           className="text-xs uppercase tracking-[0.3em] text-cyan-glow hover:text-foreground transition-colors"
         >
           ← Voltar

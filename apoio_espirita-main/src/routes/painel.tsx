@@ -16,6 +16,7 @@ interface Item {
   descricao?: string;
   solicitante?: string;
   sigla_casa?: string;
+  tipo?: "solicitacao" | "sugestao";
 }
 
 const roadmap: Item[] = [
@@ -157,11 +158,35 @@ function Painel() {
   const { user, profile, loading, signOut } = useAuth();
   const [busca, setBusca] = useState("");
   const [solicitacoes, setSolicitacoes] = useState<Item[]>([]);
+  const [sugestoes, setSugestoes] = useState<Item[]>([]);
   const [solTitulo, setSolTitulo] = useState("");
   const [solDesc, setSolDesc] = useState("");
   const [sendingSol, setSendingSol] = useState(false);
   const [solOk, setSolOk] = useState(false);
   const [solError, setSolError] = useState("");
+
+  const fetchSugestoes = async () => {
+    const { data } = await supabase
+      .from("site_suggestions")
+      .select("name, email, suggestion")
+      .order("created_at", { ascending: false });
+    if (data) {
+      setSugestoes(
+        data.map((s) => {
+          const titulo = s.suggestion.length > 120
+            ? s.suggestion.slice(0, 120).trimEnd() + "…"
+            : s.suggestion;
+          return {
+            status: "planejado" as Status,
+            titulo,
+            solicitante: s.name,
+            sigla_casa: s.email,
+            tipo: "sugestao" as const,
+          };
+        })
+      );
+    }
+  };
 
   const fetchSolicitacoes = async () => {
     const { data } = await supabase
@@ -178,6 +203,7 @@ function Painel() {
             descricao: s.descricao ?? undefined,
             solicitante: p?.nome ?? "Membro",
             sigla_casa: p?.sigla_casa ?? "",
+            tipo: "solicitacao" as const,
           };
         })
       );
@@ -215,12 +241,12 @@ function Painel() {
   }, [user, profile, loading, navigate]);
 
   useEffect(() => {
-    if (user) fetchSolicitacoes();
+    if (user) { fetchSolicitacoes(); fetchSugestoes(); }
   }, [user]);
 
   if (loading || !user) return null;
 
-  const allItems = [...roadmap, ...solicitacoes];
+  const allItems = [...roadmap, ...solicitacoes, ...sugestoes];
   const totals = (status: Status) => allItems.filter((i) => i.status === status).length;
   const done = totals("feito");
   const total = allItems.length;
@@ -335,7 +361,8 @@ function Painel() {
                       )}
                       {item.solicitante && (
                         <p className="text-xs text-cyan-glow/60 mt-1">
-                          Solicitado por {item.solicitante}{item.sigla_casa ? ` · ${item.sigla_casa}` : ""}
+                          {item.tipo === "sugestao" ? "Sugestão" : "Solicitado"} por {item.solicitante}
+                          {item.sigla_casa ? ` · ${item.sigla_casa}` : ""}
                         </p>
                       )}
                     </div>
