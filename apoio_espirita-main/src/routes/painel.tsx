@@ -1,12 +1,34 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/painel")({
   component: Painel,
 });
+
+interface FaqItem {
+  pergunta: string;
+  resposta: string;
+}
+
+const FAQ: FaqItem[] = [
+  { pergunta: "O site é gratuito?", resposta: "Sim, completamente gratuito. Sem anúncios, sem planos pagos. O Apoio Espírita é mantido por trabalho voluntário e de caridade." },
+  { pergunta: "O site tem algum vínculo com a FEB ou federações?", resposta: "Não. O Apoio Espírita é uma plataforma independente, sem vínculo com a Federação Espírita Brasileira, UFE ou qualquer outra federação. Consulte a página de Transparência para mais detalhes." },
+  { pergunta: "Como me cadastro?", resposta: "Clique em 'Entrar' na página inicial e crie conta com e-mail e senha, ou entre com um clique usando sua conta do Google. Após o primeiro acesso, o sistema pedirá para completar seu perfil com nome, sigla da casa, cargo e atividades." },
+  { pergunta: "Como completo ou altero meu perfil?", resposta: "Acesse 'Perfil' no menu. Lá você pode alterar nome, sigla da casa, cidade, cargo, atividades e senha. Também é possível excluir a conta definitivamente por lá." },
+  { pergunta: "Como adiciono ou mudo meu cargo?", resposta: "No primeiro acesso o sistema já pede o cargo. Depois, acesse 'Perfil' para alterar. Se o Presidente da sua casa tiver definido seu cargo, apenas ele poderá alterá-lo novamente." },
+  { pergunta: "Como envio a Mensagem do Dia?", resposta: "Acesse 'Mensagem' no menu. Digite o texto, a referência espírita (opcional) e escolha uma data disponível na fila. A mensagem aparecerá para todos os membros na data escolhida." },
+  { pergunta: "Como funciona a Agenda?", resposta: "Presidentes e coordenadores criam eventos abertos (todos os membros) ou fechados (convidados). Membros confirmam ou recusam presença. A aba 'Presenças' mostra o histórico de frequência de cada membro por evento." },
+  { pergunta: "Como acesso a Tesouraria?", resposta: "A Tesouraria é restrita a Presidente e Tesoureiro. Se você tiver permissão, clique no card 'Tesouraria' na tela inicial ou acesse pelo menu. Quem não tem acesso verá uma mensagem informando a restrição." },
+  { pergunta: "Como funciona a Rádio Rio de Janeiro?", resposta: "O player da rádio fica no rodapé de todas as páginas. Clique no botão de play para ligar. A transmissão é ao vivo, 24 horas. Você também pode acessar a página dedicada pelo menu." },
+  { pergunta: "Como jogo o 'Plante a Semente'?", resposta: "Acesse 'Jogos' no menu. É um jogo estilo forca com termos da codificação espírita — a cada letra correta a planta cresce. Ao completar, o significado do termo é revelado com a referência exata no livro." },
+  { pergunta: "Como reporto um problema no site?", resposta: "Clique em 'Reportar problema' no rodapé de qualquer página. Descreva o que está acontecendo e envie por e-mail. Você também pode optar por avisar pelo WhatsApp, com a mensagem já preenchida." },
+  { pergunta: "Como faço sugestões?", resposta: "Clique em 'Sugestões' no rodapé ou acesse /sugestoes. Qualquer pessoa pode enviar sugestões, mesmo sem estar logada. As sugestões aparecem automaticamente nesta Central de Ajuda como pendentes." },
+  { pergunta: "O site tem aplicativo para celular?", resposta: "Ainda não está nas lojas de aplicativos, mas você pode salvar o site como atalho na tela inicial do celular. No navegador do celular, use a opção 'Adicionar à tela inicial' (ou 'Compartilhar → Adicionar à tela de início' no iPhone)." },
+  { pergunta: "Como excluo minha conta?", resposta: "Acesse 'Perfil' e role até o final da página. Há um botão para excluir a conta permanentemente. Todos os seus dados serão removidos e a ação não pode ser desfeita." },
+];
 
 type Status = "feito" | "andamento" | "planejado";
 
@@ -160,6 +182,7 @@ function Painel() {
   const navigate = useNavigate();
   const { user, profile, loading, signOut } = useAuth();
   const [busca, setBusca] = useState("");
+  const [faqAberto, setFaqAberto] = useState<Set<number>>(new Set());
   const [solicitacoes, setSolicitacoes] = useState<Item[]>([]);
   const [sugestoes, setSugestoes] = useState<Item[]>([]);
   const [solTitulo, setSolTitulo] = useState("");
@@ -255,6 +278,14 @@ function Painel() {
   const total = allItems.length;
   const pct = Math.round((done / total) * 100);
 
+  const toggleFaq = (i: number) => {
+    setFaqAberto((prev) => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  };
+
   const termo = busca.trim().toLowerCase();
   const filtered = termo
     ? allItems.filter(
@@ -265,6 +296,14 @@ function Painel() {
           (i.sigla_casa ?? "").toLowerCase().includes(termo)
       )
     : allItems;
+  const filteredFaq = termo
+    ? FAQ.filter(
+        (f) =>
+          f.pergunta.toLowerCase().includes(termo) ||
+          f.resposta.toLowerCase().includes(termo)
+      )
+    : FAQ;
+  const totalResultados = filtered.length + filteredFaq.length;
 
   return (
     <main className="page-light min-h-screen px-6 pt-20 pb-20">
@@ -272,8 +311,8 @@ function Painel() {
         {/* Header */}
         <div className="flex items-start justify-between mb-12 flex-wrap gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Painel</p>
-            <h1 className="text-3xl font-light text-foreground">Acompanhamento do Projeto</h1>
+            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Ajuda & Projeto</p>
+            <h1 className="text-3xl font-light text-foreground">Central de Ajuda</h1>
           </div>
           <button
             onClick={async () => { await signOut(); navigate({ to: "/" }); }}
@@ -314,7 +353,7 @@ function Painel() {
           <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
           <input
             type="text"
-            placeholder="Buscar por palavra…"
+            placeholder="Buscar em perguntas e no projeto…"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-10 py-3 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors"
@@ -332,10 +371,55 @@ function Painel() {
         {/* Contador de resultados */}
         {termo && (
           <p className="text-xs text-muted-foreground/50 mb-6 -mt-4">
-            {filtered.length === 0
-              ? "Nenhum item encontrado."
-              : `${filtered.length} item${filtered.length > 1 ? "s" : ""} encontrado${filtered.length > 1 ? "s" : ""}.`}
+            {totalResultados === 0
+              ? "Nenhum resultado encontrado."
+              : `${totalResultados} resultado${totalResultados > 1 ? "s" : ""} encontrado${totalResultados > 1 ? "s" : ""}.`}
           </p>
+        )}
+
+        {/* ── FAQ ── */}
+        {filteredFaq.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3 flex items-center gap-2">
+              <span className="text-base text-violet-400">?</span>
+              Perguntas frequentes
+            </h2>
+            <div className="space-y-2">
+              {filteredFaq.map((faq, i) => {
+                const idx = FAQ.indexOf(faq);
+                const aberto = faqAberto.has(idx);
+                return (
+                  <div key={idx} className="glass rounded-2xl overflow-hidden">
+                    <button
+                      onClick={() => toggleFaq(idx)}
+                      className="w-full flex items-center justify-between px-5 py-4 text-left gap-4"
+                    >
+                      <span className="text-sm text-foreground font-light">{faq.pergunta}</span>
+                      <ChevronDown
+                        size={15}
+                        strokeWidth={2}
+                        className={`shrink-0 text-muted-foreground/40 transition-transform duration-200 ${aberto ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {aberto && (
+                      <div className="px-5 pb-4">
+                        <p className="text-sm text-muted-foreground/70 font-light leading-relaxed border-t border-white/5 pt-3">
+                          {faq.resposta}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Acompanhamento do Projeto ── */}
+        {(!termo || filtered.length > 0) && (
+          <h2 className="text-xs uppercase tracking-[0.3em] text-muted-foreground/40 mb-4 mt-2">
+            Acompanhamento do projeto
+          </h2>
         )}
 
         {/* Items by group */}

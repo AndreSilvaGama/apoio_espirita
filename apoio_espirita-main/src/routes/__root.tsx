@@ -344,7 +344,7 @@ function NavBar() {
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
-          <Link to="/painel" className={linkCls("/painel")}>Projeto</Link>
+          <Link to="/painel" className={linkCls("/painel")}>Ajuda</Link>
           <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
           <button
             onClick={() => signOut()}
@@ -389,7 +389,7 @@ function NavBar() {
               </Link>
             )}
             <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Acompanhamento do Projeto
+              Central de Ajuda & Projeto
             </Link>
             <Link to="/perfil" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Meu Perfil
