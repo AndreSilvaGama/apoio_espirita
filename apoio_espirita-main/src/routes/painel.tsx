@@ -16,7 +16,6 @@ interface FaqItem {
 const FAQ: FaqItem[] = [
   { pergunta: "O site é gratuito?", resposta: "Sim, completamente gratuito. Sem anúncios, sem planos pagos. O Apoio Espírita é mantido por trabalho voluntário e de caridade." },
   { pergunta: "O site tem algum vínculo com a FEB ou federações?", resposta: "Não. O Apoio Espírita é uma plataforma independente, sem vínculo com a Federação Espírita Brasileira, UFE ou qualquer outra federação. Consulte a página de Transparência para mais detalhes." },
-  { pergunta: "Como me cadastro?", resposta: "Clique em 'Entrar' na página inicial e crie conta com e-mail e senha, ou entre com um clique usando sua conta do Google. Após o primeiro acesso, o sistema pedirá para completar seu perfil com nome, sigla da casa, cargo e atividades." },
   { pergunta: "Como completo ou altero meu perfil?", resposta: "Acesse 'Perfil' no menu. Lá você pode alterar nome, sigla da casa, cidade, cargo, atividades e senha. Também é possível excluir a conta definitivamente por lá." },
   { pergunta: "Como adiciono ou mudo meu cargo?", resposta: "No primeiro acesso o sistema já pede o cargo. Depois, acesse 'Perfil' para alterar. Se o Presidente da sua casa tiver definido seu cargo, apenas ele poderá alterá-lo novamente." },
   { pergunta: "Como envio a Mensagem do Dia?", resposta: "Acesse 'Mensagem' no menu. Digite o texto, a referência espírita (opcional) e escolha uma data disponível na fila. A mensagem aparecerá para todos os membros na data escolhida." },
