@@ -57,6 +57,10 @@ function CompletarPerfil() {
   const [cidade, setCidade] = useState("");
   const [bairro, setBairro] = useState("");
   const [cargo, setCargo] = useState("");
+  const [nomeCasa, setNomeCasa] = useState("");
+  const [enderecoCasa, setEnderecoCasa] = useState("");
+  const [casaExiste, setCasaExiste] = useState<boolean | null>(null);
+  const [checkingCasa, setCheckingCasa] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,6 +88,21 @@ function CompletarPerfil() {
       if (data) setSiglas(data.map((r) => r.sigla));
     });
   }, []);
+
+  useEffect(() => {
+    if (!selected) { setCasaExiste(null); setNomeCasa(""); return; }
+    setCheckingCasa(true);
+    supabase
+      .from("casas_espirita")
+      .select("id, nome")
+      .eq("sigla", selected)
+      .maybeSingle()
+      .then(({ data }) => {
+        setCasaExiste(!!data);
+        if (data) setNomeCasa(data.nome ?? "");
+        setCheckingCasa(false);
+      });
+  }, [selected]);
 
   const normalized = query.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
   const filtered = siglas.filter((s) => s.includes(normalized));
@@ -124,6 +143,18 @@ function CompletarPerfil() {
         })
         .eq("id", user.id);
       if (pe) throw pe;
+      if (!casaExiste && nomeCasa.trim()) {
+        const { error: ce } = await supabase.from("casas_espirita").insert({
+          nome: nomeCasa.trim(),
+          endereco: enderecoCasa.trim() || null,
+          cidade: cidade.trim(),
+          estado: uf,
+          sigla: selected,
+          ativa: true,
+          aceita_doacao_alimentos: false,
+        });
+        if (ce && ce.code !== "23505") throw ce;
+      }
       await refreshProfile();
       navigate({ to: "/inicio" });
     } catch (e: unknown) {
@@ -258,6 +289,42 @@ function CompletarPerfil() {
               </div>
             )}
           </div>
+
+          {/* Casa no mapa de busca */}
+          {selected && !checkingCasa && (
+            <div className="pt-2 border-t border-white/5">
+              {casaExiste ? (
+                <p className="text-xs text-emerald-400 text-center py-2">
+                  Sua casa já está cadastrada no mapa de busca.
+                </p>
+              ) : (
+                <>
+                  <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">
+                    Colocar a casa no mapa de busca
+                  </label>
+                  <p className="text-xs text-muted-foreground/50 mb-3 font-light">
+                    Preencha para que a casa apareça nos resultados de busca do site.
+                  </p>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Nome completo da casa espírita"
+                      value={nomeCasa}
+                      onChange={(e) => setNomeCasa(e.target.value)}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Endereço — rua e número (opcional)"
+                      value={enderecoCasa}
+                      onChange={(e) => setEnderecoCasa(e.target.value)}
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Cargo */}
           <div className="pt-2 border-t border-white/5">

@@ -70,6 +70,14 @@ function Perfil() {
   const [perfilError, setPerfilError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Casa espírita
+  const [nomeCasa, setNomeCasa] = useState("");
+  const [enderecoCasa, setEnderecoCasa] = useState("");
+  const [casaId, setCasaId] = useState<string | null>(null);
+  const [savingCasa, setSavingCasa] = useState(false);
+  const [casaOk, setCasaOk] = useState(false);
+  const [casaError, setCasaError] = useState("");
+
   // Senha
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
@@ -104,6 +112,26 @@ function Perfil() {
       if (data) setSiglas(data.map((r) => r.sigla));
     });
   }, []);
+
+  useEffect(() => {
+    if (!profile?.sigla_casa) return;
+    supabase
+      .from("casas_espirita")
+      .select("id, nome, endereco")
+      .eq("sigla", profile.sigla_casa)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setCasaId(data.id);
+          setNomeCasa(data.nome ?? "");
+          setEnderecoCasa(data.endereco ?? "");
+        } else {
+          setCasaId(null);
+          setNomeCasa("");
+          setEnderecoCasa("");
+        }
+      });
+  }, [profile?.sigla_casa]);
 
   const normalized = query.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
   const filtered = siglas.filter((s) => s.includes(normalized));
@@ -144,6 +172,45 @@ function Perfil() {
       setPerfilError(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
       setSavingPerfil(false);
+    }
+  };
+
+  const handleSaveCasa = async () => {
+    if (!nomeCasa.trim()) { setCasaError("Informe o nome completo da casa."); return; }
+    if (!selected) { setCasaError("Selecione primeiro a sigla da sua casa."); return; }
+    if (!uf || !cidade.trim()) { setCasaError("Complete primeiro seus dados pessoais (UF e cidade)."); return; }
+    setSavingCasa(true);
+    setCasaError("");
+    setCasaOk(false);
+    try {
+      if (casaId) {
+        const { error } = await supabase
+          .from("casas_espirita")
+          .update({ nome: nomeCasa.trim(), endereco: enderecoCasa.trim() || null })
+          .eq("id", casaId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("casas_espirita")
+          .insert({
+            nome: nomeCasa.trim(),
+            endereco: enderecoCasa.trim() || null,
+            cidade: cidade.trim(),
+            estado: uf,
+            sigla: selected,
+            ativa: true,
+            aceita_doacao_alimentos: false,
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        if (data) setCasaId(data.id);
+      }
+      setCasaOk(true);
+    } catch (e: unknown) {
+      setCasaError(e instanceof Error ? e.message : "Erro ao salvar.");
+    } finally {
+      setSavingCasa(false);
     }
   };
 
@@ -334,6 +401,60 @@ function Perfil() {
             className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
           >
             {savingPerfil ? "Salvando…" : "Salvar alterações"}
+          </button>
+        </section>
+
+        {/* Minha Casa Espírita */}
+        <section className="glass rounded-3xl p-8 space-y-5 mb-6">
+          <h2 className="text-sm uppercase tracking-widest text-muted-foreground/60">Minha Casa Espírita</h2>
+          <p className="text-xs text-muted-foreground/50 font-light">
+            Dados que aparecem no mapa de busca público do site.
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Estado</label>
+              <div className="rounded-xl bg-white/5 border border-white/5 px-4 py-3 text-sm text-muted-foreground">{uf || "—"}</div>
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Cidade</label>
+              <div className="rounded-xl bg-white/5 border border-white/5 px-4 py-3 text-sm text-muted-foreground">{cidade || "—"}</div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Nome completo da casa <span className="text-cyan-glow">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Nome completo da casa espírita"
+              value={nomeCasa}
+              onChange={(e) => { setNomeCasa(e.target.value); setCasaError(""); setCasaOk(false); }}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Endereço</label>
+            <input
+              type="text"
+              placeholder="Rua e número (opcional)"
+              value={enderecoCasa}
+              onChange={(e) => { setEnderecoCasa(e.target.value); setCasaError(""); setCasaOk(false); }}
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+            />
+          </div>
+
+          {casaError && <p className="text-xs text-red-400 text-center">{casaError}</p>}
+          {casaOk && <p className="text-xs text-emerald-400 text-center">Dados da casa atualizados.</p>}
+
+          <button
+            onClick={handleSaveCasa}
+            disabled={savingCasa || !selected}
+            className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+          >
+            {savingCasa ? "Salvando…" : casaId ? "Atualizar dados da casa" : "Cadastrar casa no mapa"}
           </button>
         </section>
 
