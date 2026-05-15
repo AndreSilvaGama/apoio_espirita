@@ -13,7 +13,7 @@ const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2 } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -148,16 +148,119 @@ function BackToTop() {
   );
 }
 
+const WHATSAPP_NUMBER = "5521984320107";
+
+function ReportarProblema({ onClose }: { onClose: () => void }) {
+  const { profile } = useAuth();
+  const [descricao, setDescricao] = useState("");
+  const [etapa, setEtapa] = useState<"form" | "whatsapp">("form");
+
+  const handleEnviar = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!descricao.trim()) return;
+    const assunto = encodeURIComponent("Problema no site Apoio Espírita");
+    const corpo = encodeURIComponent(
+      `Olá,\n\nEncontrei um problema no site:\n\n${descricao.trim()}\n\n— ${profile?.nome ?? "Usuário"} (${profile?.sigla_casa ?? ""})`
+    );
+    window.open(`mailto:gama.andre@gmail.com?subject=${assunto}&body=${corpo}`);
+    setEtapa("whatsapp");
+  };
+
+  const handleWhatsApp = () => {
+    const texto = encodeURIComponent(
+      `Olá! Encontrei um problema no site Apoio Espírita:\n\n${descricao.trim()}\n\n— ${profile?.nome ?? "Usuário"} (${profile?.sigla_casa ?? ""})`
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`, "_blank");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-100 flex items-center justify-center px-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div
+        className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X size={18} strokeWidth={2} />
+        </button>
+
+        {etapa === "form" && (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle size={18} strokeWidth={1.5} className="text-amber-500" />
+              <h2 className="text-base font-semibold text-gray-800">Reportar problema</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Descreva o que está acontecendo. Vou receber por e-mail e analisar assim que possível.
+            </p>
+            <form onSubmit={handleEnviar} className="space-y-4">
+              <textarea
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                placeholder="Ex: ao clicar em Agenda, a página fica em branco..."
+                rows={5}
+                required
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-cyan-500 resize-none transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={!descricao.trim()}
+                className="w-full py-2.5 rounded-xl text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 transition-colors"
+              >
+                Enviar por e-mail
+              </button>
+            </form>
+          </>
+        )}
+
+        {etapa === "whatsapp" && (
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto">
+              <MessageCircle size={22} strokeWidth={1.5} className="text-green-600" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-gray-800">E-mail enviado!</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Deseja também me enviar uma mensagem pelo WhatsApp?
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleWhatsApp}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-green-500 text-white hover:bg-green-600 transition-colors"
+              >
+                Sim, abrir WhatsApp
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Não, obrigado
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [reportarAberto, setReportarAberto] = useState(false);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RadioProvider>
           <NavBar />
           <Outlet />
-          <Footer />
+          <Footer onReportar={() => setReportarAberto(true)} />
           <BackToTop />
+          {reportarAberto && <ReportarProblema onClose={() => setReportarAberto(false)} />}
         </RadioProvider>
       </AuthProvider>
     </QueryClientProvider>
@@ -305,7 +408,7 @@ function NavBar() {
 }
 
 /* ── Footer ── */
-function Footer() {
+function Footer({ onReportar }: { onReportar: () => void }) {
   const { user } = useAuth();
   const { active, playing, buffering, volume, muted, activate, togglePlay, setVolume, toggleMute } = useRadio();
   const { location } = useRouterState();
@@ -400,6 +503,12 @@ function Footer() {
           <Link to="/sugestoes" className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap">
             Sugestões
           </Link>
+          <button
+            onClick={onReportar}
+            className="text-xs text-gray-400 hover:text-amber-600 transition-colors whitespace-nowrap"
+          >
+            Reportar problema
+          </button>
         </div>
 
       </div>

@@ -39,6 +39,15 @@ serve(async (req) => {
         ${data.descricao ? `<p><strong>Descrição:</strong></p><p style="white-space:pre-wrap">${data.descricao}</p>` : ""}
         <p><strong>Usuário:</strong> ${data.user_email ?? "não informado"}</p>
       `;
+    } else if (type === "problema") {
+      subject = `Problema reportado no site — ${data.nome ?? "Anônimo"}`;
+      htmlContent = `
+        <h2 style="color:#dc2626">Problema reportado no site</h2>
+        <p><strong>Nome:</strong> ${data.nome ?? "não informado"}</p>
+        <p><strong>Casa:</strong> ${data.sigla_casa ?? "não informada"}</p>
+        <p><strong>Descrição do problema:</strong></p>
+        <p style="white-space:pre-wrap">${data.descricao}</p>
+      `;
     } else {
       return new Response(JSON.stringify({ error: "Tipo inválido" }), {
         status: 400,
