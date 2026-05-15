@@ -280,7 +280,7 @@ function Inicio() {
               <DashCard
                 Icon={Wallet}
                 title="Tesouraria"
-                desc="Registro de receitas e despesas, saldo mensal e exportação de relatório CSV."
+                desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
                 status="disponivel"
                 accent="amber"
                 casa
