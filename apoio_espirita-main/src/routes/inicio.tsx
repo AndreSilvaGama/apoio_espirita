@@ -4,7 +4,7 @@ import {
   PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
   MessageCircle, Users, HeartHandshake, ShoppingBag, Car, Truck,
   CalendarDays, Cast, Video, Film, MonitorPlay, CircleHelp,
-  BarChart3, ClipboardList, Wallet, Radio,
+  BarChart3, ClipboardList, Wallet,
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
@@ -76,8 +76,7 @@ const FEATURES: FeatureCategory[] = [
     borderB: "border-violet-200",
     items: [
       { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
-      { Icon: Radio,     title: "Rádio Rio de Janeiro",     desc: "Player dedicado da Rádio Rio de Janeiro — transmissão espírita ao vivo, 24 horas.", status: "disponivel", href: "/radio" },
-      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo.", status: "breve" },
+      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui a Rádio Rio de Janeiro no rodapé.", status: "breve" },
       { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
       { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
       { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
