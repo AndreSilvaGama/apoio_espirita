@@ -19,6 +19,7 @@ import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
+import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
 
@@ -72,6 +73,11 @@ const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
   path: '/completar-perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgendaRoute = AgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -85,6 +91,7 @@ const JogosPlanteASementeRoute = JogosPlanteASementeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agenda': typeof AgendaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agenda'
     | '/completar-perfil'
     | '/inicio'
     | '/login'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agenda'
     | '/completar-perfil'
     | '/inicio'
     | '/login'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agenda'
     | '/completar-perfil'
     | '/inicio'
     | '/login'
@@ -173,6 +185,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgendaRoute: typeof AgendaRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
   InicioRoute: typeof InicioRoute
   LoginRoute: typeof LoginRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompletarPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agenda': {
+      id: '/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -277,6 +297,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgendaRoute: AgendaRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
   InicioRoute: InicioRoute,
   LoginRoute: LoginRoute,
