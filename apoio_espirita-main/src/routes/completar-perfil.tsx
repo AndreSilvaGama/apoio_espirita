@@ -90,19 +90,21 @@ function CompletarPerfil() {
   }, []);
 
   useEffect(() => {
-    if (!selected) { setCasaExiste(null); setNomeCasa(""); return; }
+    if (!selected || !uf || !cidade.trim()) { setCasaExiste(null); setNomeCasa(""); return; }
     setCheckingCasa(true);
     supabase
       .from("casas_espirita")
       .select("id, nome")
       .eq("sigla", selected)
+      .eq("cidade", cidade.trim())
+      .eq("estado", uf)
       .maybeSingle()
       .then(({ data }) => {
         setCasaExiste(!!data);
         if (data) setNomeCasa(data.nome ?? "");
         setCheckingCasa(false);
       });
-  }, [selected]);
+  }, [selected, uf, cidade]);
 
   const normalized = query.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
   const filtered = siglas.filter((s) => s.includes(normalized));

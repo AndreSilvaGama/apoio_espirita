@@ -114,11 +114,13 @@ function Perfil() {
   }, []);
 
   useEffect(() => {
-    if (!profile?.sigla_casa) return;
+    if (!profile?.sigla_casa || !profile?.cidade || !profile?.uf) return;
     supabase
       .from("casas_espirita")
       .select("id, nome, endereco")
       .eq("sigla", profile.sigla_casa)
+      .eq("cidade", profile.cidade)
+      .eq("estado", profile.uf)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
@@ -131,7 +133,7 @@ function Perfil() {
           setEnderecoCasa("");
         }
       });
-  }, [profile?.sigla_casa]);
+  }, [profile?.sigla_casa, profile?.cidade, profile?.uf]);
 
   const normalized = query.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
   const filtered = siglas.filter((s) => s.includes(normalized));
