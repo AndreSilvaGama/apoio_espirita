@@ -20,6 +20,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Página inicial com hero, partículas animadas e vídeo de voo sobre as nuvens", descricao: "Animação de fundo com vídeo de nebulosa em loop · Partículas flutuantes · Design responsivo para todos os dispositivos" },
   { status: "feito", titulo: "Música ambiente (piano) com botão de controle", descricao: "Toca automaticamente em volume suave · Botão discreto para pausar e retomar · Não interrompe a navegação" },
   { status: "feito", titulo: "Favicon — cepa de videira (ramo de uva)", descricao: "Ícone personalizado exibido na aba do navegador e ao salvar na tela inicial do celular" },
+  { status: "feito", titulo: "Logomarca — cepa de videira realista", descricao: "Imagem da logomarca exibida no cabeçalho de navegação e registrada no JSON-LD da organização para SEO" },
   { status: "feito", titulo: "Assistente 'Preciso de Ajuda'", descricao: "Apoio emocional (CVV) · Busca de alimentação por CEP · Busca de casa espírita por CEP ou cidade/bairro" },
   { status: "feito", titulo: "Página Transparência & Propósito — aviso de independência institucional", descricao: "Declaração de independência — sem vínculo com a FEB, UFE ou qualquer associação · Plataforma livre como uma rede social" },
   { status: "feito", titulo: "Página de Sugestões integrada ao banco de dados", descricao: "Formulário público para envio de sugestões · Notificação automática por e-mail ao receber nova mensagem" },
