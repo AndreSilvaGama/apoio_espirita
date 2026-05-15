@@ -171,24 +171,56 @@ function Tesouraria() {
     fetchTransacoes();
   };
 
-  const handleExportarCSV = () => {
-    const cabecalho = ["Data", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Observação"];
-    const linhas = transacoes.map((tx) => [
-      fmtData(tx.data),
-      tx.tipo === "receita" ? "Receita" : "Despesa",
-      tx.categoria,
-      tx.descricao,
-      Number(tx.valor).toFixed(2).replace(".", ","),
-      tx.observacao ?? "",
-    ]);
-    const csv = [cabecalho, ...linhas]
-      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
-      .join("\n");
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const handleExportarXLS = () => {
+    const esc = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const strCell = (v: string) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;
+    const numCell = (v: number) => `<Cell><Data ss:Type="Number">${v}</Data></Cell>`;
+
+    const header = ["Data", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Observação"]
+      .map(strCell).join("");
+
+    const rows = transacoes.map((tx) => {
+      const cells = [
+        strCell(fmtData(tx.data)),
+        strCell(tx.tipo === "receita" ? "Receita" : "Despesa"),
+        strCell(tx.categoria),
+        strCell(tx.descricao),
+        numCell(Number(tx.valor)),
+        strCell(tx.observacao ?? ""),
+      ].join("");
+      return `<Row>${cells}</Row>`;
+    }).join("");
+
+    const totalReceitas = transacoes.filter(t => t.tipo === "receita").reduce((s, t) => s + Number(t.valor), 0);
+    const totalDespesas = transacoes.filter(t => t.tipo === "despesa").reduce((s, t) => s + Number(t.valor), 0);
+    const saldo = totalReceitas - totalDespesas;
+
+    const resumo = [
+      `<Row><Cell ss:MergeAcross="5"><Data ss:Type="String"></Data></Cell></Row>`,
+      `<Row>${strCell("Resumo")}${strCell("")}${strCell("")}${strCell("")}${strCell("")}${strCell("")}</Row>`,
+      `<Row>${strCell("Total Receitas")}${strCell("")}${strCell("")}${strCell("")}${numCell(totalReceitas)}${strCell("")}</Row>`,
+      `<Row>${strCell("Total Despesas")}${strCell("")}${strCell("")}${strCell("")}${numCell(totalDespesas)}${strCell("")}</Row>`,
+      `<Row>${strCell("Saldo")}${strCell("")}${strCell("")}${strCell("")}${numCell(saldo)}${strCell("")}</Row>`,
+    ].join("");
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Tesouraria">
+  <Table>
+   <Row>${header}</Row>
+   ${rows}
+   ${resumo}
+  </Table>
+ </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tesouraria_${profile?.sigla_casa}_${MESES[mes]}_${ano}.csv`;
+    a.download = `tesouraria_${profile?.sigla_casa}_${MESES[mes]}_${ano}.xls`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -227,8 +259,8 @@ function Tesouraria() {
           <div className="flex items-center gap-1">
             {transacoes.length > 0 && (
               <button
-                onClick={handleExportarCSV}
-                title="Exportar planilha CSV"
+                onClick={handleExportarXLS}
+                title="Exportar para Excel"
                 className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
               >
                 <Download size={16} />
