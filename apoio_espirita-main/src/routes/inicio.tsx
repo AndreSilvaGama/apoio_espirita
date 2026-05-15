@@ -150,7 +150,7 @@ const STATUS_STYLE: Record<Status, string> = {
 
 function Inicio() {
   const navigate = useNavigate();
-  const { user, profile, loading, isPresident, isTesoureiro } = useAuth();
+  const { user, profile, loading, isPresident } = useAuth();
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
 
   useEffect(() => {
@@ -276,17 +276,15 @@ function Inicio() {
               accent="slate"
               href="/painel"
             />
-            {isTesoureiro && (
-              <DashCard
-                Icon={Wallet}
-                title="Tesouraria"
-                desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
-                status="disponivel"
-                accent="amber"
-                casa
-                href="/tesouraria"
-              />
-            )}
+            <DashCard
+              Icon={Wallet}
+              title="Tesouraria"
+              desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
+              status="disponivel"
+              accent="amber"
+              casa
+              href="/tesouraria"
+            />
           </div>
         </section>
 
