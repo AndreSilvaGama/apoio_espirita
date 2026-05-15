@@ -270,7 +270,7 @@ function FindCenterStep({
   };
 
   const selectClass =
-    "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50";
+    "w-full rounded-xl bg-zinc-800 border border-white/10 px-4 py-3 text-sm text-foreground [color-scheme:dark] focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50";
 
   return (
     <div className="space-y-4">
