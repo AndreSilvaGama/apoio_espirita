@@ -179,7 +179,7 @@ const icon: Record<Status, string> = {
 
 function Painel() {
   const navigate = useNavigate();
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [busca, setBusca] = useState("");
   const [faqAberto, setFaqAberto] = useState<Set<number>>(new Set());
   const [solicitacoes, setSolicitacoes] = useState<Item[]>([]);
@@ -314,10 +314,10 @@ function Painel() {
             <h1 className="text-3xl font-light text-foreground">Central de Ajuda</h1>
           </div>
           <button
-            onClick={async () => { await signOut(); navigate({ to: "/" }); }}
+            onClick={() => navigate({ to: "/inicio" })}
             className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           >
-            Sair
+            ← Voltar
           </button>
         </div>
 
