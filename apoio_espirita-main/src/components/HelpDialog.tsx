@@ -16,8 +16,6 @@ type Step =
   | "find-center"
   | "find-center-result";
 
-type SearchMode = "cep" | "cidade";
-
 interface CasaEspirita {
   id: string;
   nome: string;
@@ -57,16 +55,31 @@ async function coordsFromCep(cep: string) {
   return { latitude: Number(latitude), longitude: Number(longitude) };
 }
 
-async function coordsFromCidade(cidade: string, bairro: string) {
-  const q = encodeURIComponent(`${bairro}, ${cidade}, Brasil`);
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`,
-    { headers: { "Accept-Language": "pt-BR" } }
-  );
-  if (!res.ok) throw new Error("Não foi possível buscar a localização.");
-  const data = await res.json();
-  if (!data?.[0]) throw new Error("Localização não encontrada. Verifique cidade e bairro.");
-  return { latitude: Number(data[0].lat), longitude: Number(data[0].lon) };
+const UFS = [
+  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
+  "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
+  "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO",
+];
+
+async function fetchCidadesPorUF(uf: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("casas_espirita")
+    .select("cidade")
+    .eq("estado", uf)
+    .eq("ativa", true)
+    .order("cidade");
+  return [...new Set((data ?? []).map((r: { cidade: string }) => r.cidade))].sort();
+}
+
+async function fetchCasasPorCidade(estado: string, cidade: string): Promise<CasaEspirita[]> {
+  const { data, error } = await supabase
+    .from("casas_espirita")
+    .select("id, nome, endereco, cidade, estado, telefone, latitude, longitude")
+    .eq("estado", estado)
+    .eq("cidade", cidade)
+    .eq("ativa", true);
+  if (error) throw new Error("Erro ao buscar casas espíritas.");
+  return (data ?? []) as CasaEspirita[];
 }
 
 async function fetchCasas(filter?: { aceita_doacao_alimentos: boolean }) {
@@ -227,30 +240,28 @@ function FindCenterStep({
 }: {
   onResult: (r: CasaResult[], err?: string) => void;
 }) {
-  const [mode, setMode] = useState<SearchMode>("cep");
-  const [cep, setCep] = useState("");
+  const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
-  const [bairro, setBairro] = useState("");
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [loadingCidades, setLoadingCidades] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const fmt = (v: string) => {
-    const d = v.replace(/\D/g, "").slice(0, 8);
-    return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d;
-  };
-
-  const canSearch =
-    mode === "cep" ? cep.replace(/\D/g, "").length === 8 : cidade.trim().length >= 2;
+  async function handleUfChange(novaUf: string) {
+    setUf(novaUf);
+    setCidade("");
+    setCidades([]);
+    if (!novaUf) return;
+    setLoadingCidades(true);
+    const lista = await fetchCidadesPorUF(novaUf);
+    setCidades(lista);
+    setLoadingCidades(false);
+  }
 
   const search = async () => {
     setLoading(true);
     try {
-      const coords =
-        mode === "cep"
-          ? await coordsFromCep(cep)
-          : await coordsFromCidade(cidade.trim(), bairro.trim());
-      const casas = await fetchCasas();
-      const sorted = sortByDistance(casas, coords.latitude, coords.longitude);
-      onResult(sorted.slice(0, 5));
+      const casas = await fetchCasasPorCidade(uf, cidade);
+      onResult(casas.map((c) => ({ casa: c, distKm: 0 })));
     } catch (e: unknown) {
       onResult([], e instanceof Error ? e.message : "Erro inesperado.");
     } finally {
@@ -258,65 +269,48 @@ function FindCenterStep({
     }
   };
 
+  const selectClass =
+    "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50";
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <p className="text-center text-muted-foreground font-light text-sm">
-        Busque pelo CEP ou informe cidade e bairro.
+        Selecione o estado e a cidade para ver as casas espíritas cadastradas.
       </p>
 
-      {/* Mode toggle */}
-      <div className="flex rounded-xl overflow-hidden border border-white/10">
-        {(["cep", "cidade"] as SearchMode[]).map((m) => (
-          <button
-            key={m}
-            onClick={() => setMode(m)}
-            className={`flex-1 py-2 text-xs uppercase tracking-widest transition-colors ${
-              mode === m
-                ? "bg-cyan-glow/10 text-cyan-glow"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {m === "cep" ? "CEP" : "Cidade / Bairro"}
-          </button>
+      <select value={uf} onChange={(e) => handleUfChange(e.target.value)} className={selectClass}>
+        <option value="">Selecione o estado (UF)</option>
+        {UFS.map((u) => (
+          <option key={u} value={u}>{u}</option>
         ))}
-      </div>
+      </select>
 
-      {mode === "cep" ? (
-        <input
-          type="text"
-          inputMode="numeric"
-          placeholder="00000-000"
-          value={cep}
-          onChange={(e) => setCep(fmt(e.target.value))}
-          onKeyDown={(e) => e.key === "Enter" && canSearch && search()}
-          className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors text-sm"
-        />
-      ) : (
-        <div className="space-y-3">
-          <input
-            type="text"
-            placeholder="Cidade *"
-            value={cidade}
-            onChange={(e) => setCidade(e.target.value)}
-            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Bairro (opcional)"
-            value={bairro}
-            onChange={(e) => setBairro(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && canSearch && search()}
-            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors text-sm"
-          />
-        </div>
-      )}
+      <select
+        value={cidade}
+        onChange={(e) => setCidade(e.target.value)}
+        disabled={!uf || loadingCidades || cidades.length === 0}
+        className={selectClass}
+      >
+        <option value="">
+          {loadingCidades
+            ? "Carregando cidades…"
+            : !uf
+            ? "Selecione o estado primeiro"
+            : cidades.length === 0
+            ? "Nenhuma cidade cadastrada"
+            : "Selecione a cidade"}
+        </option>
+        {cidades.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
 
       <button
         onClick={search}
-        disabled={loading || !canSearch}
+        disabled={loading || !uf || !cidade}
         className="w-full py-3 rounded-xl text-sm font-medium bg-cyan-glow/10 text-cyan-glow border border-cyan-glow/30 hover:bg-cyan-glow/20 disabled:opacity-40 transition-colors"
       >
-        {loading ? "Buscando…" : "Buscar casas espíritas"}
+        {loading ? "Buscando…" : "Ver casas espíritas"}
       </button>
     </div>
   );
@@ -345,10 +339,10 @@ function FindCenterResult({
   return (
     <div className="space-y-3">
       <p className="text-center text-xs uppercase tracking-widest text-cyan-glow mb-1">
-        Casas espíritas mais próximas
+        {results.length} casa{results.length !== 1 ? "s" : ""} espírita{results.length !== 1 ? "s" : ""} encontrada{results.length !== 1 ? "s" : ""}
       </p>
       {results.map((r, i) => (
-        <CasaCard key={r.casa.id} result={r} rank={i + 1} />
+        <CasaCard key={r.casa.id} result={r} rank={i + 1} showDist={false} />
       ))}
       <BackLink onClick={onBack} label="Nova busca" />
     </div>
@@ -387,7 +381,7 @@ function EmotionalStep() {
 
 // ── Shared UI ──────────────────────────────────────────────────────────────
 
-function CasaCard({ result, rank }: { result: CasaResult; rank?: number }) {
+function CasaCard({ result, rank, showDist = true }: { result: CasaResult; rank?: number; showDist?: boolean }) {
   const { casa, distKm } = result;
   return (
     <div className="glass rounded-2xl p-4 space-y-1">
@@ -396,7 +390,7 @@ function CasaCard({ result, rank }: { result: CasaResult; rank?: number }) {
           {rank && <span className="text-cyan-glow mr-1">{rank}.</span>}
           {casa.nome}
         </h3>
-        <span className="text-xs text-muted-foreground/60 shrink-0">≈ {distKm} km</span>
+        {showDist && <span className="text-xs text-muted-foreground/60 shrink-0">≈ {distKm} km</span>}
       </div>
       <p className="text-xs text-muted-foreground font-light">{casa.endereco}</p>
       <p className="text-xs text-muted-foreground font-light">
@@ -437,7 +431,7 @@ const titles: Record<Step, React.ReactNode> = {
   "food-result": "Resultado da busca",
   emotional: <>Um cuidado que <span className="text-gradient-aurora font-medium">acolhe</span></>,
   "find-center": "Encontrar casa espírita",
-  "find-center-result": "Casas espíritas próximas",
+  "find-center-result": "Casas espíritas encontradas",
 };
 
 // ── Main Dialog ────────────────────────────────────────────────────────────
