@@ -104,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org", "@type": "Organization",
           "name": "Apoio Espírita", "url": "https://apoioespirita.com.br/",
-          "logo": "https://apoioespirita.com.br/favicon.png", "sameAs": [],
+          "logo": "https://apoioespirita.com.br/logomarca.png", "sameAs": [],
           "description": "Plataforma independente, sem vínculo com a FEB ou qualquer federação. Propósito: acolhimento, estudo e serviço.",
         }),
       },
@@ -152,7 +152,7 @@ function NavBar() {
 
         {/* Brand */}
         <Link to="/inicio" className="flex items-center gap-2 shrink-0">
-          <img src="/favicon.png" alt="Apoio Espírita" className="w-7 h-7 rounded-lg" />
+          <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto" />
           <span className="hidden sm:inline text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
