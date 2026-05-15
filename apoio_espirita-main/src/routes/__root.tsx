@@ -306,7 +306,7 @@ function NavBar() {
         {/* Brand */}
         <Link to="/inicio" className="flex items-center gap-2 shrink-0" onClick={() => setMenuOpen(false)}>
           <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto" />
-          <span className="hidden sm:inline text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
+          <span className="text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
         {/* Desktop nav */}
