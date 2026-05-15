@@ -98,7 +98,7 @@ const FEATURES: FeatureCategory[] = [
       { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
       { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
       { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve", casa: true },
-      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "disponivel", casa: true, href: "#bazar" },
+      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "breve", casa: true },
       { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
       { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve", casa: true },
       { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve", casa: true },
