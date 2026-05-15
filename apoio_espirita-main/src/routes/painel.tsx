@@ -243,11 +243,6 @@ function Painel() {
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Painel</p>
             <h1 className="text-3xl font-light text-foreground">Acompanhamento do Projeto</h1>
-            {profile?.sigla_casa && (
-              <p className="mt-1 text-sm text-muted-foreground font-light">
-                Casa: <span className="text-cyan-glow font-medium tracking-widest">{profile.sigla_casa}</span>
-              </p>
-            )}
           </div>
           <button
             onClick={async () => { await signOut(); navigate({ to: "/" }); }}
