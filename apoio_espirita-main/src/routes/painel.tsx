@@ -43,13 +43,16 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Tela inicial após o login com todos os recursos disponíveis", descricao: "Painel com todos os recursos do site organizados por categoria, bazar on-line e a Mensagem do Dia" },
   { status: "feito", titulo: "Mensagem do Dia enviada pelos membros da comunidade", descricao: "Qualquer membro pode enviar uma mensagem com referência espírita para a fila · Uma mensagem diferente aparece por dia · O sistema evita repetir a mesma casa em dias seguidos" },
   { status: "feito", titulo: "Ícones visuais profissionais em todas as telas", descricao: "Todos os ícones do site são vetoriais e com traço uniforme, substituindo os emojis por uma aparência mais profissional" },
-  { status: "feito", titulo: "Menu de Tesouraria visível apenas para quem tem acesso", descricao: "A opção de Tesouraria só aparece no menu para Presidente, Vice-presidente e Tesoureiro" },
+  { status: "feito", titulo: "Menu de Tesouraria visível apenas para quem tem acesso", descricao: "A opção de Tesouraria só aparece no menu para Presidente, Tesoureiro e DEV — Vice-presidente não tem acesso à Tesouraria" },
   { status: "feito", titulo: "Rádio Rio de Janeiro integrada ao site", descricao: "Player de rádio espírita disponível no rodapé · Ao ligar a rádio, a música de piano pausa automaticamente" },
   { status: "feito", titulo: "Site preparado para aparecer bem nas buscas do Google", descricao: "Configurações completas de SEO: título, descrição, imagem para redes sociais, mapa do site e permissões para robôs de busca" },
   { status: "feito", titulo: "Campo de busca por palavra no acompanhamento do projeto", descricao: "Digite qualquer palavra para filtrar os itens desta lista em tempo real · Grupos sem resultado ficam ocultos automaticamente · Mostra quantos itens foram encontrados" },
   { status: "feito", titulo: "Botão para voltar ao topo da página", descricao: "Um botão com seta aparece no canto inferior direito da tela após rolar a página para baixo · Ao clicar, a tela volta suavemente ao início · Funciona em todas as páginas do site" },
   { status: "feito", titulo: "Solicitações de desenvolvimento aparecem no acompanhamento do projeto", descricao: "Ao preencher o formulário de solicitação no final desta página, o pedido é inserido automaticamente aqui como Pendente · Mostra o nome e a casa espírita de quem fez o pedido" },
   { status: "feito", titulo: "Link para reportar problema no rodapé", descricao: "Botão 'Reportar problema' no rodapé de todas as páginas · Abre formulário para descrever o problema · Após enviar por e-mail, pergunta se quer também avisar pelo WhatsApp com a mensagem já preenchida" },
+  { status: "feito", titulo: "Nome do site exibido ao lado do logo no celular", descricao: "'Apoio Espírita' aparece ao lado da logomarca em todos os tamanhos de tela, inclusive no celular" },
+  { status: "feito", titulo: "Sugestões do site aparecem no acompanhamento do projeto", descricao: "Todas as sugestões enviadas pelo formulário público de /sugestões entram automaticamente nesta lista como Pendente, identificando o nome e o e-mail de quem sugeriu" },
+  { status: "feito", titulo: "Link Voltar de Sugestões redireciona corretamente", descricao: "Se o visitante estiver logado, o botão Voltar leva para /início · Se não estiver logado, leva para a página inicial pública" },
 
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
@@ -111,7 +114,7 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Tesouraria e financeiro ───────────────────────────────────
 
-  { status: "feito", titulo: "Tesouraria simplificada — controle de entradas e saídas", descricao: "Controle financeiro simples e acessível, pensado para quem não tem familiaridade com tecnologia · Registro de receitas (doações, bazar, mensalidade, eventos) e despesas (água/luz, aluguel, manutenção etc.) · Navegação por mês com saldo, total de receitas e despesas · Acesso restrito a Presidente, Vice-presidente e Tesoureiro" },
+  { status: "feito", titulo: "Tesouraria simplificada — controle de entradas e saídas", descricao: "Controle financeiro simples e acessível, pensado para quem não tem familiaridade com tecnologia · Registro de receitas (doações, bazar, mensalidade, eventos) e despesas (água/luz, aluguel, manutenção etc.) · Navegação por mês com saldo, total de receitas e despesas · Acesso restrito a Presidente, Tesoureiro e DEV" },
   { status: "planejado", titulo: "Bazar on-line com pagamento por PIX", descricao: "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado na hora · O administrador controla o estoque e as vendas" },
 
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────
@@ -119,7 +122,7 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Painel pessoal 'Meu Trabalho na Vinha'", descricao: "Cada membro tem um painel personalizado com informações relevantes para o seu cargo e suas atividades: compromissos agendados, escala de trabalho, tempo no site, conquistas e muito mais. O nome 'Dashboard' (palavra em inglês) é substituído por algo que todos entendam de imediato" },
   { status: "planejado", titulo: "Painel do Presidente — visão geral da casa", descricao: "Resumo financeiro, lista de tarefeiros, situação das atividades e funcionamento geral da casa espírita, tudo em um só lugar" },
   { status: "planejado", titulo: "Painel do Coordenador — acompanhamento da coordenação", descricao: "Visão das atividades sob sua responsabilidade: presenças, escalas, atendimentos e comunicados da coordenação" },
-  { status: "feito", titulo: "Painel do Tesoureiro — resumo financeiro com exportação", descricao: "Entradas e saídas do mês com saldo, total de receitas e despesas · Botão para exportar os dados do mês como planilha CSV · Navegação por qualquer mês do histórico" },
+  { status: "feito", titulo: "Painel do Tesoureiro — resumo financeiro com exportação e impressão", descricao: "Entradas e saídas do mês com saldo, total de receitas e despesas · Exportação em planilha Excel nativa (.xlsx) com cabeçalho completo (casa, período, responsável pela emissão) e coluna com o nome de quem registrou cada lançamento · Impressão formatada diretamente do site, com cabeçalho, cards de resumo e tabela de lançamentos · Navegação por qualquer mês do histórico" },
   { status: "planejado", titulo: "Painel de configurações do Presidente — ligar e desligar recursos", descricao: "O Presidente pode ativar ou desativar cada funcionalidade do site para a sua casa. Cada recurso tem três opções: desligado, opcional (o membro escolhe) ou obrigatório para todos · Inclui sistema de votação para decisões coletivas da casa" },
   { status: "planejado", titulo: "Gerenciamento de solicitações de desenvolvimento — somente DEV", descricao: "Área exclusiva no perfil do DEV para visualizar, organizar e atualizar o status das solicitações de desenvolvimento feitas pelos membros" },
 
