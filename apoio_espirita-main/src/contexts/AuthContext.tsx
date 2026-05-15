@@ -89,7 +89,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isDev ||
     profile?.cargo_principal === "Presidente" ||
     profile?.cargo_principal === "Vice-presidente";
-  const isTesoureiro = isPresident || profile?.cargo_principal === "Tesoureiro";
+  const isTesoureiro =
+    isDev ||
+    profile?.cargo_principal === "Presidente" ||
+    profile?.cargo_principal === "Tesoureiro";
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, isTesoureiro, refreshProfile, signOut }}>

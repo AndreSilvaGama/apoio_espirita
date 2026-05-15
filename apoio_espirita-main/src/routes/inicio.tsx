@@ -4,7 +4,7 @@ import {
   PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
   MessageCircle, Users, HeartHandshake, ShoppingBag, Car, Truck,
   CalendarDays, Cast, Video, Film, MonitorPlay, CircleHelp,
-  BarChart3, ClipboardList, Wallet,
+  BarChart3, ClipboardList, Wallet, Radio,
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
@@ -76,7 +76,8 @@ const FEATURES: FeatureCategory[] = [
     borderB: "border-violet-200",
     items: [
       { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
-      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui Rádio Rio de Janeiro.", status: "breve" },
+      { Icon: Radio,     title: "Rádio Rio de Janeiro",     desc: "Player dedicado da Rádio Rio de Janeiro — transmissão espírita ao vivo, 24 horas.", status: "disponivel", href: "/radio" },
+      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo.", status: "breve" },
       { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
       { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
       { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
@@ -113,11 +114,11 @@ const FEATURES: FeatureCategory[] = [
     border: "border-amber-200",
     borderB: "border-amber-200",
     items: [
-      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença, voluntariado e geração de atas.", status: "breve", casa: true },
+      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.", status: "disponivel", casa: true, href: "/agenda" },
       { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
       { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
       { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
-      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "breve", casa: true },
+      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "disponivel", casa: true, href: "/agenda" },
       { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve", casa: true },
     ],
   },
@@ -149,7 +150,7 @@ const STATUS_STYLE: Record<Status, string> = {
 
 function Inicio() {
   const navigate = useNavigate();
-  const { user, profile, loading, isPresident } = useAuth();
+  const { user, profile, loading, isPresident, isTesoureiro } = useAuth();
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
 
   useEffect(() => {
@@ -275,14 +276,15 @@ function Inicio() {
               accent="slate"
               href="/painel"
             />
-            {isPresident && (
+            {isTesoureiro && (
               <DashCard
                 Icon={Wallet}
                 title="Tesouraria"
-                desc="Contas a pagar e receber, bazar e gestão financeira simplificada da casa."
-                status="breve"
+                desc="Registro de receitas e despesas, saldo mensal e exportação de relatório CSV."
+                status="disponivel"
                 accent="amber"
                 casa
+                href="/tesouraria"
               />
             )}
           </div>
