@@ -12,8 +12,8 @@ import {
 const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
-import { useState, useEffect } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2 } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -168,37 +168,81 @@ function RootComponent() {
 function NavBar() {
   const { user, isPresident, signOut } = useAuth();
   const { location } = useRouterState();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [jogosOpen, setJogosOpen] = useState(false);
+  const jogosRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setJogosOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (jogosRef.current && !jogosRef.current.contains(e.target as Node)) {
+        setJogosOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
+
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
+
+  const linkCls = (path: string) =>
+    `px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-lg transition-colors ${
+      isActive(path) ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
+    }`;
 
   return (
     <header className="fixed top-0 left-0 right-0 h-14 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
 
         {/* Brand */}
-        <Link to="/inicio" className="flex items-center gap-2 shrink-0">
+        <Link to="/inicio" className="flex items-center gap-2 shrink-0" onClick={() => setMenuOpen(false)}>
           <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto" />
           <span className="hidden sm:inline text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
-          <Link to="/inicio" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors">
-            Início
-          </Link>
-          <Link to="/agenda" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            Agenda
-          </Link>
-          <Link to="/painel" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            Projeto
-          </Link>
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-1">
+          <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
+          <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
+          <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
+          <Link to="/radio" className={linkCls("/radio")}>Rádio</Link>
+
+          {/* Jogos dropdown */}
+          <div ref={jogosRef} className="relative">
+            <button
+              onClick={() => setJogosOpen((o) => !o)}
+              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-lg transition-colors ${
+                isActive("/jogos") ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
+              }`}
+            >
+              Jogos
+              <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${jogosOpen ? "rotate-180" : ""}`} />
+            </button>
+            {jogosOpen && (
+              <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+                <Link
+                  to="/jogos/plante-a-semente"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setJogosOpen(false)}
+                >
+                  <Gamepad2 size={14} strokeWidth={1.5} className="text-emerald-500" />
+                  Plante a Semente
+                </Link>
+              </div>
+            )}
+          </div>
+
           {isPresident && (
-            <Link to="/tesouraria" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-              Tesouraria
-            </Link>
+            <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
-          <Link to="/perfil" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-            Perfil
-          </Link>
+          <Link to="/painel" className={linkCls("/painel")}>Projeto</Link>
+          <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
           <button
             onClick={() => signOut()}
             className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
@@ -207,7 +251,55 @@ function NavBar() {
           </button>
         </nav>
 
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+        >
+          {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-40 py-2">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col">
+            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Início
+            </Link>
+            <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Agenda
+            </Link>
+            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Mensagem do Dia
+            </Link>
+            <Link to="/radio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Rádio
+            </Link>
+            <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Jogo: Plante a Semente
+            </Link>
+            {isPresident && (
+              <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                Tesouraria
+              </Link>
+            )}
+            <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Acompanhamento do Projeto
+            </Link>
+            <Link to="/perfil" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Meu Perfil
+            </Link>
+            <button
+              onClick={() => signOut()}
+              className="py-3 px-2 text-sm font-medium text-left text-red-400 hover:text-red-600 transition-colors"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
