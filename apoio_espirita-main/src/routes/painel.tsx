@@ -116,7 +116,7 @@ const roadmap: Item[] = [
 const badge: Record<Status, { label: string; color: string }> = {
   feito:     { label: "Feito",       color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" },
   andamento: { label: "Em andamento", color: "text-amber-400  bg-amber-400/10  border-amber-400/20"  },
-  planejado: { label: "Planejado",   color: "text-cyan-glow  bg-cyan-glow/10  border-cyan-glow/20"  },
+  planejado: { label: "Pendente",    color: "text-cyan-glow  bg-cyan-glow/10  border-cyan-glow/20"  },
 };
 
 const icon: Record<Status, string> = {
