@@ -185,6 +185,9 @@ function NavBar() {
           <Link to="/inicio" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-cyan-700 hover:bg-cyan-50 rounded-lg transition-colors">
             Início
           </Link>
+          <Link to="/agenda" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+            Agenda
+          </Link>
           <Link to="/painel" className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
             Projeto
           </Link>
