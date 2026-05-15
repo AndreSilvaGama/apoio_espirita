@@ -12,7 +12,8 @@ import {
 const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
-import { Radio, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -125,6 +126,28 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 300);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Voltar ao topo"
+      className="fixed bottom-20 right-4 z-50 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:shadow-lg transition-all duration-200"
+    >
+      <ArrowUp size={16} strokeWidth={2} />
+    </button>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
@@ -134,6 +157,7 @@ function RootComponent() {
           <NavBar />
           <Outlet />
           <Footer />
+          <BackToTop />
         </RadioProvider>
       </AuthProvider>
     </QueryClientProvider>

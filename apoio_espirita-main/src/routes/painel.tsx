@@ -42,6 +42,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Rádio Rio de Janeiro integrada", descricao: "Player de rádio integrado · Para automaticamente a música de piano ao ser ativada" },
   { status: "feito", titulo: "SEO completo", descricao: "Meta tags completas · og:image · twitter:card · JSON-LD WebSite + Organization · robots.txt · sitemap.xml · lang='pt-BR' · canonical URL" },
   { status: "feito", titulo: "Busca por palavra no acompanhamento do projeto", descricao: "Campo de busca filtra itens do roadmap em tempo real por título e descrição · Grupos vazios ocultados automaticamente · Contador de resultados" },
+  { status: "feito", titulo: "Botão de retornar ao topo em todas as páginas", descricao: "Aparece ao rolar mais de 300 px · Posicionado no canto inferior direito acima do rodapé · Rola suavemente até o início da página · Presente em todas as rotas públicas e autenticadas" },
 
   // PLANEJADO — Fundação (base para tudo)
   { status: "planejado", titulo: "Revisão e correção de redundâncias no site", descricao: "Auditoria de duplicidades visuais, textos e fluxos de navegação · Padronização de componentes" },
@@ -210,7 +211,7 @@ function Painel() {
           </div>
           <div className="h-2 rounded-full bg-white/5 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-glow to-emerald-400 transition-all duration-1000"
+              className="h-full rounded-full bg-linear-to-r from-cyan-glow to-emerald-400 transition-all duration-1000"
               style={{ width: `${pct}%` }}
             />
           </div>
