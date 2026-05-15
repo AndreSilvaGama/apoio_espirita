@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Wallet, Plus, TrendingUp, TrendingDown,
-  Trash2, ChevronLeft, ChevronRight, Calendar,
+  Trash2, ChevronLeft, ChevronRight, Calendar, Download,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,6 +171,28 @@ function Tesouraria() {
     fetchTransacoes();
   };
 
+  const handleExportarCSV = () => {
+    const cabecalho = ["Data", "Tipo", "Categoria", "Descrição", "Valor (R$)", "Observação"];
+    const linhas = transacoes.map((tx) => [
+      fmtData(tx.data),
+      tx.tipo === "receita" ? "Receita" : "Despesa",
+      tx.categoria,
+      tx.descricao,
+      Number(tx.valor).toFixed(2).replace(".", ","),
+      tx.observacao ?? "",
+    ]);
+    const csv = [cabecalho, ...linhas]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
+      .join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tesouraria_${profile?.sigla_casa}_${MESES[mes]}_${ano}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-3xl">
@@ -202,12 +224,23 @@ function Tesouraria() {
             <Calendar size={14} className="text-cyan-600" />
             {MESES[mes]} de {ano}
           </div>
-          <button
-            onClick={() => navegarMes(1)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            <ChevronRight size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            {transacoes.length > 0 && (
+              <button
+                onClick={handleExportarCSV}
+                title="Exportar planilha CSV"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 transition-colors"
+              >
+                <Download size={16} />
+              </button>
+            )}
+            <button
+              onClick={() => navegarMes(1)}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Cards de resumo */}

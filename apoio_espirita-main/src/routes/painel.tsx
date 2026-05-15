@@ -48,6 +48,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Campo de busca por palavra no acompanhamento do projeto", descricao: "Digite qualquer palavra para filtrar os itens desta lista em tempo real · Grupos sem resultado ficam ocultos automaticamente · Mostra quantos itens foram encontrados" },
   { status: "feito", titulo: "Botão para voltar ao topo da página", descricao: "Um botão com seta aparece no canto inferior direito da tela após rolar a página para baixo · Ao clicar, a tela volta suavemente ao início · Funciona em todas as páginas do site" },
   { status: "feito", titulo: "Solicitações de desenvolvimento aparecem no acompanhamento do projeto", descricao: "Ao preencher o formulário de solicitação no final desta página, o pedido é inserido automaticamente aqui como Pendente · Mostra o nome e a casa espírita de quem fez o pedido" },
+  { status: "feito", titulo: "Link para reportar problema no rodapé", descricao: "Botão 'Reportar problema' no rodapé de todas as páginas · Abre formulário para descrever o problema · Após enviar por e-mail, pergunta se quer também avisar pelo WhatsApp com a mensagem já preenchida" },
 
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
@@ -57,7 +58,8 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Site mais acessível para idosos e pessoas com dificuldades tecnológicas", descricao: "Letras maiores · Contraste adequado para quem tem dificuldade de visão · Botões e áreas de toque maiores para facilitar o uso no celular · Navegação simplificada" },
   { status: "planejado", titulo: "Perguntas e Respostas (FAQ) — ajuda para usar o site", descricao: "Página com as dúvidas mais comuns sobre como usar o site, como se cadastrar e sobre a doutrina espírita · Organizada por temas para facilitar a consulta" },
   { status: "planejado", titulo: "Mensagem do Dia com visual mais compacto", descricao: "Reduzir o espaço ocupado pela Mensagem do Dia na tela inicial para que o restante do painel fique mais visível sem precisar rolar a tela" },
-  { status: "planejado", titulo: "Menu de navegação completo com campo de busca geral", descricao: "Menu com acesso a todas as seções do site · Campo de busca para encontrar conteúdo, membros e casas espíritas rapidamente" },
+  { status: "feito", titulo: "Menu de navegação completo — todas as seções do site", descricao: "Menu com acesso a todos os recursos funcionando: Início, Agenda, Mensagem do Dia, Rádio, Jogos e Tesouraria · No celular abre como menu hambúrguer · Links ficam destacados na página ativa · Jogos agrupados em submenu" },
+  { status: "planejado", titulo: "Campo de busca geral — encontrar conteúdo, membros e casas", descricao: "Campo de busca para encontrar conteúdo publicado, membros da plataforma e casas espíritas cadastradas rapidamente, sem precisar navegar pelos menus" },
 
   // ── PENDENTE — Perfil e cadastro ─────────────────────────────────────────
 
@@ -97,7 +99,7 @@ const roadmap: Item[] = [
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
   { status: "feito",     titulo: "Agenda completa por casa espírita — compromissos e reuniões", descricao: "Presidentes e decisores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. O organizador marca quem compareceu e gera a ata automaticamente ao final da reunião." },
-  { status: "planejado", titulo: "Caderno de Presença Digital", descricao: "Os membros marcam presença nas reuniões com um toque na tela do celular · O coordenador vê um relatório completo por reunião e por membro · O histórico pode ser exportado" },
+  { status: "feito", titulo: "Caderno de Presença Digital", descricao: "Presença registrada dentro de cada evento da agenda · Aba 'Presenças' com relatório histórico: barra de frequência por membro e lista de presentes por evento" },
   { status: "planejado", titulo: "Escala de Trabalho — quem faz o quê e quando", descricao: "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular" },
   { status: "planejado", titulo: "Controle de manutenções da casa espírita", descricao: "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido" },
   { status: "planejado", titulo: "Cruzamento de habilidades dos membros com as necessidades do centro", descricao: "O sistema compara as habilidades cadastradas pelos membros com as necessidades da casa e envia alertas para voluntários quando alguém que tem aquela habilidade for necessário" },
@@ -116,7 +118,7 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Painel pessoal 'Meu Trabalho na Vinha'", descricao: "Cada membro tem um painel personalizado com informações relevantes para o seu cargo e suas atividades: compromissos agendados, escala de trabalho, tempo no site, conquistas e muito mais. O nome 'Dashboard' (palavra em inglês) é substituído por algo que todos entendam de imediato" },
   { status: "planejado", titulo: "Painel do Presidente — visão geral da casa", descricao: "Resumo financeiro, lista de tarefeiros, situação das atividades e funcionamento geral da casa espírita, tudo em um só lugar" },
   { status: "planejado", titulo: "Painel do Coordenador — acompanhamento da coordenação", descricao: "Visão das atividades sob sua responsabilidade: presenças, escalas, atendimentos e comunicados da coordenação" },
-  { status: "planejado", titulo: "Painel do Tesoureiro — resumo financeiro", descricao: "Entradas e saídas do mês, relatório financeiro e opção de exportar os dados para uma planilha" },
+  { status: "feito", titulo: "Painel do Tesoureiro — resumo financeiro com exportação", descricao: "Entradas e saídas do mês com saldo, total de receitas e despesas · Botão para exportar os dados do mês como planilha CSV · Navegação por qualquer mês do histórico" },
   { status: "planejado", titulo: "Painel de configurações do Presidente — ligar e desligar recursos", descricao: "O Presidente pode ativar ou desativar cada funcionalidade do site para a sua casa. Cada recurso tem três opções: desligado, opcional (o membro escolhe) ou obrigatório para todos · Inclui sistema de votação para decisões coletivas da casa" },
   { status: "planejado", titulo: "Gerenciamento de solicitações de desenvolvimento — somente DEV", descricao: "Área exclusiva no perfil do DEV para visualizar, organizar e atualizar o status das solicitações de desenvolvimento feitas pelos membros" },
 

@@ -78,7 +78,7 @@ function AgendaPage() {
   const [loadingEventos, setLoadingEventos] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [aba, setAba] = useState<"proximos" | "passados">("proximos");
+  const [aba, setAba] = useState<"proximos" | "passados" | "presencas">("proximos");
 
   // Form
   const [fTitulo, setFTitulo] = useState("");
@@ -139,6 +139,21 @@ function AgendaPage() {
     .filter((e) => isPassado(e.data_fim ?? e.data_inicio))
     .sort((a, b) => new Date(b.data_inicio).getTime() - new Date(a.data_inicio).getTime());
   const lista = aba === "proximos" ? proximos : passados;
+
+  // ── Relatório de presenças ──
+  const eventosComPresenca = eventos.filter((e) =>
+    e.agenda_participantes.some((p) => p.presente)
+  );
+  const mapMembro: Record<string, { nome: string; presencas: number; total: number }> = {};
+  eventosComPresenca.forEach((ev) => {
+    ev.agenda_participantes.forEach((p) => {
+      const nome = p.profiles?.nome ?? "Membro";
+      if (!mapMembro[nome]) mapMembro[nome] = { nome, presencas: 0, total: 0 };
+      mapMembro[nome].total += 1;
+      if (p.presente) mapMembro[nome].presencas += 1;
+    });
+  });
+  const relatorioMembros = Object.values(mapMembro).sort((a, b) => b.presencas - a.presencas);
 
   // ── Criar evento ──
   const handleCreate = async () => {
@@ -388,18 +403,95 @@ function AgendaPage() {
 
         {/* ── Tabs ── */}
         <div className="flex gap-1 mb-6 bg-white/5 rounded-xl p-1">
-          {(["proximos", "passados"] as const).map((val) => (
+          {(["proximos", "passados", "presencas"] as const).map((val) => (
             <button key={val} onClick={() => setAba(val)}
               className={`flex-1 py-2 text-xs uppercase tracking-widest rounded-lg transition-colors ${aba === val ? "bg-white text-gray-800 shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"}`}>
-              {val === "proximos" ? "Próximos" : "Passados"}
+              {val === "proximos" ? "Próximos" : val === "passados" ? "Passados" : "Presenças"}
             </button>
           ))}
         </div>
 
+        {/* ── Relatório de Presenças ── */}
+        {aba === "presencas" && (
+          loadingEventos ? (
+            <p className="text-sm text-muted-foreground/50 text-center py-16">Carregando…</p>
+          ) : eventosComPresenca.length === 0 ? (
+            <div className="text-center py-16">
+              <CalendarDays size={40} className="mx-auto text-muted-foreground/20 mb-3" />
+              <p className="text-sm text-muted-foreground/50">
+                Nenhuma presença registrada ainda. Marque as presenças nos eventos passados.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground/50">
+                Histórico de presenças — {eventosComPresenca.length} evento{eventosComPresenca.length !== 1 ? "s" : ""} com presença registrada
+              </p>
+
+              {/* Resumo por membro */}
+              <div className="glass rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 border-b border-white/5">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground/50">Por membro</p>
+                </div>
+                <div className="divide-y divide-white/5">
+                  {relatorioMembros.map((m) => (
+                    <div key={m.nome} className="px-5 py-3 flex items-center gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground truncate">{m.nome}</p>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="w-24 bg-white/10 rounded-full h-1.5">
+                          <div
+                            className="bg-emerald-400 h-1.5 rounded-full transition-all"
+                            style={{ width: `${Math.round((m.presencas / eventosComPresenca.length) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground/60 w-16 text-right">
+                          {m.presencas}/{eventosComPresenca.length} evento{eventosComPresenca.length !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Histórico por evento */}
+              <div className="glass rounded-2xl overflow-hidden">
+                <div className="px-5 py-3 border-b border-white/5">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground/50">Por evento</p>
+                </div>
+                <div className="divide-y divide-white/5">
+                  {eventosComPresenca.map((ev) => {
+                    const presentes = ev.agenda_participantes.filter((p) => p.presente);
+                    return (
+                      <div key={ev.id} className="px-5 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm text-foreground truncate">{ev.titulo}</p>
+                            <p className="text-xs text-muted-foreground/50 mt-0.5">{fmtData(ev.data_inicio)}</p>
+                          </div>
+                          <span className="shrink-0 text-xs font-medium text-emerald-600 bg-emerald-400/10 px-2.5 py-1 rounded-full">
+                            {presentes.length} presente{presentes.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        {presentes.length > 0 && (
+                          <p className="text-xs text-muted-foreground/40 mt-1.5 leading-relaxed">
+                            {presentes.map((p) => p.profiles?.nome ?? "Membro").join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )
+        )}
+
         {/* ── Event list ── */}
-        {loadingEventos ? (
+        {aba !== "presencas" && loadingEventos ? (
           <p className="text-sm text-muted-foreground/50 text-center py-16">Carregando eventos…</p>
-        ) : lista.length === 0 ? (
+        ) : aba !== "presencas" && lista.length === 0 ? (
           <div className="text-center py-16">
             <CalendarDays size={40} className="mx-auto text-muted-foreground/20 mb-3" />
             <p className="text-sm text-muted-foreground/50">
@@ -412,7 +504,7 @@ function AgendaPage() {
               </button>
             )}
           </div>
-        ) : (
+        ) : aba !== "presencas" ? (
           <div className="space-y-3">
             {lista.map((evento) => (
               <EventoCard
@@ -430,7 +522,7 @@ function AgendaPage() {
               />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </main>
   );
