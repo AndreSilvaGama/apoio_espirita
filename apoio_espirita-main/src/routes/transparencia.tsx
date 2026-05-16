@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Star, Gem, Flower2, SlidersHorizontal, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/transparencia")({
@@ -61,6 +62,7 @@ O site é um instrumento. Quem o conduz com amor e responsabilidade são os trab
 ];
 
 function Transparencia() {
+  const { user } = useAuth();
   return (
     <main className="page-light min-h-screen px-6 py-20">
       <div className="mx-auto max-w-3xl">
@@ -118,10 +120,10 @@ function Transparencia() {
             Luz · Estudo · Serviço
           </p>
           <Link
-            to="/"
+            to={user ? "/inicio" : "/"}
             className="inline-block text-sm text-cyan-glow/70 hover:text-cyan-glow transition-colors"
           >
-            ← Voltar ao início
+            ← Voltar
           </Link>
         </div>
       </div>
