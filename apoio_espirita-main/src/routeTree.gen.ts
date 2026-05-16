@@ -18,7 +18,9 @@ import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InicioRouteImport } from './routes/inicio'
+import { Route as FebRouteImport } from './routes/feb'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
@@ -68,9 +70,19 @@ const InicioRoute = InicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FebRoute = FebRouteImport.update({
+  id: '/feb',
+  path: '/feb',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
   id: '/completar-perfil',
   path: '/completar-perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgendaRoute = AgendaRouteImport.update({
@@ -92,7 +104,9 @@ const JogosPlanteASementeRoute = JogosPlanteASementeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
@@ -107,7 +121,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
@@ -123,7 +139,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
@@ -140,7 +158,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agenda'
+    | '/ajuda'
     | '/completar-perfil'
+    | '/feb'
     | '/inicio'
     | '/login'
     | '/mensagem-do-dia'
@@ -155,7 +175,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agenda'
+    | '/ajuda'
     | '/completar-perfil'
+    | '/feb'
     | '/inicio'
     | '/login'
     | '/mensagem-do-dia'
@@ -170,7 +192,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agenda'
+    | '/ajuda'
     | '/completar-perfil'
+    | '/feb'
     | '/inicio'
     | '/login'
     | '/mensagem-do-dia'
@@ -186,7 +210,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
+  AjudaRoute: typeof AjudaRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
+  FebRoute: typeof FebRoute
   InicioRoute: typeof InicioRoute
   LoginRoute: typeof LoginRoute
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
@@ -264,11 +290,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InicioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feb': {
+      id: '/feb'
+      path: '/feb'
+      fullPath: '/feb'
+      preLoaderRoute: typeof FebRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/completar-perfil': {
       id: '/completar-perfil'
       path: '/completar-perfil'
       fullPath: '/completar-perfil'
       preLoaderRoute: typeof CompletarPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agenda': {
@@ -298,7 +338,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
+  AjudaRoute: AjudaRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
+  FebRoute: FebRoute,
   InicioRoute: InicioRoute,
   LoginRoute: LoginRoute,
   MensagemDoDiaRoute: MensagemDoDiaRoute,
