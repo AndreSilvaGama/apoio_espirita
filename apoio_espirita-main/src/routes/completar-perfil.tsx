@@ -55,6 +55,8 @@ function CompletarPerfil() {
   const [nome, setNome] = useState("");
   const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [loadingCidades, setLoadingCidades] = useState(false);
   const [bairro, setBairro] = useState("");
   const [cargo, setCargo] = useState("");
   const [nomeCasa, setNomeCasa] = useState("");
@@ -88,6 +90,20 @@ function CompletarPerfil() {
       if (data) setSiglas(data.map((r) => r.sigla));
     });
   }, []);
+
+  useEffect(() => {
+    if (!uf) { setCidades([]); return; }
+    setLoadingCidades(true);
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`)
+      .then((r) => r.json())
+      .then((data: { nome: string }[]) => {
+        const nomes = data.map((d) => d.nome);
+        setCidades(nomes);
+        setCidade((prev) => (nomes.includes(prev) ? prev : ""));
+        setLoadingCidades(false);
+      })
+      .catch(() => setLoadingCidades(false));
+  }, [uf]);
 
   useEffect(() => {
     if (!selected || !uf || !cidade.trim()) { setCasaExiste(null); setNomeCasa(""); return; }
@@ -217,13 +233,19 @@ function CompletarPerfil() {
               <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                 Cidade <span className="text-cyan-glow">*</span>
               </label>
-              <input
-                type="text"
-                placeholder="Sua cidade"
+              <select
                 value={cidade}
                 onChange={(e) => { setCidade(e.target.value); setError(""); }}
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
-              />
+                disabled={!uf || loadingCidades}
+                className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50"
+              >
+                <option value="">
+                  {loadingCidades ? "Carregando…" : uf ? "Selecione a cidade" : "Selecione o estado"}
+                </option>
+                {cidades.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
           </div>
 
