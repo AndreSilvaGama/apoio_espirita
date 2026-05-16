@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { Search, X, Download, ExternalLink, FileText, BookOpen, ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -135,114 +135,192 @@ const COR: Record<Exclude<Categoria, "Todos">, string> = {
 
 const fileUrl = (arquivo: string) => `/feb/${encodeURIComponent(arquivo)}`;
 
-function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void }) {
-  const [pdf, setPdf] = useState<any>(null);
-  const [totalPaginas, setTotalPaginas] = useState(0);
-  const [pagina, setPagina] = useState(1);
-  const [inputPagina, setInputPagina] = useState("1");
-  const [escala, setEscala] = useState(1.3);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(false);
-  const [busca, setBusca] = useState("");
-  const [resultados, setResultados] = useState<Array<{ pagina: number; trecho: string }>>([]);
-  const [textos, setTextos] = useState<Array<{ pagina: number; texto: string }>>([]);
+/* Componente de página individual — renderiza sob demanda via IntersectionObserver */
+const PdfPage = forwardRef<
+  HTMLDivElement,
+  {
+    pdf: any;
+    pageNum: number;
+    baseWidth: number;
+    baseHeight: number;
+    textItems: any[];
+    escala: number;
+    highlight: string | null;
+    scrollRoot: React.RefObject<HTMLDivElement | null>;
+  }
+>(function PdfPage({ pdf, pageNum, baseWidth, baseHeight, textItems, escala, highlight, scrollRoot }, ref) {
+  const divRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const renderTaskRef = useRef<any>(null);
-  const paginaRef = useRef(1);
-  paginaRef.current = pagina;
+  const [visible, setVisible] = useState(false);
 
-  const goToPagina = (p: number, total?: number) => {
-    const max = total ?? totalPaginas;
-    const n = Math.max(1, Math.min(max || 1, p));
-    setPagina(n);
-    setInputPagina(String(n));
+  const mergeRef = (el: HTMLDivElement | null) => {
+    (divRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    if (typeof ref === "function") ref(el);
+    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
   };
 
   useEffect(() => {
-    let cancelado = false;
-    setCarregando(true);
-    setErro(false);
-    setPdf(null);
-    setPagina(1);
-    setInputPagina("1");
-    setTextos([]);
-    setResultados([]);
-    setBusca("");
+    const el = divRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { root: scrollRoot.current ?? undefined, rootMargin: "400px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [scrollRoot]);
+
+  useEffect(() => {
+    if (!pdf || !visible) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    let active = true;
 
     (async () => {
       try {
-        const pdfjsLib = await import("pdfjs-dist");
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-        const pdfDoc = await pdfjsLib.getDocument(fileUrl(doc.arquivo)).promise;
-        if (cancelado) return;
-        setPdf(pdfDoc);
-        setTotalPaginas(pdfDoc.numPages);
-        setCarregando(false);
-        const all: Array<{ pagina: number; texto: string }> = [];
-        for (let i = 1; i <= pdfDoc.numPages; i++) {
-          if (cancelado) return;
-          const pg = await pdfDoc.getPage(i);
-          const content = await pg.getTextContent();
-          const texto = (content.items as Array<{ str: string }>).map((it) => it.str).join(" ");
-          all.push({ pagina: i, texto });
+        const pg = await pdf.getPage(pageNum);
+        if (!active) return;
+        const viewport = pg.getViewport({ scale: escala });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx || !active) return;
+        await pg.render({ canvasContext: ctx, viewport }).promise;
+        if (!active || !highlight) return;
+
+        // Destaca ocorrências da palavra pesquisada
+        const termo = highlight.toLowerCase();
+        ctx.fillStyle = "rgba(255, 220, 0, 0.45)";
+        for (const item of textItems) {
+          if (!item.str || !item.str.toLowerCase().includes(termo)) continue;
+          const tx: number = item.transform[4];
+          const ty: number = item.transform[5];
+          const cx = tx * escala;
+          const cy = (baseHeight - ty) * escala;
+          const w = (item.width ?? 0) * escala;
+          const h = ((item.height ?? 0) || Math.abs(item.transform[3] ?? 0)) * escala;
+          if (w > 0 && h > 0) ctx.fillRect(cx, cy - h, w, h * 1.15);
         }
-        if (!cancelado) setTextos(all);
+      } catch { /* ignorar cancelamentos */ }
+    })();
+
+    return () => { active = false; };
+  }, [pdf, pageNum, escala, visible, highlight, textItems, baseHeight]);
+
+  return (
+    <div
+      ref={mergeRef}
+      data-pg={pageNum}
+      style={{ width: baseWidth * escala, minHeight: baseHeight * escala }}
+      className="relative bg-white shadow-xl"
+    >
+      <canvas ref={canvasRef} className="block" />
+    </div>
+  );
+});
+
+function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void }) {
+  const [pdf, setPdf] = useState<any>(null);
+  const [pageData, setPageData] = useState<Array<{ width: number; height: number; items: any[] }>>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false);
+  const [escala, setEscala] = useState(1.3);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [inputPagina, setInputPagina] = useState("1");
+  const [busca, setBusca] = useState("");
+  const [resultados, setResultados] = useState<Array<{ pagina: number; trecho: string }>>([]);
+  const [highlight, setHighlight] = useState<{ pagina: number; termo: string } | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pageRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCarregando(true); setErro(false); setPdf(null); setPageData([]);
+    setResultados([]); setBusca(""); setHighlight(null);
+    setPaginaAtual(1); setInputPagina("1");
+
+    (async () => {
+      try {
+        const lib = await import("pdfjs-dist");
+        lib.GlobalWorkerOptions.workerSrc =
+          `https://unpkg.com/pdfjs-dist@${lib.version}/build/pdf.worker.min.mjs`;
+        const pdfDoc = await lib.getDocument(fileUrl(doc.arquivo)).promise;
+        if (cancelled) return;
+        setPdf(pdfDoc);
+        const data: Array<{ width: number; height: number; items: any[] }> = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          if (cancelled) return;
+          const pg = await pdfDoc.getPage(i);
+          const vp = pg.getViewport({ scale: 1 });
+          const tc = await pg.getTextContent();
+          data.push({ width: vp.width, height: vp.height, items: tc.items });
+        }
+        if (!cancelled) { setPageData(data); setCarregando(false); }
       } catch {
-        if (!cancelado) { setErro(true); setCarregando(false); }
+        if (!cancelled) { setErro(true); setCarregando(false); }
       }
     })();
 
-    return () => { cancelado = true; };
+    return () => { cancelled = true; };
   }, [doc.arquivo]);
 
+  // Atualiza contador de página com base no scroll
   useEffect(() => {
-    if (!pdf) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    let active = true;
-
-    pdf.getPage(pagina).then((pg: any) => {
-      if (!active) return;
-      const viewport = pg.getViewport({ scale: escala });
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx || !active) return;
-      pg.render({ canvasContext: ctx, viewport });
-    });
-
-    return () => { active = false; };
-  }, [pdf, pagina, escala]);
+    const root = scrollRef.current;
+    if (!root || pageData.length === 0) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        let best: IntersectionObserverEntry | null = null;
+        for (const e of entries) {
+          if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+        }
+        if (best?.isIntersecting) {
+          const pg = parseInt(best.target.getAttribute("data-pg") ?? "1");
+          setPaginaAtual(pg);
+          setInputPagina(String(pg));
+        }
+      },
+      { root, threshold: [0, 0.25, 0.5, 0.75, 1.0] }
+    );
+    pageRefs.current.forEach((el) => { if (el) obs.observe(el); });
+    return () => obs.disconnect();
+  }, [pageData]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { onClose(); return; }
-      if ((e.target as HTMLElement).tagName === "INPUT") return;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") goToPagina(paginaRef.current + 1);
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goToPagina(paginaRef.current - 1);
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [onClose]);
 
+  const goToPagina = (n: number) => {
+    const idx = Math.max(0, Math.min(pageData.length - 1, n - 1));
+    pageRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleBuscar = () => {
     const termo = busca.trim().toLowerCase();
-    if (!termo || textos.length === 0) { setResultados([]); return; }
-    const found = textos
-      .filter(({ texto }) => texto.toLowerCase().includes(termo))
-      .map(({ pagina: p, texto }) => {
+    setHighlight(null);
+    if (!termo) { setResultados([]); return; }
+    const found = pageData
+      .map((p, i) => {
+        const texto = p.items.map((it: any) => it.str ?? "").join(" ");
+        if (!texto.toLowerCase().includes(termo)) return null;
         const idx = texto.toLowerCase().indexOf(termo);
-        const start = Math.max(0, idx - 55);
-        const end = Math.min(texto.length, idx + termo.length + 55);
-        const trecho = (start > 0 ? "…" : "") + texto.slice(start, end) + (end < texto.length ? "…" : "");
-        return { pagina: p, trecho };
-      });
+        const s = Math.max(0, idx - 50);
+        const e = Math.min(texto.length, idx + termo.length + 50);
+        return { pagina: i + 1, trecho: (s > 0 ? "…" : "") + texto.slice(s, e) + (e < texto.length ? "…" : "") };
+      })
+      .filter(Boolean) as Array<{ pagina: number; trecho: string }>;
     setResultados(found);
   };
 
+  const irParaResultado = (pagina: number) => {
+    setHighlight({ pagina, termo: busca.trim() });
+    goToPagina(pagina);
+  };
+
+  const totalPaginas = pageData.length;
   const btnCls = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0 disabled:opacity-30";
 
   return (
@@ -254,7 +332,7 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
         <p className="text-sm font-medium text-white truncate flex-1 min-w-0">{doc.titulo}</p>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => goToPagina(pagina - 1)} disabled={pagina <= 1 || carregando} className={btnCls}>
+          <button type="button" onClick={() => goToPagina(paginaAtual - 1)} disabled={paginaAtual <= 1 || carregando} className={btnCls}>
             <ChevronLeft size={14} strokeWidth={2} />
           </button>
           <input
@@ -267,27 +345,17 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
             className="w-11 text-center bg-gray-700 rounded px-1 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
           />
           <span className="text-xs text-gray-500 mr-1">/ {totalPaginas || "—"}</span>
-          <button onClick={() => goToPagina(pagina + 1)} disabled={pagina >= totalPaginas || carregando} className={btnCls}>
+          <button type="button" onClick={() => goToPagina(paginaAtual + 1)} disabled={paginaAtual >= totalPaginas || carregando} className={btnCls}>
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            type="button"
-            onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))}
-            className={btnCls}
-            title="Diminuir zoom"
-          >
+          <button type="button" onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))} className={btnCls} title="Diminuir zoom">
             <Minus size={14} strokeWidth={2} />
           </button>
           <span className="text-xs text-gray-400 w-12 text-center select-none">{Math.round(escala * 100)}%</span>
-          <button
-            type="button"
-            onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))}
-            className={btnCls}
-            title="Aumentar zoom"
-          >
+          <button type="button" onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))} className={btnCls} title="Aumentar zoom">
             <Plus size={14} strokeWidth={2} />
           </button>
         </div>
@@ -298,7 +366,7 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
         <a href={fileUrl(doc.arquivo)} target="_blank" rel="noopener noreferrer" className={btnCls}>
           <ExternalLink size={13} strokeWidth={1.5} /> Nova aba
         </a>
-        <button onClick={onClose} className={`${btnCls} hover:bg-red-900/40`}>
+        <button type="button" onClick={onClose} className={`${btnCls} hover:bg-red-900/40`}>
           <X size={13} strokeWidth={2} /> Fechar
         </button>
       </div>
@@ -312,11 +380,8 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
               autoFocus
               type="text"
               placeholder={
-                textos.length > 0
-                  ? "Buscar palavras no documento… (Enter)"
-                  : carregando
-                  ? "Aguardando carregamento…"
-                  : "Indexando páginas para busca…"
+                pageData.length > 0 ? "Buscar palavras no documento… (Enter)" :
+                carregando ? "Aguardando carregamento…" : "Indexando páginas…"
               }
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
@@ -324,17 +389,14 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
               className="w-full bg-gray-700 border border-gray-500 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
-          <button
-            onClick={handleBuscar}
-            disabled={!busca.trim() || textos.length === 0}
-            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-30 transition-colors shrink-0"
-          >
+          <button type="button" onClick={handleBuscar} disabled={!busca.trim() || pageData.length === 0}
+            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-30 transition-colors shrink-0">
             Buscar
           </button>
-          {textos.length > 0 && !busca.trim() && (
-            <span className="text-xs text-gray-600 shrink-0 hidden sm:inline">{textos.length} págs. indexadas</span>
+          {pageData.length > 0 && !busca.trim() && (
+            <span className="text-xs text-gray-600 shrink-0 hidden sm:inline">{pageData.length} págs. indexadas</span>
           )}
-          {busca.trim() && resultados.length === 0 && textos.length > 0 && (
+          {busca.trim() && resultados.length === 0 && pageData.length > 0 && (
             <span className="text-xs text-gray-500 shrink-0">Sem resultados</span>
           )}
         </div>
@@ -345,18 +407,14 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
               <span className="text-[11px] text-gray-300 font-medium">
                 {resultados.length} página{resultados.length > 1 ? "s" : ""} com "{busca}"
               </span>
-              <button onClick={() => { setResultados([]); setBusca(""); }} className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
-                Limpar
-              </button>
+              <button type="button" onClick={() => { setResultados([]); setBusca(""); setHighlight(null); }}
+                className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">Limpar</button>
             </div>
             <div className="max-h-40 overflow-y-auto divide-y divide-gray-700 bg-gray-800">
               {resultados.map(({ pagina: p, trecho }) => (
-                <button
-                  key={p}
-                  onClick={() => goToPagina(p)}
-                  className={`w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-baseline gap-2 ${p === pagina ? "bg-cyan-900/30" : ""}`}
-                >
-                  <span className={`text-[11px] font-bold shrink-0 ${p === pagina ? "text-cyan-400" : "text-gray-300"}`}>
+                <button key={p} type="button" onClick={() => irParaResultado(p)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-baseline gap-2 ${highlight?.pagina === p ? "bg-cyan-900/30" : ""}`}>
+                  <span className={`text-[11px] font-bold shrink-0 ${highlight?.pagina === p ? "text-cyan-400" : "text-gray-300"}`}>
                     Pág. {p}
                   </span>
                   <span className="text-[11px] text-gray-500 truncate">{trecho}</span>
@@ -367,27 +425,40 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
         )}
       </div>
 
-      {/* Área do PDF */}
-      <div className="flex-1 overflow-auto bg-gray-600 flex justify-center py-6 px-4 relative">
+      {/* Área de scroll contínuo */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto bg-gray-500">
         {carregando && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3">
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-gray-500 border-t-cyan-400 animate-spin" />
             <span className="text-sm">Carregando documento…</span>
           </div>
         )}
         {erro && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3">
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
             <span className="text-sm">Não foi possível carregar este documento.</span>
             <a href={fileUrl(doc.arquivo)} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:underline">
               Abrir em nova aba
             </a>
           </div>
         )}
-        <canvas
-          ref={canvasRef}
-          className={`shadow-2xl ${carregando || erro ? "invisible" : ""}`}
-          style={{ maxWidth: "100%", alignSelf: "flex-start" }}
-        />
+        {!carregando && !erro && (
+          <div className="flex flex-col items-center py-4 gap-3">
+            {pageData.map((p, i) => (
+              <PdfPage
+                key={`${doc.arquivo}-${i}`}
+                ref={(el) => { pageRefs.current[i] = el; }}
+                pdf={pdf}
+                pageNum={i + 1}
+                baseWidth={p.width}
+                baseHeight={p.height}
+                textItems={p.items}
+                escala={escala}
+                highlight={highlight?.pagina === i + 1 ? highlight.termo : null}
+                scrollRoot={scrollRef}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
