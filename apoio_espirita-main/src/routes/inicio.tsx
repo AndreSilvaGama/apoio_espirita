@@ -154,7 +154,7 @@ function Inicio() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal)) {
+    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) {
       navigate({ to: "/completar-perfil" });
     }
   }, [user, profile, loading, navigate]);
