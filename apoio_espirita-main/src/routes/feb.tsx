@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Search, X, Download, ExternalLink, FileText, BookOpen, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Search, X, Download, ExternalLink, FileText, BookOpen, ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/feb")({
@@ -197,26 +197,23 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
   }, [doc.arquivo]);
 
   useEffect(() => {
-    if (!pdf || !canvasRef.current) return;
-    let cancelado = false;
-    renderTaskRef.current?.cancel();
-    renderTaskRef.current = null;
+    if (!pdf) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    (async () => {
-      try {
-        const pg = await pdf.getPage(pagina);
-        if (cancelado) return;
-        const viewport = pg.getViewport({ scale: escala });
-        const canvas = canvasRef.current!;
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        const task = pg.render({ canvasContext: canvas.getContext("2d")!, viewport });
-        renderTaskRef.current = task;
-        await task.promise;
-      } catch { /* cancelado */ }
-    })();
+    let active = true;
 
-    return () => { cancelado = true; };
+    pdf.getPage(pagina).then((pg: any) => {
+      if (!active) return;
+      const viewport = pg.getViewport({ scale: escala });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx || !active) return;
+      pg.render({ canvasContext: ctx, viewport });
+    });
+
+    return () => { active = false; };
   }, [pdf, pagina, escala]);
 
   useEffect(() => {
@@ -276,12 +273,22 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))} className={btnCls}>
-            <ZoomOut size={14} strokeWidth={1.5} />
+          <button
+            type="button"
+            onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))}
+            className={btnCls}
+            title="Diminuir zoom"
+          >
+            <Minus size={14} strokeWidth={2} />
           </button>
-          <span className="text-xs text-gray-400 w-9 text-center">{Math.round(escala * 100)}%</span>
-          <button onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))} className={btnCls}>
-            <ZoomIn size={14} strokeWidth={1.5} />
+          <span className="text-xs text-gray-400 w-12 text-center select-none">{Math.round(escala * 100)}%</span>
+          <button
+            type="button"
+            onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))}
+            className={btnCls}
+            title="Aumentar zoom"
+          >
+            <Plus size={14} strokeWidth={2} />
           </button>
         </div>
 
@@ -361,24 +368,26 @@ function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void
       </div>
 
       {/* Área do PDF */}
-      <div className="flex-1 overflow-auto bg-gray-600 flex justify-center py-6 px-4">
+      <div className="flex-1 overflow-auto bg-gray-600 flex justify-center py-6 px-4 relative">
         {carregando && (
-          <div className="flex flex-col items-center justify-center text-gray-400 gap-3 mt-20">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-gray-500 border-t-cyan-400 animate-spin" />
             <span className="text-sm">Carregando documento…</span>
           </div>
         )}
         {erro && (
-          <div className="flex flex-col items-center justify-center text-gray-400 gap-3 mt-20">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3">
             <span className="text-sm">Não foi possível carregar este documento.</span>
             <a href={fileUrl(doc.arquivo)} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:underline">
               Abrir em nova aba
             </a>
           </div>
         )}
-        {!carregando && !erro && (
-          <canvas ref={canvasRef} className="shadow-2xl" style={{ maxWidth: "100%", height: "auto" }} />
-        )}
+        <canvas
+          ref={canvasRef}
+          className={`shadow-2xl ${carregando || erro ? "invisible" : ""}`}
+          style={{ maxWidth: "100%", alignSelf: "flex-start" }}
+        />
       </div>
     </div>
   );
