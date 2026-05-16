@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Search, X, Download, ExternalLink, FileText, BookOpen } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Search, X, Download, ExternalLink, FileText, BookOpen, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/feb")({
@@ -136,63 +136,250 @@ const COR: Record<Exclude<Categoria, "Todos">, string> = {
 const fileUrl = (arquivo: string) => `/feb/${encodeURIComponent(arquivo)}`;
 
 function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void }) {
+  const [pdf, setPdf] = useState<any>(null);
+  const [totalPaginas, setTotalPaginas] = useState(0);
+  const [pagina, setPagina] = useState(1);
+  const [inputPagina, setInputPagina] = useState("1");
+  const [escala, setEscala] = useState(1.3);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [resultados, setResultados] = useState<Array<{ pagina: number; trecho: string }>>([]);
+  const [textos, setTextos] = useState<Array<{ pagina: number; texto: string }>>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const renderTaskRef = useRef<any>(null);
+  const paginaRef = useRef(1);
+  paginaRef.current = pagina;
+
+  const goToPagina = (p: number, total?: number) => {
+    const max = total ?? totalPaginas;
+    const n = Math.max(1, Math.min(max || 1, p));
+    setPagina(n);
+    setInputPagina(String(n));
+  };
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    let cancelado = false;
+    setCarregando(true);
+    setErro(false);
+    setPdf(null);
+    setPagina(1);
+    setInputPagina("1");
+    setTextos([]);
+    setResultados([]);
+    setBusca("");
+
+    (async () => {
+      try {
+        const pdfjsLib = await import("pdfjs-dist");
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+        const pdfDoc = await pdfjsLib.getDocument(fileUrl(doc.arquivo)).promise;
+        if (cancelado) return;
+        setPdf(pdfDoc);
+        setTotalPaginas(pdfDoc.numPages);
+        setCarregando(false);
+        const all: Array<{ pagina: number; texto: string }> = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+          if (cancelado) return;
+          const pg = await pdfDoc.getPage(i);
+          const content = await pg.getTextContent();
+          const texto = (content.items as Array<{ str: string }>).map((it) => it.str).join(" ");
+          all.push({ pagina: i, texto });
+        }
+        if (!cancelado) setTextos(all);
+      } catch {
+        if (!cancelado) { setErro(true); setCarregando(false); }
+      }
+    })();
+
+    return () => { cancelado = true; };
+  }, [doc.arquivo]);
+
+  useEffect(() => {
+    if (!pdf || !canvasRef.current) return;
+    let cancelado = false;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+
+    (async () => {
+      try {
+        const pg = await pdf.getPage(pagina);
+        if (cancelado) return;
+        const viewport = pg.getViewport({ scale: escala });
+        const canvas = canvasRef.current!;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const task = pg.render({ canvasContext: canvas.getContext("2d")!, viewport });
+        renderTaskRef.current = task;
+        await task.promise;
+      } catch { /* cancelado */ }
+    })();
+
+    return () => { cancelado = true; };
+  }, [pdf, pagina, escala]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { onClose(); return; }
+      if ((e.target as HTMLElement).tagName === "INPUT") return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") goToPagina(paginaRef.current + 1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   goToPagina(paginaRef.current - 1);
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [onClose]);
+
+  const handleBuscar = () => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo || textos.length === 0) { setResultados([]); return; }
+    const found = textos
+      .filter(({ texto }) => texto.toLowerCase().includes(termo))
+      .map(({ pagina: p, texto }) => {
+        const idx = texto.toLowerCase().indexOf(termo);
+        const start = Math.max(0, idx - 55);
+        const end = Math.min(texto.length, idx + termo.length + 55);
+        const trecho = (start > 0 ? "…" : "") + texto.slice(start, end) + (end < texto.length ? "…" : "");
+        return { pagina: p, trecho };
+      });
+    setResultados(found);
+  };
+
+  const btnCls = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0 disabled:opacity-30";
 
   return (
     <div className="fixed inset-0 z-200 flex flex-col bg-gray-900">
-      {/* Barra superior */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <FileText size={16} strokeWidth={1.5} className="text-gray-400 shrink-0" />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{doc.titulo}</p>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
-              Federação Espírita Brasileira · Use Ctrl+F para buscar palavras
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 ml-4">
-          <a
-            href={fileUrl(doc.arquivo)}
-            download={doc.arquivo}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-          >
-            <Download size={13} strokeWidth={1.5} />
-            Baixar
-          </a>
-          <a
-            href={fileUrl(doc.arquivo)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-          >
-            <ExternalLink size={13} strokeWidth={1.5} />
-            Nova aba
-          </a>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
-          >
-            <X size={14} strokeWidth={2} />
-            Fechar
+
+      {/* Barra 1 — título, navegação, zoom, ações */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 border-b border-gray-700 shrink-0 flex-wrap">
+        <FileText size={15} strokeWidth={1.5} className="text-gray-400 shrink-0" />
+        <p className="text-sm font-medium text-white truncate flex-1 min-w-0">{doc.titulo}</p>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={() => goToPagina(pagina - 1)} disabled={pagina <= 1 || carregando} className={btnCls}>
+            <ChevronLeft size={14} strokeWidth={2} />
+          </button>
+          <input
+            type="number" min={1} max={totalPaginas || 1}
+            value={inputPagina}
+            onChange={(e) => setInputPagina(e.target.value)}
+            onBlur={() => goToPagina(Number(inputPagina))}
+            onKeyDown={(e) => e.key === "Enter" && goToPagina(Number(inputPagina))}
+            disabled={carregando}
+            className="w-11 text-center bg-gray-700 rounded px-1 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
+          />
+          <span className="text-xs text-gray-500 mr-1">/ {totalPaginas || "—"}</span>
+          <button onClick={() => goToPagina(pagina + 1)} disabled={pagina >= totalPaginas || carregando} className={btnCls}>
+            <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))} className={btnCls}>
+            <ZoomOut size={14} strokeWidth={1.5} />
+          </button>
+          <span className="text-xs text-gray-400 w-9 text-center">{Math.round(escala * 100)}%</span>
+          <button onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))} className={btnCls}>
+            <ZoomIn size={14} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <a href={fileUrl(doc.arquivo)} download={doc.arquivo} className={btnCls}>
+          <Download size={13} strokeWidth={1.5} /> Baixar
+        </a>
+        <a href={fileUrl(doc.arquivo)} target="_blank" rel="noopener noreferrer" className={btnCls}>
+          <ExternalLink size={13} strokeWidth={1.5} /> Nova aba
+        </a>
+        <button onClick={onClose} className={`${btnCls} hover:bg-red-900/40`}>
+          <X size={13} strokeWidth={2} /> Fechar
+        </button>
       </div>
 
-      {/* Iframe */}
-      <iframe
-        src={fileUrl(doc.arquivo)}
-        title={doc.titulo}
-        className="flex-1 w-full border-0"
-      />
+      {/* Barra 2 — busca sempre visível */}
+      <div className="shrink-0 bg-gray-800 border-b border-gray-600 px-4 py-3">
+        <div className="flex items-center gap-2 max-w-2xl">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              autoFocus
+              type="text"
+              placeholder={
+                textos.length > 0
+                  ? "Buscar palavras no documento… (Enter)"
+                  : carregando
+                  ? "Aguardando carregamento…"
+                  : "Indexando páginas para busca…"
+              }
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
+              className="w-full bg-gray-700 border border-gray-500 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors"
+            />
+          </div>
+          <button
+            onClick={handleBuscar}
+            disabled={!busca.trim() || textos.length === 0}
+            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-30 transition-colors shrink-0"
+          >
+            Buscar
+          </button>
+          {textos.length > 0 && !busca.trim() && (
+            <span className="text-xs text-gray-600 shrink-0 hidden sm:inline">{textos.length} págs. indexadas</span>
+          )}
+          {busca.trim() && resultados.length === 0 && textos.length > 0 && (
+            <span className="text-xs text-gray-500 shrink-0">Sem resultados</span>
+          )}
+        </div>
+
+        {resultados.length > 0 && (
+          <div className="mt-2 rounded-lg border border-gray-600 overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-1.5 bg-gray-700 border-b border-gray-600">
+              <span className="text-[11px] text-gray-300 font-medium">
+                {resultados.length} página{resultados.length > 1 ? "s" : ""} com "{busca}"
+              </span>
+              <button onClick={() => { setResultados([]); setBusca(""); }} className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
+                Limpar
+              </button>
+            </div>
+            <div className="max-h-40 overflow-y-auto divide-y divide-gray-700 bg-gray-800">
+              {resultados.map(({ pagina: p, trecho }) => (
+                <button
+                  key={p}
+                  onClick={() => goToPagina(p)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-baseline gap-2 ${p === pagina ? "bg-cyan-900/30" : ""}`}
+                >
+                  <span className={`text-[11px] font-bold shrink-0 ${p === pagina ? "text-cyan-400" : "text-gray-300"}`}>
+                    Pág. {p}
+                  </span>
+                  <span className="text-[11px] text-gray-500 truncate">{trecho}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Área do PDF */}
+      <div className="flex-1 overflow-auto bg-gray-600 flex justify-center py-6 px-4">
+        {carregando && (
+          <div className="flex flex-col items-center justify-center text-gray-400 gap-3 mt-20">
+            <div className="w-8 h-8 rounded-full border-2 border-gray-500 border-t-cyan-400 animate-spin" />
+            <span className="text-sm">Carregando documento…</span>
+          </div>
+        )}
+        {erro && (
+          <div className="flex flex-col items-center justify-center text-gray-400 gap-3 mt-20">
+            <span className="text-sm">Não foi possível carregar este documento.</span>
+            <a href={fileUrl(doc.arquivo)} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:underline">
+              Abrir em nova aba
+            </a>
+          </div>
+        )}
+        {!carregando && !erro && (
+          <canvas ref={canvasRef} className="shadow-2xl" style={{ maxWidth: "100%", height: "auto" }} />
+        )}
+      </div>
     </div>
   );
 }
