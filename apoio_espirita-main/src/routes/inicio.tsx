@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { HelpDialog } from "@/components/HelpDialog";
 
 export const Route = createFileRoute("/inicio")({
   component: Inicio,
@@ -259,7 +260,7 @@ function Inicio() {
             border="border-slate-200"
             borderB="border-slate-200"
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <DashCard
               Icon={BarChart3}
               title="Meu Dashboard"
@@ -270,7 +271,7 @@ function Inicio() {
             <DashCard
               Icon={ClipboardList}
               title="Acompanhamento do Projeto"
-              desc="Veja o roadmap da plataforma e solicite novos desenvolvimentos."
+              desc="Veja tudo que já foi feito e o que ainda está planejado para a plataforma. Solicite novos recursos."
               status="disponivel"
               accent="slate"
               href="/painel"
@@ -284,6 +285,7 @@ function Inicio() {
               casa
               href="/tesouraria"
             />
+            <HelpDashCard />
           </div>
         </section>
 
@@ -357,6 +359,29 @@ function SectionHeader({ Icon, label, color, iconColor, bg, border, borderB, chi
   );
 }
 
+function HelpDashCard() {
+  return (
+    <HelpDialog>
+      <button className="block w-full h-full text-left">
+        <div className="glass rounded-2xl p-6 border-t-2 border-t-cyan-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4">
+          <div className="w-10 h-10 rounded-xl border flex items-center justify-center bg-cyan-50 border-cyan-200 text-cyan-600">
+            <CircleHelp size={20} strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-foreground leading-snug mb-1">Preciso de Ajuda</h3>
+            <p className="text-xs text-muted-foreground/70 leading-relaxed">Busque uma casa espírita, encontre apoio emocional ou assistência com alimentos.</p>
+          </div>
+          <div>
+            <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE.disponivel}`}>
+              {STATUS_LABEL.disponivel}
+            </span>
+          </div>
+        </div>
+      </button>
+    </HelpDialog>
+  );
+}
+
 function DashCard({ Icon, title, desc, status, accent, href, casa }: {
   Icon: LucideIcon; title: string; desc: string; status: Status;
   accent: string; href?: string; casa?: boolean;
@@ -364,9 +389,11 @@ function DashCard({ Icon, title, desc, status, accent, href, casa }: {
   const borderMap: Record<string, string> = {
     slate: "border-t-slate-300",
     amber: "border-t-amber-300",
+    cyan:  "border-t-cyan-300",
   };
   const iconMap: Record<string, string> = {
     slate: "bg-slate-50 border-slate-200 text-slate-500",
+    cyan:  "bg-cyan-50 border-cyan-200 text-cyan-600",
     amber: "bg-amber-50 border-amber-200 text-amber-600",
   };
   const content = (
