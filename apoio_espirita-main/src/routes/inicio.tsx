@@ -286,8 +286,8 @@ function Inicio() {
             />
             <DashCard
               Icon={CircleHelp}
-              title="Preciso de Ajuda"
-              desc="Busque uma casa espírita, encontre apoio emocional ou assistência com alimentos."
+              title="Ajuda com o Site"
+              desc="Veja o que já foi feito, o que está planejado e peça novos recursos para a plataforma."
               status="disponivel"
               accent="cyan"
               href="/painel"
