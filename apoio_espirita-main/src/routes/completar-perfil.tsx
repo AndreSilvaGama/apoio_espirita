@@ -240,7 +240,7 @@ function CompletarPerfil() {
                 className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50"
               >
                 <option value="">
-                  {loadingCidades ? "Carregando…" : uf ? "Selecione a cidade" : "Selecione o estado"}
+                  {loadingCidades ? "Carregando…" : "Selecione a cidade"}
                 </option>
                 {cidades.map((c) => (
                   <option key={c} value={c}>{c}</option>
