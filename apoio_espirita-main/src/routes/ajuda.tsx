@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, Search, X, MapPin, Heart, Utensils, MessageSquare, Flag } from "lucide-react";
+import { ChevronDown, Search, X, MessageSquare, Flag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { HelpDialog } from "@/components/HelpDialog";
 
 export const Route = createFileRoute("/ajuda")({
   component: Ajuda,
@@ -68,7 +67,7 @@ function Ajuda() {
             <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Suporte</p>
             <h1 className="text-3xl font-light text-foreground">Central de Ajuda</h1>
             <p className="mt-2 text-sm text-muted-foreground font-light">
-              Dúvidas sobre o site, busca de casas espíritas e apoio pessoal.
+              Dúvidas sobre como usar o site e seus recursos.
             </p>
           </div>
           <button
@@ -77,34 +76,6 @@ function Ajuda() {
           >
             ← Voltar
           </button>
-        </div>
-
-        {/* Apoio pessoal */}
-        <div className="glass rounded-3xl p-6 mb-10">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-5">Precisa de apoio pessoal?</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <HelpDialog initialStep="find-center">
-              <button className="glass rounded-2xl p-4 text-left hover:border-cyan-glow/40 transition-all duration-300 hover:-translate-y-0.5">
-                <MapPin size={18} strokeWidth={1.5} className="text-cyan-glow mb-3" />
-                <p className="text-sm font-medium text-foreground leading-snug">Encontrar uma casa espírita</p>
-                <p className="text-xs text-muted-foreground/60 mt-1 font-light">Busque por estado e cidade</p>
-              </button>
-            </HelpDialog>
-            <HelpDialog initialStep="emotional">
-              <button className="glass rounded-2xl p-4 text-left hover:border-cyan-glow/40 transition-all duration-300 hover:-translate-y-0.5">
-                <Heart size={18} strokeWidth={1.5} className="text-violet-400 mb-3" />
-                <p className="text-sm font-medium text-foreground leading-snug">Apoio emocional</p>
-                <p className="text-xs text-muted-foreground/60 mt-1 font-light">CVV — gratuito e sigiloso</p>
-              </button>
-            </HelpDialog>
-            <HelpDialog initialStep="find-center">
-              <button className="glass rounded-2xl p-4 text-left hover:border-cyan-glow/40 transition-all duration-300 hover:-translate-y-0.5">
-                <Utensils size={18} strokeWidth={1.5} className="text-emerald-400 mb-3" />
-                <p className="text-sm font-medium text-foreground leading-snug">Assistência com alimentos</p>
-                <p className="text-xs text-muted-foreground/60 mt-1 font-light">Casas espíritas próximas</p>
-              </button>
-            </HelpDialog>
-          </div>
         </div>
 
         {/* Busca */}
