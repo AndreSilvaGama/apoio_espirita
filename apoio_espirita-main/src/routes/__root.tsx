@@ -343,6 +343,7 @@ function NavBar() {
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
+          <Link to="/feb" className={linkCls("/feb")}>FEB</Link>
           <Link to="/ajuda" className={linkCls("/ajuda")}>Ajuda</Link>
           <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
           <button
@@ -384,6 +385,9 @@ function NavBar() {
                 Tesouraria
               </Link>
             )}
+            <Link to="/feb" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Documentos FEB
+            </Link>
             <Link to="/ajuda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Ajuda
             </Link>
