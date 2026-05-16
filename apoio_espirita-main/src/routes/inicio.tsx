@@ -270,7 +270,7 @@ function Inicio() {
             <DashCard
               Icon={ClipboardList}
               title="Acompanhamento do Projeto"
-              desc="Veja tudo que já foi feito e o que ainda está planejado para a plataforma. Solicite novos recursos."
+              desc="Veja o progresso da plataforma, as novidades recentes e solicite novos recursos ao desenvolvedor."
               status="disponivel"
               accent="slate"
               href="/painel"
@@ -287,10 +287,10 @@ function Inicio() {
             <DashCard
               Icon={CircleHelp}
               title="Ajuda com o Site"
-              desc="Veja o que já foi feito, o que está planejado e peça novos recursos para a plataforma."
+              desc="Tire dúvidas sobre como usar o site, busque uma casa espírita ou encontre apoio pessoal."
               status="disponivel"
               accent="cyan"
-              href="/painel"
+              href="/ajuda"
             />
           </div>
         </section>
