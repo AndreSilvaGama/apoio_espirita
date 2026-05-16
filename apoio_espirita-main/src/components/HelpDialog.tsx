@@ -120,13 +120,13 @@ function InitialStep({ onChoose }: { onChoose: (s: "food" | "emotional" | "find-
       </button>
 
       <button
-        onClick={() => onChoose("food")}
+        onClick={() => onChoose("find-center")}
         className="w-full glass rounded-2xl p-5 text-left hover:border-cyan-glow/40 transition-all duration-500 hover:-translate-y-1"
       >
         <span className="text-2xl">🍞</span>
         <h3 className="mt-2 text-base font-medium text-foreground">Preciso de alimentação</h3>
         <p className="mt-1 text-sm text-muted-foreground font-light">
-          Encontramos a casa espírita mais próxima que distribui alimentos.
+          Encontramos casas espíritas próximas — muitas oferecem assistência com alimentos.
         </p>
       </button>
 
