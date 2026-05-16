@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Search, X, Download, ExternalLink, FileText } from "lucide-react";
+import { Search, X, Download, ExternalLink, FileText, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/feb")({
@@ -135,12 +135,75 @@ const COR: Record<Exclude<Categoria, "Todos">, string> = {
 
 const fileUrl = (arquivo: string) => `/feb/${encodeURIComponent(arquivo)}`;
 
+function VisualizadorPDF({ doc, onClose }: { doc: Documento; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-200 flex flex-col bg-gray-900">
+      {/* Barra superior */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <FileText size={16} strokeWidth={1.5} className="text-gray-400 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-white truncate">{doc.titulo}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+              Federação Espírita Brasileira · Use Ctrl+F para buscar palavras
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-4">
+          <a
+            href={fileUrl(doc.arquivo)}
+            download={doc.arquivo}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+          >
+            <Download size={13} strokeWidth={1.5} />
+            Baixar
+          </a>
+          <a
+            href={fileUrl(doc.arquivo)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+          >
+            <ExternalLink size={13} strokeWidth={1.5} />
+            Nova aba
+          </a>
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+          >
+            <X size={14} strokeWidth={2} />
+            Fechar
+          </button>
+        </div>
+      </div>
+
+      {/* Iframe */}
+      <iframe
+        src={fileUrl(doc.arquivo)}
+        title={doc.titulo}
+        className="flex-1 w-full border-0"
+      />
+    </div>
+  );
+}
+
 function Feb() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState<Categoria>("Todos");
   const [ano, setAno] = useState<number | null>(null);
+  const [docAberto, setDocAberto] = useState<Documento | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -160,6 +223,8 @@ function Feb() {
   });
 
   return (
+    <>
+    {docAberto && <VisualizadorPDF doc={docAberto} onClose={() => setDocAberto(null)} />}
     <main className="page-light min-h-screen px-6 pt-20 pb-20">
       <div className="mx-auto max-w-4xl">
 
@@ -330,15 +395,13 @@ function Feb() {
                 </div>
 
                 <div className="flex gap-3 mt-4">
-                  <a
-                    href={fileUrl(doc.arquivo)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => setDocAberto(doc)}
                     className="flex items-center gap-1.5 text-xs text-cyan-glow hover:text-cyan-glow/70 transition-colors"
                   >
-                    <ExternalLink size={13} strokeWidth={1.5} />
-                    Abrir
-                  </a>
+                    <BookOpen size={13} strokeWidth={1.5} />
+                    Ler aqui
+                  </button>
                   <a
                     href={fileUrl(doc.arquivo)}
                     download={doc.arquivo}
@@ -371,5 +434,6 @@ function Feb() {
 
       </div>
     </main>
+    </>
   );
 }
