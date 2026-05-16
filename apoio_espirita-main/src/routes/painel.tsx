@@ -48,7 +48,7 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Música suave de piano ao entrar no site", descricao: "Toca automaticamente em volume baixo ao abrir o site · Botão discreto para pausar ou retomar a qualquer momento" },
   { status: "feito", titulo: "Ícone do site — cepa de videira estilizada", descricao: "Ícone personalizado que aparece na aba do navegador e na tela inicial do celular ao salvar o site como atalho" },
   { status: "feito", titulo: "Logomarca — cepa de videira realista", descricao: "Imagem da logomarca exibida no topo do site e usada em redes sociais e mecanismos de busca" },
-  { status: "feito", titulo: "Área de ajuda na página inicial — 'Preciso de Ajuda'", descricao: "Apoio emocional com número do CVV · Busca de locais de alimentação pelo CEP · Busca de casas espíritas por CEP, cidade ou bairro" },
+  { status: "feito", titulo: "Área de ajuda na página inicial — 'Preciso de Ajuda'", descricao: "Apoio emocional com número do CVV · Busca de locais de alimentação pelo CEP · Busca de casas espíritas por UF e cidade" },
   { status: "feito", titulo: "Página de Transparência e Propósito", descricao: "Explica claramente que a plataforma é independente, sem vínculo com a FEB, UFE ou qualquer federação · Plataforma livre como uma rede social espírita" },
   { status: "feito", titulo: "Formulário de sugestões para o site", descricao: "Qualquer visitante pode enviar sugestões · O desenvolvedor recebe um aviso por e-mail a cada nova mensagem" },
   { status: "feito", titulo: "Cadastro e login no site", descricao: "Criar conta com e-mail e senha, ou entrar com um clique usando a conta do Google · Após o primeiro acesso, o sistema pede para completar o perfil" },
@@ -74,6 +74,9 @@ const roadmap: Item[] = [
   { status: "feito", titulo: "Nome do site exibido ao lado do logo no celular", descricao: "'Apoio Espírita' aparece ao lado da logomarca em todos os tamanhos de tela, inclusive no celular" },
   { status: "feito", titulo: "Sugestões do site aparecem no acompanhamento do projeto", descricao: "Todas as sugestões enviadas pelo formulário público de /sugestões entram automaticamente nesta lista como Pendente, identificando o nome e o e-mail de quem sugeriu" },
   { status: "feito", titulo: "Link Voltar de Sugestões redireciona corretamente", descricao: "Se o visitante estiver logado, o botão Voltar leva para /início · Se não estiver logado, leva para a página inicial pública" },
+  { status: "feito", titulo: "Casas espíritas se cadastram pelo site e aparecem no mapa de busca", descricao: "Ao completar o perfil ou editar a página de perfil, o membro pode informar o nome e endereço da sua casa · Se a sigla ainda não estiver no mapa, a casa é cadastrada automaticamente e passa a aparecer nos resultados de busca" },
+  { status: "feito", titulo: "Campo de cidade com lista de municípios brasileiros — IBGE", descricao: "Ao selecionar o estado (UF), o campo de cidade carrega automaticamente todos os municípios daquele estado via API do IBGE · Funciona no cadastro inicial (completar perfil) e na página de perfil" },
+  { status: "feito", titulo: "Estado e cidade obrigatórios para acessar o site", descricao: "Usuários que entraram antes desta atualização e não informaram UF e cidade são redirecionados para a tela de completar perfil ao tentar acessar qualquer página · Os campos ficam pré-preenchidos quando já existiam no perfil" },
 
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
@@ -123,7 +126,7 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
-  { status: "feito",     titulo: "Agenda completa por casa espírita — compromissos e reuniões", descricao: "Presidentes e decisores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. O organizador marca quem compareceu e gera a ata automaticamente ao final da reunião." },
+  { status: "feito",     titulo: "Agenda completa por casa espírita — compromissos e reuniões", descricao: "Presidentes e decisores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. O organizador marca quem compareceu e gera a ata automaticamente ao final da reunião. Eventos podem ser editados após a criação." },
   { status: "feito", titulo: "Caderno de Presença Digital", descricao: "Presença registrada dentro de cada evento da agenda · Aba 'Presenças' com relatório histórico: barra de frequência por membro e lista de presentes por evento" },
   { status: "planejado", titulo: "Escala de Trabalho — quem faz o quê e quando", descricao: "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular" },
   { status: "planejado", titulo: "Controle de manutenções da casa espírita", descricao: "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido" },
