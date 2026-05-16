@@ -262,8 +262,8 @@ function Inicio() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <DashCard
               Icon={BarChart3}
-              title="Meu Dashboard"
-              desc="Dados e métricas relevantes ao seu papel na casa espírita."
+              title="Meu Painel Pessoal"
+              desc="Resumo das suas atividades, frequência e dados relevantes ao seu papel na casa espírita."
               status="breve"
               accent="slate"
             />
