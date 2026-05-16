@@ -24,6 +24,7 @@ import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
+import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
@@ -100,6 +101,11 @@ const JogosPlanteASementeRoute = JogosPlanteASementeRouteImport.update({
   path: '/jogos/plante-a-semente',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasaSiglaRoute = CasaSiglaRouteImport.update({
+  id: '/casa/$sigla',
+  path: '/casa/$sigla',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/casa/$sigla'
     | '/jogos/plante-a-semente'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/casa/$sigla'
     | '/jogos/plante-a-semente'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/casa/$sigla'
     | '/jogos/plante-a-semente'
   fileRoutesById: FileRoutesById
 }
@@ -222,6 +234,7 @@ export interface RootRouteChildren {
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
+  CasaSiglaRoute: typeof CasaSiglaRoute
   JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
 }
 
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogosPlanteASementeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/casa/$sigla': {
+      id: '/casa/$sigla'
+      path: '/casa/$sigla'
+      fullPath: '/casa/$sigla'
+      preLoaderRoute: typeof CasaSiglaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -350,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
+  CasaSiglaRoute: CasaSiglaRoute,
   JogosPlanteASementeRoute: JogosPlanteASementeRoute,
 }
 export const routeTree = rootRouteImport
