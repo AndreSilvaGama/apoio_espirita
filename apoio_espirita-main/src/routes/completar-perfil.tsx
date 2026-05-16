@@ -162,9 +162,10 @@ function CompletarPerfil() {
         .eq("id", user.id);
       if (pe) throw pe;
       if (!casaExiste && nomeCasa.trim()) {
+        if (!enderecoCasa.trim()) { setError("Informe o endereço da casa espírita para cadastrá-la no mapa."); setSaving(false); return; }
         const { error: ce } = await supabase.from("casas_espirita").insert({
-          nome: nomeCasa.trim(),
-          endereco: enderecoCasa.trim() || null,
+          nome: nomeCasa.trim().toUpperCase(),
+          endereco: enderecoCasa.trim(),
           cidade: cidade.trim(),
           estado: uf,
           sigla: selected,
@@ -334,12 +335,12 @@ function CompletarPerfil() {
                       type="text"
                       placeholder="Nome completo da casa espírita"
                       value={nomeCasa}
-                      onChange={(e) => setNomeCasa(e.target.value)}
+                      onChange={(e) => setNomeCasa(e.target.value.toUpperCase())}
                       className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
                     />
                     <input
                       type="text"
-                      placeholder="Endereço — rua e número (opcional)"
+                      placeholder="Endereço — rua e número *"
                       value={enderecoCasa}
                       onChange={(e) => setEnderecoCasa(e.target.value)}
                       className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"

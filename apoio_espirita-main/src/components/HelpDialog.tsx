@@ -388,7 +388,7 @@ function CasaCard({ result, rank, showDist = true }: { result: CasaResult; rank?
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-medium text-foreground leading-snug">
           {rank && <span className="text-cyan-glow mr-1">{rank}.</span>}
-          {casa.nome}
+          {casa.nome.toUpperCase()}
         </h3>
         {showDist && <span className="text-xs text-muted-foreground/60 shrink-0">≈ {distKm} km</span>}
       </div>

@@ -195,6 +195,7 @@ function Perfil() {
 
   const handleSaveCasa = async () => {
     if (!nomeCasa.trim()) { setCasaError("Informe o nome completo da casa."); return; }
+    if (!enderecoCasa.trim()) { setCasaError("Informe o endereço da casa para que apareça corretamente nos resultados de busca."); return; }
     if (!selected) { setCasaError("Selecione primeiro a sigla da sua casa."); return; }
     if (!uf || !cidade.trim()) { setCasaError("Complete primeiro seus dados pessoais (UF e cidade)."); return; }
     setSavingCasa(true);
@@ -204,15 +205,15 @@ function Perfil() {
       if (casaId) {
         const { error } = await supabase
           .from("casas_espirita")
-          .update({ nome: nomeCasa.trim(), endereco: enderecoCasa.trim() || null })
+          .update({ nome: nomeCasa.trim().toUpperCase(), endereco: enderecoCasa.trim() })
           .eq("id", casaId);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from("casas_espirita")
           .insert({
-            nome: nomeCasa.trim(),
-            endereco: enderecoCasa.trim() || null,
+            nome: nomeCasa.trim().toUpperCase(),
+            endereco: enderecoCasa.trim(),
             cidade: cidade.trim(),
             estado: uf,
             sigla: selected,
@@ -455,16 +456,16 @@ function Perfil() {
               type="text"
               placeholder="Nome completo da casa espírita"
               value={nomeCasa}
-              onChange={(e) => { setNomeCasa(e.target.value); setCasaError(""); setCasaOk(false); }}
+              onChange={(e) => { setNomeCasa(e.target.value.toUpperCase()); setCasaError(""); setCasaOk(false); }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Endereço</label>
+            <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">Endereço <span className="text-cyan-glow">*</span></label>
             <input
               type="text"
-              placeholder="Rua e número (opcional)"
+              placeholder="Rua e número"
               value={enderecoCasa}
               onChange={(e) => { setEnderecoCasa(e.target.value); setCasaError(""); setCasaOk(false); }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
