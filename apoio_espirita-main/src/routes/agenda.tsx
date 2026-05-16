@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   CalendarDays, Plus, Clock, MapPin, Globe, Lock,
-  Check, X, ChevronDown, ChevronUp, FileText, UserCheck, Trash2,
+  Check, X, ChevronDown, ChevronUp, FileText, UserCheck, Trash2, Pencil,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,6 +91,7 @@ function AgendaPage() {
   const [fTipo, setFTipo] = useState<"aberto" | "fechado">("aberto");
   const [fAceita, setFAceita] = useState(true);
   const [fConvidados, setFConvidados] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -273,6 +274,68 @@ function AgendaPage() {
     fetchEventos();
   };
 
+  // ── Abrir edição ──
+  const handleEditar = (evento: Evento) => {
+    const toDate = (iso: string) => {
+      const d = new Date(iso);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    const toTime = (iso: string) => {
+      const d = new Date(iso);
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    };
+    setFTitulo(evento.titulo);
+    setFDescricao(evento.descricao ?? "");
+    setFLocal(evento.local ?? "");
+    setFDataInicio(toDate(evento.data_inicio));
+    setFHoraInicio(toTime(evento.data_inicio));
+    setFDataFim(evento.data_fim ? toDate(evento.data_fim) : "");
+    setFHoraFim(evento.data_fim ? toTime(evento.data_fim) : "");
+    setFTipo(evento.tipo);
+    setFAceita(evento.aceita_confirmacao);
+    setFConvidados([]);
+    setEditingId(evento.id);
+    setShowForm(true);
+    setFormError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // ── Salvar edição ──
+  const handleUpdate = async () => {
+    if (!fTitulo.trim()) { setFormError("Informe o título do evento."); return; }
+    if (!fDataInicio || !fHoraInicio) { setFormError("Informe a data e hora de início."); return; }
+    if (!editingId) return;
+    setSaving(true);
+    setFormError("");
+    const dataInicioISO = new Date(`${fDataInicio}T${fHoraInicio}`).toISOString();
+    const dataFimISO = fDataFim && fHoraFim ? new Date(`${fDataFim}T${fHoraFim}`).toISOString() : null;
+    try {
+      const { error } = await supabase
+        .from("agenda_eventos")
+        .update({
+          titulo: fTitulo.trim(),
+          descricao: fDescricao.trim() || null,
+          local: fLocal.trim() || null,
+          data_inicio: dataInicioISO,
+          data_fim: dataFimISO,
+          tipo: fTipo,
+          aceita_confirmacao: fAceita,
+        })
+        .eq("id", editingId);
+      if (error) throw error;
+      setFTitulo(""); setFDescricao(""); setFLocal("");
+      setFDataInicio(""); setFHoraInicio(""); setFDataFim(""); setFHoraFim("");
+      setFTipo("aberto"); setFAceita(true); setFConvidados([]);
+      setEditingId(null);
+      setShowForm(false);
+      fetchEventos();
+    } catch (e: unknown) {
+      setFormError(e instanceof Error ? e.message : "Erro ao salvar.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
@@ -289,7 +352,7 @@ function AgendaPage() {
           </div>
           {podeGerenciar && (
             <button
-              onClick={() => { setShowForm((v) => !v); setFormError(""); }}
+              onClick={() => { setShowForm((v) => !v); setEditingId(null); setFormError(""); }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors"
             >
               <Plus size={14} />
@@ -301,7 +364,9 @@ function AgendaPage() {
         {/* ── Create form ── */}
         {showForm && (
           <div className="glass rounded-3xl p-6 mb-8 space-y-4">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">Novo Evento</h2>
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">
+              {editingId ? "Editar Evento" : "Novo Evento"}
+            </h2>
 
             <input
               type="text" placeholder="Título do evento *"
@@ -394,9 +459,9 @@ function AgendaPage() {
 
             {formError && <p className="text-xs text-red-400 text-center">{formError}</p>}
 
-            <button onClick={handleCreate} disabled={saving}
+            <button onClick={editingId ? handleUpdate : handleCreate} disabled={saving}
               className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors">
-              {saving ? "Criando…" : "Criar Evento"}
+              {saving ? "Salvando…" : editingId ? "Salvar Alterações" : "Criar Evento"}
             </button>
           </div>
         )}
@@ -518,6 +583,7 @@ function AgendaPage() {
                 onResponder={handleResponder}
                 onPresenca={handlePresenca}
                 onGerarAta={() => handleGerarAta(evento)}
+                onEditar={() => handleEditar(evento)}
                 onExcluir={() => handleExcluir(evento.id)}
               />
             ))}
@@ -540,10 +606,11 @@ interface EventoCardProps {
   onResponder: (id: string, confirmado: boolean) => void;
   onPresenca: (id: string, presente: boolean) => void;
   onGerarAta: () => void;
+  onEditar: () => void;
   onExcluir: () => void;
 }
 
-function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfirmar, onResponder, onPresenca, onGerarAta, onExcluir }: EventoCardProps) {
+function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfirmar, onResponder, onPresenca, onGerarAta, onEditar, onExcluir }: EventoCardProps) {
   const past = isPassado(evento.data_fim ?? evento.data_inicio);
   const isCriador = evento.criador_id === userId;
   const minha = evento.agenda_participantes.find((p) => p.user_id === userId);
@@ -704,6 +771,10 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
                   {evento.ata ? "Atualizar Ata" : "Gerar Ata"}
                 </button>
               )}
+              <button onClick={onEditar}
+                className="py-2.5 px-4 rounded-xl border border-white/10 text-muted-foreground/50 text-xs hover:bg-white/5 hover:text-foreground hover:border-white/20 transition-colors flex items-center gap-1.5">
+                <Pencil size={13} />
+              </button>
               <button onClick={onExcluir}
                 className="py-2.5 px-4 rounded-xl border border-red-400/20 text-red-400/50 text-xs hover:bg-red-400/10 hover:text-red-400 hover:border-red-400/40 transition-colors flex items-center gap-1.5">
                 <Trash2 size={13} />
