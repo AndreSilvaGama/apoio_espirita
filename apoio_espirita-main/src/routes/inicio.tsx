@@ -8,6 +8,7 @@ import {
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
+  Building2,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -292,6 +293,29 @@ function Inicio() {
               accent="cyan"
               href="/ajuda"
             />
+            {profile?.sigla_casa && (
+              <Link to="/casa/$sigla" params={{ sigla: profile.sigla_casa }} className="block h-full">
+                <div className="glass rounded-2xl p-6 border-t-2 border-t-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4">
+                  <div className="w-10 h-10 rounded-xl border flex items-center justify-center bg-indigo-50 border-indigo-200 text-indigo-600">
+                    <Building2 size={20} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-foreground leading-snug mb-1">Página da Casa</h3>
+                    <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                      Mural de avisos, sobre, programação semanal e doações — a página pública do seu centro espírita.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-700 border-emerald-200">
+                      Disponível
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-border text-muted-foreground/50">
+                      {profile.sigla_casa}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
         </section>
 
