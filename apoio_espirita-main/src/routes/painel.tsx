@@ -257,29 +257,16 @@ function Painel() {
   }, [user]);
 
   const handleVote = async (key: string) => {
-    if (!user) return;
+    if (!user || votes[key]?.votedByMe) return;
     setVotingKey(key);
     try {
-      const current = votes[key];
-      if (current?.votedByMe) {
-        await supabase
-          .from("painel_votes")
-          .delete()
-          .eq("item_key", key)
-          .eq("user_id", user.id);
-        setVotes((v) => ({
-          ...v,
-          [key]: { count: Math.max(0, (v[key]?.count ?? 1) - 1), votedByMe: false },
-        }));
-      } else {
-        await supabase
-          .from("painel_votes")
-          .insert({ item_key: key, user_id: user.id });
-        setVotes((v) => ({
-          ...v,
-          [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true },
-        }));
-      }
+      await supabase
+        .from("painel_votes")
+        .insert({ item_key: key, user_id: user.id });
+      setVotes((v) => ({
+        ...v,
+        [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true },
+      }));
     } finally {
       setVotingKey(null);
     }
@@ -495,9 +482,9 @@ function Painel() {
                       {isPending && (
                         <button
                           onClick={() => handleVote(itemVoteKey(item))}
-                          disabled={isVoting}
-                          title={voted ? "Remover curtida" : "Curtir este item"}
-                          className={`shrink-0 flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-colors disabled:opacity-50 ${
+                          disabled={isVoting || voted}
+                          title={voted ? "Você já votou neste item" : "Curtir este item"}
+                          className={`shrink-0 flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-default ${
                             voted
                               ? "text-cyan-glow border-cyan-glow/40 bg-cyan-glow/10"
                               : "text-muted-foreground/40 border-white/10 hover:text-cyan-glow hover:border-cyan-glow/30 hover:bg-cyan-glow/5"

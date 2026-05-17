@@ -202,17 +202,11 @@ function Inicio() {
   const handleCardVote = useCallback(async (title: string) => {
     if (!user) return;
     const key = toItemKey(title);
-    if (votingKey === key) return;
+    if (votingKey === key || votes[key]?.votedByMe) return;
     setVotingKey(key);
     try {
-      const current = votes[key];
-      if (current?.votedByMe) {
-        await supabase.from("painel_votes").delete().eq("item_key", key).eq("user_id", user.id);
-        setVotes((v) => ({ ...v, [key]: { count: Math.max(0, (v[key]?.count ?? 1) - 1), votedByMe: false } }));
-      } else {
-        await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
-        setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
-      }
+      await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
+      setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
     } finally {
       setVotingKey(null);
     }
@@ -469,7 +463,7 @@ function VoteBadge({ title, votes, votingKey }: {
           ? "text-cyan-600 border-cyan-300 bg-cyan-50"
           : "text-muted-foreground/40 border-border bg-transparent"
       } ${isVoting ? "opacity-50" : ""}`}
-      title={voted ? "Você votou neste recurso — clique para remover" : "Clique no card para votar neste recurso"}
+      title={voted ? "Você já votou neste recurso" : "Clique no card para votar neste recurso"}
     >
       <ThumbsUp size={10} />
       {count > 0 && <span className="font-medium">{count}</span>}
