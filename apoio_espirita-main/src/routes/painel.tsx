@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Search, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Search, X, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -161,6 +161,15 @@ const icon: Record<Status, string> = {
   planejado: "○",
 };
 
+// Gera uma chave estável a partir do título do item
+function toItemKey(titulo: string): string {
+  return titulo.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+}
+
+interface VoteMap {
+  [key: string]: { count: number; votedByMe: boolean };
+}
+
 function Painel() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
@@ -172,6 +181,8 @@ function Painel() {
   const [sendingSol, setSendingSol] = useState(false);
   const [solOk, setSolOk] = useState(false);
   const [solError, setSolError] = useState("");
+  const [votes, setVotes] = useState<VoteMap>({});
+  const [votingKey, setVotingKey] = useState<string | null>(null);
 
   const fetchSugestoes = async () => {
     const { data } = await supabase
@@ -218,6 +229,52 @@ function Painel() {
     }
   };
 
+  const fetchVotes = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("painel_votes")
+      .select("item_key, user_id");
+    if (!data) return;
+
+    const map: VoteMap = {};
+    for (const row of data) {
+      if (!map[row.item_key]) map[row.item_key] = { count: 0, votedByMe: false };
+      map[row.item_key].count++;
+      if (row.user_id === user.id) map[row.item_key].votedByMe = true;
+    }
+    setVotes(map);
+  }, [user]);
+
+  const handleVote = async (titulo: string) => {
+    if (!user) return;
+    const key = toItemKey(titulo);
+    setVotingKey(key);
+    try {
+      const current = votes[key];
+      if (current?.votedByMe) {
+        await supabase
+          .from("painel_votes")
+          .delete()
+          .eq("item_key", key)
+          .eq("user_id", user.id);
+        setVotes((v) => ({
+          ...v,
+          [key]: { count: Math.max(0, (v[key]?.count ?? 1) - 1), votedByMe: false },
+        }));
+      } else {
+        await supabase
+          .from("painel_votes")
+          .insert({ item_key: key, user_id: user.id });
+        setVotes((v) => ({
+          ...v,
+          [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true },
+        }));
+      }
+    } finally {
+      setVotingKey(null);
+    }
+  };
+
   const handleSolicitacao = async () => {
     if (!solTitulo.trim()) { setSolError("Informe o título da solicitação."); return; }
     if (!user) return;
@@ -249,8 +306,8 @@ function Painel() {
   }, [user, profile, loading, navigate]);
 
   useEffect(() => {
-    if (user) { fetchSolicitacoes(); fetchSugestoes(); }
-  }, [user]);
+    if (user) { fetchSolicitacoes(); fetchSugestoes(); fetchVotes(); }
+  }, [user, fetchVotes]);
 
   if (loading || !user) return null;
 
@@ -271,6 +328,18 @@ function Painel() {
       )
     : allItems;
   const totalResultados = filtered.length;
+
+  // Ordena pendentes por votos (mais votados primeiro)
+  const sortedFiltered = filtered.map((item) => ({
+    item,
+    voteCount: item.status === "planejado" ? (votes[toItemKey(item.titulo)]?.count ?? 0) : 0,
+  }));
+
+  const getItemsByStatus = (status: Status) =>
+    sortedFiltered
+      .filter(({ item }) => item.status === status)
+      .sort((a, b) => status === "planejado" ? b.voteCount - a.voteCount : 0)
+      .map(({ item }) => item);
 
   return (
     <main className="page-light min-h-screen px-6 pt-20 pb-20">
@@ -293,7 +362,7 @@ function Painel() {
         </div>
 
         {/* Progress */}
-        <div className="glass rounded-3xl p-6 mb-10">
+        <div className="glass rounded-3xl p-6 mb-6">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground font-light">Progresso geral</p>
             <p className="text-sm font-medium text-foreground">{done} / {total} itens</p>
@@ -315,6 +384,21 @@ function Painel() {
                 <p className="text-xs text-muted-foreground/60 mt-1">{badge[s].label}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Aviso de votação */}
+        <div className="glass rounded-2xl px-5 py-4 mb-8 border border-cyan-glow/20">
+          <div className="flex items-start gap-3">
+            <ThumbsUp size={16} className="text-cyan-glow mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm text-foreground font-light">
+                <span className="font-medium text-cyan-glow">Vote nos itens pendentes</span> que considera mais importantes.
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                Os itens com mais curtidas serão desenvolvidos primeiro. Cada membro pode curtir qualquer item pendente — e descurtir quando quiser.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -356,37 +440,66 @@ function Painel() {
 
         {/* Items by group */}
         {(["feito", "andamento", "planejado"] as Status[]).map((status) => {
-          const items = filtered.filter((i) => i.status === status);
+          const items = getItemsByStatus(status);
           if (items.length === 0) return null;
           return (
             <div key={status} className="mb-8">
               <h2 className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3 flex items-center gap-2">
                 <span className={`text-base ${badge[status].color.split(" ")[0]}`}>{icon[status]}</span>
                 {badge[status].label}
+                {status === "planejado" && (
+                  <span className="text-muted-foreground/40 normal-case tracking-normal font-normal ml-1">
+                    — ordenados por votos
+                  </span>
+                )}
               </h2>
               <div className="space-y-2">
-                {items.map((item) => (
-                  <div
-                    key={item.titulo}
-                    className="glass rounded-2xl px-5 py-4 flex items-start gap-4"
-                  >
-                    <span className={`text-sm mt-0.5 shrink-0 ${badge[status].color.split(" ")[0]}`}>
-                      {icon[status]}
-                    </span>
-                    <div>
-                      <p className="text-sm text-foreground font-light">{item.titulo}</p>
-                      {item.descricao && (
-                        <p className="text-xs text-muted-foreground/60 mt-0.5">{item.descricao}</p>
-                      )}
-                      {item.solicitante && (
-                        <p className="text-xs text-cyan-glow/60 mt-1">
-                          {item.tipo === "sugestao" ? "Sugestão" : "Solicitado"} por {item.solicitante}
-                          {item.sigla_casa ? ` · ${item.sigla_casa}` : ""}
-                        </p>
+                {items.map((item) => {
+                  const key = toItemKey(item.titulo);
+                  const voteData = votes[key];
+                  const count = voteData?.count ?? 0;
+                  const voted = voteData?.votedByMe ?? false;
+                  const isPending = item.status === "planejado";
+                  const isVoting = votingKey === key;
+
+                  return (
+                    <div
+                      key={item.titulo}
+                      className="glass rounded-2xl px-5 py-4 flex items-start gap-4"
+                    >
+                      <span className={`text-sm mt-0.5 shrink-0 ${badge[status].color.split(" ")[0]}`}>
+                        {icon[status]}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground font-light">{item.titulo}</p>
+                        {item.descricao && (
+                          <p className="text-xs text-muted-foreground/60 mt-0.5">{item.descricao}</p>
+                        )}
+                        {item.solicitante && (
+                          <p className="text-xs text-cyan-glow/60 mt-1">
+                            {item.tipo === "sugestao" ? "Sugestão" : "Solicitado"} por {item.solicitante}
+                            {item.sigla_casa ? ` · ${item.sigla_casa}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      {isPending && (
+                        <button
+                          onClick={() => handleVote(item.titulo)}
+                          disabled={isVoting}
+                          title={voted ? "Remover curtida" : "Curtir este item"}
+                          className={`shrink-0 flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-colors disabled:opacity-50 ${
+                            voted
+                              ? "text-cyan-glow border-cyan-glow/40 bg-cyan-glow/10"
+                              : "text-muted-foreground/40 border-white/10 hover:text-cyan-glow hover:border-cyan-glow/30 hover:bg-cyan-glow/5"
+                          }`}
+                        >
+                          <ThumbsUp size={13} />
+                          <span className="text-[10px] leading-none font-medium">{count > 0 ? count : ""}</span>
+                        </button>
                       )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
