@@ -12,6 +12,7 @@ import {
 const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle } from "lucide-react";
 
@@ -158,6 +159,17 @@ function ReportarProblema({ onClose }: { onClose: () => void }) {
   const handleEnviar = (e: React.FormEvent) => {
     e.preventDefault();
     if (!descricao.trim()) return;
+    // Salva no banco para o digest diário
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        supabase.from("problem_reports").insert({
+          user_id: data.user.id,
+          nome: profile?.nome ?? null,
+          sigla_casa: profile?.sigla_casa ?? null,
+          descricao: descricao.trim(),
+        });
+      }
+    });
     const assunto = encodeURIComponent("Problema no site Apoio Espírita");
     const corpo = encodeURIComponent(
       `Olá,\n\nEncontrei um problema no site:\n\n${descricao.trim()}\n\n— ${profile?.nome ?? "Usuário"} (${profile?.sigla_casa ?? ""})`

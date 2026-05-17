@@ -1,0 +1,23 @@
+name: Resumo diário
+
+on:
+  schedule:
+    # 08h00 horário de Brasília (UTC-3) = 11h00 UTC
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+    # Permite disparar manualmente pelo GitHub para testar
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar resumo diário
+        run: |
+          STATUS=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            -X POST \
+            "https://kitmwxfwwujygcmdjngm.supabase.co/functions/v1/daily-digest" \
+            -H "x-cron-secret: ${{ secrets.DIGEST_CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          echo "HTTP $STATUS"
+          cat /tmp/resp.json
+          [ "$STATUS" = "200" ] || exit 1
