@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
 import {
   PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
   MessageCircle, Users, HeartHandshake, ShoppingBag, Car, Truck,
@@ -8,7 +8,7 @@ import {
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
-  Building2,
+  Building2, ThumbsUp,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,8 +131,8 @@ const FEATURES: FeatureCategory[] = [
     border: "border-emerald-200",
     borderB: "border-emerald-200",
     items: [
-{ Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
-      { Icon: CircleHelp, title: "FAQ",                    desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "breve" },
+      { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
+      { Icon: CircleHelp,  title: "FAQ",                   desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "disponivel", href: "/ajuda" },
     ],
   },
 ];
@@ -148,10 +148,20 @@ const STATUS_STYLE: Record<Status, string> = {
   beta: "bg-blue-50 text-blue-600 border-blue-200",
 };
 
+interface VoteMap {
+  [key: string]: { count: number; votedByMe: boolean };
+}
+
+function toItemKey(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+}
+
 function Inicio() {
   const navigate = useNavigate();
-  const { user, profile, loading, isPresident } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
+  const [votes, setVotes] = useState<VoteMap>({});
+  const [votingKey, setVotingKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -171,6 +181,42 @@ function Inicio() {
       .single()
       .then(({ data }) => { if (data) setTodayMsg(data); });
   }, [user]);
+
+  const fetchVotes = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from("painel_votes").select("item_key, user_id");
+    if (!data) return;
+    const map: VoteMap = {};
+    for (const row of data) {
+      if (!map[row.item_key]) map[row.item_key] = { count: 0, votedByMe: false };
+      map[row.item_key].count++;
+      if (row.user_id === user.id) map[row.item_key].votedByMe = true;
+    }
+    setVotes(map);
+  }, [user]);
+
+  useEffect(() => {
+    if (user) fetchVotes();
+  }, [user, fetchVotes]);
+
+  const handleCardVote = useCallback(async (title: string) => {
+    if (!user) return;
+    const key = toItemKey(title);
+    if (votingKey === key) return;
+    setVotingKey(key);
+    try {
+      const current = votes[key];
+      if (current?.votedByMe) {
+        await supabase.from("painel_votes").delete().eq("item_key", key).eq("user_id", user.id);
+        setVotes((v) => ({ ...v, [key]: { count: Math.max(0, (v[key]?.count ?? 1) - 1), votedByMe: false } }));
+      } else {
+        await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
+        setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
+      }
+    } finally {
+      setVotingKey(null);
+    }
+  }, [user, votes, votingKey]);
 
   if (loading || !user) return null;
 
@@ -267,6 +313,9 @@ function Inicio() {
               desc="Resumo das suas atividades, frequência e dados relevantes ao seu papel na casa espírita."
               status="breve"
               accent="slate"
+              votes={votes}
+              votingKey={votingKey}
+              onVote={handleCardVote}
             />
             <DashCard
               Icon={ClipboardList}
@@ -275,6 +324,9 @@ function Inicio() {
               status="disponivel"
               accent="slate"
               href="/painel"
+              votes={votes}
+              votingKey={votingKey}
+              onVote={handleCardVote}
             />
             <DashCard
               Icon={Wallet}
@@ -284,6 +336,9 @@ function Inicio() {
               accent="amber"
               casa
               href="/tesouraria"
+              votes={votes}
+              votingKey={votingKey}
+              onVote={handleCardVote}
             />
             <DashCard
               Icon={CircleHelp}
@@ -292,6 +347,9 @@ function Inicio() {
               status="disponivel"
               accent="cyan"
               href="/ajuda"
+              votes={votes}
+              votingKey={votingKey}
+              onVote={handleCardVote}
             />
             {profile?.sigla_casa && (
               <Link to="/casa/$sigla" params={{ sigla: profile.sigla_casa }} className="block h-full">
@@ -333,7 +391,14 @@ function Inicio() {
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {cat.items.map((item) => (
-                <FeatureCard key={item.title} item={item} cat={cat} />
+                <FeatureCard
+                  key={item.title}
+                  item={item}
+                  cat={cat}
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
               ))}
             </div>
           </section>
@@ -389,10 +454,33 @@ function SectionHeader({ Icon, label, color, iconColor, bg, border, borderB, chi
   );
 }
 
+function VoteBadge({ title, votes, votingKey }: {
+  title: string; votes: VoteMap; votingKey: string | null;
+}) {
+  const key = toItemKey(title);
+  const voteData = votes[key];
+  const count = voteData?.count ?? 0;
+  const voted = voteData?.votedByMe ?? false;
+  const isVoting = votingKey === key;
+  return (
+    <span
+      className={`ml-auto flex items-center gap-1 text-[10px] rounded-full px-2 py-0.5 border transition-colors ${
+        voted
+          ? "text-cyan-600 border-cyan-300 bg-cyan-50"
+          : "text-muted-foreground/40 border-border bg-transparent"
+      } ${isVoting ? "opacity-50" : ""}`}
+      title={voted ? "Você votou neste recurso — clique para remover" : "Clique no card para votar neste recurso"}
+    >
+      <ThumbsUp size={10} />
+      {count > 0 && <span className="font-medium">{count}</span>}
+    </span>
+  );
+}
 
-function DashCard({ Icon, title, desc, status, accent, href, casa }: {
+function DashCard({ Icon, title, desc, status, accent, href, casa, votes, votingKey, onVote }: {
   Icon: LucideIcon; title: string; desc: string; status: Status;
   accent: string; href?: string; casa?: boolean;
+  votes: VoteMap; votingKey: string | null; onVote: (title: string) => void;
 }) {
   const borderMap: Record<string, string> = {
     slate: "border-t-slate-300",
@@ -404,8 +492,12 @@ function DashCard({ Icon, title, desc, status, accent, href, casa }: {
     cyan:  "bg-cyan-50 border-cyan-200 text-cyan-600",
     amber: "bg-amber-50 border-amber-200 text-amber-600",
   };
+  const isPending = status === "breve";
   const content = (
-    <div className={`glass rounded-2xl p-6 border-t-2 ${borderMap[accent] ?? "border-t-slate-300"} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4`}>
+    <div
+      className={`glass rounded-2xl p-6 border-t-2 ${borderMap[accent] ?? "border-t-slate-300"} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4 ${isPending ? "cursor-pointer" : ""}`}
+      onClick={isPending ? () => onVote(title) : undefined}
+    >
       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
         <Icon size={20} strokeWidth={1.5} />
       </div>
@@ -422,6 +514,9 @@ function DashCard({ Icon, title, desc, status, accent, href, casa }: {
             Por casa
           </span>
         )}
+        {isPending && (
+          <VoteBadge title={title} votes={votes} votingKey={votingKey} />
+        )}
       </div>
     </div>
   );
@@ -429,10 +524,18 @@ function DashCard({ Icon, title, desc, status, accent, href, casa }: {
   return content;
 }
 
-function FeatureCard({ item, cat }: { item: FeatureItem; cat: FeatureCategory }) {
+function FeatureCard({ item, cat, votes, votingKey, onVote }: {
+  item: FeatureItem; cat: FeatureCategory;
+  votes: VoteMap; votingKey: string | null; onVote: (title: string) => void;
+}) {
   const isAvailable = item.status === "disponivel";
+  const isPending = item.status === "breve";
+
   const inner = (
-    <div className={`group glass rounded-2xl p-5 flex flex-col gap-4 h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${!isAvailable ? "opacity-80" : ""}`}>
+    <div
+      className={`group glass rounded-2xl p-5 flex flex-col gap-4 h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
+      onClick={isPending ? () => onVote(item.title) : undefined}
+    >
       <div className={`w-10 h-10 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}>
         <item.Icon size={20} strokeWidth={1.5} className={cat.iconColor} />
       </div>
@@ -448,6 +551,9 @@ function FeatureCard({ item, cat }: { item: FeatureItem; cat: FeatureCategory })
           <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-border text-muted-foreground/40">
             Por casa
           </span>
+        )}
+        {isPending && (
+          <VoteBadge title={item.title} votes={votes} votingKey={votingKey} />
         )}
       </div>
     </div>

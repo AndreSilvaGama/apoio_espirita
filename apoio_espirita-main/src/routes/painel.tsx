@@ -18,6 +18,8 @@ interface Item {
   solicitante?: string;
   sigla_casa?: string;
   tipo?: "solicitacao" | "sugestao";
+  // Título do card em /inicio que gera a chave de voto compartilhada
+  cardTitle?: string;
 }
 
 const roadmap: Item[] = [
@@ -83,48 +85,49 @@ const roadmap: Item[] = [
   // ── PENDENTE — Conteúdo e espiritualidade ────────────────────────────────
 
   { status: "planejado", titulo: "Mensagem da doutrina ao fazer login", descricao: "Ao entrar no site, uma passagem dos livros de Kardec é exibida automaticamente, com indicação do livro, capítulo e página · O Presidente pode tornar isso obrigatório ou deixar que cada membro escolha ativar ou desativar" },
-  { status: "planejado", titulo: "Artigos escritos pelos membros da comunidade", descricao: "Espaço para que os membros publiquem artigos espíritas identificados com nome e casa · O Presidente define se todos podem publicar livremente ou se cada artigo precisa da sua aprovação antes de aparecer · Os artigos aparecem na tela principal" },
+  { status: "planejado", titulo: "Artigos escritos pelos membros da comunidade", cardTitle: "Artigos e Colunistas", descricao: "Espaço para que os membros publiquem artigos espíritas identificados com nome e casa · O Presidente define se todos podem publicar livremente ou se cada artigo precisa da sua aprovação antes de aparecer · Os artigos aparecem na tela principal" },
   { status: "planejado", titulo: "Fórum de perguntas e respostas sobre a doutrina espírita", descricao: "Espaço onde qualquer membro pode fazer perguntas sobre o Espiritismo e outros membros podem responder, aprofundando o estudo em conjunto" },
-  { status: "planejado", titulo: "Área para palestrantes disponibilizarem suas palestras gravadas", descricao: "Palestrantes podem enviar vídeos, áudios ou apresentações de suas palestras para ficarem disponíveis a todos os membros" },
-  { status: "planejado", titulo: "Cifras e partituras de músicas espíritas", descricao: "Músicos da comunidade enviam cifras e partituras de músicas espíritas · Qualquer membro pode acessar e baixar o material" },
-  { status: "planejado", titulo: "Músicas espíritas para ouvir diretamente no site", descricao: "Playlists organizadas por momento da reunião (recepção, hora do passe, encerramento) · Músicas curadas pela comunidade · Reprodução direto pelo navegador, sem precisar de outro aplicativo" },
+  { status: "planejado", titulo: "Área para palestrantes disponibilizarem suas palestras gravadas", cardTitle: "Integração de Vídeos", descricao: "Palestrantes podem enviar vídeos, áudios ou apresentações de suas palestras para ficarem disponíveis a todos os membros" },
+  { status: "planejado", titulo: "Cifras e partituras de músicas espíritas", cardTitle: "Área de Cifras", descricao: "Músicos da comunidade enviam cifras e partituras de músicas espíritas · Qualquer membro pode acessar e baixar o material" },
+  { status: "planejado", titulo: "Músicas espíritas para ouvir diretamente no site", cardTitle: "Área de Músicas", descricao: "Playlists organizadas por momento da reunião (recepção, hora do passe, encerramento) · Músicas curadas pela comunidade · Reprodução direto pelo navegador, sem precisar de outro aplicativo" },
   { status: "planejado", titulo: "Área dos músicos espíritas — encontros, trabalhos e ensaio virtual", descricao: "Espaço para músicos espíritas se conhecerem, divulgarem seus trabalhos musicais e realizarem ensaios virtuais. Inclui a possibilidade de organizar um show virtual para apresentação dos músicos da comunidade" },
   { status: "planejado", titulo: "Informações úteis na área de ajuda — empregos e outras religiões", descricao: "Ampliar a seção de ajuda da página inicial com uma lista de agências de emprego e endereços de outras religiões, para que qualquer pessoa que precise de apoio possa ser encaminhada com fraternidade, independente de crença" },
+  { status: "planejado", titulo: "Área de Jovens Espíritas", descricao: "Conteúdo, eventos e espaço de comunidade exclusivos para jovens trabalhadores da vinha · Atividades, discussões e recursos adaptados ao jovem espírita" },
 
   // ── PENDENTE — Vida espiritual e comunidade ──────────────────────────────
 
-  { status: "planejado", titulo: "Calendário de aniversariantes do mês", descricao: "Lista dos membros da casa que fazem aniversário no mês atual, exibida em destaque na tela inicial · O coordenador recebe um aviso automático para organizar uma homenagem" },
-  { status: "planejado", titulo: "Plantão de Orações — oração coletiva à distância", descricao: "Membros se inscrevem para orar em horários definidos, como um escalonamento de oração · A agenda semanal fica visível para todos · Cada participante confirma presença e o histórico é registrado" },
-  { status: "planejado", titulo: "Mural de Avisos da casa espírita", descricao: "Quadro de avisos digital da casa · Presidentes e coordenadores publicam comunicados · Cada aviso tem uma data de validade e some automaticamente quando vencer · Os membros veem o mural ao entrar no site" },
+  { status: "planejado", titulo: "Calendário de aniversariantes do mês", cardTitle: "Aniversariantes do Mês", descricao: "Lista dos membros da casa que fazem aniversário no mês atual, exibida em destaque na tela inicial · O coordenador recebe um aviso automático para organizar uma homenagem" },
+  { status: "planejado", titulo: "Plantão de Orações — oração coletiva à distância", cardTitle: "Plantão de Orações", descricao: "Membros se inscrevem para orar em horários definidos, como um escalonamento de oração · A agenda semanal fica visível para todos · Cada participante confirma presença e o histórico é registrado" },
+  { status: "planejado", titulo: "Mural de Avisos da casa espírita", cardTitle: "Mural de Avisos", descricao: "Quadro de avisos digital da casa · Presidentes e coordenadores publicam comunicados · Cada aviso tem uma data de validade e some automaticamente quando vencer · Os membros veem o mural ao entrar no site" },
   { status: "planejado", titulo: "Atendimento fraterno virtual — urgente e agendado", descricao: "Para atendimento urgente: o site identifica os voluntários logados naquele momento e envia um alerta automático para eles e para o Presidente. Se não houver ninguém disponível, indica o CVV ou a opção de agendar. Para atendimento agendado: o Presidente ou autorizados recebem a solicitação, escolhem a data e o horário, e o compromisso é criado automaticamente na agenda de todos os envolvidos. O atendimento pode ser identificado ou anônimo. A sala virtual é controlada pelo Presidente, que define quem pode participar." },
-  { status: "planejado", titulo: "Ficha de Atendimento Fraterno — registro confidencial", descricao: "Formulário sigiloso para registrar os dados de pessoas que receberam atendimento · Histórico de atendimentos · Acessível apenas pelo coordenador de assistência fraterna" },
-  { status: "planejado", titulo: "Fórum de apoio fraterno — espaço para quem está passando por dificuldades", descricao: "Um espaço acolhedor onde pessoas que estejam passando por dificuldades podem compartilhar o que estão sentindo. Voluntários cadastrados recebem um aviso e podem interagir com fraternidade, oferecendo apoio emocional e espiritual dentro da plataforma" },
+  { status: "planejado", titulo: "Ficha de Atendimento Fraterno — registro confidencial", cardTitle: "Ficha de Atendimento Fraterno", descricao: "Formulário sigiloso para registrar os dados de pessoas que receberam atendimento · Histórico de atendimentos · Acessível apenas pelo coordenador de assistência fraterna" },
+  { status: "planejado", titulo: "Fórum de apoio fraterno — espaço para quem está passando por dificuldades", cardTitle: "Fórum de Apoio", descricao: "Um espaço acolhedor onde pessoas que estejam passando por dificuldades podem compartilhar o que estão sentindo. Voluntários cadastrados recebem um aviso e podem interagir com fraternidade, oferecendo apoio emocional e espiritual dentro da plataforma" },
 
   // ── PENDENTE — Solidariedade e mobilidade ────────────────────────────────
 
-  { status: "planejado", titulo: "Carona Solidária — ajuda para chegar à casa espírita", descricao: "Membros que têm carro se cadastram para oferecer carona · Quem precisa solicita uma carona · O sistema registra confirmações e histórico de caronas realizadas" },
-  { status: "planejado", titulo: "Entrega Solidária — levar itens do bazar até quem comprou", descricao: "Voluntários se oferecem para entregar itens comprados no bazar on-line · O comprador e o voluntário combinam o horário pela plataforma · Registro e confirmação da entrega" },
+  { status: "planejado", titulo: "Carona Solidária — ajuda para chegar à casa espírita", cardTitle: "Carona Solidária", descricao: "Membros que têm carro se cadastram para oferecer carona · Quem precisa solicita uma carona · O sistema registra confirmações e histórico de caronas realizadas" },
+  { status: "planejado", titulo: "Entrega Solidária — levar itens do bazar até quem comprou", cardTitle: "Entrega Solidária", descricao: "Voluntários se oferecem para entregar itens comprados no bazar on-line · O comprador e o voluntário combinam o horário pela plataforma · Registro e confirmação da entrega" },
 
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
   { status: "feito",     titulo: "Agenda completa por casa espírita — compromissos e reuniões", descricao: "Presidentes e decisores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. O organizador marca quem compareceu e gera a ata automaticamente ao final da reunião. Eventos podem ser editados após a criação." },
   { status: "feito", titulo: "Caderno de Presença Digital", descricao: "Presença registrada dentro de cada evento da agenda · Aba 'Presenças' com relatório histórico: barra de frequência por membro e lista de presentes por evento" },
-  { status: "planejado", titulo: "Escala de Trabalho — quem faz o quê e quando", descricao: "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular" },
+  { status: "planejado", titulo: "Escala de Trabalho — quem faz o quê e quando", cardTitle: "Escala de Trabalho", descricao: "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular" },
   { status: "planejado", titulo: "Controle de manutenções da casa espírita", descricao: "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido" },
-  { status: "planejado", titulo: "Cruzamento de habilidades dos membros com as necessidades do centro", descricao: "O sistema compara as habilidades cadastradas pelos membros com as necessidades da casa e envia alertas para voluntários quando alguém que tem aquela habilidade for necessário" },
+  { status: "planejado", titulo: "Cruzamento de habilidades dos membros com as necessidades do centro", cardTitle: "Localização de Voluntariado", descricao: "O sistema compara as habilidades cadastradas pelos membros com as necessidades da casa e envia alertas para voluntários quando alguém que tem aquela habilidade for necessário" },
   { status: "planejado", titulo: "Sistema interno de sugestões com curtidas, comentários e acompanhamento", descricao: "Membros registram sugestões para a casa · Outros podem curtir e comentar · O status de cada sugestão é acompanhado com datas e motivação registrada" },
-  { status: "planejado", titulo: "Grupos de comunicação interna por tipo de atividade", descricao: "Grupos de mensagens dentro da plataforma, semelhantes aos grupos de WhatsApp, organizados por tipo de trabalho (evangelização, mediunidade, tesouraria etc.)" },
+  { status: "planejado", titulo: "Grupos de comunicação interna por tipo de atividade", cardTitle: "Comunicação em Grupos", descricao: "Grupos de mensagens dentro da plataforma, semelhantes aos grupos de WhatsApp, organizados por tipo de trabalho (evangelização, mediunidade, tesouraria etc.)" },
   { status: "planejado", titulo: "Avisos por WhatsApp para coordenadores e presidentes", descricao: "Alertas automáticos via WhatsApp sobre eventos, ausências, aprovações e solicitações importantes · Integração com a API oficial do WhatsApp" },
   { status: "planejado", titulo: "Instalar o site como aplicativo no celular — sem loja de aplicativos", descricao: "O usuário pode salvar o site como um aplicativo na tela inicial do celular, sem precisar baixar nada de uma loja · O site funciona mesmo com internet fraca ou ausente em partes do conteúdo" },
 
   // ── PENDENTE — Tesouraria e financeiro ───────────────────────────────────
 
   { status: "feito", titulo: "Tesouraria simplificada — controle de entradas e saídas", descricao: "Controle financeiro simples e acessível, pensado para quem não tem familiaridade com tecnologia · Registro de receitas (doações, bazar, mensalidade, eventos) e despesas (água/luz, aluguel, manutenção etc.) · Navegação por mês com saldo, total de receitas e despesas · Acesso restrito a Presidente, Tesoureiro e DEV" },
-  { status: "planejado", titulo: "Bazar on-line com pagamento por PIX", descricao: "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado na hora · O administrador controla o estoque e as vendas" },
+  { status: "planejado", titulo: "Bazar on-line com pagamento por PIX", cardTitle: "Bazar On-line", descricao: "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado na hora · O administrador controla o estoque e as vendas" },
 
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────
 
-  { status: "planejado", titulo: "Painel pessoal 'Meu Trabalho na Vinha'", descricao: "Cada membro tem um painel personalizado com informações relevantes para o seu cargo e suas atividades: compromissos agendados, escala de trabalho, tempo no site, conquistas e muito mais. O nome 'Dashboard' (palavra em inglês) é substituído por algo que todos entendam de imediato" },
+  { status: "planejado", titulo: "Painel pessoal 'Meu Trabalho na Vinha'", cardTitle: "Meu Painel Pessoal", descricao: "Cada membro tem um painel personalizado com informações relevantes para o seu cargo e suas atividades: compromissos agendados, escala de trabalho, tempo no site, conquistas e muito mais. O nome 'Dashboard' (palavra em inglês) é substituído por algo que todos entendam de imediato" },
   { status: "planejado", titulo: "Painel do Presidente — visão geral da casa", descricao: "Resumo financeiro, lista de tarefeiros, situação das atividades e funcionamento geral da casa espírita, tudo em um só lugar" },
   { status: "planejado", titulo: "Painel do Coordenador — acompanhamento da coordenação", descricao: "Visão das atividades sob sua responsabilidade: presenças, escalas, atendimentos e comunicados da coordenação" },
   { status: "feito", titulo: "Painel do Tesoureiro — resumo financeiro com exportação e impressão", descricao: "Entradas e saídas do mês com saldo, total de receitas e despesas · Exportação em planilha Excel nativa (.xlsx) com cabeçalho completo (casa, período, responsável pela emissão) e coluna com o nome de quem registrou cada lançamento · Impressão formatada diretamente do site, com cabeçalho, cards de resumo e tabela de lançamentos · Navegação por qualquer mês do histórico" },
@@ -133,20 +136,24 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Comunicação e transmissão ─────────────────────────────────
 
-  { status: "planejado", titulo: "Transmissão ao vivo de palestras pelo celular", descricao: "Um membro transmite a palestra pelo celular e todos os outros logados na casa podem assistir ao vivo, sem precisar de equipamentos especiais" },
-  { status: "planejado", titulo: "Videochamada em grupo — Google Meet ou solução própria", descricao: "Iniciar uma videochamada direto pela plataforma, sem sair do site · Link compartilhável com os membros convidados" },
+  { status: "planejado", titulo: "Transmissão ao vivo de palestras pelo celular", cardTitle: "Live Streaming", descricao: "Um membro transmite a palestra pelo celular e todos os outros logados na casa podem assistir ao vivo, sem precisar de equipamentos especiais" },
+  { status: "planejado", titulo: "Videochamada em grupo — Google Meet ou solução própria", cardTitle: "Google Meet", descricao: "Iniciar uma videochamada direto pela plataforma, sem sair do site · Link compartilhável com os membros convidados" },
   { status: "planejado", titulo: "Transmissão profissional de palestras — integração com StreamYard", descricao: "Para casas que queiram transmitir com mais qualidade, integração com o StreamYard ou desenvolvimento de solução própria de streaming" },
 
   // ── PENDENTE — Educação e jogos ──────────────────────────────────────────
 
-  { status: "planejado", titulo: "Módulo escolar de evangelização infantil", descricao: "Planos de aula, histórias e atividades prontas para os professores da evangelização · Material organizado por faixa etária · Tudo acessível pelo site" },
+  { status: "planejado", titulo: "Módulo escolar de evangelização infantil", cardTitle: "Evangelização Infantil", descricao: "Planos de aula, histórias e atividades prontas para os professores da evangelização · Material organizado por faixa etária · Tudo acessível pelo site" },
   { status: "feito",     titulo: "Plante a Semente — jogo educativo sobre a codificação espírita", descricao: "Jogo no estilo forca onde uma planta cresce à medida que o jogador descobre o termo espírita. Ao completar, a palavra revela seu significado e a referência exata no livro da codificação" },
-  { status: "planejado", titulo: "Quiz de perguntas sobre os livros de Kardec", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e os demais livros da codificação · Três níveis: fácil, médio e difícil · Placar por rodada" },
+  { status: "planejado", titulo: "Quiz de perguntas sobre os livros de Kardec", cardTitle: "Jogos Educativos", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e os demais livros da codificação · Três níveis: fácil, médio e difícil · Placar por rodada" },
   { status: "planejado", titulo: "Jogo da memória — termos e significados da doutrina", descricao: "Pares de cartas com termos espíritas e seus respectivos significados extraídos dos livros de Kardec · As cartas são embaralhadas a cada rodada" },
   { status: "planejado", titulo: "Palavras cruzadas com termos espíritas", descricao: "Grade de palavras cruzadas com termos e definições retirados dos 5 livros da codificação · Gerada automaticamente para nunca repetir o mesmo jogo" },
   { status: "planejado", titulo: "Quiz de trechos — adivinhe o livro e o capítulo", descricao: "Um trecho dos livros de Kardec aparece na tela e o jogador deve identificar de qual livro e capítulo aquela passagem foi extraída" },
   { status: "planejado", titulo: "Batalha Naval Espírita — jogo em dupla ou contra o computador", descricao: "Versão do jogo Batalha Naval onde, no lugar dos barcos, há palavras da doutrina espírita de tamanhos variados. Pode ser jogado convidando outro membro ou contra o computador. À medida que o jogador acerta todas as letras de uma palavra, o seu significado na doutrina é revelado" },
   { status: "planejado", titulo: "Jogos educativos adaptados para crianças da evangelização", descricao: "Atividades lúdicas criadas especialmente para crianças: jogo da memória, palavras cruzadas ilustradas e histórias animadas com temas espíritas" },
+
+  // ── PENDENTE — Ferramentas de apoio ──────────────────────────────────────
+
+  { status: "planejado", titulo: "Player de PowerPoint — apresentações direto na plataforma", cardTitle: "Player de PowerPoint", descricao: "Apresente arquivos de PowerPoint diretamente no site, sem precisar de instalações ou aplicativos externos · Ideal para palestrantes e coordenadores" },
 ];
 
 const badge: Record<Status, { label: string; color: string }> = {
@@ -161,9 +168,13 @@ const icon: Record<Status, string> = {
   planejado: "○",
 };
 
-// Gera uma chave estável a partir do título do item
+// Gera uma chave estável — usa cardTitle quando disponível para compatibilidade com /inicio
 function toItemKey(titulo: string): string {
   return titulo.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+}
+
+function itemVoteKey(item: Item): string {
+  return toItemKey(item.cardTitle ?? item.titulo);
 }
 
 interface VoteMap {
@@ -245,9 +256,8 @@ function Painel() {
     setVotes(map);
   }, [user]);
 
-  const handleVote = async (titulo: string) => {
+  const handleVote = async (key: string) => {
     if (!user) return;
-    const key = toItemKey(titulo);
     setVotingKey(key);
     try {
       const current = votes[key];
@@ -455,7 +465,7 @@ function Painel() {
               </h2>
               <div className="space-y-2">
                 {items.map((item) => {
-                  const key = toItemKey(item.titulo);
+                  const key = itemVoteKey(item);
                   const voteData = votes[key];
                   const count = voteData?.count ?? 0;
                   const voted = voteData?.votedByMe ?? false;
@@ -484,7 +494,7 @@ function Painel() {
                       </div>
                       {isPending && (
                         <button
-                          onClick={() => handleVote(item.titulo)}
+                          onClick={() => handleVote(itemVoteKey(item))}
                           disabled={isVoting}
                           title={voted ? "Remover curtida" : "Curtir este item"}
                           className={`shrink-0 flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-colors disabled:opacity-50 ${
