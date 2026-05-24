@@ -8,7 +8,7 @@ import {
   BookOpen, BookMarked, Shirt, Footprints,
   Star, LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
   Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, Clock,
-  Building2, ThumbsUp,
+  Building2, ThumbsUp, Check, X,
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,16 @@ interface TodayMsg {
   referencia: string | null;
   autor_nome: string;
   sigla_casa: string | null;
+}
+
+interface AgendaEvento {
+  id: string;
+  titulo: string;
+  data_inicio: string;
+  data_fim: string | null;
+  tipo: "aberto" | "fechado";
+  aceita_confirmacao: boolean;
+  agenda_participantes: { id: string; user_id: string; confirmado: boolean | null }[];
 }
 
 const DAILY_MESSAGES = [
@@ -162,6 +172,7 @@ function Inicio() {
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
   const [votes, setVotes] = useState<VoteMap>({});
   const [votingKey, setVotingKey] = useState<string | null>(null);
+  const [agendaEventos, setAgendaEventos] = useState<AgendaEvento[]>([]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -169,6 +180,37 @@ function Inicio() {
       navigate({ to: "/completar-perfil" });
     }
   }, [user, profile, loading, navigate]);
+
+  const fetchAgenda = useCallback(async () => {
+    if (!user || !profile?.sigla_casa) return;
+    const hoje = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("agenda_eventos")
+      .select("id, titulo, data_inicio, data_fim, tipo, aceita_confirmacao, agenda_participantes(id, user_id, confirmado)")
+      .eq("sigla_casa", profile.sigla_casa)
+      .gte("data_inicio", hoje)
+      .order("data_inicio", { ascending: true })
+      .limit(10);
+    setAgendaEventos((data as AgendaEvento[]) ?? []);
+  }, [user, profile?.sigla_casa]);
+
+  useEffect(() => {
+    if (user && profile?.sigla_casa) fetchAgenda();
+  }, [user, profile?.sigla_casa, fetchAgenda]);
+
+  const handleConfirmarEvento = useCallback(async (eventoId: string) => {
+    if (!user) return;
+    await supabase.from("agenda_participantes").upsert(
+      { evento_id: eventoId, user_id: user.id, confirmado: true },
+      { onConflict: "evento_id,user_id" }
+    );
+    fetchAgenda();
+  }, [user, fetchAgenda]);
+
+  const handleResponderConvite = useCallback(async (participanteId: string, confirmado: boolean) => {
+    await supabase.from("agenda_participantes").update({ confirmado }).eq("id", participanteId);
+    fetchAgenda();
+  }, [fetchAgenda]);
 
   useEffect(() => {
     if (!user) return;
@@ -288,6 +330,86 @@ function Inicio() {
             </Link>
           </div>
         </div>
+
+        {/* ── Próximos Eventos ── */}
+        {agendaEventos.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-4 pb-4 border-b-2 border-amber-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                  <CalendarDays size={20} strokeWidth={1.5} className="text-amber-600" />
+                </div>
+                <h2 className="text-base font-semibold text-amber-700 tracking-wide">Próximos Eventos</h2>
+              </div>
+              <Link
+                to="/agenda"
+                className="text-xs text-cyan-glow uppercase tracking-widest hover:text-foreground transition-colors"
+              >
+                Ver agenda
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {[
+                ...agendaEventos.filter((e) => {
+                  const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                  return p?.confirmado === null || (!p && e.tipo === "aberto" && e.aceita_confirmacao);
+                }),
+                ...agendaEventos.filter((e) => {
+                  const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                  return p?.confirmado === true;
+                }),
+              ].map((evento) => {
+                const minha = evento.agenda_participantes.find((p) => p.user_id === user.id);
+                const pendente = minha?.confirmado === null;
+                const confirmado = minha?.confirmado === true;
+                const abertoPendente = evento.tipo === "aberto" && !minha && evento.aceita_confirmacao;
+                return (
+                  <div
+                    key={evento.id}
+                    className={`bg-white rounded-2xl border shadow-sm px-4 py-3 flex items-center gap-4 ${pendente ? "border-amber-200" : "border-gray-100"}`}
+                  >
+                    <div className="shrink-0 w-10 text-center">
+                      <p className="text-xl font-light text-gray-800 leading-none">
+                        {String(new Date(evento.data_inicio).getDate()).padStart(2, "0")}
+                      </p>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">
+                        {new Date(evento.data_inicio).toLocaleDateString("pt-BR", { month: "short" })}
+                      </p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{evento.titulo}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                        <Clock size={10} />
+                        {new Date(evento.data_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        {pendente && <span className="text-amber-500">· Aguardando sua resposta</span>}
+                        {confirmado && <span className="text-emerald-600">· Confirmado</span>}
+                        {abertoPendente && <span className="text-cyan-600">· Confirmar presença</span>}
+                      </p>
+                    </div>
+                    {(pendente || abertoPendente) && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => pendente ? handleResponderConvite(minha!.id, true) : handleConfirmarEvento(evento.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-600 text-xs hover:bg-emerald-50 transition-colors"
+                        >
+                          <Check size={12} /> Confirmar
+                        </button>
+                        {pendente && (
+                          <button
+                            onClick={() => handleResponderConvite(minha!.id, false)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 text-red-400 text-xs hover:bg-red-50 transition-colors"
+                          >
+                            <X size={12} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* ── Gestão ── */}
         <section className="mb-16">
