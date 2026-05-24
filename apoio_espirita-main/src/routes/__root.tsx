@@ -367,8 +367,9 @@ function NavBar() {
           <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           <Link to="/feb" className={linkCls("/feb")}>FEB</Link>
           {isDecisao && (
-            <Link to="/permissoes" className={linkCls("/permissoes")} title="Painel de Permissões">
-              <ShieldAlert size={15} strokeWidth={1.5} />
+            <Link to="/permissoes" className={`${linkCls("/permissoes")} flex items-center gap-1`}>
+              <ShieldAlert size={13} strokeWidth={1.5} />
+              Permissões
             </Link>
           )}
           <Link to="/ajuda" className={linkCls("/ajuda")}>FAQ</Link>

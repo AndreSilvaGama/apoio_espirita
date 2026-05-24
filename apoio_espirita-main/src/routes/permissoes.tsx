@@ -188,9 +188,17 @@ function Badge({ label, cor }: { label: string; cor: string }) {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 function Permissoes() {
-  const { user, isDecisao, profile } = useAuth();
+  const { user, isDecisao, isDev, loading, profile } = useAuth();
 
-  if (!user || !isDecisao) {
+  if (loading) {
+    return (
+      <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (!user || (!isDecisao && !isDev)) {
     return (
       <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
         <div className="text-center space-y-3">
