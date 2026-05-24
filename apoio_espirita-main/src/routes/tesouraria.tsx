@@ -159,14 +159,14 @@ function Tesouraria() {
       setShowForm(false);
       fetchTransacoes();
     } catch (e: unknown) {
-      setFormError(e instanceof Error ? e.message : "Erro ao salvar transação.");
+      setFormError(e instanceof Error ? e.message : "Erro ao salvar lançamento.");
     } finally {
       setSaving(false);
     }
   };
 
   const handleExcluir = async (id: string) => {
-    if (!confirm("Excluir esta transação? A ação não pode ser desfeita.")) return;
+    if (!confirm("Excluir este lançamento? A ação não pode ser desfeita.")) return;
     await supabase.from("tesouraria_transacoes").delete().eq("id", id);
     fetchTransacoes();
   };
@@ -259,7 +259,7 @@ function Tesouraria() {
   <tbody>${linhas}</tbody>
 </table>
 <div class="foot">
-  <span>${transacoes.length} transação${transacoes.length !== 1 ? "ões" : ""} no período</span>
+  <span>${transacoes.length} lançamento${transacoes.length !== 1 ? "s" : ""} no período</span>
   <span>Apoio Espírita · apoioespirita.com.br</span>
 </div>
 <script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}</script>
@@ -284,7 +284,7 @@ function Tesouraria() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors"
           >
             <Plus size={14} />
-            {showForm ? "Cancelar" : "Nova Transação"}
+            {showForm ? "Cancelar" : "Novo Lançamento"}
           </button>
         </div>
 
@@ -358,7 +358,7 @@ function Tesouraria() {
         {/* Formulário de nova transação */}
         {showForm && (
           <div className="glass rounded-3xl p-6 mb-8 space-y-4">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">Nova Transação</h2>
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">Novo Lançamento</h2>
 
             {/* Tipo */}
             <div className="flex gap-3">
@@ -436,7 +436,7 @@ function Tesouraria() {
               disabled={saving}
               className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
             >
-              {saving ? "Salvando…" : "Salvar Transação"}
+              {saving ? "Salvando…" : "Salvar Lançamento"}
             </button>
           </div>
         )}
@@ -448,13 +448,13 @@ function Tesouraria() {
           <div className="text-center py-16">
             <Wallet size={40} className="mx-auto text-muted-foreground/20 mb-3" />
             <p className="text-sm text-muted-foreground/50">
-              Nenhuma transação em {MESES[mes]} de {ano}.
+              Nenhum lançamento em {MESES[mes]} de {ano}.
             </p>
             <button
               onClick={() => setShowForm(true)}
               className="mt-4 text-xs text-cyan-glow/70 hover:text-cyan-glow transition-colors"
             >
-              + Registrar primeira transação
+              + Registrar primeiro lançamento
             </button>
           </div>
         ) : (
@@ -495,7 +495,7 @@ function Tesouraria() {
 
             {/* Rodapé do mês */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-400">
-              <span>{transacoes.length} transação{transacoes.length !== 1 ? "ões" : ""}</span>
+              <span>{transacoes.length} lançamento{transacoes.length !== 1 ? "s" : ""}</span>
               <span className={`font-medium ${saldo >= 0 ? "text-cyan-600" : "text-rose-500"}`}>
                 Saldo: {fmtBRL(saldo)}
               </span>
