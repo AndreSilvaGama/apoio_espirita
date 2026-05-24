@@ -160,17 +160,13 @@ function AgendaPage() {
   const handleCreate = async () => {
     if (!fTitulo.trim()) { setFormError("Informe o título do evento."); return; }
     if (!fDataInicio || !fHoraInicio) { setFormError("Informe a data e hora de início."); return; }
-    if (fDataFim && fHoraFim) {
-      const inicio = new Date(`${fDataInicio}T${fHoraInicio}`);
-      const fim = new Date(`${fDataFim}T${fHoraFim}`);
-      if (fim <= inicio) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
-    }
+    if (!fDataFim || !fHoraFim) { setFormError("Informe a data e hora de encerramento."); return; }
+    const dataInicioISO = new Date(`${fDataInicio}T${fHoraInicio}`).toISOString();
+    const dataFimISO = new Date(`${fDataFim}T${fHoraFim}`).toISOString();
+    if (dataFimISO <= dataInicioISO) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
     if (!profile?.sigla_casa || !user) return;
     setSaving(true);
     setFormError("");
-
-    const dataInicioISO = new Date(`${fDataInicio}T${fHoraInicio}`).toISOString();
-    const dataFimISO = fDataFim && fHoraFim ? new Date(`${fDataFim}T${fHoraFim}`).toISOString() : null;
 
     try {
       const { data: novo, error } = await supabase
@@ -309,16 +305,13 @@ function AgendaPage() {
   const handleUpdate = async () => {
     if (!fTitulo.trim()) { setFormError("Informe o título do evento."); return; }
     if (!fDataInicio || !fHoraInicio) { setFormError("Informe a data e hora de início."); return; }
-    if (fDataFim && fHoraFim) {
-      const inicio = new Date(`${fDataInicio}T${fHoraInicio}`);
-      const fim = new Date(`${fDataFim}T${fHoraFim}`);
-      if (fim <= inicio) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
-    }
+    if (!fDataFim || !fHoraFim) { setFormError("Informe a data e hora de encerramento."); return; }
+    const dataInicioISO = new Date(`${fDataInicio}T${fHoraInicio}`).toISOString();
+    const dataFimISO = new Date(`${fDataFim}T${fHoraFim}`).toISOString();
+    if (dataFimISO <= dataInicioISO) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
     if (!editingId) return;
     setSaving(true);
     setFormError("");
-    const dataInicioISO = new Date(`${fDataInicio}T${fHoraInicio}`).toISOString();
-    const dataFimISO = fDataFim && fHoraFim ? new Date(`${fDataFim}T${fHoraFim}`).toISOString() : null;
     try {
       const { error } = await supabase
         .from("agenda_eventos")
@@ -409,12 +402,12 @@ function AgendaPage() {
                   className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Data de encerramento</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Data de encerramento *</label>
                 <input type="date" value={fDataFim} onChange={(e) => setFDataFim(e.target.value)}
                   className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Hora de encerramento</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Hora de encerramento *</label>
                 <input type="time" value={fHoraFim} onChange={(e) => setFHoraFim(e.target.value)}
                   className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
