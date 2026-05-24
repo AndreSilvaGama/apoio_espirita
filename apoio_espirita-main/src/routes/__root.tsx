@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2 } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -390,6 +390,7 @@ function NavBar() {
             {ajudaOpen && (
               <div className="absolute top-full right-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Projeto
                 </Link>
                 <Link to="/feb" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
@@ -397,6 +398,7 @@ function NavBar() {
                   Documentos FEB
                 </Link>
                 <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
                   FAQ
                 </Link>
                 <Link to="/perfil" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
@@ -409,17 +411,17 @@ function NavBar() {
                     Painel de Permissões
                   </Link>
                 )}
-                <div className="my-1 border-t border-gray-100" />
-                <button
-                  onClick={() => { signOut(); setAjudaOpen(false); }}
-                  className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-50 transition-colors"
-                >
-                  <LogOut size={14} strokeWidth={1.5} />
-                  Sair
-                </button>
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => signOut()}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <LogOut size={14} strokeWidth={1.5} />
+            Sair
+          </button>
         </nav>
 
         {/* Mobile hamburger */}
