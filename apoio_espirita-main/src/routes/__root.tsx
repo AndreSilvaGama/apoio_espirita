@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -357,6 +357,14 @@ function NavBar() {
                   <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Memória da Evangelização
                 </Link>
+                <Link
+                  to="/jogos/quiz-espirita"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setJogosOpen(false)}
+                >
+                  <HelpCircle size={14} strokeWidth={1.5} className="text-violet-500" />
+                  Quiz Espírita
+                </Link>
               </div>
             )}
           </div>
@@ -413,6 +421,9 @@ function NavBar() {
             </Link>
             <Link to="/jogos/memoria-evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Jogo: Memória da Evangelização
+            </Link>
+            <Link to="/jogos/quiz-espirita" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Jogo: Quiz Espírita
             </Link>
             <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Evangelização

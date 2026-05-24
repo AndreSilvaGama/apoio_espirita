@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings } from "lucide-react";
+import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle } from "lucide-react";
 
 export const Route = createFileRoute("/evangelizacao")({
   component: Evangelizacao,
@@ -331,6 +331,21 @@ function Evangelizacao() {
                   Documentos FEB
                 </p>
                 <p className="text-xs text-gray-500">AEE Infância · Juventude</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/jogos/quiz-espirita"
+              className="flex items-center gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl hover:shadow-md transition-all group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <HelpCircle size={20} strokeWidth={1.5} className="text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
+                  Quiz Espírita
+                </p>
+                <p className="text-xs text-gray-500">Virtudes · Doutrina · 3–11 anos</p>
               </div>
             </Link>
           </div>

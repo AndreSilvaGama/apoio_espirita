@@ -100,7 +100,7 @@ const roadmap: Item[] = [
   // ── PENDENTE — Educação e jogos ──────────────────────────────────────────
 
   { status: "feito", titulo: "Módulo escolar de evangelização infantil", cardTitle: "Evangelização Infantil", descricao: "Planos de aula prontos por faixa etária (3–5, 6–8 e 9–11 anos) baseados nas diretrizes FEB AEE Infância · Acessível em /evangelizacao" },
-  { status: "planejado", titulo: "Quiz de perguntas sobre os livros de Kardec", cardTitle: "Jogos Educativos", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e os demais livros da codificação · Três níveis: fácil, médio e difícil · Placar por rodada" },
+  { status: "feito", titulo: "Quiz Espírita — perguntas sobre virtudes e doutrina", cardTitle: "Quiz Espírita", descricao: "30 perguntas de múltipla escolha por faixa etária (3–5, 6–8 e 9–11 anos) · Feedback imediato · Placar ao final · Disponível em /jogos/quiz-espirita" },
   { status: "feito", titulo: "Jogo da memória — termos e significados da doutrina", descricao: "Jogo da memória com dois modos: Virtudes (nome + ícone) e Palavras do Evangelho (palavra + significado) · Três dificuldades · Disponível em /jogos/memoria-evangelizacao" },
   { status: "planejado", titulo: "Palavras cruzadas com termos espíritas", descricao: "Grade de palavras cruzadas com termos e definições retirados dos 5 livros da codificação · Gerada automaticamente para nunca repetir o mesmo jogo" },
   { status: "planejado", titulo: "Quiz de trechos — adivinhe o livro e o capítulo", descricao: "Um trecho dos livros de Kardec aparece na tela e o jogador deve identificar de qual livro e capítulo aquela passagem foi extraída" },
