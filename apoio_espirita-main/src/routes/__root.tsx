@@ -286,6 +286,8 @@ function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [recursosOpen, setRecursosOpen] = useState(false);
   const [ajudaOpen, setAjudaOpen] = useState(false);
+  const [recursosMobileOpen, setRecursosMobileOpen] = useState(false);
+  const [ajudaMobileOpen, setAjudaMobileOpen] = useState(false);
   const recursosRef = useRef<HTMLDivElement>(null);
   const ajudaRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +295,8 @@ function NavBar() {
     setMenuOpen(false);
     setRecursosOpen(false);
     setAjudaOpen(false);
+    setRecursosMobileOpen(false);
+    setAjudaMobileOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -448,43 +452,66 @@ function NavBar() {
               Mensagem do Dia
             </Link>
 
-            <p className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-widest text-gray-400">Recursos</p>
-            <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Evangelização
-            </Link>
-            <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Plante a Semente
-            </Link>
-            <Link to="/jogos/memoria-evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Memória da Evangelização
-            </Link>
-            <Link to="/jogos/quiz-espirita" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Quiz Espírita
-            </Link>
-            {isTesoureiro && (
-              <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-                Tesouraria
-              </Link>
+            {/* Seção Recursos */}
+            <button
+              onClick={() => setRecursosMobileOpen((o) => !o)}
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-cyan-700 transition-colors"
+            >
+              Recursos
+              <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`} />
+            </button>
+            {recursosMobileOpen && (
+              <>
+                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Evangelização
+                </Link>
+                <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Plante a Semente
+                </Link>
+                <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Memória da Evangelização
+                </Link>
+                <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Quiz Espírita
+                </Link>
+                {isTesoureiro && (
+                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                    Tesouraria
+                  </Link>
+                )}
+              </>
             )}
 
-            <p className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-widest text-gray-400">Ajuda</p>
-            <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Projeto
-            </Link>
-            <Link to="/feb" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Documentos FEB
-            </Link>
-            <Link to="/ajuda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              FAQ
-            </Link>
-            <Link to="/perfil" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Meu Perfil
-            </Link>
-            {isDecisao && (
-              <Link to="/permissoes" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-                Painel de Permissões
-              </Link>
+            {/* Seção Ajuda */}
+            <button
+              onClick={() => setAjudaMobileOpen((o) => !o)}
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-cyan-700 transition-colors"
+            >
+              Ajuda
+              <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${ajudaMobileOpen ? "rotate-180" : ""}`} />
+            </button>
+            {ajudaMobileOpen && (
+              <>
+                <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Projeto
+                </Link>
+                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Documentos FEB
+                </Link>
+                <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  FAQ
+                </Link>
+                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  Meu Perfil
+                </Link>
+                {isDecisao && (
+                  <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                    Painel de Permissões
+                  </Link>
+                )}
+              </>
             )}
+
             <button
               onClick={() => signOut()}
               className="py-3 px-2 text-sm font-medium text-left text-red-400 hover:text-red-600 transition-colors"
