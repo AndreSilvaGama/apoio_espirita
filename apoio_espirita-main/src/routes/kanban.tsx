@@ -33,7 +33,7 @@ const COLUNAS: { status: Status; label: string; borda: string; corHeader: string
 ];
 
 function fmtData(iso: string) {
-  const [year, month, day] = iso.split("-");
+  const [year, month, day] = iso.slice(0, 10).split("-");
   return `${day}/${month}/${year}`;
 }
 
@@ -61,18 +61,19 @@ function KanbanPage() {
       navigate({ to: "/completar-perfil" });
   }, [user, profile, loading, navigate]);
 
-  const fetchEventos = async () => {
+  const fetchEventos = async (sigla: string) => {
     setLoadingEventos(true);
     const { data } = await supabase
       .from("kanban_eventos")
       .select("*")
+      .eq("sigla_casa", sigla)
       .order("created_at", { ascending: true });
     setEventos((data as KanbanEvento[]) ?? []);
     setLoadingEventos(false);
   };
 
   useEffect(() => {
-    if (user && profile?.sigla_casa) fetchEventos();
+    if (user && profile?.sigla_casa) fetchEventos(profile.sigla_casa);
   }, [user, profile?.sigla_casa]);
 
   if (loading || !user) return null;
@@ -133,7 +134,7 @@ function KanbanPage() {
         if (error) throw error;
       }
       closeForm();
-      fetchEventos();
+      if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
     } catch (e: unknown) {
       setFormError(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
@@ -143,8 +144,9 @@ function KanbanPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Excluir este card? Não pode ser desfeito.")) return;
-    await supabase.from("kanban_eventos").delete().eq("id", id);
-    fetchEventos();
+    const { error } = await supabase.from("kanban_eventos").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir: " + error.message); return; }
+    if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -373,11 +375,15 @@ function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 cursor-grab active:cursor-grabbing select-none"
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
     >
-      <p className="text-sm font-medium text-gray-800 leading-snug mb-2">{evento.titulo}</p>
+      <div
+        {...listeners}
+        {...attributes}
+        className="cursor-grab active:cursor-grabbing select-none mb-2"
+      >
+        <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
+      </div>
       {evento.data && (
         <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
           <Calendar size={10} />
@@ -399,14 +405,12 @@ function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
         <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
-            onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center gap-1 text-xs text-muted-foreground/40 hover:text-gray-600 transition-colors py-1 px-2 rounded-lg hover:bg-gray-50"
           >
             <Pencil size={11} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
-            onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center gap-1 text-xs text-red-400/50 hover:text-red-500 transition-colors py-1 px-2 rounded-lg hover:bg-red-50"
           >
             <Trash2 size={11} />
