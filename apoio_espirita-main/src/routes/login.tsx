@@ -89,9 +89,9 @@ function Login() {
           {/* Google */}
           <button
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-sm text-foreground"
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-base text-foreground"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24">
+            <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
@@ -112,7 +112,7 @@ function Login() {
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(""); setInfo(""); }}
-                className={`flex-1 py-2 text-xs uppercase tracking-widest transition-colors ${
+                className={`flex-1 py-3 text-sm uppercase tracking-widest transition-colors ${
                   mode === m
                     ? "bg-cyan-glow/10 text-cyan-glow"
                     : "text-muted-foreground hover:text-foreground"
@@ -123,53 +123,140 @@ function Login() {
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <input
               type="email"
               placeholder="E-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-4 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
-            <input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
-            />
+            <div className="space-y-2">
+              <input
+                type="password"
+                placeholder="Senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-4 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              />
+              {mode === "entrar" && (
+                <div className="text-right">
+                  <ForgotPasswordLink email={email} />
+                </div>
+              )}
+            </div>
 
             {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
+              <p className="text-sm text-red-400 text-center">{error}</p>
             )}
             {info && (
-              <p className="text-xs text-cyan-glow text-center">{info}</p>
+              <p className="text-sm text-cyan-glow text-center">{info}</p>
             )}
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
+              className="w-full py-4 rounded-xl text-base uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
             >
               {submitting ? "Aguarde…" : mode === "entrar" ? "Entrar" : "Criar conta"}
             </button>
           </form>
         </div>
 
-        <div className="mt-6 text-center space-y-2">
-          <p className="text-xs text-muted-foreground/50">Um espaço de serviço e fraternidade.</p>
+        <div className="mt-6 text-center space-y-3">
+          <p className="text-sm text-muted-foreground/50">Um espaço de serviço e fraternidade.</p>
           <Link
             to="/"
-            className="inline-block text-xs text-cyan-glow/60 hover:text-cyan-glow transition-colors"
+            className="inline-block text-sm text-cyan-glow/60 hover:text-cyan-glow transition-colors"
           >
             ← Voltar ao início
           </Link>
         </div>
       </div>
     </main>
+  );
+}
+
+function ForgotPasswordLink({ email }: { email: string }) {
+  const [open, setOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState(email);
+  const [submitting, setSubmitting] = useState(false);
+  const [info, setInfo] = useState("");
+  const [error, setError] = useState("");
+
+  const handleOpen = () => {
+    setResetEmail(email);
+    setInfo("");
+    setError("");
+    setOpen(true);
+  };
+
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    setInfo("");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/perfil`,
+      });
+      if (error) throw error;
+      setInfo("Link enviado! Verifique seu e-mail.");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro inesperado.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={handleOpen}
+        className="text-sm text-muted-foreground/60 hover:text-cyan-glow transition-colors py-1"
+      >
+        Esqueci minha senha
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
+      <p className="text-sm text-muted-foreground text-center">Informe seu e-mail para receber o link de redefinição:</p>
+      <form onSubmit={handleReset} className="space-y-3">
+        <input
+          type="email"
+          value={resetEmail}
+          onChange={(e) => setResetEmail(e.target.value)}
+          required
+          autoFocus
+          placeholder="Seu e-mail"
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+        />
+        {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+        {info  && <p className="text-sm text-cyan-glow text-center">{info}</p>}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex-1 py-3 rounded-lg text-sm text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex-1 py-3 rounded-lg text-sm text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+          >
+            {submitting ? "Enviando…" : "Enviar link"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
