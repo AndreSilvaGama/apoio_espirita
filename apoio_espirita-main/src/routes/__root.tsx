@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, KanbanSquare } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2 } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
