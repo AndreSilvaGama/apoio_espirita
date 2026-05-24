@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -281,21 +281,27 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, isPresident, isTesoureiro, isDecisao, signOut } = useAuth();
+  const { user, isTesoureiro, isDecisao, signOut } = useAuth();
   const { location } = useRouterState();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [jogosOpen, setJogosOpen] = useState(false);
-  const jogosRef = useRef<HTMLDivElement>(null);
+  const [recursosOpen, setRecursosOpen] = useState(false);
+  const [ajudaOpen, setAjudaOpen] = useState(false);
+  const recursosRef = useRef<HTMLDivElement>(null);
+  const ajudaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMenuOpen(false);
-    setJogosOpen(false);
+    setRecursosOpen(false);
+    setAjudaOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (jogosRef.current && !jogosRef.current.contains(e.target as Node)) {
-        setJogosOpen(false);
+      if (recursosRef.current && !recursosRef.current.contains(e.target as Node)) {
+        setRecursosOpen(false);
+      }
+      if (ajudaRef.current && !ajudaRef.current.contains(e.target as Node)) {
+        setAjudaOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -305,11 +311,19 @@ function NavBar() {
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
+  const isAnyActive = (paths: string[]) => paths.some((p) => isActive(p));
 
   const linkCls = (path: string) =>
-    `px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-lg transition-colors ${
+    `px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
       isActive(path) ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
     }`;
+
+  const dropBtnCls = (paths: string[]) =>
+    `flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+      isAnyActive(paths) ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
+    }`;
+
+  const dropItemCls = "flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors";
 
   return (
     <header className="fixed top-0 left-0 right-0 h-14 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -326,68 +340,86 @@ function NavBar() {
           <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
-          <Link to="/painel" className={linkCls("/painel")}>Projeto</Link>
 
-          {/* Jogos dropdown */}
-          <div ref={jogosRef} className="relative">
+          {/* Recursos dropdown */}
+          <div ref={recursosRef} className="relative">
             <button
-              onClick={() => setJogosOpen((o) => !o)}
-              className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-lg transition-colors ${
-                isActive("/jogos") ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
-              }`}
+              onClick={() => { setRecursosOpen((o) => !o); setAjudaOpen(false); }}
+              className={dropBtnCls(["/evangelizacao", "/jogos", "/tesouraria"])}
             >
-              Jogos
-              <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${jogosOpen ? "rotate-180" : ""}`} />
+              Recursos
+              <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${recursosOpen ? "rotate-180" : ""}`} />
             </button>
-            {jogosOpen && (
-              <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
-                <Link
-                  to="/jogos/plante-a-semente"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  onClick={() => setJogosOpen(false)}
-                >
+            {recursosOpen && (
+              <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+                <Link to="/evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                  <GraduationCap size={14} strokeWidth={1.5} className="text-rose-500" />
+                  Evangelização
+                </Link>
+                <Link to="/jogos/plante-a-semente" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Gamepad2 size={14} strokeWidth={1.5} className="text-emerald-500" />
                   Plante a Semente
                 </Link>
-                <Link
-                  to="/jogos/memoria-evangelizacao"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  onClick={() => setJogosOpen(false)}
-                >
+                <Link to="/jogos/memoria-evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Memória da Evangelização
                 </Link>
-                <Link
-                  to="/jogos/quiz-espirita"
-                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  onClick={() => setJogosOpen(false)}
-                >
+                <Link to="/jogos/quiz-espirita" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <HelpCircle size={14} strokeWidth={1.5} className="text-violet-500" />
                   Quiz Espírita
                 </Link>
+                {isTesoureiro && (
+                  <Link to="/tesouraria" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                    <Wallet size={14} strokeWidth={1.5} className="text-amber-500" />
+                    Tesouraria
+                  </Link>
+                )}
               </div>
             )}
           </div>
 
-          {isTesoureiro && (
-            <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
-          )}
-          <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
-          <Link to="/feb" className={linkCls("/feb")}>FEB</Link>
-          {isDecisao && (
-            <Link to="/permissoes" className={`${linkCls("/permissoes")} flex items-center gap-1`}>
-              <ShieldAlert size={13} strokeWidth={1.5} />
-              Permissões
-            </Link>
-          )}
-          <Link to="/ajuda" className={linkCls("/ajuda")}>FAQ</Link>
-          <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
-          <button
-            onClick={() => signOut()}
-            className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            Sair
-          </button>
+          {/* Ajuda dropdown */}
+          <div ref={ajudaRef} className="relative">
+            <button
+              onClick={() => { setAjudaOpen((o) => !o); setRecursosOpen(false); }}
+              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/perfil", "/permissoes"])}
+            >
+              Ajuda
+              <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`} />
+            </button>
+            {ajudaOpen && (
+              <div className="absolute top-full right-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+                <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  Projeto
+                </Link>
+                <Link to="/feb" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  <BookOpen size={14} strokeWidth={1.5} className="text-violet-500" />
+                  Documentos FEB
+                </Link>
+                <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  FAQ
+                </Link>
+                <Link to="/perfil" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  <User size={14} strokeWidth={1.5} className="text-gray-400" />
+                  Meu Perfil
+                </Link>
+                {isDecisao && (
+                  <Link to="/permissoes" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                    <ShieldAlert size={14} strokeWidth={1.5} className="text-amber-500" />
+                    Painel de Permissões
+                  </Link>
+                )}
+                <div className="my-1 border-t border-gray-100" />
+                <button
+                  onClick={() => { signOut(); setAjudaOpen(false); }}
+                  className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-gray-50 transition-colors"
+                >
+                  <LogOut size={14} strokeWidth={1.5} />
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Mobile hamburger */}
@@ -413,31 +445,30 @@ function NavBar() {
             <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Mensagem do Dia
             </Link>
-            <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Acompanhamento do Projeto
-            </Link>
-            <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Jogo: Plante a Semente
-            </Link>
-            <Link to="/jogos/memoria-evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Jogo: Memória da Evangelização
-            </Link>
-            <Link to="/jogos/quiz-espirita" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-              Jogo: Quiz Espírita
-            </Link>
+
+            <p className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-widest text-gray-400">Recursos</p>
             <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Evangelização
             </Link>
-            {isDecisao && (
-              <Link to="/permissoes" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
-                Painel de Permissões
-              </Link>
-            )}
+            <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Plante a Semente
+            </Link>
+            <Link to="/jogos/memoria-evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Memória da Evangelização
+            </Link>
+            <Link to="/jogos/quiz-espirita" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Quiz Espírita
+            </Link>
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
                 Tesouraria
               </Link>
             )}
+
+            <p className="px-2 pt-3 pb-1 text-[10px] uppercase tracking-widest text-gray-400">Ajuda</p>
+            <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Projeto
+            </Link>
             <Link to="/feb" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Documentos FEB
             </Link>
@@ -447,6 +478,11 @@ function NavBar() {
             <Link to="/perfil" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Meu Perfil
             </Link>
+            {isDecisao && (
+              <Link to="/permissoes" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                Painel de Permissões
+              </Link>
+            )}
             <button
               onClick={() => signOut()}
               className="py-3 px-2 text-sm font-medium text-left text-red-400 hover:text-red-600 transition-colors"
