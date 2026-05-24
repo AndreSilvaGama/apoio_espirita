@@ -99,13 +99,13 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Educação e jogos ──────────────────────────────────────────
 
-  { status: "planejado", titulo: "Módulo escolar de evangelização infantil", cardTitle: "Evangelização Infantil", descricao: "Planos de aula, histórias e atividades prontas para os professores da evangelização · Material organizado por faixa etária · Tudo acessível pelo site" },
+  { status: "feito", titulo: "Módulo escolar de evangelização infantil", cardTitle: "Evangelização Infantil", descricao: "Planos de aula prontos por faixa etária (3–5, 6–8 e 9–11 anos) baseados nas diretrizes FEB AEE Infância · Acessível em /evangelizacao" },
   { status: "planejado", titulo: "Quiz de perguntas sobre os livros de Kardec", cardTitle: "Jogos Educativos", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e os demais livros da codificação · Três níveis: fácil, médio e difícil · Placar por rodada" },
-  { status: "planejado", titulo: "Jogo da memória — termos e significados da doutrina", descricao: "Pares de cartas com termos espíritas e seus respectivos significados extraídos dos livros de Kardec · As cartas são embaralhadas a cada rodada" },
+  { status: "feito", titulo: "Jogo da memória — termos e significados da doutrina", descricao: "Jogo da memória com dois modos: Virtudes (nome + ícone) e Palavras do Evangelho (palavra + significado) · Três dificuldades · Disponível em /jogos/memoria-evangelizacao" },
   { status: "planejado", titulo: "Palavras cruzadas com termos espíritas", descricao: "Grade de palavras cruzadas com termos e definições retirados dos 5 livros da codificação · Gerada automaticamente para nunca repetir o mesmo jogo" },
   { status: "planejado", titulo: "Quiz de trechos — adivinhe o livro e o capítulo", descricao: "Um trecho dos livros de Kardec aparece na tela e o jogador deve identificar de qual livro e capítulo aquela passagem foi extraída" },
   { status: "planejado", titulo: "Batalha Naval Espírita — jogo em dupla ou contra o computador", descricao: "Versão do jogo Batalha Naval onde, no lugar dos barcos, há palavras da doutrina espírita de tamanhos variados. Pode ser jogado convidando outro membro ou contra o computador. À medida que o jogador acerta todas as letras de uma palavra, o seu significado na doutrina é revelado" },
-  { status: "planejado", titulo: "Jogos educativos adaptados para crianças da evangelização", descricao: "Atividades lúdicas criadas especialmente para crianças: jogo da memória, palavras cruzadas ilustradas e histórias animadas com temas espíritas" },
+  { status: "feito", titulo: "Jogos educativos adaptados para crianças da evangelização", descricao: "Jogo da memória com virtudes e palavras do Evangelho · Três dificuldades · Hub de evangelização com planos de aula · Disponível em /evangelizacao e /jogos/memoria-evangelizacao" },
 
   // ── PENDENTE — Ferramentas de apoio ──────────────────────────────────────
 

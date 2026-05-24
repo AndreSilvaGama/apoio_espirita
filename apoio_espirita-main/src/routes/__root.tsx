@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -349,6 +349,14 @@ function NavBar() {
                   <Gamepad2 size={14} strokeWidth={1.5} className="text-emerald-500" />
                   Plante a Semente
                 </Link>
+                <Link
+                  to="/jogos/memoria-evangelizacao"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setJogosOpen(false)}
+                >
+                  <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
+                  Memória da Evangelização
+                </Link>
               </div>
             )}
           </div>
@@ -356,6 +364,7 @@ function NavBar() {
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
+          <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           <Link to="/feb" className={linkCls("/feb")}>FEB</Link>
           <Link to="/ajuda" className={linkCls("/ajuda")}>FAQ</Link>
           <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
@@ -395,6 +404,12 @@ function NavBar() {
             </Link>
             <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Jogo: Plante a Semente
+            </Link>
+            <Link to="/jogos/memoria-evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Jogo: Memória da Evangelização
+            </Link>
+            <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Evangelização
             </Link>
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
