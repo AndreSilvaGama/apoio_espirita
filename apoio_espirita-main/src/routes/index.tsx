@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Microscope, Infinity, Unlock, Heart } from "lucide-react";
 import { useState } from "react";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
@@ -27,22 +28,22 @@ export const Route = createFileRoute("/")({
 
 const points = [
   {
-    num: "01",
+    Icon: Microscope,
     title: "Razão e fé",
     body: "O Espiritismo não pede que você acredite — pede que você observe, questione e comprove. Ciência, filosofia e religião caminham juntas.",
   },
   {
-    num: "02",
+    Icon: Infinity,
     title: "Evolução do espírito",
     body: "Cada existência é uma oportunidade de aprender. O progresso moral não tem atalhos, mas também não tem fim.",
   },
   {
-    num: "03",
+    Icon: Unlock,
     title: "Sem intermediários",
     body: "Nenhum ritual, nenhuma cobrança, nenhuma hierarquia entre você e a sua busca. Só o estudo sério e o serviço ao próximo.",
   },
   {
-    num: "04",
+    Icon: Heart,
     title: "Caridade como prática",
     body: "\"Fora da caridade não há salvação\" — não como dogma, mas como convite concreto à ação no mundo.",
   },
@@ -150,13 +151,11 @@ function Index() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {points.map((p, i) => (
                 <article
-                  key={p.num}
+                  key={p.title}
                   className="glass rounded-2xl p-8 animate-fade-in-up hover:border-cyan-glow/30 transition-all duration-700 hover:-translate-y-1 flex flex-col gap-5"
                   style={{ animationDelay: `${0.1 + i * 0.12}s` }}
                 >
-                  <span className="text-xs tracking-[0.3em] text-cyan-glow/50 font-mono">
-                    {p.num}
-                  </span>
+                  <p.Icon size={22} className="text-cyan-glow/60 shrink-0" />
                   <h3 className="text-xl font-medium text-foreground leading-snug">
                     {p.title}
                   </h3>
