@@ -160,6 +160,11 @@ function AgendaPage() {
   const handleCreate = async () => {
     if (!fTitulo.trim()) { setFormError("Informe o título do evento."); return; }
     if (!fDataInicio || !fHoraInicio) { setFormError("Informe a data e hora de início."); return; }
+    if (fDataFim && fHoraFim) {
+      const inicio = new Date(`${fDataInicio}T${fHoraInicio}`);
+      const fim = new Date(`${fDataFim}T${fHoraFim}`);
+      if (fim <= inicio) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
+    }
     if (!profile?.sigla_casa || !user) return;
     setSaving(true);
     setFormError("");
@@ -304,6 +309,11 @@ function AgendaPage() {
   const handleUpdate = async () => {
     if (!fTitulo.trim()) { setFormError("Informe o título do evento."); return; }
     if (!fDataInicio || !fHoraInicio) { setFormError("Informe a data e hora de início."); return; }
+    if (fDataFim && fHoraFim) {
+      const inicio = new Date(`${fDataInicio}T${fHoraInicio}`);
+      const fim = new Date(`${fDataFim}T${fHoraFim}`);
+      if (fim <= inicio) { setFormError("A data/hora de encerramento deve ser posterior ao início."); return; }
+    }
     if (!editingId) return;
     setSaving(true);
     setFormError("");
