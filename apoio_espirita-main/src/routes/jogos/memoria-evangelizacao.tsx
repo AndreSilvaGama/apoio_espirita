@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, RotateCcw, Trophy, Brain, Layers } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, RotateCcw, Trophy, Brain, Layers, Settings, ImageOff } from "lucide-react";
 import {
   VIRTUDES,
   PALAVRAS_EVANGELHO,
@@ -9,6 +10,7 @@ import {
   type ModoJogo,
   type Dificuldade,
 } from "@/data/memoria-evangelizacao";
+import type { VirtudeCasa } from "@/routes/configurar-memoria";
 
 export const Route = createFileRoute("/jogos/memoria-evangelizacao")({
   component: MemoriaEvangelizacao,
@@ -24,6 +26,14 @@ interface Carta {
   combinada: boolean;
 }
 
+// Virtude unificada: custom (com imagem) ou estática (com Lucide icon)
+interface VirtudeDinamica {
+  id: string;
+  nome: string;
+  cor: string;
+  imagem_url: string | null;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function embaralhar<T>(arr: T[]): T[] {
@@ -35,14 +45,11 @@ function embaralhar<T>(arr: T[]): T[] {
   return a;
 }
 
-function criarCartas(modo: ModoJogo, dificuldade: Dificuldade): Carta[] {
-  const n = PARES_POR_DIFICULDADE[dificuldade];
-  const pool = modo === "virtudes"
-    ? VIRTUDES.slice(0, n).map((v) => v.id)
-    : PALAVRAS_EVANGELHO.slice(0, n).map((p) => p.id);
-
+function criarCartas(pool: string[], dificuldade: Dificuldade): Carta[] {
+  const n = Math.min(PARES_POR_DIFICULDADE[dificuldade], pool.length);
+  const ids = pool.slice(0, n);
   const cartas: Carta[] = [];
-  pool.forEach((grupoId) => {
+  ids.forEach((grupoId) => {
     cartas.push({ uid: `${grupoId}-a`, grupoId, tipo: "a", virada: false, combinada: false });
     cartas.push({ uid: `${grupoId}-b`, grupoId, tipo: "b", virada: false, combinada: false });
   });
@@ -57,29 +64,60 @@ function formatarTempo(seg: number): string {
 
 // ── Card faces ────────────────────────────────────────────────────────────────
 
-function FaceVirtude({ carta, modo }: { carta: Carta; modo: ModoJogo }) {
-  if (modo !== "virtudes") return null;
-  const virtude = VIRTUDES.find((v) => v.id === carta.grupoId);
-  if (!virtude) return null;
+function FaceVirtude({
+  carta,
+  virtudes,
+}: {
+  carta: Carta;
+  virtudes: VirtudeDinamica[];
+}) {
+  const v = virtudes.find((x) => x.id === carta.grupoId);
+  if (!v) return null;
 
   if (carta.tipo === "a") {
     return (
-      <div className={`w-full h-full rounded-xl flex items-center justify-center ${virtude.cor}`}>
-        <span className="text-center font-semibold text-gray-700 text-sm px-2 leading-tight">
-          {virtude.virtude}
+      <div className={`w-full h-full rounded-xl flex items-center justify-center ${v.cor}`}>
+        <span className="text-center font-bold text-gray-700 text-sm px-2 leading-tight">
+          {v.nome}
         </span>
       </div>
     );
   }
+
+  // Carta B — imagem ou fallback
+  if (v.imagem_url) {
+    return (
+      <div className={`w-full h-full rounded-xl flex items-center justify-center overflow-hidden ${v.cor}`}>
+        <img
+          src={v.imagem_url}
+          alt={v.nome}
+          className="w-full h-full object-contain p-1"
+          draggable={false}
+        />
+      </div>
+    );
+  }
+
+  // Fallback estático: ícone Lucide
+  const estatica = VIRTUDES.find((s) => s.virtude === v.nome || s.id === v.id);
+  if (estatica) {
+    return (
+      <div className={`w-full h-full rounded-xl flex items-center justify-center ${v.cor}`}>
+        <estatica.Icone size={32} strokeWidth={1.5} className={estatica.corIcone} />
+      </div>
+    );
+  }
+
+  // Fallback final: texto da inicial grande
   return (
-    <div className={`w-full h-full rounded-xl flex items-center justify-center ${virtude.cor}`}>
-      <virtude.Icone size={32} strokeWidth={1.5} className={virtude.corIcone} />
+    <div className={`w-full h-full rounded-xl flex flex-col items-center justify-center gap-1 ${v.cor}`}>
+      <ImageOff size={20} strokeWidth={1.5} className="text-gray-400" />
+      <span className="text-xs text-gray-500">sem imagem</span>
     </div>
   );
 }
 
-function FaceEvangelho({ carta, modo }: { carta: Carta; modo: ModoJogo }) {
-  if (modo !== "evangelho") return null;
+function FaceEvangelho({ carta }: { carta: Carta }) {
   const par = PALAVRAS_EVANGELHO.find((p) => p.id === carta.grupoId);
   if (!par) return null;
 
@@ -102,11 +140,13 @@ function FaceEvangelho({ carta, modo }: { carta: Carta; modo: ModoJogo }) {
 function CartaComponent({
   carta,
   modo,
+  virtudes,
   onClick,
   bloqueada,
 }: {
   carta: Carta;
   modo: ModoJogo;
+  virtudes: VirtudeDinamica[];
   onClick: () => void;
   bloqueada: boolean;
 }) {
@@ -130,7 +170,7 @@ function CartaComponent({
           transition: "transform 0.35s ease",
         }}
       >
-        {/* Verso (frente quando fechada) */}
+        {/* Verso (fechada) */}
         <div
           className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-md"
           style={{ backfaceVisibility: "hidden" }}
@@ -138,14 +178,14 @@ function CartaComponent({
           <Brain size={24} strokeWidth={1.5} className="text-white/70" />
         </div>
 
-        {/* Face (frente quando aberta) */}
+        {/* Face (aberta) */}
         <div
           className="absolute inset-0 shadow-md"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           {modo === "virtudes"
-            ? <FaceVirtude carta={carta} modo={modo} />
-            : <FaceEvangelho carta={carta} modo={modo} />
+            ? <FaceVirtude carta={carta} virtudes={virtudes} />
+            : <FaceEvangelho carta={carta} />
           }
         </div>
       </div>
@@ -157,8 +197,12 @@ function CartaComponent({
 
 function TelaSelecao({
   onIniciar,
+  temCustom,
+  isEvangelizador,
 }: {
   onIniciar: (modo: ModoJogo, dificuldade: Dificuldade) => void;
+  temCustom: boolean;
+  isEvangelizador: boolean;
 }) {
   const [modo, setModo] = useState<ModoJogo | null>(null);
   const [dificuldade, setDificuldade] = useState<Dificuldade>("facil");
@@ -167,7 +211,9 @@ function TelaSelecao({
     {
       id: "virtudes",
       label: "Virtudes",
-      desc: "Casa o nome da virtude com o seu símbolo",
+      desc: temCustom
+        ? "Casa o nome da virtude com a imagem configurada pela sua casa"
+        : "Casa o nome da virtude com o seu símbolo",
       cor: "border-violet-300 bg-violet-50 hover:bg-violet-100",
     },
     {
@@ -186,6 +232,18 @@ function TelaSelecao({
 
   return (
     <div className="space-y-8">
+      {isEvangelizador && (
+        <div className="flex justify-end">
+          <Link
+            to="/configurar-memoria"
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-cyan-600 transition-colors"
+          >
+            <Settings size={13} strokeWidth={1.5} />
+            {temCustom ? "Editar virtudes" : "Configurar virtudes com imagens"}
+          </Link>
+        </div>
+      )}
+
       <div>
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Escolha o modo</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -240,15 +298,11 @@ function TelaSelecao({
 function TelaConclusao({
   tentativas,
   tempo,
-  modo,
-  dificuldade,
   onReiniciar,
   onVoltarSelecao,
 }: {
   tentativas: number;
   tempo: number;
-  modo: ModoJogo;
-  dificuldade: Dificuldade;
   onReiniciar: () => void;
   onVoltarSelecao: () => void;
 }) {
@@ -259,12 +313,10 @@ function TelaConclusao({
           <Trophy size={36} strokeWidth={1.5} className="text-yellow-500" />
         </div>
       </div>
-
       <div>
         <h2 className="text-xl font-bold text-gray-800">Parabéns!</h2>
         <p className="text-sm text-gray-500 mt-1">Você encontrou todos os pares!</p>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-gray-50 border border-gray-200 py-4">
           <p className="text-2xl font-bold text-gray-800">{tentativas}</p>
@@ -275,7 +327,6 @@ function TelaConclusao({
           <p className="text-xs text-gray-500 mt-1">tempo</p>
         </div>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={onReiniciar}
@@ -299,7 +350,12 @@ function TelaConclusao({
 // ── Componente principal ──────────────────────────────────────────────────────
 
 function MemoriaEvangelizacao() {
-  const { user } = useAuth();
+  const { user, profile, isEvangelizador } = useAuth();
+
+  // Virtudes carregadas do Supabase (ou vazias → usa estáticas)
+  const [virtudes, setVirtudes] = useState<VirtudeDinamica[]>([]);
+  const [carregandoVirtudes, setCarregandoVirtudes] = useState(true);
+
   const [fase, setFase] = useState<"selecao" | "jogo" | "conclusao">("selecao");
   const [modo, setModo] = useState<ModoJogo>("virtudes");
   const [dificuldade, setDificuldade] = useState<Dificuldade>("facil");
@@ -309,6 +365,38 @@ function MemoriaEvangelizacao() {
   const [tentativas, setTentativas] = useState(0);
   const [tempo, setTempo] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Carrega virtudes customizadas da casa
+  useEffect(() => {
+    const sigla = profile?.sigla_casa;
+    if (!sigla) {
+      // Sem casa: usa estáticas
+      setVirtudes(VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })));
+      setCarregandoVirtudes(false);
+      return;
+    }
+
+    supabase
+      .from("memoria_virtudes_custom")
+      .select("id, nome, imagem_url, cor, ordem")
+      .eq("sigla_casa", sigla)
+      .eq("ativo", true)
+      .order("ordem")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setVirtudes((data as VirtudeCasa[]).map((v) => ({
+            id: v.id,
+            nome: v.nome,
+            cor: v.cor,
+            imagem_url: v.imagem_url,
+          })));
+        } else {
+          // Sem configuração: usa estáticas
+          setVirtudes(VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })));
+        }
+        setCarregandoVirtudes(false);
+      });
+  }, [profile?.sigla_casa]);
 
   useEffect(() => {
     if (fase === "jogo") {
@@ -320,26 +408,26 @@ function MemoriaEvangelizacao() {
   }, [fase]);
 
   const iniciarJogo = useCallback((m: ModoJogo, d: Dificuldade) => {
+    const pool = m === "virtudes"
+      ? virtudes.map((v) => v.id)
+      : PALAVRAS_EVANGELHO.map((p) => p.id);
+
     setModo(m);
     setDificuldade(d);
-    setCartas(criarCartas(m, d));
+    setCartas(criarCartas(pool, d));
     setViradas([]);
     setBloqueado(false);
     setTentativas(0);
     setTempo(0);
     setFase("jogo");
-  }, []);
+  }, [virtudes]);
 
-  const reiniciar = useCallback(() => {
-    iniciarJogo(modo, dificuldade);
-  }, [iniciarJogo, modo, dificuldade]);
+  const reiniciar = useCallback(() => { iniciarJogo(modo, dificuldade); }, [iniciarJogo, modo, dificuldade]);
 
   const clicarCarta = useCallback((uid: string) => {
     if (bloqueado || viradas.includes(uid)) return;
 
-    setCartas((prev) =>
-      prev.map((c) => (c.uid === uid ? { ...c, virada: true } : c))
-    );
+    setCartas((prev) => prev.map((c) => (c.uid === uid ? { ...c, virada: true } : c)));
 
     const novasViradas = [...viradas, uid];
     setViradas(novasViradas);
@@ -353,29 +441,14 @@ function MemoriaEvangelizacao() {
       const cartaB = cartas.find((c) => c.uid === uidB);
 
       if (cartaA && cartaB && cartaA.grupoId === cartaB.grupoId) {
-        // Par correto
         setCartas((prev) =>
           prev.map((c) =>
-            c.uid === uidA || c.uid === uidB
-              ? { ...c, combinada: true, virada: false }
-              : c
+            c.uid === uidA || c.uid === uidB ? { ...c, combinada: true, virada: false } : c
           )
         );
         setViradas([]);
         setBloqueado(false);
-
-        // Verificar se terminou
-        const totalPares = PARES_POR_DIFICULDADE[dificuldade];
-        setCartas((prev) => {
-          const combinadas = prev.filter((c) => c.uid === uidA || c.uid === uidB
-            ? true : c.combinada).length;
-          if (combinadas === totalPares * 2) {
-            setTimeout(() => setFase("conclusao"), 400);
-          }
-          return prev;
-        });
       } else {
-        // Par errado
         setTimeout(() => {
           setCartas((prev) =>
             prev.map((c) =>
@@ -387,14 +460,13 @@ function MemoriaEvangelizacao() {
         }, 900);
       }
     }
-  }, [bloqueado, viradas, cartas, dificuldade]);
+  }, [bloqueado, viradas, cartas]);
 
-  // Verificar conclusão após cada match
+  // Verificar conclusão
   useEffect(() => {
-    if (fase !== "jogo") return;
+    if (fase !== "jogo" || cartas.length === 0) return;
     const totalPares = PARES_POR_DIFICULDADE[dificuldade];
-    const combinadas = cartas.filter((c) => c.combinada).length;
-    if (cartas.length > 0 && combinadas === totalPares * 2) {
+    if (cartas.filter((c) => c.combinada).length === totalPares * 2) {
       setTimeout(() => setFase("conclusao"), 500);
     }
   }, [cartas, dificuldade, fase]);
@@ -409,26 +481,17 @@ function MemoriaEvangelizacao() {
     );
   }
 
-  const colunas = (() => {
-    const n = cartas.length;
-    if (n <= 12) return "grid-cols-4";
-    if (n <= 16) return "grid-cols-4";
-    return "grid-cols-5";
-  })();
-
+  const colunas = cartas.length <= 12 ? "grid-cols-4" : cartas.length <= 16 ? "grid-cols-4" : "grid-cols-5";
   const modoLabel = modo === "virtudes" ? "Virtudes" : "Palavras do Evangelho";
   const difLabel = { facil: "Fácil", medio: "Médio", dificil: "Difícil" }[dificuldade];
+  const temCustom = virtudes.some((v) => v.imagem_url);
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-2xl">
 
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Link
-            to="/evangelizacao"
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          >
+          <Link to="/evangelizacao" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div>
@@ -439,59 +502,52 @@ function MemoriaEvangelizacao() {
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
 
-          {/* Seleção */}
           {fase === "selecao" && (
-            <TelaSelecao onIniciar={iniciarJogo} />
+            carregandoVirtudes
+              ? <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
+              : <TelaSelecao
+                  onIniciar={iniciarJogo}
+                  temCustom={temCustom}
+                  isEvangelizador={isEvangelizador}
+                />
           )}
 
-          {/* Jogo */}
           {fase === "jogo" && (
             <div className="space-y-4">
-              {/* Status bar */}
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span className="font-medium text-gray-700">{modoLabel} · {difLabel}</span>
                 <div className="flex items-center gap-4">
                   <span>{tentativas} tentativas</span>
                   <span className="tabular-nums font-mono">{formatarTempo(tempo)}</span>
-                  <button
-                    onClick={reiniciar}
-                    aria-label="Reiniciar"
-                    className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
+                  <button onClick={reiniciar} aria-label="Reiniciar" className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
                     <RotateCcw size={14} strokeWidth={2} />
                   </button>
                 </div>
               </div>
 
-              {/* Grid de cartas */}
               <div className={`grid ${colunas} gap-2`}>
                 {cartas.map((carta) => (
                   <CartaComponent
                     key={carta.uid}
                     carta={carta}
                     modo={modo}
+                    virtudes={virtudes}
                     onClick={() => clicarCarta(carta.uid)}
                     bloqueada={bloqueado}
                   />
                 ))}
               </div>
 
-              <button
-                onClick={() => setFase("selecao")}
-                className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <button onClick={() => setFase("selecao")} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
                 Voltar à seleção
               </button>
             </div>
           )}
 
-          {/* Conclusão */}
           {fase === "conclusao" && (
             <TelaConclusao
               tentativas={tentativas}
               tempo={tempo}
-              modo={modo}
-              dificuldade={dificuldade}
               onReiniciar={reiniciar}
               onVoltarSelecao={() => setFase("selecao")}
             />

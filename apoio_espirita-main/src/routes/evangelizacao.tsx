@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf } from "lucide-react";
+import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/evangelizacao")({
   component: Evangelizacao,
@@ -260,7 +260,7 @@ function CardPlano({ plano, corBadge }: { plano: PlanoAula; corBadge: string }) 
 // ── Componente principal ──────────────────────────────────────────────────────
 
 function Evangelizacao() {
-  const { user } = useAuth();
+  const { user, isEvangelizador } = useAuth();
   const [faixaAtiva, setFaixaAtiva] = useState("3-5");
 
   if (!user) {
@@ -334,6 +334,26 @@ function Evangelizacao() {
               </div>
             </Link>
           </div>
+
+          {isEvangelizador && (
+            <div className="mt-3">
+              <Link
+                to="/configurar-memoria"
+                className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl hover:shadow-md transition-all group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                  <Settings size={20} strokeWidth={1.5} className="text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
+                    Configurar Jogo da Memória
+                  </p>
+                  <p className="text-xs text-gray-500">Alterar imagens e nomes das virtudes da sua casa</p>
+                </div>
+                <ArrowRight size={16} strokeWidth={1.5} className="text-amber-400 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+          )}
         </section>
 
         {/* Planos de aula */}
