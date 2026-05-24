@@ -10,7 +10,7 @@ export const Route = createFileRoute("/kanban")({
   component: KanbanPage,
 });
 
-type Status = "ideia" | "planejando" | "confirmado" | "realizado";
+type Status = "ideia" | "planejado" | "em andamento" | "realizado";
 
 interface KanbanEvento {
   id: string;
@@ -26,10 +26,10 @@ interface KanbanEvento {
 }
 
 const COLUNAS: { status: Status; label: string; borda: string; corHeader: string; bgOver: string }[] = [
-  { status: "ideia",      label: "Ideia",      borda: "border-gray-200",    corHeader: "text-gray-500",    bgOver: "bg-gray-50" },
-  { status: "planejando", label: "Planejando", borda: "border-amber-200",   corHeader: "text-amber-600",   bgOver: "bg-amber-50/50" },
-  { status: "confirmado", label: "Confirmado", borda: "border-cyan-200",    corHeader: "text-cyan-600",    bgOver: "bg-cyan-50/50" },
-  { status: "realizado",  label: "Realizado",  borda: "border-emerald-200", corHeader: "text-emerald-600", bgOver: "bg-emerald-50/50" },
+  { status: "ideia",        label: "Ideia",        borda: "border-gray-200",    corHeader: "text-gray-500",    bgOver: "bg-gray-50" },
+  { status: "planejado",   label: "Planejado",   borda: "border-amber-200",   corHeader: "text-amber-600",   bgOver: "bg-amber-50/50" },
+  { status: "em andamento", label: "Em andamento", borda: "border-cyan-200",    corHeader: "text-cyan-600",    bgOver: "bg-cyan-50/50" },
+  { status: "realizado",   label: "Realizado",   borda: "border-emerald-200", corHeader: "text-emerald-600", bgOver: "bg-emerald-50/50" },
 ];
 
 function fmtData(iso: string) {
