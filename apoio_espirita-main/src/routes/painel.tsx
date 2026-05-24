@@ -24,51 +24,13 @@ interface Item {
 
 const roadmap: Item[] = [
 
-  // ── FEITO ────────────────────────────────────────────────────────────────
-
-  { status: "feito", titulo: "Página de entrada do site com visual bonito e acolhedor", descricao: "Tela inicial com vídeo de nebulosa ao fundo, partículas animadas e design adaptado para celular, tablet e computador" },
-  { status: "feito", titulo: "Música suave de piano ao entrar no site", descricao: "Toca automaticamente em volume baixo ao abrir o site · Botão discreto para pausar ou retomar a qualquer momento" },
-  { status: "feito", titulo: "Ícone do site — cepa de videira estilizada", descricao: "Ícone personalizado que aparece na aba do navegador e na tela inicial do celular ao salvar o site como atalho" },
-  { status: "feito", titulo: "Logomarca — cepa de videira realista", descricao: "Imagem da logomarca exibida no topo do site e usada em redes sociais e mecanismos de busca" },
-  { status: "feito", titulo: "Área de ajuda na página inicial — 'Preciso de Ajuda'", descricao: "Apoio emocional com número do CVV · Busca de locais de alimentação pelo CEP · Busca de casas espíritas por UF e cidade" },
-  { status: "feito", titulo: "Página de Transparência e Propósito", descricao: "Explica claramente que a plataforma é independente, sem vínculo com a FEB, UFE ou qualquer federação · Plataforma livre como uma rede social espírita" },
-  { status: "feito", titulo: "Formulário de sugestões para o site", descricao: "Qualquer visitante pode enviar sugestões · O desenvolvedor recebe um aviso por e-mail a cada nova mensagem" },
-  { status: "feito", titulo: "Cadastro e login no site", descricao: "Criar conta com e-mail e senha, ou entrar com um clique usando a conta do Google · Após o primeiro acesso, o sistema pede para completar o perfil" },
-  { status: "feito", titulo: "Painel de acompanhamento do projeto — você está aqui", descricao: "Lista tudo que já foi feito, o que está em desenvolvimento e o que ainda será feito · Barra de progresso · Formulário para sugerir novos recursos" },
-  { status: "feito", titulo: "Exclusão de conta pelo próprio usuário", descricao: "O usuário pode apagar permanentemente todos os seus dados diretamente pela página de perfil, sem precisar pedir a ninguém" },
-  { status: "feito", titulo: "Site publicado em apoioespirita.com.br", descricao: "Site hospedado com segurança, acesso em alta velocidade de qualquer lugar do Brasil, com endereço próprio e cadeado de segurança (HTTPS)" },
-  { status: "feito", titulo: "Entrada com Google — login rápido sem senha", descricao: "O usuário entra com um clique usando sua conta do Google · Na primeira vez, é redirecionado para preencher o perfil" },
-  { status: "feito", titulo: "Banco de dados das casas espíritas", descricao: "Base de dados com informações das casas espíritas cadastradas na plataforma" },
-  { status: "feito", titulo: "Página de perfil do usuário", descricao: "O usuário pode editar seus dados pessoais, trocar a senha e excluir a conta a qualquer momento" },
-  { status: "feito", titulo: "Avisos automáticos por e-mail", descricao: "O desenvolvedor recebe um e-mail automático sempre que alguém enviar uma sugestão ou pedir um novo recurso para o site" },
-  { status: "feito", titulo: "Escolha de cargo e atividades no primeiro acesso", descricao: "Na primeira vez que entra, o usuário escolhe o seu cargo na casa espírita e quais atividades realiza · A informação fica salva no perfil" },
-  { status: "feito", titulo: "24 cargos disponíveis para escolha no perfil", descricao: "Presidente · Vice-presidente · Coordenador · Diretoria · Dirigente · Dirigente de reunião mediúnica · Tesoureiro · Assistido · Associado · Atendente fraterno · Colaborador · Estudante · Evangelizador · Expositor · Facilitador · Frequentador · Médium · Palestrante · Participante de estudo · Passista · Sócio · Tarefeiro · Trabalhador · Visitante" },
-  { status: "feito", titulo: "Tela inicial após o login com todos os recursos disponíveis", descricao: "Painel com todos os recursos do site organizados por categoria, bazar on-line e a Mensagem do Dia" },
-  { status: "feito", titulo: "Mensagem do Dia enviada pelos membros da comunidade", descricao: "Qualquer membro pode enviar uma mensagem com referência espírita para a fila · Uma mensagem diferente aparece por dia · O sistema evita repetir a mesma casa em dias seguidos" },
-  { status: "feito", titulo: "Ícones visuais profissionais em todas as telas", descricao: "Todos os ícones do site são vetoriais e com traço uniforme, substituindo os emojis por uma aparência mais profissional" },
-  { status: "feito", titulo: "Menu de Tesouraria visível apenas para quem tem acesso", descricao: "A opção de Tesouraria só aparece no menu para Presidente, Tesoureiro e DEV — Vice-presidente não tem acesso à Tesouraria" },
-  { status: "feito", titulo: "Rádio Rio de Janeiro integrada ao site", descricao: "Player de rádio espírita disponível no rodapé · Ao ligar a rádio, a música de piano pausa automaticamente" },
-  { status: "feito", titulo: "Site preparado para aparecer bem nas buscas do Google", descricao: "Configurações completas de SEO: título, descrição, imagem para redes sociais, mapa do site e permissões para robôs de busca" },
-  { status: "feito", titulo: "Campo de busca por palavra no acompanhamento do projeto", descricao: "Digite qualquer palavra para filtrar os itens desta lista em tempo real · Grupos sem resultado ficam ocultos automaticamente · Mostra quantos itens foram encontrados" },
-  { status: "feito", titulo: "Botão para voltar ao topo da página", descricao: "Um botão com seta aparece no canto inferior direito da tela após rolar a página para baixo · Ao clicar, a tela volta suavemente ao início · Funciona em todas as páginas do site" },
-  { status: "feito", titulo: "Solicitações de desenvolvimento aparecem no acompanhamento do projeto", descricao: "Ao preencher o formulário de solicitação no final desta página, o pedido é inserido automaticamente aqui como Pendente · Mostra o nome e a casa espírita de quem fez o pedido" },
-  { status: "feito", titulo: "Link para reportar problema no rodapé", descricao: "Botão 'Reportar problema' no rodapé de todas as páginas · Abre formulário para descrever o problema · Após enviar por e-mail, pergunta se quer também avisar pelo WhatsApp com a mensagem já preenchida" },
-  { status: "feito", titulo: "Nome do site exibido ao lado do logo no celular", descricao: "'Apoio Espírita' aparece ao lado da logomarca em todos os tamanhos de tela, inclusive no celular" },
-  { status: "feito", titulo: "Sugestões do site aparecem no acompanhamento do projeto", descricao: "Todas as sugestões enviadas pelo formulário público de /sugestões entram automaticamente nesta lista como Pendente, identificando o nome e o e-mail de quem sugeriu" },
-  { status: "feito", titulo: "Link Voltar de Sugestões redireciona corretamente", descricao: "Se o visitante estiver logado, o botão Voltar leva para /início · Se não estiver logado, leva para a página inicial pública" },
-  { status: "feito", titulo: "Casas espíritas se cadastram pelo site e aparecem no mapa de busca", descricao: "Ao completar o perfil ou editar a página de perfil, o membro pode informar o nome e endereço da sua casa · Se a sigla ainda não estiver no mapa, a casa é cadastrada automaticamente e passa a aparecer nos resultados de busca" },
-  { status: "feito", titulo: "Campo de cidade com lista de municípios brasileiros — IBGE", descricao: "Ao selecionar o estado (UF), o campo de cidade carrega automaticamente todos os municípios daquele estado via API do IBGE · Funciona no cadastro inicial (completar perfil) e na página de perfil" },
-  { status: "feito", titulo: "Estado e cidade obrigatórios para acessar o site", descricao: "Usuários que entraram antes desta atualização e não informaram UF e cidade são redirecionados para a tela de completar perfil ao tentar acessar qualquer página · Os campos ficam pré-preenchidos quando já existiam no perfil" },
-
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
   { status: "planejado", titulo: "Revisão geral do site — melhorar organização e remover repetições", descricao: "Verificar se há informações duplicadas, telas confusas ou fluxos que possam ser simplificados · Padronizar a aparência dos componentes visuais" },
   { status: "planejado", titulo: "Filtro automático de palavras inapropriadas em conteúdo público", descricao: "Qualquer texto publicado em área visível ao público (mensagens, comentários, artigos) passa por um filtro automático que bloqueia palavrões e linguagem ofensiva antes de ser exibido" },
   { status: "planejado", titulo: "Verificação de tom fraternal em todos os textos enviados", descricao: "Sistema que analisa o tom das mensagens e alerta o usuário quando o texto parecer agressivo ou desrespeitoso, incentivando uma comunicação sempre amorosa" },
   { status: "planejado", titulo: "Site mais acessível para idosos e pessoas com dificuldades tecnológicas", descricao: "Letras maiores · Contraste adequado para quem tem dificuldade de visão · Botões e áreas de toque maiores para facilitar o uso no celular · Navegação simplificada" },
-  { status: "feito", titulo: "Perguntas e Respostas (FAQ) — ajuda para usar o site", descricao: "Página com as dúvidas mais comuns sobre como usar o site · Campo de busca em tempo real · Links rápidos para sugestões e acompanhamento do projeto" },
   { status: "planejado", titulo: "Mensagem do Dia com visual mais compacto", descricao: "Reduzir o espaço ocupado pela Mensagem do Dia na tela inicial para que o restante do painel fique mais visível sem precisar rolar a tela" },
-  { status: "feito", titulo: "Menu de navegação completo — todas as seções do site", descricao: "Menu com acesso a todos os recursos funcionando: Início, Agenda, Mensagem do Dia, Rádio, Jogos e Tesouraria · No celular abre como menu hambúrguer · Links ficam destacados na página ativa · Jogos agrupados em submenu" },
   { status: "planejado", titulo: "Campo de busca geral — encontrar conteúdo, membros e casas", descricao: "Campo de busca para encontrar conteúdo publicado, membros da plataforma e casas espíritas cadastradas rapidamente, sem precisar navegar pelos menus" },
 
   // ── PENDENTE — Perfil e cadastro ─────────────────────────────────────────
@@ -77,7 +39,6 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Perfil com habilidades, situação de emprego e disponibilidade para voluntariado", descricao: "Cada membro pode informar suas habilidades profissionais, se está empregado ou em busca de emprego, e se está disponível para ser voluntário dentro ou fora da casa espírita" },
   { status: "planejado", titulo: "Espaço pessoal para contar a própria história de vida", descricao: "Cada membro pode escrever sua história pessoal no perfil e escolher se quer que ela fique visível para outros membros ou apenas para si mesmo" },
   { status: "planejado", titulo: "Perfil infantil 'Pequena Vinha' — acesso especial para crianças", descricao: "Um tipo de login especial com um nome carinhoso para as crianças acessarem o site. Ao entrar como 'Pequena Vinha', a tela inicial mostra apenas conteúdos adequados para crianças — jogos, histórias e evangelização — ocultando o restante" },
-  { status: "feito", titulo: "Página da Casa Espírita — mural, sobre, programação e doações", descricao: "Cada casa espírita tem sua própria página administrada pelo Presidente ou por autorizados por ele. Inclui: Mural de avisos com imagens e vídeos (YouTube/Vimeo) · Sobre a casa (missão, horários, contato) · Programação com agenda de eventos datados, confirmação de presença e visibilidade pública ou privada · Doações com QR Code gerado automaticamente a partir da chave PIX" },
   { status: "planejado", titulo: "Cadastro completo da casa espírita pelo Presidente", descricao: "O Presidente cadastra os dados da casa: nome, endereço, telefone, foto e informações de contato · Os membros se vinculam à casa pela sigla" },
   { status: "planejado", titulo: "Mapa interativo das casas espíritas cadastradas", descricao: "Visualização no mapa de todas as casas cadastradas · Filtros por cidade e estado · Botão para abrir no Google Maps e traçar o caminho" },
   { status: "planejado", titulo: "Chave PIX da casa espírita para receber doações e pagamentos do bazar", descricao: "O Presidente cadastra a chave PIX da casa · O sistema gera um QR Code para impressão e uso nas reuniões e no bazar on-line" },
@@ -110,8 +71,6 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
-  { status: "feito",     titulo: "Agenda completa por casa espírita — compromissos e reuniões", descricao: "Presidentes e decisores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. O organizador marca quem compareceu e gera a ata automaticamente ao final da reunião. Eventos podem ser editados após a criação." },
-  { status: "feito", titulo: "Caderno de Presença Digital", descricao: "Presença registrada dentro de cada evento da agenda · Aba 'Presenças' com relatório histórico: barra de frequência por membro e lista de presentes por evento" },
   { status: "planejado", titulo: "Escala de Trabalho — quem faz o quê e quando", cardTitle: "Escala de Trabalho", descricao: "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular" },
   { status: "planejado", titulo: "Controle de manutenções da casa espírita", descricao: "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido" },
   { status: "planejado", titulo: "Cruzamento de habilidades dos membros com as necessidades do centro", cardTitle: "Localização de Voluntariado", descricao: "O sistema compara as habilidades cadastradas pelos membros com as necessidades da casa e envia alertas para voluntários quando alguém que tem aquela habilidade for necessário" },
@@ -122,7 +81,6 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Tesouraria e financeiro ───────────────────────────────────
 
-  { status: "feito", titulo: "Tesouraria simplificada — controle de entradas e saídas", descricao: "Controle financeiro simples e acessível, pensado para quem não tem familiaridade com tecnologia · Registro de receitas (doações, bazar, mensalidade, eventos) e despesas (água/luz, aluguel, manutenção etc.) · Navegação por mês com saldo, total de receitas e despesas · Acesso restrito a Presidente, Tesoureiro e DEV" },
   { status: "planejado", titulo: "Bazar on-line com pagamento por PIX", cardTitle: "Bazar On-line", descricao: "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado na hora · O administrador controla o estoque e as vendas" },
 
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────
@@ -130,7 +88,6 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Painel pessoal 'Meu Trabalho na Vinha'", cardTitle: "Meu Painel Pessoal", descricao: "Cada membro tem um painel personalizado com informações relevantes para o seu cargo e suas atividades: compromissos agendados, escala de trabalho, tempo no site, conquistas e muito mais. O nome 'Dashboard' (palavra em inglês) é substituído por algo que todos entendam de imediato" },
   { status: "planejado", titulo: "Painel do Presidente — visão geral da casa", descricao: "Resumo financeiro, lista de tarefeiros, situação das atividades e funcionamento geral da casa espírita, tudo em um só lugar" },
   { status: "planejado", titulo: "Painel do Coordenador — acompanhamento da coordenação", descricao: "Visão das atividades sob sua responsabilidade: presenças, escalas, atendimentos e comunicados da coordenação" },
-  { status: "feito", titulo: "Painel do Tesoureiro — resumo financeiro com exportação e impressão", descricao: "Entradas e saídas do mês com saldo, total de receitas e despesas · Exportação em planilha Excel nativa (.xlsx) com cabeçalho completo (casa, período, responsável pela emissão) e coluna com o nome de quem registrou cada lançamento · Impressão formatada diretamente do site, com cabeçalho, cards de resumo e tabela de lançamentos · Navegação por qualquer mês do histórico" },
   { status: "planejado", titulo: "Painel de configurações do Presidente — ligar e desligar recursos", descricao: "O Presidente pode ativar ou desativar cada funcionalidade do site para a sua casa. Cada recurso tem três opções: desligado, opcional (o membro escolhe) ou obrigatório para todos · Inclui sistema de votação para decisões coletivas da casa" },
   { status: "planejado", titulo: "Gerenciamento de solicitações de desenvolvimento — somente DEV", descricao: "Área exclusiva no perfil do DEV para visualizar, organizar e atualizar o status das solicitações de desenvolvimento feitas pelos membros" },
 
@@ -143,7 +100,6 @@ const roadmap: Item[] = [
   // ── PENDENTE — Educação e jogos ──────────────────────────────────────────
 
   { status: "planejado", titulo: "Módulo escolar de evangelização infantil", cardTitle: "Evangelização Infantil", descricao: "Planos de aula, histórias e atividades prontas para os professores da evangelização · Material organizado por faixa etária · Tudo acessível pelo site" },
-  { status: "feito",     titulo: "Plante a Semente — jogo educativo sobre a codificação espírita", descricao: "Jogo no estilo forca onde uma planta cresce à medida que o jogador descobre o termo espírita. Ao completar, a palavra revela seu significado e a referência exata no livro da codificação" },
   { status: "planejado", titulo: "Quiz de perguntas sobre os livros de Kardec", cardTitle: "Jogos Educativos", descricao: "Perguntas de múltipla escolha sobre O Livro dos Espíritos, O Evangelho segundo o Espiritismo e os demais livros da codificação · Três níveis: fácil, médio e difícil · Placar por rodada" },
   { status: "planejado", titulo: "Jogo da memória — termos e significados da doutrina", descricao: "Pares de cartas com termos espíritas e seus respectivos significados extraídos dos livros de Kardec · As cartas são embaralhadas a cada rodada" },
   { status: "planejado", titulo: "Palavras cruzadas com termos espíritas", descricao: "Grade de palavras cruzadas com termos e definições retirados dos 5 livros da codificação · Gerada automaticamente para nunca repetir o mesmo jogo" },
@@ -309,10 +265,6 @@ function Painel() {
   if (loading || !user) return null;
 
   const allItems = [...roadmap, ...solicitacoes, ...sugestoes];
-  const totals = (status: Status) => allItems.filter((i) => i.status === status).length;
-  const done = totals("feito");
-  const total = allItems.length;
-  const pct = Math.round((done / total) * 100);
 
   const termo = busca.trim().toLowerCase();
   const filtered = termo
@@ -347,7 +299,7 @@ function Painel() {
             <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Projeto</p>
             <h1 className="text-3xl font-light text-foreground">Acompanhamento do Projeto</h1>
             <p className="mt-2 text-sm text-muted-foreground font-light">
-              O que já foi feito, o que está planejado e como solicitar novos recursos.
+              O que está pendente e como solicitar novos recursos.
             </p>
           </div>
           <button
@@ -356,32 +308,6 @@ function Painel() {
           >
             ← Voltar
           </button>
-        </div>
-
-        {/* Progress */}
-        <div className="glass rounded-3xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm text-muted-foreground font-light">Progresso geral</p>
-            <p className="text-sm font-medium text-foreground">{done} / {total} itens</p>
-          </div>
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-linear-to-r from-cyan-glow to-emerald-400 transition-all duration-1000"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-          <p className="mt-2 text-right text-xs text-muted-foreground/50">{pct}% concluído</p>
-
-          <div className="grid grid-cols-3 gap-4 mt-5 pt-5 border-t border-white/5">
-            {(["feito", "andamento", "planejado"] as Status[]).map((s) => (
-              <div key={s} className="text-center">
-                <p className={`text-2xl font-light ${s === "feito" ? "text-emerald-400" : s === "andamento" ? "text-amber-400" : "text-cyan-glow"}`}>
-                  {totals(s)}
-                </p>
-                <p className="text-xs text-muted-foreground/60 mt-1">{badge[s].label}</p>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Aviso de votação */}
