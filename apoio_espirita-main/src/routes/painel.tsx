@@ -110,6 +110,10 @@ const roadmap: Item[] = [
   // ── PENDENTE — Ferramentas de apoio ──────────────────────────────────────
 
   { status: "planejado", titulo: "Player de PowerPoint — apresentações direto na plataforma", cardTitle: "Player de PowerPoint", descricao: "Apresente arquivos de PowerPoint diretamente no site, sem precisar de instalações ou aplicativos externos · Ideal para palestrantes e coordenadores" },
+
+  // ── FEITO — Organização e gestão de eventos ──────────────────────────────
+
+  { status: "feito", titulo: "Board Kanban de eventos da casa espírita", cardTitle: "Kanban de Eventos", descricao: "Board Kanban com 4 colunas (Ideia, Planejando, Em andamento, Concluído) e drag-and-drop para controle visual de eventos da casa · Disponível em /eventos" },
 ];
 
 const badge: Record<Status, { label: string; color: string }> = {
