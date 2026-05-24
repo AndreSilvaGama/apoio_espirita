@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -281,7 +281,7 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, isPresident, isTesoureiro, signOut } = useAuth();
+  const { user, isPresident, isTesoureiro, isDecisao, signOut } = useAuth();
   const { location } = useRouterState();
   const [menuOpen, setMenuOpen] = useState(false);
   const [jogosOpen, setJogosOpen] = useState(false);
@@ -366,6 +366,11 @@ function NavBar() {
           )}
           <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           <Link to="/feb" className={linkCls("/feb")}>FEB</Link>
+          {isDecisao && (
+            <Link to="/permissoes" className={linkCls("/permissoes")} title="Painel de Permissões">
+              <ShieldAlert size={15} strokeWidth={1.5} />
+            </Link>
+          )}
           <Link to="/ajuda" className={linkCls("/ajuda")}>FAQ</Link>
           <Link to="/perfil" className={linkCls("/perfil")}>Perfil</Link>
           <button
@@ -411,6 +416,11 @@ function NavBar() {
             <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Evangelização
             </Link>
+            {isDecisao && (
+              <Link to="/permissoes" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                Painel de Permissões
+              </Link>
+            )}
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
                 Tesouraria
