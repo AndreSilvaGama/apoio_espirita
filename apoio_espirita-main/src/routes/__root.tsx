@@ -326,6 +326,7 @@ function NavBar() {
           <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
+          <Link to="/painel" className={linkCls("/painel")}>Painel</Link>
 
           {/* Jogos dropdown */}
           <div ref={jogosRef} className="relative">
@@ -388,6 +389,9 @@ function NavBar() {
             </Link>
             <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Mensagem do Dia
+            </Link>
+            <Link to="/painel" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Acompanhamento do Projeto
             </Link>
             <Link to="/jogos/plante-a-semente" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Jogo: Plante a Semente
