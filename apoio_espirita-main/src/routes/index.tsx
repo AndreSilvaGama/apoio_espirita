@@ -73,7 +73,7 @@ function Index() {
             style={{ animationDelay: "0.1s" }}
           >
             <span className="w-6 h-px bg-cyan-glow/50 inline-block" />
-            Independente · Sem federações
+            Transparência & propósito
             <span className="w-6 h-px bg-cyan-glow/50 inline-block" />
           </Link>
 
