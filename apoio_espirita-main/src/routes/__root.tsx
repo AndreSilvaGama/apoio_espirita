@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2 } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, KanbanSquare } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -343,6 +343,7 @@ function NavBar() {
         <nav className="hidden lg:flex items-center gap-1">
           <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
+          <Link to="/kanban" className={linkCls("/kanban")}>Eventos</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
 
           {/* Recursos dropdown */}
@@ -447,6 +448,9 @@ function NavBar() {
             </Link>
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Agenda
+            </Link>
+            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+              Eventos
             </Link>
             <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Mensagem do Dia
