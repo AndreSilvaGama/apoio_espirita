@@ -326,7 +326,7 @@ function NavBar() {
           <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
-          <Link to="/painel" className={linkCls("/painel")}>Painel</Link>
+          <Link to="/painel" className={linkCls("/painel")}>Projeto</Link>
 
           {/* Jogos dropdown */}
           <div ref={jogosRef} className="relative">
