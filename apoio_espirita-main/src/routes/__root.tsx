@@ -447,43 +447,43 @@ function NavBar() {
       {menuOpen && (
         <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
-            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
+            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Início
             </Link>
-            <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
+            <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Agenda
             </Link>
-            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
+            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Eventos
             </Link>
-            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
+            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Mensagem do Dia
             </Link>
 
             {/* Seção Recursos */}
             <button
               onClick={() => setRecursosMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-violet-700 transition-colors"
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
             >
               Recursos
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosMobileOpen && (
               <>
-                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Evangelização
                 </Link>
-                <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Plante a Semente
                 </Link>
-                <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Memória da Evangelização
                 </Link>
-                <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Quiz Espírita
                 </Link>
                 {isTesoureiro && (
-                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                     Tesouraria
                   </Link>
                 )}
@@ -493,27 +493,27 @@ function NavBar() {
             {/* Seção Ajuda */}
             <button
               onClick={() => setAjudaMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-violet-700 transition-colors"
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
             >
               Ajuda
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${ajudaMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {ajudaMobileOpen && (
               <>
-                <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Projeto
                 </Link>
-                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Documentos FEB
                 </Link>
-                <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   FAQ
                 </Link>
-                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Meu Perfil
                 </Link>
                 {isDecisao && (
-                  <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
+                  <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                     Painel de Permissões
                   </Link>
                 )}
