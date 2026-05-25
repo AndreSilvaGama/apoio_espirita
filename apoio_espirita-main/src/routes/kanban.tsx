@@ -675,12 +675,16 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
   const handleSaveGrupo = async () => {
     if (!eName.trim()) return;
     setSaving(true);
-    await supabase.from("kanban_grupos").update({
+    const { error } = await supabase.from("kanban_grupos").update({
       nome: eName.trim(),
       responsavel: eResp.trim() || null,
       membros: eMembros.split(",").map((m) => m.trim()).filter(Boolean),
     }).eq("id", grupo.id);
     setSaving(false);
+    if (error) {
+      console.error("Erro ao salvar grupo:", error);
+      return;
+    }
     setEditing(false);
     onRefresh();
   };
@@ -822,6 +826,7 @@ function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
   };
 
   const handleDelete = async () => {
+    if (!confirm("Excluir esta tarefa?")) return;
     await supabase.from("kanban_tarefas").delete().eq("id", tarefa.id);
     onRefresh();
   };
