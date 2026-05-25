@@ -512,7 +512,8 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
           <div className="flex items-center gap-0.5 shrink-0">
             <button
               onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
-              disabled={statusIdx === 0}
+              disabled={statusIdx <= 0}
+              aria-label="Status anterior"
               className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
             >
               <ChevronLeft size={13} />
@@ -522,7 +523,8 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
             </span>
             <button
               onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
-              disabled={statusIdx === COLUNAS.length - 1}
+              disabled={statusIdx === -1 || statusIdx === COLUNAS.length - 1}
+              aria-label="Próximo status"
               className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
             >
               <ChevronRight size={13} />
