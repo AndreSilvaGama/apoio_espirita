@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare } from "lucide-react";
+import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,6 +25,30 @@ interface KanbanEvento {
   created_at: string;
 }
 
+interface KanbanTarefa {
+  id: string;
+  grupo_id: string;
+  sigla_casa: string;
+  titulo: string;
+  feito: boolean;
+  responsavel: string | null;
+  prazo: string | null;
+  ordem: number;
+  created_at: string;
+}
+
+interface KanbanGrupo {
+  id: string;
+  evento_id: string;
+  sigla_casa: string;
+  nome: string;
+  responsavel: string | null;
+  membros: string[];
+  ordem: number;
+  created_at: string;
+  kanban_tarefas: KanbanTarefa[];
+}
+
 const COLUNAS: { status: Status; label: string; borda: string; corHeader: string; bgOver: string }[] = [
   { status: "ideia",        label: "Ideia",        borda: "border-gray-200",    corHeader: "text-gray-500",    bgOver: "bg-gray-50" },
   { status: "planejado",   label: "Planejado",   borda: "border-amber-200",   corHeader: "text-amber-600",   bgOver: "bg-amber-50/50" },
@@ -35,6 +59,18 @@ const COLUNAS: { status: Status; label: string; borda: string; corHeader: string
 function fmtData(iso: string) {
   const [year, month, day] = iso.slice(0, 10).split("-");
   return `${day}/${month}/${year}`;
+}
+
+function corPrazo(prazo: string | null): string {
+  if (!prazo) return "text-muted-foreground/50";
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const amanha = new Date(hoje);
+  amanha.setDate(amanha.getDate() + 1);
+  const data = new Date(prazo + "T00:00:00");
+  if (data < hoje) return "text-red-500";
+  if (data <= amanha) return "text-amber-500";
+  return "text-muted-foreground/50";
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
@@ -54,6 +90,10 @@ function KanbanPage() {
   const [fResponsavel, setFResponsavel] = useState("");
   const [saving, setSaving]             = useState(false);
   const [formError, setFormError]       = useState("");
+
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [grupos, setGrupos] = useState<Record<string, KanbanGrupo[]>>({});
+  const [loadingGrupos, setLoadingGrupos] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -149,6 +189,42 @@ function KanbanPage() {
     if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
   };
 
+  const fetchGrupos = async (eventoId: string, sigla: string) => {
+    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: true }));
+    const { data } = await supabase
+      .from("kanban_grupos")
+      .select("*, kanban_tarefas(*)")
+      .eq("evento_id", eventoId)
+      .eq("sigla_casa", sigla)
+      .order("ordem");
+    const sorted = ((data as KanbanGrupo[]) ?? []).map((g) => ({
+      ...g,
+      kanban_tarefas: [...g.kanban_tarefas].sort((a, b) => a.ordem - b.ordem),
+    }));
+    setGrupos((prev) => ({ ...prev, [eventoId]: sorted }));
+    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: false }));
+  };
+
+  const handleToggleExpand = (eventoId: string) => {
+    if (expandedId === eventoId) { setExpandedId(null); return; }
+    setExpandedId(eventoId);
+    if (!grupos[eventoId] && profile?.sigla_casa) fetchGrupos(eventoId, profile.sigla_casa);
+  };
+
+  const handleStatusChange = async (evento: KanbanEvento, direction: "prev" | "next") => {
+    const idx = COLUNAS.findIndex((c) => c.status === evento.status);
+    const newIdx = direction === "next" ? idx + 1 : idx - 1;
+    if (newIdx < 0 || newIdx >= COLUNAS.length) return;
+    const novoStatus = COLUNAS[newIdx].status;
+    const statusAnterior = evento.status;
+    setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: novoStatus } : e));
+    const { error } = await supabase
+      .from("kanban_eventos")
+      .update({ status: novoStatus })
+      .eq("id", evento.id);
+    if (error) setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: statusAnterior } : e));
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -212,9 +288,16 @@ function KanbanPage() {
                   bgOver={col.bgOver}
                   eventos={eventos.filter((e) => e.status === col.status)}
                   userId={user.id}
+                  expandedId={expandedId}
+                  grupos={grupos}
+                  loadingGrupos={loadingGrupos}
+                  sigla={profile?.sigla_casa ?? ""}
                   onEdit={openEdit}
                   onDelete={handleDelete}
                   onNewCard={openCreate}
+                  onToggleExpand={handleToggleExpand}
+                  onStatusChange={handleStatusChange}
+                  onRefreshGrupos={fetchGrupos}
                 />
               ))}
             </div>
@@ -311,12 +394,19 @@ interface KanbanColumnProps {
   bgOver: string;
   eventos: KanbanEvento[];
   userId: string;
+  expandedId: string | null;
+  grupos: Record<string, KanbanGrupo[]>;
+  loadingGrupos: Record<string, boolean>;
+  sigla: string;
   onEdit: (evento: KanbanEvento) => void;
   onDelete: (id: string) => void;
   onNewCard: () => void;
+  onToggleExpand: (id: string) => void;
+  onStatusChange: (evento: KanbanEvento, direction: "prev" | "next") => void;
+  onRefreshGrupos: (eventoId: string, sigla: string) => void;
 }
 
-function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, onEdit, onDelete, onNewCard }: KanbanColumnProps) {
+function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, expandedId, grupos, loadingGrupos, sigla, onEdit, onDelete, onNewCard, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanColumnProps) {
   const { isOver, setNodeRef } = useDroppable({ id: status });
 
   return (
@@ -336,8 +426,15 @@ function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId
             key={evento.id}
             evento={evento}
             userId={userId}
+            expanded={expandedId === evento.id}
+            gruposData={grupos[evento.id] ?? []}
+            loadingGrupos={loadingGrupos[evento.id] ?? false}
+            sigla={sigla}
             onEdit={onEdit}
             onDelete={onDelete}
+            onToggleExpand={() => onToggleExpand(evento.id)}
+            onStatusChange={(dir) => onStatusChange(evento, dir)}
+            onRefreshGrupos={() => onRefreshGrupos(evento.id, sigla)}
           />
         ))}
       </div>
