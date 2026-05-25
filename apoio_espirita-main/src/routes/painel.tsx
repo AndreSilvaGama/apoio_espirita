@@ -114,6 +114,7 @@ const roadmap: Item[] = [
   // ── FEITO — Organização e gestão de eventos ──────────────────────────────
 
   { status: "feito", titulo: "Board Kanban de eventos da casa espírita", cardTitle: "Kanban de Eventos", descricao: "Board Kanban com 4 colunas (Ideia, Planejando, Em andamento, Concluído) e drag-and-drop para controle visual de eventos da casa · Disponível em /eventos" },
+  { status: "feito", titulo: "Grupos de trabalho com Kanban de tarefas", cardTitle: "Kanban de Grupos", descricao: "Criação de grupos de trabalho com Kanban individual para gerenciar tarefas · Cada grupo tem sua própria coluna de atividades (Pendente, Em progresso, Concluído) · Membros podem ser atribuídos a tarefas e acompanhar progresso em tempo real · Disponível em /grupos" },
 ];
 
 const badge: Record<Status, { label: string; color: string }> = {
