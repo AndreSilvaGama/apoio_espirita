@@ -320,18 +320,18 @@ function NavBar() {
   const linkCls = (path: string) =>
     `px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
       isActive(path)
-        ? "bg-violet-50 text-violet-700 shadow-sm border border-violet-100/50"
+        ? "bg-[#ebf0f9] text-[#004a8c] shadow-sm border border-[#004a8c]/10"
         : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
     }`;
 
   const dropBtnCls = (paths: string[]) =>
     `flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
       isAnyActive(paths)
-        ? "bg-violet-50 text-violet-700 shadow-sm border border-violet-100/50"
+        ? "bg-[#ebf0f9] text-[#004a8c] shadow-sm border border-[#004a8c]/10"
         : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
     }`;
 
-  const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 rounded-lg mx-1 my-0.5 transition-all duration-200";
+  const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#ebf0f9] hover:text-[#004a8c] rounded-lg mx-1 my-0.5 transition-all duration-200";
 
   return (
     <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl glass-premium border border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
