@@ -602,3 +602,415 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
     </div>
   );
 }
+
+// ── GruposPanel ─────────────────────────────────────────────────────────────
+
+interface GruposPanelProps {
+  eventoId: string;
+  sigla: string;
+  grupos: KanbanGrupo[];
+  loading: boolean;
+  onRefresh: () => void;
+}
+
+function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPanelProps) {
+  const [showFormGrupo, setShowFormGrupo] = useState(false);
+
+  return (
+    <div className="border-t border-cyan-100 bg-cyan-50/30 px-4 pb-4 pt-3 rounded-b-xl">
+      {loading ? (
+        <p className="text-xs text-muted-foreground/40 text-center py-3">Carregando grupos…</p>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {grupos.map((grupo) => (
+              <GrupoItem
+                key={grupo.id}
+                grupo={grupo}
+                sigla={sigla}
+                onRefresh={onRefresh}
+              />
+            ))}
+          </div>
+
+          {showFormGrupo ? (
+            <FormNovoGrupo
+              eventoId={eventoId}
+              sigla={sigla}
+              nextOrdem={grupos.length}
+              onSaved={() => { setShowFormGrupo(false); onRefresh(); }}
+              onCancel={() => setShowFormGrupo(false)}
+            />
+          ) : (
+            <button
+              onClick={() => setShowFormGrupo(true)}
+              className="mt-3 w-full flex items-center justify-center gap-1 py-2 text-xs text-cyan-600/60 hover:text-cyan-600 border border-dashed border-cyan-200 rounded-lg hover:border-cyan-300 transition-colors"
+            >
+              <Plus size={11} />
+              Novo Grupo de Trabalho
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── GrupoItem ────────────────────────────────────────────────────────────────
+
+interface GrupoItemProps {
+  grupo: KanbanGrupo;
+  sigla: string;
+  onRefresh: () => void;
+}
+
+function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
+  const [editing, setEditing] = useState(false);
+  const [showFormTarefa, setShowFormTarefa] = useState(false);
+  const [eName, setEName] = useState(grupo.nome);
+  const [eResp, setEResp] = useState(grupo.responsavel ?? "");
+  const [eMembros, setEMembros] = useState(grupo.membros.join(", "));
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveGrupo = async () => {
+    if (!eName.trim()) return;
+    setSaving(true);
+    await supabase.from("kanban_grupos").update({
+      nome: eName.trim(),
+      responsavel: eResp.trim() || null,
+      membros: eMembros.split(",").map((m) => m.trim()).filter(Boolean),
+    }).eq("id", grupo.id);
+    setSaving(false);
+    setEditing(false);
+    onRefresh();
+  };
+
+  const handleDeleteGrupo = async () => {
+    if (!confirm(`Excluir o grupo "${grupo.nome}" e todas as suas tarefas?`)) return;
+    await supabase.from("kanban_grupos").delete().eq("id", grupo.id);
+    onRefresh();
+  };
+
+  const completadas = grupo.kanban_tarefas.filter((t) => t.feito).length;
+
+  return (
+    <div className="bg-white border border-cyan-100 rounded-xl overflow-hidden">
+      {/* Header do grupo */}
+      {editing ? (
+        <div className="p-3 space-y-2">
+          <input
+            value={eName}
+            onChange={(e) => setEName(e.target.value)}
+            placeholder="Nome do grupo *"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+          />
+          <input
+            value={eResp}
+            onChange={(e) => setEResp(e.target.value)}
+            placeholder="Responsável"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+          />
+          <input
+            value={eMembros}
+            onChange={(e) => setEMembros(e.target.value)}
+            placeholder="Membros (separados por vírgula)"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveGrupo}
+              disabled={saving || !eName.trim()}
+              className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+            >
+              {saving ? "Salvando…" : "Salvar"}
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="px-3 py-2.5 flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-cyan-700 leading-snug">{grupo.nome}</p>
+            {(grupo.responsavel || grupo.membros.length > 0) && (
+              <p className="text-xs text-muted-foreground/50 mt-0.5 flex items-center gap-1">
+                <Users size={9} />
+                {[grupo.responsavel, ...grupo.membros].filter(Boolean).join(" · ")}
+              </p>
+            )}
+            {grupo.kanban_tarefas.length > 0 && (
+              <p className="text-xs text-muted-foreground/40 mt-0.5">
+                {completadas}/{grupo.kanban_tarefas.length} tarefa{grupo.kanban_tarefas.length !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <button
+              onClick={() => setEditing(true)}
+              aria-label="Editar grupo"
+              className="p-1 rounded text-muted-foreground/30 hover:text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <Pencil size={10} />
+            </button>
+            <button
+              onClick={handleDeleteGrupo}
+              aria-label="Excluir grupo"
+              className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 size={10} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tarefas */}
+      {grupo.kanban_tarefas.length > 0 && (
+        <div className="border-t border-gray-50 divide-y divide-gray-50">
+          {grupo.kanban_tarefas.map((tarefa) => (
+            <TarefaItem
+              key={tarefa.id}
+              tarefa={tarefa}
+              onRefresh={onRefresh}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Adicionar tarefa */}
+      <div className="border-t border-gray-50 px-3 py-2">
+        {showFormTarefa ? (
+          <FormNovaTarefa
+            grupoId={grupo.id}
+            sigla={sigla}
+            nextOrdem={grupo.kanban_tarefas.length}
+            onSaved={() => { setShowFormTarefa(false); onRefresh(); }}
+            onCancel={() => setShowFormTarefa(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowFormTarefa(true)}
+            className="text-xs text-muted-foreground/40 hover:text-cyan-600 transition-colors flex items-center gap-1"
+          >
+            <Plus size={10} />
+            Adicionar tarefa
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── TarefaItem ───────────────────────────────────────────────────────────────
+
+interface TarefaItemProps {
+  tarefa: KanbanTarefa;
+  onRefresh: () => void;
+}
+
+function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
+  const [toggling, setToggling] = useState(false);
+
+  const handleToggle = async () => {
+    setToggling(true);
+    await supabase.from("kanban_tarefas").update({ feito: !tarefa.feito }).eq("id", tarefa.id);
+    setToggling(false);
+    onRefresh();
+  };
+
+  const handleDelete = async () => {
+    await supabase.from("kanban_tarefas").delete().eq("id", tarefa.id);
+    onRefresh();
+  };
+
+  return (
+    <div className="px-3 py-2 flex items-start gap-2 group">
+      {/* Checkbox */}
+      <button
+        onClick={handleToggle}
+        disabled={toggling}
+        aria-label={tarefa.feito ? "Marcar como pendente" : "Marcar como feita"}
+        className={`shrink-0 mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+          tarefa.feito
+            ? "bg-emerald-500 border-emerald-500"
+            : "border-gray-300 hover:border-emerald-400"
+        }`}
+      >
+        {tarefa.feito && <Check size={9} className="text-white" strokeWidth={3} />}
+      </button>
+
+      {/* Conteúdo */}
+      <div className="flex-1 min-w-0">
+        <p className={`text-xs leading-snug ${tarefa.feito ? "line-through text-muted-foreground/40" : "text-gray-700"}`}>
+          {tarefa.titulo}
+        </p>
+        {(tarefa.responsavel || tarefa.prazo) && (
+          <p className="text-xs mt-0.5 flex items-center gap-2">
+            {tarefa.responsavel && (
+              <span className="text-muted-foreground/50">{tarefa.responsavel}</span>
+            )}
+            {tarefa.prazo && (
+              <span className={corPrazo(tarefa.prazo)}>{fmtData(tarefa.prazo)}</span>
+            )}
+          </p>
+        )}
+      </div>
+
+      {/* Excluir */}
+      <button
+        onClick={handleDelete}
+        aria-label="Excluir tarefa"
+        className="shrink-0 opacity-0 group-hover:opacity-100 p-0.5 rounded text-red-300 hover:text-red-500 transition-all"
+      >
+        <X size={10} />
+      </button>
+    </div>
+  );
+}
+
+// ── FormNovoGrupo ────────────────────────────────────────────────────────────
+
+interface FormNovoGrupoProps {
+  eventoId: string;
+  sigla: string;
+  nextOrdem: number;
+  onSaved: () => void;
+  onCancel: () => void;
+}
+
+function FormNovoGrupo({ eventoId, sigla, nextOrdem, onSaved, onCancel }: FormNovoGrupoProps) {
+  const [nome, setNome] = useState("");
+  const [resp, setResp] = useState("");
+  const [membros, setMembros] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!nome.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from("kanban_grupos").insert({
+      evento_id: eventoId,
+      sigla_casa: sigla,
+      nome: nome.trim(),
+      responsavel: resp.trim() || null,
+      membros: membros.split(",").map((m) => m.trim()).filter(Boolean),
+      ordem: nextOrdem,
+    });
+    setSaving(false);
+    if (!error) onSaved();
+  };
+
+  return (
+    <div className="mt-3 space-y-2 p-3 bg-white border border-cyan-100 rounded-xl">
+      <input
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+        placeholder="Nome do grupo *"
+        autoFocus
+        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+      />
+      <input
+        value={resp}
+        onChange={(e) => setResp(e.target.value)}
+        placeholder="Responsável"
+        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+      />
+      <input
+        value={membros}
+        onChange={(e) => setMembros(e.target.value)}
+        placeholder="Membros (separados por vírgula)"
+        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+      />
+      <div className="flex gap-2">
+        <button
+          onClick={handleSave}
+          disabled={saving || !nome.trim()}
+          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+        >
+          {saving ? "Salvando…" : "Criar Grupo"}
+        </button>
+        <button
+          onClick={onCancel}
+          className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── FormNovaTarefa ───────────────────────────────────────────────────────────
+
+interface FormNovaTarefaProps {
+  grupoId: string;
+  sigla: string;
+  nextOrdem: number;
+  onSaved: () => void;
+  onCancel: () => void;
+}
+
+function FormNovaTarefa({ grupoId, sigla, nextOrdem, onSaved, onCancel }: FormNovaTarefaProps) {
+  const [titulo, setTitulo] = useState("");
+  const [resp, setResp] = useState("");
+  const [prazo, setPrazo] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!titulo.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from("kanban_tarefas").insert({
+      grupo_id: grupoId,
+      sigla_casa: sigla,
+      titulo: titulo.trim(),
+      responsavel: resp.trim() || null,
+      prazo: prazo || null,
+      ordem: nextOrdem,
+    });
+    setSaving(false);
+    if (!error) onSaved();
+  };
+
+  return (
+    <div className="space-y-2 pt-1">
+      <input
+        value={titulo}
+        onChange={(e) => setTitulo(e.target.value)}
+        placeholder="Título da tarefa *"
+        autoFocus
+        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+      />
+      <div className="flex gap-2">
+        <input
+          value={resp}
+          onChange={(e) => setResp(e.target.value)}
+          placeholder="Responsável"
+          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+        />
+        <input
+          type="date"
+          value={prazo}
+          onChange={(e) => setPrazo(e.target.value)}
+          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={handleSave}
+          disabled={saving || !titulo.trim()}
+          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+        >
+          {saving ? "…" : "Adicionar"}
+        </button>
+        <button
+          onClick={onCancel}
+          className="py-1.5 px-3 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+        >
+          <X size={10} />
+        </button>
+      </div>
+    </div>
+  );
+}
