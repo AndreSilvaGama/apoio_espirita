@@ -147,6 +147,7 @@
 }
 
 @theme inline {
+  --font-caslon: "Libre Caslon Text", Georgia, serif;
   --font-display: "Lora", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --color-violet-glow: var(--violet-glow);

@@ -88,7 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" },
     ],
     scripts: [
       {
@@ -318,20 +318,24 @@ function NavBar() {
   const isAnyActive = (paths: string[]) => paths.some((p) => isActive(p));
 
   const linkCls = (path: string) =>
-    `px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-      isActive(path) ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
+    `px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
+      isActive(path)
+        ? "bg-violet-50 text-violet-700 shadow-sm border border-violet-100/50"
+        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
     }`;
 
   const dropBtnCls = (paths: string[]) =>
-    `flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-      isAnyActive(paths) ? "bg-cyan-50 text-cyan-700" : "text-gray-500 hover:bg-gray-100"
+    `flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
+      isAnyActive(paths)
+        ? "bg-violet-50 text-violet-700 shadow-sm border border-violet-100/50"
+        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
     }`;
 
-  const dropItemCls = "flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors";
+  const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 rounded-lg mx-1 my-0.5 transition-all duration-200";
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
+    <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl glass-premium border border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
+      <div className="h-full px-5 flex items-center justify-between gap-4">
 
         {/* Brand */}
         <Link to="/inicio" className="flex items-center gap-2 shrink-0" onClick={() => setMenuOpen(false)}>
@@ -356,7 +360,7 @@ function NavBar() {
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${recursosOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosOpen && (
-              <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
                 <Link to="/evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <GraduationCap size={14} strokeWidth={1.5} className="text-rose-500" />
                   Evangelização
@@ -393,7 +397,7 @@ function NavBar() {
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`} />
             </button>
             {ajudaOpen && (
-              <div className="absolute top-full right-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
+              <div className="absolute top-full right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Projeto
@@ -422,7 +426,7 @@ function NavBar() {
 
           <button
             onClick={() => signOut()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-400 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-400 hover:bg-gray-50 rounded-xl transition-all duration-300"
           >
             <LogOut size={14} strokeWidth={1.5} />
             Sair
@@ -441,45 +445,45 @@ function NavBar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-40 py-2">
+        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
-            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
               Início
             </Link>
-            <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+            <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
               Agenda
             </Link>
-            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
               Eventos
             </Link>
-            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-violet-700 border-b border-gray-100 transition-colors">
               Mensagem do Dia
             </Link>
 
             {/* Seção Recursos */}
             <button
               onClick={() => setRecursosMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-cyan-700 transition-colors"
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-violet-700 transition-colors"
             >
               Recursos
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosMobileOpen && (
               <>
-                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Evangelização
                 </Link>
-                <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Plante a Semente
                 </Link>
-                <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Memória da Evangelização
                 </Link>
-                <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Quiz Espírita
                 </Link>
                 {isTesoureiro && (
-                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                     Tesouraria
                   </Link>
                 )}
@@ -489,27 +493,27 @@ function NavBar() {
             {/* Seção Ajuda */}
             <button
               onClick={() => setAjudaMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-cyan-700 transition-colors"
+              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-violet-700 transition-colors"
             >
               Ajuda
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${ajudaMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {ajudaMobileOpen && (
               <>
-                <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Projeto
                 </Link>
-                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Documentos FEB
                 </Link>
-                <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   FAQ
                 </Link>
-                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                   Meu Perfil
                 </Link>
                 {isDecisao && (
-                  <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-cyan-700 border-b border-gray-100 transition-colors">
+                  <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-violet-700 border-b border-gray-100 transition-colors">
                     Painel de Permissões
                   </Link>
                 )}
@@ -537,15 +541,15 @@ function Footer({ onReportar }: { onReportar: () => void }) {
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+    <footer className="fixed bottom-3 left-4 right-4 z-40 rounded-2xl glass-premium border border-white/50 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
+      <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 
         {/* Rádio */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
 
           {/* Ícone */}
-          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-colors ${
-            playing ? "bg-emerald-50 border-emerald-300" : "bg-gray-50 border-gray-200"
+          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
+            playing ? "bg-emerald-50/70 border-emerald-300/60 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse" : "bg-gray-50/60 border-gray-200/50"
           }`}>
             <Radio size={18} strokeWidth={1.5} className={playing ? "text-emerald-600" : "text-gray-400"} />
           </div>
@@ -562,12 +566,15 @@ function Footer({ onReportar }: { onReportar: () => void }) {
               {!buffering && playing && (
                 <div className="flex items-center gap-1.5">
                   <span className="flex gap-0.5 items-end h-3">
-                    {[1, 2, 3, 4].map((i) => (
-                      <span key={i} className="w-0.5 rounded-full bg-emerald-500 animate-bounce"
-                        style={{ height: `${4 + i * 2}px`, animationDelay: `${i * 0.1}s` }} />
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <span key={i} className="w-0.5 rounded-full bg-emerald-500 radio-bar"
+                        style={{ 
+                          animationDelay: `${i * 0.15}s`, 
+                          animationDuration: `${0.6 + i * 0.1}s` 
+                        }} />
                     ))}
                   </span>
-                  <span className="text-xs font-medium text-emerald-600">Ao vivo</span>
+                  <span className="text-xs font-semibold text-emerald-600 tracking-wider uppercase">Ao vivo</span>
                 </div>
               )}
               {!buffering && !playing && (
@@ -582,15 +589,15 @@ function Footer({ onReportar }: { onReportar: () => void }) {
           <button
             onClick={active ? togglePlay : activate}
             disabled={buffering}
-            className={`shrink-0 w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all text-base font-bold shadow-sm ${
+            className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 text-base font-bold shadow-sm ${
               playing
-                ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-                : "bg-white border-emerald-400 text-emerald-600 hover:bg-emerald-50 active:scale-95"
+                ? "bg-emerald-500 border-emerald-400 text-white hover:bg-emerald-600 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-95"
+                : "bg-white border-emerald-300 text-emerald-600 hover:bg-emerald-50 active:scale-95"
             } disabled:opacity-40 disabled:cursor-not-allowed`}
           >
             {playing
-              ? <Pause size={18} strokeWidth={2.5} />
-              : <Play size={18} strokeWidth={2.5} className="ml-0.5" />
+              ? <Pause size={16} strokeWidth={2.5} />
+              : <Play size={16} strokeWidth={2.5} className="ml-0.5" />
             }
           </button>
 
