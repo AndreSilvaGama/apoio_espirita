@@ -454,11 +454,18 @@ function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId
 interface KanbanCardProps {
   evento: KanbanEvento;
   userId: string;
+  expanded: boolean;
+  gruposData: KanbanGrupo[];
+  loadingGrupos: boolean;
+  sigla: string;
   onEdit: (evento: KanbanEvento) => void;
   onDelete: (id: string) => void;
+  onToggleExpand: () => void;
+  onStatusChange: (direction: "prev" | "next") => void;
+  onRefreshGrupos: () => void;
 }
 
-function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
+function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla, onEdit, onDelete, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: evento.id });
 
   const style = {
@@ -467,52 +474,128 @@ function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
   };
 
   const isCriador = evento.criador_id === userId;
+  const statusIdx = COLUNAS.findIndex((c) => c.status === evento.status);
+  const totalTarefas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.length, 0);
+  const totalFeitas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.filter((t) => t.feito).length, 0);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+      className={`bg-white rounded-xl shadow-sm border transition-all ${expanded ? "border-cyan-300 shadow-cyan-100" : "border-gray-100"}`}
     >
-      <div
-        {...listeners}
-        {...attributes}
-        className="cursor-grab active:cursor-grabbing select-none mb-2"
-      >
-        <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
-      </div>
-      {evento.data && (
-        <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
-          <Calendar size={10} />
-          {fmtData(evento.data)}
-        </p>
-      )}
-      {evento.responsavel && (
-        <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
-          <User size={10} />
-          {evento.responsavel}
-        </p>
-      )}
-      {evento.descricao && (
-        <p className="text-xs text-muted-foreground/50 mt-2 line-clamp-2 leading-relaxed">
-          {evento.descricao}
-        </p>
-      )}
-      {isCriador && (
-        <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
-          <button
-            onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
-            className="flex items-center gap-1 text-xs text-muted-foreground/40 hover:text-gray-600 transition-colors py-1 px-2 rounded-lg hover:bg-gray-50"
+      {/* Card header com drag handle e setas de status */}
+      <div className="p-4">
+        <div className="flex items-start gap-2">
+          {/* Drag handle */}
+          <div
+            {...listeners}
+            {...attributes}
+            className="cursor-grab active:cursor-grabbing select-none pt-0.5 shrink-0 text-gray-300 hover:text-gray-400"
           >
-            <Pencil size={11} />
-          </button>
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+              <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+              <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
+              <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
+            </svg>
+          </div>
+
+          {/* Título clicável para expandir */}
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
-            className="flex items-center gap-1 text-xs text-red-400/50 hover:text-red-500 transition-colors py-1 px-2 rounded-lg hover:bg-red-50"
+            onClick={onToggleExpand}
+            className="flex-1 text-left"
           >
-            <Trash2 size={11} />
+            <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
           </button>
+
+          {/* Setas de status */}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
+              disabled={statusIdx === 0}
+              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+            >
+              <ChevronLeft size={13} />
+            </button>
+            <span className="text-xs text-muted-foreground/50 px-1 select-none whitespace-nowrap">
+              {COLUNAS[statusIdx]?.label}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
+              disabled={statusIdx === COLUNAS.length - 1}
+              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+            >
+              <ChevronRight size={13} />
+            </button>
+          </div>
         </div>
+
+        {/* Meta: data e responsável */}
+        <div className="mt-2 pl-4">
+          {evento.data && (
+            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
+              <Calendar size={10} />
+              {fmtData(evento.data)}
+            </p>
+          )}
+          {evento.responsavel && (
+            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
+              <User size={10} />
+              {evento.responsavel}
+            </p>
+          )}
+          {evento.descricao && !expanded && (
+            <p className="text-xs text-muted-foreground/50 mt-1 line-clamp-2 leading-relaxed">
+              {evento.descricao}
+            </p>
+          )}
+        </div>
+
+        {/* Resumo de grupos + botão expandir */}
+        <div className="mt-2 pl-4 flex items-center justify-between">
+          <button
+            onClick={onToggleExpand}
+            className="flex items-center gap-1 text-xs text-cyan-600/70 hover:text-cyan-600 transition-colors"
+          >
+            {expanded
+              ? <ChevronUp size={11} />
+              : <ChevronDown size={11} />
+            }
+            {gruposData.length > 0
+              ? `${gruposData.length} grupo${gruposData.length !== 1 ? "s" : ""} · ${totalTarefas} tarefa${totalTarefas !== 1 ? "s" : ""} (${totalFeitas} feita${totalFeitas !== 1 ? "s" : ""})`
+              : "Grupos de trabalho"
+            }
+          </button>
+
+          {/* Editar / excluir (só criador) */}
+          {isCriador && (
+            <div className="flex gap-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
+                className="p-1 rounded text-muted-foreground/30 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Pencil size={11} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
+                className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <Trash2 size={11} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Painel de grupos (expandido) */}
+      {expanded && (
+        <GruposPanel
+          eventoId={evento.id}
+          sigla={sigla}
+          grupos={gruposData}
+          loading={loadingGrupos}
+          onRefresh={onRefreshGrupos}
+        />
       )}
     </div>
   );
