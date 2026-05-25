@@ -374,7 +374,7 @@ function NavBar() {
                   Memória da Evangelização
                 </Link>
                 <Link to="/jogos/quiz-espirita" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                  <HelpCircle size={14} strokeWidth={1.5} className="text-violet-500" />
+                  <HelpCircle size={14} strokeWidth={1.5} className="text-[#004a8c]" />
                   Quiz Espírita
                 </Link>
                 {isTesoureiro && (
@@ -403,7 +403,7 @@ function NavBar() {
                   Projeto
                 </Link>
                 <Link to="/feb" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <BookOpen size={14} strokeWidth={1.5} className="text-violet-500" />
+                  <BookOpen size={14} strokeWidth={1.5} className="text-[#004a8c]" />
                   Documentos FEB
                 </Link>
                 <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
