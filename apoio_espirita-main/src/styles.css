@@ -188,45 +188,118 @@
   color: transparent;
 }
 
-/* Páginas internas com fundo claro */
+/* Premium glassmorphism */
+.glass-premium {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 30px oklch(0.28 0.04 280 / 0.04), 
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .glass-premium {
+  background: rgba(20, 16, 35, 0.65);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Hover premium card behaviors */
+.hover-premium {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px oklch(0.28 0.04 280 / 0.08), 
+              0 4px 12px oklch(0.48 0.18 295 / 0.05);
+  border-color: oklch(0.48 0.18 295 / 0.3) !important;
+}
+
+/* Radio dynamic visualizer keyframes */
+@keyframes radio-bar-grow {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+.radio-bar {
+  animation: radio-bar-grow 1s ease-in-out infinite;
+}
+
+/* ── Serene Wisdom — páginas autenticadas ── */
 .page-light {
-  --background: oklch(0.97 0.008 290);
-  --foreground: oklch(0.20 0.04 270);
-  --muted-foreground: oklch(0.42 0.04 280);
-  --border: oklch(0.28 0.04 280 / 0.22);
-  --glass-bg: oklch(1 0 0 / 0.80);
-  --glass-border: oklch(0.28 0.04 280 / 0.12);
-  --cyan-glow: oklch(0.42 0.14 230);
-  --violet-glow: oklch(0.48 0.18 295);
-  background: linear-gradient(160deg, oklch(0.985 0.006 285) 0%, oklch(0.965 0.014 295) 100%);
+  --background:        #f7f8fc;
+  --foreground:        #111418;
+  --muted-foreground:  #637080;
+  --border:            rgba(0,20,70,.08);
+  --card:              #ffffff;
+  --card-foreground:   #111418;
+  --glass-bg:          rgba(255,255,255,.92);
+  --glass-border:      rgba(0,20,70,.10);
+
+  /* tokens Serene Wisdom */
+  --sw-blue:           #004a8c;
+  --sw-blue-mid:       #1863a8;
+  --sw-blue-pale:      #ebf0f9;
+  --sw-blue-dim:       rgba(0,74,140,.07);
+  --sw-gold:           #b08826;
+  --sw-gold-pale:      #faf5e8;
+  --sw-gold-border:    rgba(176,136,38,.3);
+  --sw-ink:            #111418;
+  --sw-ink-2:          #2e3540;
+  --sw-ink-3:          #637080;
+  --sw-ink-4:          #a3adb8;
+  --sw-surface:        #ffffff;
+  --sw-border-2:       rgba(0,20,70,.15);
+  --sw-shadow-card:    0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05);
+  --sw-shadow-hover:   0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08);
+
+  /* cyan-glow e violet-glow redefinidos para o contexto claro */
+  --cyan-glow:         #004a8c;
+  --violet-glow:       #004a8c;
+
+  background: var(--background);
   color: var(--foreground);
 }
-.page-light .glass {
-  box-shadow: 0 2px 24px oklch(0.28 0.04 280 / 0.07);
-}
+
+/* inputs dentro de .page-light */
 .page-light input[type="text"],
 .page-light input[type="email"],
 .page-light input[type="password"],
+.page-light select,
 .page-light textarea {
   background-color: white !important;
-  border-color: oklch(0.28 0.04 280 / 0.22) !important;
-  color: oklch(0.20 0.04 270) !important;
+  border-color: rgba(0,20,70,.15) !important;
+  color: #111418 !important;
+  transition: all 0.2s ease !important;
+}
+.page-light input[type="text"]:focus,
+.page-light input[type="email"]:focus,
+.page-light input[type="password"]:focus,
+.page-light select:focus,
+.page-light textarea:focus {
+  border-color: rgba(0,74,140,.6) !important;
+  box-shadow: 0 0 0 3px rgba(0,74,140,.10) !important;
+  outline: none !important;
 }
 .page-light input::placeholder,
 .page-light textarea::placeholder {
-  color: oklch(0.55 0.03 280 / 0.7) !important;
+  color: rgba(99,112,128,.55) !important;
 }
 .page-light select {
   background-color: white !important;
-  border-color: oklch(0.28 0.04 280 / 0.22) !important;
-  color: oklch(0.20 0.04 270) !important;
+  border-color: rgba(0,20,70,.15) !important;
+  color: #111418 !important;
 }
 .page-light select option {
   background-color: white;
-  color: oklch(0.20 0.04 270);
+  color: #111418;
 }
 .page-light .text-gradient-aurora {
-  background: linear-gradient(135deg, oklch(0.48 0.18 295), oklch(0.42 0.14 230));
+  background: linear-gradient(135deg, #004a8c, #1863a8);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -269,4 +342,20 @@
     font-family: var(--font-display);
     letter-spacing: 0.01em;
   }
+  html {
+    font-size: 18px;
+  }
 }
+
+/* Serene Wisdom — animação de entrada suave */
+@keyframes sw-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.sw-rise   { animation: sw-rise 0.65s cubic-bezier(.22,1,.36,1) both; }
+.sw-rise-1 { animation-delay: .04s; }
+.sw-rise-2 { animation-delay: .12s; }
+.sw-rise-3 { animation-delay: .20s; }
+.sw-rise-4 { animation-delay: .28s; }
+.sw-rise-5 { animation-delay: .36s; }
+.sw-rise-6 { animation-delay: .44s; }
