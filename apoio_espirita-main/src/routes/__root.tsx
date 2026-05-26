@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2 } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -261,6 +261,71 @@ function ReportarProblema({ onClose }: { onClose: () => void }) {
   );
 }
 
+function BottomNav() {
+  const { user } = useAuth();
+  const { location } = useRouterState();
+
+  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
+
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + "/");
+
+  const itemStyle = (path: string): React.CSSProperties => ({
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    padding: "8px 0",
+    textDecoration: "none",
+    color: isActive(path) ? "#004a8c" : "#a3adb8",
+    transition: "color .15s",
+  });
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: "Inter, sans-serif",
+    fontSize: "0.66rem",
+    fontWeight: 600,
+    letterSpacing: "0.04em",
+  };
+
+  return (
+    <nav
+      className="lg:hidden"
+      style={{
+        position: "fixed",
+        bottom: 0, left: 0, right: 0,
+        height: 72,
+        background: "rgba(255,255,255,.97)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderTop: "1px solid rgba(0,20,70,.08)",
+        display: "flex",
+        alignItems: "center",
+        zIndex: 50,
+      }}
+    >
+      <Link to="/agenda" style={itemStyle("/agenda")}>
+        <CalendarDays size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Agenda</span>
+      </Link>
+      <Link to="/kanban" style={itemStyle("/kanban")}>
+        <KanbanSquare size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Kanban</span>
+      </Link>
+      <Link to="/evangelizacao" style={itemStyle("/evangelizacao")}>
+        <GraduationCap size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Evangel.</span>
+      </Link>
+      <Link to="/perfil" style={itemStyle("/perfil")}>
+        <User size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Perfil</span>
+      </Link>
+    </nav>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [reportarAberto, setReportarAberto] = useState(false);
@@ -269,6 +334,7 @@ function RootComponent() {
       <AuthProvider>
         <RadioProvider>
           <NavBar />
+          <BottomNav />
           <Outlet />
           <Footer onReportar={() => setReportarAberto(true)} />
           <BackToTop />
@@ -437,7 +503,7 @@ function NavBar() {
         <button
           onClick={() => setMenuOpen((o) => !o)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          className="xl:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
         >
           {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
         </button>
@@ -445,7 +511,7 @@ function NavBar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
+        <div className="xl:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
             <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Início
