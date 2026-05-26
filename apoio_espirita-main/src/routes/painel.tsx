@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Search, X, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/painel")({
   component: Painel,
@@ -296,32 +297,26 @@ function Painel() {
       .map(({ item }) => item);
 
   return (
-    <main className="page-light min-h-screen px-6 pt-20 pb-20">
-      <div className="mx-auto max-w-3xl">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-12 flex-wrap gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Projeto</p>
-            <h1 className="text-3xl font-light text-foreground">Acompanhamento do Projeto</h1>
-            <p className="mt-2 text-sm text-muted-foreground font-light">
-              O que está pendente e como solicitar novos recursos.
-            </p>
-          </div>
-          <button
-            onClick={() => navigate({ to: "/inicio" })}
-            className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          >
-            ← Voltar
-          </button>
+    <main className="page-light min-h-screen pt-20 pb-20">
+      <CasaHero />
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
+        {/* Título da seção */}
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, marginBottom: 6 }}>
+            Acompanhamento do Projeto
+          </h2>
+          <p style={{ fontFamily: "Inter", fontSize: "0.9rem", color: "#637080", margin: 0 }}>
+            O que está pendente e como solicitar novos recursos.
+          </p>
         </div>
 
         {/* Aviso de votação */}
-        <div className="glass rounded-2xl px-5 py-4 mb-8 border border-cyan-glow/20">
+        <div style={{ background: "#ebf0f9", border: "1px solid rgba(0,74,140,.15)", borderRadius: 16, padding: "16px 20px", marginBottom: 32 }}>
           <div className="flex items-start gap-3">
-            <ThumbsUp size={16} className="text-cyan-glow mt-0.5 shrink-0" />
+            <ThumbsUp size={16} style={{ color: "#004a8c" }} className="mt-0.5 shrink-0" />
             <div>
               <p className="text-sm text-foreground font-light">
-                <span className="font-medium text-cyan-glow">Vote nos itens pendentes</span> que considera mais importantes.
+                <span style={{ fontWeight: 600, color: "#004a8c" }}>Vote nos itens pendentes</span> que considera mais importantes.
               </p>
               <p className="text-xs text-muted-foreground/60 mt-1">
                 Os itens com mais curtidas serão desenvolvidos primeiro. Cada membro pode curtir qualquer item pendente — e descurtir quando quiser.
@@ -338,7 +333,7 @@ function Painel() {
             placeholder="Buscar no projeto…"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-10 py-3 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+            className="w-full rounded-xl bg-white border border-[rgba(0,20,70,.15)] pl-10 pr-10 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[rgba(0,74,140,.6)] transition-colors"
           />
           {busca && (
             <button
@@ -390,10 +385,18 @@ function Painel() {
                   const isPending = item.status === "planejado";
                   const isVoting = votingKey === key;
 
+                  const cardStyle =
+                    item.status === "feito"
+                      ? { background: "#eaf8f1", border: "1px solid rgba(10,92,53,.15)", borderRadius: 12, padding: "14px 18px", marginBottom: 8 }
+                      : item.status === "andamento"
+                      ? { background: "#ebf0f9", border: "1px solid rgba(0,74,140,.15)", borderRadius: 12, padding: "14px 18px", marginBottom: 8 }
+                      : { background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 12, padding: "14px 18px", marginBottom: 8 };
+
                   return (
                     <div
                       key={item.titulo}
-                      className="glass rounded-2xl px-5 py-4 flex items-start gap-4"
+                      style={cardStyle}
+                      className="flex items-start gap-4"
                     >
                       <span className={`text-sm mt-0.5 shrink-0 ${badge[status].color.split(" ")[0]}`}>
                         {icon[status]}
