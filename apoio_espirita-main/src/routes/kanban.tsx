@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/kanban")({
   component: KanbanPage,
@@ -249,23 +250,19 @@ function KanbanPage() {
   };
 
   return (
-    <main className="page-light min-h-screen px-4 pt-20 pb-20">
+    <main className="page-light min-h-screen pt-20 pb-28">
+      <CasaHero />
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-1 flex items-center gap-2">
-              <KanbanSquare size={12} />
-              Eventos
-            </p>
-            <h1 className="text-3xl font-light text-foreground">
-              Casa {profile?.sigla_casa}
-            </h1>
-          </div>
+        {/* Header da seção */}
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4 px-4 sm:px-6">
+          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
+            <KanbanSquare size={22} style={{ color: "#004a8c", opacity: 0.7 }} />
+            Quadro de Eventos
+          </h2>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors"
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.88rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)" }}
           >
             <Plus size={14} />
             Novo Card
@@ -412,7 +409,8 @@ function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId
   return (
     <div
       ref={setNodeRef}
-      className={`min-w-[260px] flex-shrink-0 rounded-2xl border-2 ${borda} ${isOver ? bgOver : "bg-white/50"} p-4 transition-colors`}
+      className={`min-w-[280px] flex-shrink-0 rounded-2xl border ${borda} p-5 transition-all duration-300 ${isOver ? bgOver : ""}`}
+      style={{ background: "#f7f8fc" }}
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className={`text-xs font-semibold uppercase tracking-widest ${corHeader}`}>{label}</h3>
@@ -468,11 +466,6 @@ interface KanbanCardProps {
 function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla, onEdit, onDelete, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: evento.id });
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   const isCriador = evento.criador_id === userId;
   const statusIdx = COLUNAS.findIndex((c) => c.status === evento.status);
   const totalTarefas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.length, 0);
@@ -481,8 +474,17 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`bg-white rounded-xl shadow-sm border transition-all ${expanded ? "border-cyan-300 shadow-cyan-100" : "border-gray-100"}`}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
+        background: "#ffffff",
+        border: expanded ? "1px solid rgba(0,74,140,.25)" : "1px solid rgba(0,20,70,.08)",
+        borderRadius: 16,
+        boxShadow: expanded
+          ? "0 4px 16px rgba(0,20,70,.07), 0 8px 24px rgba(0,20,70,.06)"
+          : "0 1px 4px rgba(0,20,70,.04), 0 3px 10px rgba(0,20,70,.04)",
+        transition: "box-shadow .25s, border-color .25s",
+      }}
     >
       {/* Card header com drag handle e setas de status */}
       <div className="p-4">
@@ -557,7 +559,7 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
         <div className="mt-2 pl-4 flex items-center justify-between">
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1 text-xs text-cyan-600/70 hover:text-cyan-600 transition-colors"
+            className="flex items-center gap-1 text-xs text-[#004a8c]/60 hover:text-[#004a8c] transition-colors"
           >
             {expanded
               ? <ChevronUp size={11} />
