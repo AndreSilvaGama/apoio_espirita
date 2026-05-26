@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { CasaHero } from "@/components/CasaHero";
+import { WisdomBlock } from "@/components/WisdomBlock";
 
 export const Route = createFileRoute("/agenda")({
   component: AgendaPage,
@@ -342,21 +344,19 @@ function AgendaPage() {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <main className="page-light min-h-screen px-4 pt-20 pb-20">
-      <div className="mx-auto max-w-3xl">
+    <main className="page-light min-h-screen pt-20 pb-28">
+      <CasaHero eventos={proximos.length} />
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-1">Agenda</p>
-            <h1 className="text-3xl font-light text-foreground">
-              Casa {profile?.sigla_casa}
-            </h1>
-          </div>
+        {/* Ações de seção */}
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0 }}>
+            Eventos
+          </h2>
           {podeGerenciar && (
             <button
               onClick={() => { setShowForm((v) => !v); setEditingId(null); setFormError(""); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors"
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.88rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)" }}
             >
               <Plus size={14} />
               {showForm ? "Cancelar" : "Novo Evento"}
@@ -366,93 +366,93 @@ function AgendaPage() {
 
         {/* ── Create form ── */}
         {showForm && (
-          <div className="glass rounded-3xl p-6 mb-8 space-y-4">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">
+          <div className="glass-premium rounded-3xl p-6 mb-8 space-y-4 border border-violet-200/40">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold">
               {editingId ? "Editar Evento" : "Novo Evento"}
             </h2>
 
             <input
               type="text" placeholder="Título do evento *"
               value={fTitulo} onChange={(e) => { setFTitulo(e.target.value); setFormError(""); }}
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
 
             <textarea
               placeholder="Descrição (opcional)"
               value={fDescricao} onChange={(e) => setFDescricao(e.target.value)}
               rows={3}
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors resize-none"
+              className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors resize-none"
             />
 
             <input
               type="text" placeholder="Local (opcional)"
               value={fLocal} onChange={(e) => setFLocal(e.target.value)}
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Data de início *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-1 font-semibold">Data de início *</label>
                 <input type="date" value={fDataInicio} onChange={(e) => setFDataInicio(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
+                  className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Hora de início *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-1 font-semibold">Hora de início *</label>
                 <input type="time" value={fHoraInicio} onChange={(e) => setFHoraInicio(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
+                  className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Data de encerramento *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-1 font-semibold">Data de encerramento *</label>
                 <input type="date" value={fDataFim} onChange={(e) => setFDataFim(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
+                  className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Hora de encerramento *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-1 font-semibold">Hora de encerramento *</label>
                 <input type="time" value={fHoraFim} onChange={(e) => setFHoraFim(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
+                  className="w-full rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors" />
               </div>
             </div>
 
             {/* Tipo */}
             <div>
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-2">Quem pode participar</label>
+              <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-2 font-semibold">Quem pode participar</label>
               <div className="flex gap-3">
                 <button onClick={() => setFTipo("aberto")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-colors ${fTipo === "aberto" ? "border-emerald-400/60 text-emerald-600 bg-emerald-400/5" : "border-white/10 text-muted-foreground hover:border-white/20"}`}>
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-all duration-200 ${fTipo === "aberto" ? "border-emerald-400/60 text-emerald-600 bg-emerald-400/5 shadow-sm" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
                   <Globe size={14} /> Todos os membros
                 </button>
                 <button onClick={() => setFTipo("fechado")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-colors ${fTipo === "fechado" ? "border-amber-400/60 text-amber-600 bg-amber-400/5" : "border-white/10 text-muted-foreground hover:border-white/20"}`}>
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-all duration-200 ${fTipo === "fechado" ? "border-amber-400/60 text-amber-600 bg-amber-400/5 shadow-sm" : "border-gray-200 text-gray-400 hover:border-gray-300"}`}>
                   <Lock size={14} /> Somente convidados
                 </button>
               </div>
             </div>
 
             {/* Confirmação */}
-            <label className="flex items-center gap-3 cursor-pointer select-none">
+            <label className="flex items-center gap-3 cursor-pointer select-none py-1">
               <input type="checkbox" checked={fAceita} onChange={(e) => setFAceita(e.target.checked)}
-                className="w-4 h-4 rounded accent-cyan-600" />
-              <span className="text-sm text-foreground">Permitir que os membros confirmem presença</span>
+                className="w-4 h-4 rounded accent-violet-600" />
+              <span className="text-sm text-gray-700">Permitir que os membros confirmem presença</span>
             </label>
 
             {/* Convidados — evento fechado */}
             {fTipo === "fechado" && (
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-2">
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/65 mb-2 font-semibold font-semibold">
                   Selecionar convidados
                 </label>
-                <div className="max-h-52 overflow-y-auto rounded-xl border border-white/10 p-3 space-y-1">
+                <div className="max-h-52 overflow-y-auto rounded-xl border border-gray-200 bg-white p-3 space-y-1">
                   {membros.length === 0
                     ? <p className="text-xs text-muted-foreground/50 text-center py-3">Nenhum outro membro cadastrado na sua casa.</p>
                     : membros.map((m) => (
-                        <label key={m.id} className="flex items-center gap-3 cursor-pointer py-1">
+                        <label key={m.id} className="flex items-center gap-3 cursor-pointer py-1 hover:bg-gray-50 rounded-lg px-2 transition-colors">
                           <input type="checkbox"
                             checked={fConvidados.includes(m.id)}
                             onChange={(e) => setFConvidados((prev) => e.target.checked ? [...prev, m.id] : prev.filter((id) => id !== m.id))}
-                            className="w-4 h-4 rounded accent-cyan-600"
+                            className="w-4 h-4 rounded accent-violet-600"
                           />
-                          <span className="text-sm text-foreground">{m.nome}</span>
-                          <span className="text-xs text-muted-foreground/50">{m.cargo_principal}</span>
+                          <span className="text-sm text-gray-700">{m.nome}</span>
+                          <span className="text-xs text-muted-foreground/50 ml-auto">{m.cargo_principal}</span>
                         </label>
                       ))
                   }
@@ -463,17 +463,17 @@ function AgendaPage() {
             {formError && <p className="text-xs text-red-400 text-center">{formError}</p>}
 
             <button onClick={editingId ? handleUpdate : handleCreate} disabled={saving}
-              className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors">
+              className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-violet-700 border border-violet-glow/40 hover:bg-violet-glow/10 disabled:opacity-40 transition-colors font-bold mt-2">
               {saving ? "Salvando…" : editingId ? "Salvar Alterações" : "Criar Evento"}
             </button>
           </div>
         )}
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 mb-6 bg-white/5 rounded-xl p-1">
+        <div className="flex gap-1 mb-8 bg-gray-100/80 border border-gray-200/50 rounded-2xl p-1 shadow-inner max-w-md mx-auto">
           {(["proximos", "passados", "presencas"] as const).map((val) => (
             <button key={val} onClick={() => setAba(val)}
-              className={`flex-1 py-2 text-xs uppercase tracking-widest rounded-lg transition-colors ${aba === val ? "bg-white text-gray-800 shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${aba === val ? "bg-[#004a8c] text-white shadow-sm" : "text-gray-500 hover:text-gray-900"}`}>
               {val === "proximos" ? "Próximos" : val === "passados" ? "Passados" : "Presenças"}
             </button>
           ))}
@@ -556,6 +556,13 @@ function AgendaPage() {
           )
         )}
 
+        {aba !== "presencas" && (
+          <WisdomBlock
+            texto='"Fora da caridade não há salvação."'
+            autor="Allan Kardec — O Evangelho Segundo o Espiritismo"
+          />
+        )}
+
         {/* ── Event list ── */}
         {aba !== "presencas" && loadingEventos ? (
           <p className="text-sm text-muted-foreground/50 text-center py-16">Carregando eventos…</p>
@@ -620,33 +627,45 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
   const totalConfirmados = evento.agenda_participantes.filter((p) => p.confirmado === true).length;
 
   const chipClass =
-    minha?.confirmado === true ? "bg-emerald-400/10 text-emerald-600" :
-    minha?.confirmado === false ? "bg-red-400/10 text-red-500" :
-    "bg-amber-400/10 text-amber-600";
+    minha?.confirmado === true ? "bg-emerald-50 text-emerald-600 border border-emerald-200" :
+    minha?.confirmado === false ? "bg-red-50 text-red-500 border border-red-200" :
+    "bg-amber-50 text-amber-600 border border-amber-200";
   const chipLabel =
     minha?.confirmado === true ? "Confirmado" :
     minha?.confirmado === false ? "Recusou" : "Aguardando resposta";
 
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div
+      style={{
+        background: "#ffffff",
+        border: expanded ? "1px solid rgba(0,20,70,.18)" : "1px solid rgba(0,20,70,.08)",
+        borderRadius: 20,
+        overflow: "hidden",
+        boxShadow: expanded
+          ? "0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08)"
+          : "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+        transition: "box-shadow .3s, border-color .3s",
+        marginBottom: 4,
+      }}
+    >
 
       {/* Header */}
       <button onClick={onToggle}
-        className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-white/5 transition-colors">
+        className="w-full px-5 py-4 flex items-start gap-4 text-left hover:bg-gray-50/50 transition-colors">
 
         {/* Date badge */}
-        <div className="shrink-0 w-11 text-center pt-0.5">
-          <p className="text-2xl font-light text-foreground leading-none">
+        <div style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, background: "rgba(0,74,140,.07)", border: "1px solid rgba(0,74,140,.12)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: 2 }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#004a8c", lineHeight: 1, fontVariantNumeric: "lining-nums" }}>
             {new Date(evento.data_inicio).getDate().toString().padStart(2, "0")}
           </p>
-          <p className="text-xs text-muted-foreground/50 uppercase tracking-wide">
+          <p style={{ fontFamily: "Inter", fontSize: "0.55rem", fontWeight: 700, color: "#1863a8", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>
             {new Date(evento.data_inicio).toLocaleDateString("pt-BR", { month: "short" })}
           </p>
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-medium text-foreground leading-snug">{evento.titulo}</p>
+            <p className="text-sm font-semibold text-gray-800 leading-snug">{evento.titulo}</p>
             {evento.tipo === "fechado"
               ? <Lock size={11} className="text-amber-500 shrink-0" />
               : <Globe size={11} className="text-emerald-500 shrink-0" />
@@ -656,38 +675,38 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
           <div className="flex items-center gap-3 mt-1 flex-wrap text-xs text-muted-foreground/60">
             <span className="flex items-center gap-1"><Clock size={10} />{fmtHora(evento.data_inicio)}</span>
             {evento.local && <span className="flex items-center gap-1"><MapPin size={10} />{evento.local}</span>}
-            {totalConfirmados > 0 && <span className="flex items-center gap-1"><UserCheck size={10} />{totalConfirmados}</span>}
+            {totalConfirmados > 0 && <span className="flex items-center gap-1"><UserCheck size={10} />{totalConfirmados} confirmados</span>}
           </div>
 
           {minha && (
-            <span className={`inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full ${chipClass}`}>
+            <span className={`inline-block mt-2 text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full ${chipClass}`}>
               {chipLabel}
             </span>
           )}
         </div>
 
         {expanded
-          ? <ChevronUp size={15} className="text-muted-foreground/30 shrink-0 mt-1" />
-          : <ChevronDown size={15} className="text-muted-foreground/30 shrink-0 mt-1" />
+          ? <ChevronUp size={15} className="text-gray-400 shrink-0 mt-1" />
+          : <ChevronDown size={15} className="text-gray-400 shrink-0 mt-1" />
         }
       </button>
 
       {/* Detail */}
       {expanded && (
-        <div className="border-t border-white/5 px-5 pb-5 pt-4 space-y-5">
+        <div className="border-t border-gray-100 px-5 pb-5 pt-4 space-y-5 bg-white/30">
 
           {/* Info */}
           <div className="text-sm space-y-1">
-            <p className="text-muted-foreground/70 capitalize">{fmtData(evento.data_inicio)}</p>
+            <p className="text-muted-foreground/75 font-medium capitalize">{fmtData(evento.data_inicio)}</p>
             {evento.data_fim && (
-              <p className="text-muted-foreground/70">
+              <p className="text-muted-foreground/75 font-medium">
                 Encerramento: {fmtHora(evento.data_fim)}
               </p>
             )}
             {evento.descricao && (
-              <p className="text-foreground/80 mt-2 leading-relaxed">{evento.descricao}</p>
+              <p className="text-gray-700 mt-2.5 leading-relaxed font-light">{evento.descricao}</p>
             )}
-            <p className="text-xs text-muted-foreground/40 pt-1">
+            <p className="text-xs text-gray-400 pt-1 font-light">
               Organizado por {evento.criador_nome}
             </p>
           </div>
@@ -698,24 +717,24 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
               {/* Open event — self-register */}
               {evento.tipo === "aberto" && !minha && (
                 <button onClick={onConfirmar}
-                  className="w-full py-2.5 rounded-xl border border-emerald-400/40 text-emerald-600 text-xs uppercase tracking-widest hover:bg-emerald-400/10 transition-colors flex items-center justify-center gap-2">
-                  <Check size={13} /> Confirmar Presença
+                  className="w-full py-2.5 rounded-xl border border-emerald-400/40 text-emerald-600 text-xs font-bold uppercase tracking-widest hover:bg-emerald-400/10 transition-colors flex items-center justify-center gap-2 bg-white shadow-sm">
+                  <Check size={13} strokeWidth={2.5} /> Confirmar Presença
                 </button>
               )}
               {evento.tipo === "aberto" && minha?.confirmado === true && (
-                <p className="text-center text-xs text-emerald-600 py-1">Você confirmou presença neste evento.</p>
+                <p className="text-center text-xs font-medium text-emerald-600 py-1">Você confirmou presença neste evento.</p>
               )}
 
               {/* Closed event — respond to invite */}
               {evento.tipo === "fechado" && minha && minha.confirmado === null && (
                 <div className="flex gap-3">
                   <button onClick={() => onResponder(minha.id, true)}
-                    className="flex-1 py-2.5 rounded-xl border border-emerald-400/40 text-emerald-600 text-xs uppercase tracking-widest hover:bg-emerald-400/10 transition-colors flex items-center justify-center gap-2">
-                    <Check size={13} /> Confirmar
+                    className="flex-1 py-2.5 rounded-xl border border-emerald-400/40 text-emerald-600 text-xs font-bold uppercase tracking-widest hover:bg-emerald-400/10 transition-colors flex items-center justify-center gap-2 bg-white shadow-sm">
+                    <Check size={13} strokeWidth={2.5} /> Confirmar
                   </button>
                   <button onClick={() => onResponder(minha.id, false)}
-                    className="flex-1 py-2.5 rounded-xl border border-red-400/40 text-red-500 text-xs uppercase tracking-widest hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2">
-                    <X size={13} /> Recusar
+                    className="flex-1 py-2.5 rounded-xl border border-red-400/40 text-red-500 text-xs font-bold uppercase tracking-widest hover:bg-red-400/10 transition-colors flex items-center justify-center gap-2 bg-white shadow-sm">
+                    <X size={13} strokeWidth={2.5} /> Recusar
                   </button>
                 </div>
               )}
@@ -725,7 +744,7 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
           {/* ── Participant list ── */}
           {evento.agenda_participantes.length > 0 && (
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground/50 mb-3">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3">
                 Participantes ({evento.agenda_participantes.length})
               </p>
               <div className="space-y-2.5">
@@ -733,15 +752,15 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
                   <div key={p.id} className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className={`w-2 h-2 rounded-full shrink-0 ${
-                        p.presente ? "bg-emerald-400" :
-                        p.confirmado === true ? "bg-cyan-400" :
-                        p.confirmado === false ? "bg-red-400" : "bg-gray-300"
+                        p.presente ? "bg-emerald-500 shadow-sm shadow-emerald-200" :
+                        p.confirmado === true ? "bg-cyan-500 shadow-sm shadow-cyan-200" :
+                        p.confirmado === false ? "bg-red-500 shadow-sm shadow-red-200" : "bg-gray-300"
                       }`} />
-                      <span className="text-sm text-foreground truncate">{p.profiles?.nome ?? "—"}</span>
-                      <span className="text-xs text-muted-foreground/40 hidden sm:inline truncate">{p.profiles?.cargo_principal}</span>
+                      <span className="text-sm font-medium text-gray-700 truncate">{p.profiles?.nome ?? "—"}</span>
+                      <span className="text-xs text-muted-foreground/50 hidden sm:inline truncate">{p.profiles?.cargo_principal}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-muted-foreground/50">
+                      <span className="text-xs text-gray-500">
                         {p.presente ? "Presente" :
                          p.confirmado === true ? "Confirmado" :
                          p.confirmado === false ? "Recusou" : "Pendente"}
@@ -749,10 +768,10 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
                       {/* Marcar/desmarcar presença — só o criador */}
                       {isCriador && (
                         <button onClick={() => onPresenca(p.id, !p.presente)}
-                          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors bg-white ${
                             p.presente
-                              ? "border-emerald-400/50 text-emerald-600 bg-emerald-400/5 hover:bg-emerald-400/10"
-                              : "border-white/10 text-muted-foreground/40 hover:border-emerald-400/40 hover:text-emerald-600"
+                              ? "border-emerald-400/50 text-emerald-600 hover:bg-emerald-50"
+                              : "border-gray-200 text-gray-400 hover:border-emerald-400/40 hover:text-emerald-600"
                           }`}>
                           {p.presente ? "Desmarcar" : "Marcar"}
                         </button>
@@ -766,20 +785,20 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
 
           {/* ── Creator actions ── */}
           {isCriador && (
-            <div className="flex gap-3 pt-3 border-t border-white/5">
+            <div className="flex gap-3 pt-3.5 border-t border-gray-100">
               {past && (
                 <button onClick={onGerarAta}
-                  className="flex-1 py-2.5 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors flex items-center justify-center gap-2">
+                  className="flex-1 py-2.5 rounded-xl border border-[#004a8c]/30 text-[#004a8c] text-xs font-bold uppercase tracking-widest hover:bg-[#ebf0f9] transition-colors flex items-center justify-center gap-2 bg-white shadow-sm">
                   <FileText size={13} />
                   {evento.ata ? "Atualizar Ata" : "Gerar Ata"}
                 </button>
               )}
               <button onClick={onEditar}
-                className="py-2.5 px-4 rounded-xl border border-white/10 text-muted-foreground/50 text-xs hover:bg-white/5 hover:text-foreground hover:border-white/20 transition-colors flex items-center gap-1.5">
+                className="py-2.5 px-4 rounded-xl border border-gray-200 text-gray-500 text-xs hover:bg-gray-50 hover:text-gray-800 transition-colors flex items-center gap-1.5 bg-white shadow-sm">
                 <Pencil size={13} />
               </button>
               <button onClick={onExcluir}
-                className="py-2.5 px-4 rounded-xl border border-red-400/20 text-red-400/50 text-xs hover:bg-red-400/10 hover:text-red-400 hover:border-red-400/40 transition-colors flex items-center gap-1.5">
+                className="py-2.5 px-4 rounded-xl border border-red-100 text-red-500 text-xs hover:bg-red-50 hover:border-red-200 transition-colors flex items-center gap-1.5 bg-white shadow-sm">
                 <Trash2 size={13} />
               </button>
             </div>
@@ -787,11 +806,11 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
 
           {/* ── Ata ── */}
           {evento.ata && (
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground/50 mb-3 flex items-center gap-1.5">
-                <FileText size={11} /> Ata da Reunião
+            <div className="bg-white/70 border border-gray-100 rounded-xl p-4 shadow-inner">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3 flex items-center gap-1.5">
+                <FileText size={11} className="text-violet-600" /> Ata da Reunião
               </p>
-              <pre className="text-xs text-foreground/70 whitespace-pre-wrap font-sans leading-relaxed">{evento.ata}</pre>
+              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{evento.ata}</pre>
             </div>
           )}
 
