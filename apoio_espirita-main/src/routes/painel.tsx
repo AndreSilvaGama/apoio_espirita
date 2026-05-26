@@ -25,6 +25,8 @@ interface Item {
 
 const roadmap: Item[] = [
 
+  { status: "feito", titulo: "Redesign Serene Wisdom — páginas autenticadas", descricao: "Novo design system premium com foco em acessibilidade para idosos: CasaHero com nome do centro em destaque, Libre Caslon Text + Inter, BottomNav mobile, tokens de cor Serene Wisdom em todas as páginas autenticadas" },
+
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
   { status: "planejado", titulo: "Revisão geral do site — melhorar organização e remover repetições", descricao: "Verificar se há informações duplicadas, telas confusas ou fluxos que possam ser simplificados · Padronizar a aparência dos componentes visuais" },
