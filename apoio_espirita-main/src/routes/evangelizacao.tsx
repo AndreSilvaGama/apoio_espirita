@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle } from "lucide-react";
+import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/evangelizacao")({
   component: Evangelizacao,
@@ -276,96 +277,106 @@ function Evangelizacao() {
   const faixaAtual = FAIXAS.find((f) => f.id === faixaAtiva)!;
 
   return (
-    <main className="page-light min-h-screen px-4 pt-20 pb-20">
-      <div className="mx-auto max-w-3xl space-y-8">
+    <main className="page-light min-h-screen pt-20 pb-28">
+      <CasaHero />
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }} className="space-y-8">
 
-        {/* Cabeçalho */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Evangelização</h1>
-          <p className="text-sm text-gray-500 mt-1">Recursos para o setor de evangelização infantil — 3 a 11 anos</p>
+        {/* Título da seção */}
+        <div style={{ paddingBottom: 24, borderBottom: "1px solid rgba(0,20,70,.08)" }}>
+          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, marginBottom: 6 }}>
+            Evangelização Infantil
+          </h2>
+          <p style={{ fontFamily: "Inter", fontSize: "0.9rem", color: "#637080", margin: 0 }}>
+            Recursos para o setor de evangelização infantil — 3 a 11 anos
+          </p>
         </div>
 
         {/* Links rápidos */}
         <section>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Ferramentas</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3">Ferramentas</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link
               to="/jogos/memoria-evangelizacao"
-              className="flex items-center gap-3 p-4 bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200 rounded-xl hover:shadow-md transition-all group"
+              className="flex items-center gap-4 p-4 border border-cyan-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
             >
-              <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Brain size={20} strokeWidth={1.5} className="text-cyan-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-cyan-700 transition-colors">
                   Jogo da Memória
                 </p>
-                <p className="text-xs text-gray-500">Virtudes · Evangelho</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Virtudes · Evangelho</p>
               </div>
             </Link>
 
             <Link
               to="/jogos/plante-a-semente"
-              className="flex items-center gap-3 p-4 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-xl hover:shadow-md transition-all group"
+              className="flex items-center gap-4 p-4 border border-emerald-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
             >
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Leaf size={20} strokeWidth={1.5} className="text-emerald-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-emerald-700 transition-colors">
                   Plante a Semente
                 </p>
-                <p className="text-xs text-gray-500">Jogo de palavras</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Jogo de palavras</p>
               </div>
             </Link>
 
             <Link
               to="/feb"
-              className="flex items-center gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-md transition-all group"
+              className="flex items-center gap-4 p-4 border border-violet-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
             >
-              <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm">
                 <BookOpen size={20} strokeWidth={1.5} className="text-violet-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-violet-700 transition-colors">
                   Documentos FEB
                 </p>
-                <p className="text-xs text-gray-500">AEE Infância · Juventude</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">AEE Infância · Juventude</p>
               </div>
             </Link>
 
             <Link
               to="/jogos/quiz-espirita"
-              className="flex items-center gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl hover:shadow-md transition-all group"
+              className="flex items-center gap-4 p-4 border border-amber-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
             >
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 shadow-sm">
                 <HelpCircle size={20} strokeWidth={1.5} className="text-amber-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
                   Quiz Espírita
                 </p>
-                <p className="text-xs text-gray-500">Virtudes · Doutrina · 3–11 anos</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Virtudes · Doutrina · 3–11 anos</p>
               </div>
             </Link>
           </div>
 
           {isEvangelizador && (
-            <div className="mt-3">
+            <div className="mt-4">
               <Link
                 to="/configurar-memoria"
-                className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl hover:shadow-md transition-all group"
+                className="flex items-center gap-4 p-4 border border-amber-200 group"
+                style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
               >
-                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 shadow-sm">
                   <Settings size={20} strokeWidth={1.5} className="text-amber-600" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
                     Configurar Jogo da Memória
                   </p>
-                  <p className="text-xs text-gray-500">Alterar imagens e nomes das virtudes da sua casa</p>
+                  <p className="text-xs text-gray-500 font-light mt-0.5">Alterar imagens e nomes das virtudes da sua casa</p>
                 </div>
-                <ArrowRight size={16} strokeWidth={1.5} className="text-amber-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={16} strokeWidth={1.5} className="text-amber-400 group-hover:translate-x-1.5 transition-transform" />
               </Link>
             </div>
           )}
@@ -373,21 +384,21 @@ function Evangelizacao() {
 
         {/* Planos de aula */}
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Users size={16} strokeWidth={1.5} className="text-gray-400" />
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Planos de Aula</p>
+          <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
+            <Users size={16} strokeWidth={1.5} className="text-violet-600" />
+            <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold">Planos de Aula</p>
           </div>
 
           {/* Abas de faixa etária */}
-          <div className="flex gap-2 mb-4 flex-wrap">
+          <div className="flex gap-2 mb-6 flex-wrap">
             {FAIXAS.map((f) => (
               <button
                 key={f.id}
                 onClick={() => setFaixaAtiva(f.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border duration-300 ${
                   faixaAtiva === f.id
-                    ? f.corBadge + " border-transparent"
-                    : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? f.corBadge + " border-transparent shadow-sm"
+                    : "bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-800"
                 }`}
               >
                 {f.label}
@@ -396,13 +407,13 @@ function Evangelizacao() {
           </div>
 
           {/* Lista de planos */}
-          <div className={`space-y-2 rounded-2xl border p-4 ${faixaAtual.cor} bg-white`}>
+          <div style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "24px 28px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }} className="space-y-3">
             {faixaAtual.planos.map((plano) => (
               <CardPlano key={plano.id} plano={plano} corBadge={faixaAtual.corBadge} />
             ))}
           </div>
 
-          <p className="text-xs text-gray-400 mt-3 text-center">
+          <p className="text-xs text-gray-400 mt-4 text-center font-light">
             Planos baseados nas diretrizes da FEB — AEE Infância
           </p>
         </section>
