@@ -407,7 +407,7 @@ function Evangelizacao() {
           </div>
 
           {/* Lista de planos */}
-          <div style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "24px 28px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }} className="space-y-3">
+          <div className={`border ${faixaAtual.cor} space-y-3`} style={{ background: "#ffffff", borderRadius: 20, padding: "24px 28px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}>
             {faixaAtual.planos.map((plano) => (
               <CardPlano key={plano.id} plano={plano} corBadge={faixaAtual.corBadge} />
             ))}
