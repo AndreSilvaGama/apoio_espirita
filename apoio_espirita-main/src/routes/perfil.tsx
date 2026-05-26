@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, DEV_EMAIL } from "@/contexts/AuthContext";
+import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/perfil")({
   component: Perfil,
@@ -270,17 +271,19 @@ function Perfil() {
   if (loading || !user) return null;
 
   return (
-    <main className="page-light min-h-screen px-6 py-16">
-      <div className="mx-auto max-w-lg">
-        <div className="mb-10">
-          <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Configurações</p>
-          <h1 className="text-3xl font-light text-foreground">Meu Perfil</h1>
-          <p className="mt-1 text-sm text-muted-foreground font-light">{user.email}</p>
+    <main className="page-light min-h-screen pt-20 pb-28">
+      <CasaHero />
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, marginBottom: 6 }}>
+            Meu Perfil
+          </h2>
+          <p style={{ fontFamily: "Inter", fontSize: "0.88rem", color: "#637080", margin: 0 }}>{user.email}</p>
         </div>
 
         {/* Dados pessoais */}
-        <section className="glass rounded-3xl p-8 space-y-5 mb-6">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground/60">Dados pessoais</h2>
+        <section style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "32px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)", marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "Inter", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#637080", marginBottom: 20 }}>Dados pessoais</h2>
 
           <div>
             <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
@@ -424,16 +427,16 @@ function Perfil() {
           <button
             onClick={handleSavePerfil}
             disabled={savingPerfil}
-            className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+            style={{ background: "#004a8c", color: "#fff", borderRadius: 13, padding: "12px 28px", fontFamily: "Inter", fontSize: "0.9rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)", opacity: savingPerfil ? 0.6 : 1 }}
           >
             {savingPerfil ? "Salvando…" : "Salvar alterações"}
           </button>
         </section>
 
         {/* Minha Casa Espírita */}
-        <section className="glass rounded-3xl p-8 space-y-5 mb-6">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground/60">Minha Casa Espírita</h2>
-          <p className="text-xs text-muted-foreground/50 font-light">
+        <section style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "32px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)", marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "Inter", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#637080", marginBottom: 20 }}>Minha Casa Espírita</h2>
+          <p className="text-xs text-muted-foreground/60 font-light">
             Dados que aparecem no mapa de busca público do site.
           </p>
 
@@ -478,16 +481,16 @@ function Perfil() {
           <button
             onClick={handleSaveCasa}
             disabled={savingCasa || !selected}
-            className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+            style={{ background: "#004a8c", color: "#fff", borderRadius: 13, padding: "12px 28px", fontFamily: "Inter", fontSize: "0.9rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)", opacity: savingCasa ? 0.6 : 1 }}
           >
             {savingCasa ? "Salvando…" : casaId ? "Atualizar dados da casa" : "Cadastrar casa no mapa"}
           </button>
         </section>
 
         {/* Alterar senha */}
-        <section className="glass rounded-3xl p-8 space-y-5 mb-6">
-          <h2 className="text-sm uppercase tracking-widest text-muted-foreground/60">Alterar senha</h2>
-          <p className="text-xs text-muted-foreground/50 font-light">Disponível apenas para contas criadas por e-mail e senha.</p>
+        <section style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "32px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)", marginBottom: 24 }}>
+          <h2 style={{ fontFamily: "Inter", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#637080", marginBottom: 20 }}>Alterar senha</h2>
+          <p className="text-xs text-muted-foreground/60 font-light">Disponível apenas para contas criadas por e-mail e senha.</p>
 
           <input
             type="password"
@@ -510,7 +513,7 @@ function Perfil() {
           <button
             onClick={handleSaveSenha}
             disabled={savingPwd || !novaSenha}
-            className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+            style={{ background: "#004a8c", color: "#fff", borderRadius: 13, padding: "12px 28px", fontFamily: "Inter", fontSize: "0.9rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)", opacity: savingPwd ? 0.6 : 1 }}
           >
             {savingPwd ? "Alterando…" : "Alterar senha"}
           </button>
