@@ -281,7 +281,7 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, profile, isTesoureiro, isDecisao, isEvangelizador, signOut } = useAuth();
+  const { user, profile, isDev, isTesoureiro, isDecisao, isEvangelizador, signOut } = useAuth();
   const { location } = useRouterState();
   const [menuOpen, setMenuOpen] = useState(false);
   const [recursosOpen, setRecursosOpen] = useState(false);
