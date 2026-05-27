@@ -29,7 +29,7 @@ const roadmap: Item[] = [
 
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 
-  { status: "planejado", titulo: "Revisão geral do site — melhorar organização e remover repetições", descricao: "Verificar se há informações duplicadas, telas confusas ou fluxos que possam ser simplificados · Padronizar a aparência dos componentes visuais" },
+  { status: "feito", titulo: "Revisão geral do site — melhorar organização e remover repetições", descricao: "Página da casa espírita integrada como inicial pós-login. Menu principal simplificado em links intuitivos e dropdown de jogos. Cards de funcionalidades copiados para a página da Casa espírita." },
   { status: "planejado", titulo: "Filtro automático de palavras inapropriadas em conteúdo público", descricao: "Qualquer texto publicado em área visível ao público (mensagens, comentários, artigos) passa por um filtro automático que bloqueia palavrões e linguagem ofensiva antes de ser exibido" },
   { status: "planejado", titulo: "Verificação de tom fraternal em todos os textos enviados", descricao: "Sistema que analisa o tom das mensagens e alerta o usuário quando o texto parecer agressivo ou desrespeitoso, incentivando uma comunicação sempre amorosa" },
   { status: "planejado", titulo: "Site mais acessível para idosos e pessoas com dificuldades tecnológicas", descricao: "Letras maiores · Contraste adequado para quem tem dificuldade de visão · Botões e áreas de toque maiores para facilitar o uso no celular · Navegação simplificada" },
@@ -272,7 +272,7 @@ function Painel() {
 
   if (loading || !user) return null;
 
-  const allItems = [...roadmap, ...solicitacoes, ...sugestoes];
+  const allItems = [...roadmap.filter(i => i.status !== "feito"), ...solicitacoes, ...sugestoes];
 
   const termo = busca.trim().toLowerCase();
   const filtered = termo
@@ -364,7 +364,7 @@ function Painel() {
         )}
 
         {/* Items by group */}
-        {(["feito", "andamento", "planejado"] as Status[]).map((status) => {
+        {(["andamento", "planejado"] as Status[]).map((status) => {
           const items = getItemsByStatus(status);
           if (items.length === 0) return null;
           return (

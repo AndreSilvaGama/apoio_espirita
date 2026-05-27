@@ -176,8 +176,12 @@ function Inicio() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) {
-      navigate({ to: "/completar-perfil" });
+    if (!loading && user) {
+      if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade) {
+        navigate({ to: "/completar-perfil" });
+      } else {
+        navigate({ to: "/casa/$sigla", params: { sigla: profile.sigla_casa } });
+      }
     }
   }, [user, profile, loading, navigate]);
 
@@ -261,44 +265,56 @@ function Inicio() {
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
   const fallbackMsg = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
   return (
-    <main className="page-light min-h-screen pt-20 pb-20 px-4 md:px-8">
+    <main className="page-light min-h-screen pt-20 pb-28 px-4 md:px-8">
       <div className="mx-auto max-w-7xl">
 
         {/* ── Boas-vindas ── */}
-        <div className="mb-10 mt-4">
-          <p className="text-xs uppercase tracking-[0.35em] text-cyan-glow mb-1">{greeting}</p>
-          <h1 className="text-3xl md:text-4xl font-light text-foreground">
-            {profile?.nome?.split(" ")[0]}
-            <span className="font-medium"> ·</span>
-            <span className="text-sm font-normal text-muted-foreground ml-2 tracking-widest uppercase">
-              {profile?.sigla_casa}
+        <div className="mb-10 mt-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-violet-glow mb-1.5 font-semibold">{greeting}, irmão</p>
+            <h1 className="text-4xl md:text-5xl font-light tracking-tight text-foreground">
+              Olá, <span className="font-medium text-gradient-aurora">{profile?.nome?.split(" ")[0]}</span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-100/50">
+              Casa Espírita {profile?.sigla_casa}
             </span>
-          </h1>
+            {profile?.cargo_principal && (
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200/50">
+                {profile?.cargo_principal}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* ── Mensagem do Dia ── */}
         <div
-          className="mb-12 rounded-3xl overflow-hidden shadow-sm border border-violet-100"
-          style={{ background: "linear-gradient(135deg, oklch(0.97 0.02 295) 0%, oklch(0.97 0.015 260) 100%)" }}
+          className="relative mb-12 rounded-3xl overflow-hidden border border-violet-200/60 shadow-lg"
+          style={{ background: "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.965 0.01 260) 100%)" }}
         >
-          <div className="px-8 py-7 md:px-12 md:py-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="shrink-0 w-14 h-14 rounded-2xl bg-violet-100 border border-violet-200 flex items-center justify-center">
-              <Star size={26} strokeWidth={1.5} className="text-violet-500" />
+          {/* Decorative glowing gradient dots in background */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-violet-300/10 to-cyan-300/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-cyan-300/10 to-violet-300/10 blur-3xl pointer-events-none" />
+
+          <div className="relative px-8 py-8 md:px-12 md:py-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="shrink-0 w-12 h-12 rounded-2xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
+              <Star size={22} strokeWidth={1.5} className="text-violet-600" />
             </div>
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-violet-500 mb-3">Mensagem do Dia</p>
+              <p className="text-xs uppercase tracking-[0.35em] text-violet-600 font-semibold mb-3">Mensagem do Dia</p>
               {todayMsg ? (
                 <>
-                  <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
+                  <blockquote className="text-xl md:text-2xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
                     "{todayMsg.texto}"
                   </blockquote>
                   {todayMsg.referencia && (
-                    <p className="mt-3 text-sm text-muted-foreground/60 italic">— {todayMsg.referencia}</p>
+                    <p className="mt-3 text-sm text-gray-500 font-light italic">— {todayMsg.referencia}</p>
                   )}
                   <div className="mt-4 flex items-center gap-3 flex-wrap">
-                    <span className="text-xs text-violet-600">{todayMsg.autor_nome}</span>
+                    <span className="text-xs font-medium text-violet-700">{todayMsg.autor_nome}</span>
                     {todayMsg.sigla_casa && (
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 bg-white/70 border border-border/60 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 bg-white/80 border border-violet-100/50 px-2.5 py-0.5 rounded-full">
                         {todayMsg.sigla_casa}
                       </span>
                     )}
@@ -306,25 +322,25 @@ function Inicio() {
                 </>
               ) : (
                 <>
-                  <blockquote className="text-lg md:text-xl font-light text-foreground leading-relaxed italic">
+                  <blockquote className="text-xl md:text-2xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
                     "{fallbackMsg.text}"
                   </blockquote>
-                  <p className="mt-3 text-sm text-muted-foreground/60">— {fallbackMsg.author}</p>
+                  <p className="mt-3 text-sm text-gray-500 font-light italic">— {fallbackMsg.author}</p>
                 </>
               )}
             </div>
           </div>
-          <div className="px-8 pb-5 md:px-12 flex items-center gap-5 border-t border-violet-100/60 pt-4">
+          <div className="px-8 pb-5 md:px-12 flex items-center gap-5 border-t border-violet-100/40 pt-4 bg-white/20">
             <Link
               to="/mensagem-do-dia"
-              className="text-xs text-violet-500 hover:text-violet-700 transition-colors uppercase tracking-widest"
+              className="text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
             >
               Enviar mensagem
             </Link>
             <Link
               to="/mensagem-do-dia"
               search={{ tab: "fila" }}
-              className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors uppercase tracking-widest"
+              className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
             >
               Ver fila
             </Link>
@@ -366,40 +382,40 @@ function Inicio() {
                 return (
                   <div
                     key={evento.id}
-                    className={`bg-white rounded-2xl border shadow-sm px-4 py-3 flex items-center gap-4 ${pendente ? "border-amber-200" : "border-gray-100"}`}
+                    className={`glass-premium hover-premium rounded-2xl border px-5 py-4 flex items-center gap-4 ${pendente ? "border-amber-300 bg-amber-50/20" : "border-gray-100"}`}
                   >
-                    <div className="shrink-0 w-10 text-center">
-                      <p className="text-xl font-light text-gray-800 leading-none">
+                    <div className="shrink-0 w-11 h-11 rounded-xl bg-violet-50 border border-violet-100/70 flex flex-col items-center justify-center">
+                      <p className="text-lg font-bold text-violet-700 leading-none">
                         {String(new Date(evento.data_inicio).getDate()).padStart(2, "0")}
                       </p>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-wide">
+                      <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">
                         {new Date(evento.data_inicio).toLocaleDateString("pt-BR", { month: "short" })}
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{evento.titulo}</p>
+                      <p className="text-sm font-semibold text-gray-800 truncate">{evento.titulo}</p>
                       <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
-                        <Clock size={10} />
-                        {new Date(evento.data_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                        {pendente && <span className="text-amber-500">· Aguardando sua resposta</span>}
-                        {confirmado && <span className="text-emerald-600">· Confirmado</span>}
-                        {abertoPendente && <span className="text-cyan-600">· Confirmar presença</span>}
+                        <Clock size={10} className="text-gray-400" />
+                        <span className="font-light">{new Date(evento.data_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                        {pendente && <span className="text-amber-600 font-semibold animate-pulse">· Aguardando resposta</span>}
+                        {confirmado && <span className="text-emerald-600 font-medium">· Confirmado</span>}
+                        {abertoPendente && <span className="text-cyan-600 font-medium">· Confirmar presença</span>}
                       </p>
                     </div>
                     {(pendente || abertoPendente) && (
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           onClick={() => pendente ? handleResponderConvite(minha!.id, true) : handleConfirmarEvento(evento.id)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-600 text-xs hover:bg-emerald-50 transition-colors"
+                          className="flex items-center gap-1 px-3.5 py-2 rounded-xl border border-emerald-300 text-emerald-600 text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm bg-white"
                         >
-                          <Check size={12} /> Confirmar
+                          <Check size={12} strokeWidth={2.5} /> Confirmar
                         </button>
                         {pendente && (
                           <button
                             onClick={() => handleResponderConvite(minha!.id, false)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 text-red-400 text-xs hover:bg-red-50 transition-colors"
+                            className="flex items-center justify-center w-8 h-8 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors shadow-sm bg-white"
                           >
-                            <X size={12} />
+                            <X size={14} strokeWidth={2.5} />
                           </button>
                         )}
                       </div>
@@ -599,34 +615,34 @@ function DashCard({ Icon, title, desc, status, accent, href, casa, votes, voting
   votes: VoteMap; votingKey: string | null; onVote: (title: string) => void;
 }) {
   const borderMap: Record<string, string> = {
-    slate: "border-t-slate-300",
-    amber: "border-t-amber-300",
-    cyan:  "border-t-cyan-300",
+    slate: "border-t-slate-300/80 focus-within:border-t-slate-400",
+    amber: "border-t-amber-300/80 focus-within:border-t-amber-400",
+    cyan:  "border-t-cyan-300/80 focus-within:border-t-cyan-400",
   };
   const iconMap: Record<string, string> = {
-    slate: "bg-slate-50 border-slate-200 text-slate-500",
+    slate: "bg-slate-50 border-slate-200 text-slate-600",
     cyan:  "bg-cyan-50 border-cyan-200 text-cyan-600",
     amber: "bg-amber-50 border-amber-200 text-amber-600",
   };
   const isPending = status === "breve";
   const content = (
     <div
-      className={`glass rounded-2xl p-6 border-t-2 ${borderMap[accent] ?? "border-t-slate-300"} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full flex flex-col gap-4 ${isPending ? "cursor-pointer" : ""}`}
+      className={`glass-premium hover-premium rounded-2xl p-6 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${isPending ? "cursor-pointer" : ""}`}
       onClick={isPending ? () => onVote(title) : undefined}
     >
       <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
         <Icon size={20} strokeWidth={1.5} />
       </div>
       <div className="flex-1">
-        <h3 className="text-sm font-medium text-foreground leading-snug mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground/70 leading-relaxed">{desc}</p>
+        <h3 className="text-sm font-semibold text-gray-800 leading-snug mb-1">{title}</h3>
+        <p className="text-xs text-gray-500 leading-relaxed font-light">{desc}</p>
       </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>
+      <div className="flex items-center gap-2 flex-wrap mt-2">
+        <span className={`text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>
           {STATUS_LABEL[status]}
         </span>
         {casa && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-border text-muted-foreground/50">
+          <span className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-gray-200 text-gray-400">
             Por casa
           </span>
         )}
@@ -649,22 +665,22 @@ function FeatureCard({ item, cat, votes, votingKey, onVote }: {
 
   const inner = (
     <div
-      className={`group glass rounded-2xl p-5 flex flex-col gap-4 h-full transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
+      className={`group glass-premium hover-premium rounded-2xl p-5 flex flex-col gap-4 h-full ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
       onClick={isPending ? () => onVote(item.title) : undefined}
     >
       <div className={`w-10 h-10 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}>
         <item.Icon size={20} strokeWidth={1.5} className={cat.iconColor} />
       </div>
       <div className="flex-1">
-        <h3 className="text-sm font-medium text-foreground leading-snug mb-1">{item.title}</h3>
-        <p className="text-xs text-muted-foreground/65 leading-relaxed">{item.desc}</p>
+        <h3 className="text-sm font-semibold text-gray-800 leading-snug mb-1">{item.title}</h3>
+        <p className="text-xs text-gray-500 leading-relaxed font-light">{item.desc}</p>
       </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}>
+      <div className="flex items-center gap-2 flex-wrap mt-2">
+        <span className={`text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}>
           {STATUS_LABEL[item.status]}
         </span>
         {item.casa && (
-          <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-border text-muted-foreground/40">
+          <span className="text-[10px] font-semibold uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-gray-200 text-gray-400">
             Por casa
           </span>
         )}
@@ -680,18 +696,18 @@ function FeatureCard({ item, cat, votes, votingKey, onVote }: {
 
 function BazarCard({ item }: { item: typeof BAZAR[0] }) {
   return (
-    <div className="glass rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-      <div className="w-12 h-12 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center mx-auto">
-        <item.Icon size={22} strokeWidth={1.5} className="text-cyan-700" />
+    <div className="glass-premium hover-premium rounded-2xl p-4 flex flex-col gap-3">
+      <div className="w-12 h-12 rounded-xl bg-cyan-50/70 border border-cyan-100 flex items-center justify-center mx-auto shadow-sm">
+        <item.Icon size={22} strokeWidth={1.5} className="text-cyan-600" />
       </div>
       <div className="text-center flex-1">
-        <p className="text-xs text-muted-foreground/50 mb-0.5">{item.category}</p>
-        <h3 className="text-xs font-medium text-foreground leading-snug mb-1">{item.name}</h3>
-        <p className="text-[10px] text-muted-foreground/50">{item.desc}</p>
+        <p className="text-[10px] font-bold text-cyan-600/70 uppercase tracking-widest mb-0.5">{item.category}</p>
+        <h3 className="text-xs font-semibold text-gray-800 leading-snug mb-1">{item.name}</h3>
+        <p className="text-[10px] text-gray-400 font-light">{item.desc}</p>
       </div>
-      <div className="text-center">
-        <p className="text-sm font-semibold text-cyan-700 mb-2">{item.price}</p>
-        <button className="w-full text-[10px] uppercase tracking-widest py-1.5 rounded-lg border border-cyan-200 text-cyan-700 hover:bg-cyan-50 transition-colors">
+      <div className="text-center mt-2">
+        <p className="text-sm font-semibold text-cyan-600 mb-2.5">{item.price}</p>
+        <button className="w-full text-[10px] font-bold uppercase tracking-widest py-2 rounded-lg border border-cyan-200 text-cyan-600 hover:bg-cyan-50 transition-colors shadow-sm">
           Consultar
         </button>
       </div>

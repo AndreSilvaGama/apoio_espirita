@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -262,7 +262,7 @@ function ReportarProblema({ onClose }: { onClose: () => void }) {
 }
 
 function BottomNav() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { location } = useRouterState();
 
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
@@ -306,6 +306,14 @@ function BottomNav() {
         zIndex: 50,
       }}
     >
+      <Link 
+        to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
+        params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
+        style={itemStyle(profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio")}
+      >
+        <Building2 size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Minha Casa</span>
+      </Link>
       <Link to="/agenda" style={itemStyle("/agenda")}>
         <CalendarDays size={24} strokeWidth={1.8} />
         <span style={labelStyle}>Agenda</span>
@@ -313,10 +321,6 @@ function BottomNav() {
       <Link to="/kanban" style={itemStyle("/kanban")}>
         <KanbanSquare size={24} strokeWidth={1.8} />
         <span style={labelStyle}>Kanban</span>
-      </Link>
-      <Link to="/evangelizacao" style={itemStyle("/evangelizacao")}>
-        <GraduationCap size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Evangel.</span>
       </Link>
       <Link to="/perfil" style={itemStyle("/perfil")}>
         <User size={24} strokeWidth={1.8} />
@@ -347,7 +351,7 @@ function RootComponent() {
 
 /* ── Navbar ── */
 function NavBar() {
-  const { user, isTesoureiro, isDecisao, signOut } = useAuth();
+  const { user, profile, isTesoureiro, isDecisao, isEvangelizador, signOut } = useAuth();
   const { location } = useRouterState();
   const [menuOpen, setMenuOpen] = useState(false);
   const [recursosOpen, setRecursosOpen] = useState(false);
@@ -399,37 +403,53 @@ function NavBar() {
 
   const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#ebf0f9] hover:text-[#004a8c] rounded-lg mx-1 my-0.5 transition-all duration-200";
 
+  const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
+
   return (
     <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl glass-premium border border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
       <div className="h-full px-5 flex items-center justify-between gap-4">
 
         {/* Brand */}
-        <Link to="/inicio" className="flex items-center gap-2 shrink-0" onClick={() => setMenuOpen(false)}>
+        <Link 
+          to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"} 
+          params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
+          className="flex items-center gap-2 shrink-0" 
+          onClick={() => setMenuOpen(false)}
+        >
           <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto" />
           <span className="text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
-          <Link to="/inicio" className={linkCls("/inicio")}>Início</Link>
+          <Link 
+            to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"} 
+            params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
+            className={linkCls(homePath)}
+          >
+            Minha Casa
+          </Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
-          <Link to="/kanban" className={linkCls("/kanban")}>Eventos</Link>
-          <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
+          <Link to="/kanban" className={linkCls("/kanban")}>Quadro Kanban</Link>
+          <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem do Dia</Link>
+          {isTesoureiro && (
+            <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
+          )}
 
           {/* Recursos dropdown */}
           <div ref={recursosRef} className="relative">
             <button
               onClick={() => { setRecursosOpen((o) => !o); setAjudaOpen(false); }}
-              className={dropBtnCls(["/evangelizacao", "/jogos", "/tesouraria"])}
+              className={dropBtnCls(["/evangelizacao", "/jogos", "/configurar-memoria"])}
             >
-              Recursos
+              Jogos &amp; Evangelização
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${recursosOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosOpen && (
               <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
                 <Link to="/evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <GraduationCap size={14} strokeWidth={1.5} className="text-rose-500" />
-                  Evangelização
+                  Evangelização Infantil
                 </Link>
                 <Link to="/jogos/plante-a-semente" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Gamepad2 size={14} strokeWidth={1.5} className="text-emerald-500" />
@@ -437,16 +457,16 @@ function NavBar() {
                 </Link>
                 <Link to="/jogos/memoria-evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
-                  Memória da Evangelização
+                  Jogo da Memória
                 </Link>
                 <Link to="/jogos/quiz-espirita" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <HelpCircle size={14} strokeWidth={1.5} className="text-[#004a8c]" />
                   Quiz Espírita
                 </Link>
-                {isTesoureiro && (
-                  <Link to="/tesouraria" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                    <Wallet size={14} strokeWidth={1.5} className="text-amber-500" />
-                    Tesouraria
+                {isEvangelizador && (
+                  <Link to="/configurar-memoria" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                    <Volume2 size={14} strokeWidth={1.5} className="text-violet-500" />
+                    Configurar Memória
                   </Link>
                 )}
               </div>
@@ -464,9 +484,13 @@ function NavBar() {
             </button>
             {ajudaOpen && (
               <div className="absolute top-full right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
+                <Link to="/perfil" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                  <User size={14} strokeWidth={1.5} className="text-gray-400" />
+                  Meu Perfil
+                </Link>
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
-                  Projeto
+                  Status do Projeto
                 </Link>
                 <Link to="/feb" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BookOpen size={14} strokeWidth={1.5} className="text-[#004a8c]" />
@@ -474,16 +498,12 @@ function NavBar() {
                 </Link>
                 <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
-                  FAQ
-                </Link>
-                <Link to="/perfil" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <User size={14} strokeWidth={1.5} className="text-gray-400" />
-                  Meu Perfil
+                  FAQ / Dúvidas
                 </Link>
                 {isDecisao && (
                   <Link to="/permissoes" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                     <ShieldAlert size={14} strokeWidth={1.5} className="text-amber-500" />
-                    Painel de Permissões
+                    Permissões
                   </Link>
                 )}
               </div>
@@ -503,7 +523,7 @@ function NavBar() {
         <button
           onClick={() => setMenuOpen((o) => !o)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          className="xl:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
         >
           {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
         </button>
@@ -511,46 +531,55 @@ function NavBar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="xl:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
+        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
-            <Link to="/inicio" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-              Início
+            <Link 
+              to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"} 
+              params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
+              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
+            >
+              Minha Casa
             </Link>
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Agenda
             </Link>
             <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-              Eventos
+              Quadro Kanban
             </Link>
             <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Mensagem do Dia
             </Link>
+            {isTesoureiro && (
+              <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                Tesouraria
+              </Link>
+            )}
 
             {/* Seção Recursos */}
             <button
               onClick={() => setRecursosMobileOpen((o) => !o)}
               className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
             >
-              Recursos
+              Jogos &amp; Evangelização
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosMobileOpen && (
               <>
                 <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Evangelização
+                  Evangelização Infantil
                 </Link>
                 <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Plante a Semente
                 </Link>
                 <Link to="/jogos/memoria-evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Memória da Evangelização
+                  Jogo da Memória
                 </Link>
                 <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Quiz Espírita
                 </Link>
-                {isTesoureiro && (
-                  <Link to="/tesouraria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                    Tesouraria
+                {isEvangelizador && (
+                  <Link to="/configurar-memoria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                    Configurar Memória
                   </Link>
                 )}
               </>
@@ -566,21 +595,21 @@ function NavBar() {
             </button>
             {ajudaMobileOpen && (
               <>
+                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                  Meu Perfil
+                </Link>
                 <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Projeto
+                  Status do Projeto
                 </Link>
                 <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Documentos FEB
                 </Link>
                 <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  FAQ
-                </Link>
-                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Meu Perfil
+                  FAQ / Dúvidas
                 </Link>
                 {isDecisao && (
                   <Link to="/permissoes" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                    Painel de Permissões
+                    Permissões
                   </Link>
                 )}
               </>

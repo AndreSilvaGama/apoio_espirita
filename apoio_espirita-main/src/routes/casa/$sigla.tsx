@@ -6,7 +6,13 @@ import {
   Edit3, Save, X, Users, Shield, Calendar,
   MessageSquare, Info, Heart, UserPlus, UserMinus,
   Image, Video, CalendarDays, Lock, Unlock,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
+  PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
+  MessageCircle, HeartHandshake, ShoppingBag, Car, Truck,
+  Cast, Film, MonitorPlay, CircleHelp, BarChart3, ClipboardList,
+  Wallet, BookOpen, BookMarked, Shirt, Footprints, Star,
+  LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
+  Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, ThumbsUp,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,7 +27,7 @@ export const Route = createFileRoute("/casa/$sigla")({
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "mural" | "sobre" | "programacao" | "doacoes";
+type Aba = "painel" | "mural" | "sobre" | "programacao" | "doacoes";
 
 interface PaginaData {
   sigla_casa: string;
@@ -87,6 +93,146 @@ const DIAS = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "
 const FORM_POST_INICIAL = { conteudo: "", imagem_url: "", video_url: "" };
 const FORM_EVENTO_INICIAL = { titulo: "", descricao: "", data_evento: "", hora_inicio: "", hora_fim: "", local_evento: "", publica: true };
 
+interface DashTodayMsg {
+  texto: string;
+  referencia: string | null;
+  autor_nome: string;
+  sigla_casa: string | null;
+}
+
+interface DashAgendaEvento {
+  id: string;
+  titulo: string;
+  data_inicio: string;
+  data_fim: string | null;
+  tipo: "aberto" | "fechado";
+  aceita_confirmacao: boolean;
+  agenda_participantes: { id: string; user_id: string; confirmado: boolean | null }[];
+}
+
+const DAILY_MESSAGES = [
+  { text: "Fora da caridade não há salvação.", author: "Allan Kardec" },
+  { text: "Não façais aos outros o que não quiserdes que vos façam; fazei-lhes todo o bem que quiserdes que vos façam.", author: "O Evangelho segundo o Espiritismo" },
+  { text: "A caridade bem compreendida consiste em fazer o bem a todos os homens sem distinção.", author: "O Livro dos Espíritos" },
+  { text: "Amai-vos uns aos outros: eis toda a lei; lei divina, pela qual Deus governa os mundos.", author: "O Evangelho segundo o Espiritismo" },
+  { text: "A humildade é o adorno da alma, assim como a modéstia é o adorno do mérito.", author: "O Livro dos Espíritos" },
+  { text: "Quem semeia o bem colhe bons frutos; quem semeia o mal colhe maus frutos.", author: "A Gênese · Cap. VII" },
+  { text: "O verdadeiro espiritismo é aquele que tem por divisa: fora da caridade não há salvação.", author: "Allan Kardec · A Gênese" },
+];
+
+const DASH_BAZAR: { Icon: LucideIcon; name: string; category: string; price: string; desc: string }[] = [
+  { Icon: BookOpen,  name: "O Livro dos Espíritos",              category: "Livro",     price: "R$ 35,00", desc: "Allan Kardec · Edição FEB" },
+  { Icon: BookMarked, name: "O Evangelho segundo o Espiritismo", category: "Livro",     price: "R$ 30,00", desc: "Allan Kardec · Edição FEB" },
+  { Icon: Shirt,     name: "Calça",                              category: "Vestuário", price: "R$ 45,00", desc: "Tamanho M · boa conservação" },
+  { Icon: Shirt,     name: "Camisa",                             category: "Vestuário", price: "R$ 20,00", desc: "Tamanho G · algodão" },
+  { Icon: Shirt,     name: "Blusa",                              category: "Vestuário", price: "R$ 25,00", desc: "Tamanho P · malha" },
+  { Icon: Footprints, name: "Sapato",                            category: "Calçado",   price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
+];
+
+type DashStatus = "disponivel" | "breve" | "beta";
+
+interface DashFeatureItem {
+  Icon: LucideIcon;
+  title: string;
+  desc: string;
+  status: DashStatus;
+  casa?: boolean;
+  href?: string;
+}
+
+interface DashFeatureCategory {
+  label: string;
+  SectionIcon: LucideIcon;
+  color: string;
+  iconColor: string;
+  bg: string;
+  border: string;
+  borderB: string;
+  items: DashFeatureItem[];
+}
+
+const DASH_FEATURES: DashFeatureCategory[] = [
+  {
+    label: "Vida Espiritual",
+    SectionIcon: Flame,
+    color: "text-violet-700",
+    iconColor: "text-violet-600",
+    bg: "bg-violet-50",
+    border: "border-violet-200",
+    borderB: "border-violet-200",
+    items: [
+      { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
+      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui a Rádio Rio de Janeiro no rodapé.", status: "breve" },
+      { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
+      { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
+      { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
+      { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "disponivel", href: "/jogos/plante-a-semente" },
+      { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve", casa: true },
+      { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve", casa: true },
+    ],
+  },
+  {
+    label: "Nossa Comunidade",
+    SectionIcon: UsersRound,
+    color: "text-cyan-700",
+    iconColor: "text-cyan-700",
+    bg: "bg-cyan-50",
+    border: "border-cyan-200",
+    borderB: "border-cyan-200",
+    items: [
+      { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
+      { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
+      { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros and as necessidades da comunidade.", status: "breve", casa: true },
+      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "breve", casa: true },
+      { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
+      { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve", casa: true },
+      { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve", casa: true },
+      { Icon: FileHeart,      title: "Ficha de Atendimento Fraterno", desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.", status: "breve", casa: true },
+    ],
+  },
+  {
+    label: "Agenda & Eventos",
+    SectionIcon: CalendarCheck,
+    color: "text-amber-700",
+    iconColor: "text-amber-600",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    borderB: "border-amber-200",
+    items: [
+      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.", status: "disponivel", casa: true, href: "/agenda" },
+      { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
+      { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
+      { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
+      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "disponivel", casa: true, href: "/agenda" },
+      { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve", casa: true },
+    ],
+  },
+  {
+    label: "Recursos & Ferramentas",
+    SectionIcon: Wrench,
+    color: "text-emerald-700",
+    iconColor: "text-emerald-700",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    borderB: "border-emerald-200",
+    items: [
+      { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
+      { Icon: CircleHelp,  title: "FAQ",                   desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "disponivel", href: "/ajuda" },
+    ],
+  },
+];
+
+const STATUS_LABEL: Record<DashStatus, string> = {
+  disponivel: "Disponível",
+  breve: "Em breve",
+  beta: "Beta",
+};
+const STATUS_STYLE: Record<DashStatus, string> = {
+  disponivel: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  breve: "bg-amber-50 text-amber-600 border-amber-200",
+  beta: "bg-blue-50 text-blue-600 border-blue-200",
+};
+
 /* ── Helpers ────────────────────────────────────────────────────── */
 
 function videoEmbed(url: string): string | null {
@@ -115,6 +261,16 @@ function PaginaCasa() {
   /* UI */
   const [aba, setAba] = useState<Aba>("mural");
   const [modoAdmin, setModoAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user && profile) {
+      if (profile.sigla_casa === sigla) {
+        setAba("painel");
+      } else {
+        setAba("mural");
+      }
+    }
+  }, [loading, user, profile, sigla]);
 
   /* Data */
   const [pagina, setPagina] = useState<PaginaData | null>(null);
@@ -157,6 +313,12 @@ function PaginaCasa() {
   const [salvando, setSalvando] = useState(false);
   const [copiado, setCopiado] = useState(false);
 
+  /* Dashboard State */
+  const [todayMsg, setTodayMsg] = useState<DashTodayMsg | null>(null);
+  const [votes, setVotes] = useState<Record<string, { count: number; votedByMe: boolean }>>({});
+  const [votingKey, setVotingKey] = useState<string | null>(null);
+  const [agendaEventos, setAgendaEventos] = useState<DashAgendaEvento[]>([]);
+
   /* ── Admin check ── */
   const isAdmin = !loading && !!user && !!profile && (
     profile.cargo_principal === "DEV" ||
@@ -198,6 +360,75 @@ function PaginaCasa() {
   useEffect(() => {
     if (!loading && user) carregar();
   }, [loading, user, carregar]);
+
+  const fetchAgenda = useCallback(async () => {
+    if (!user || !profile?.sigla_casa) return;
+    const hojeStr = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("agenda_eventos")
+      .select("id, titulo, data_inicio, data_fim, tipo, aceita_confirmacao, agenda_participantes(id, user_id, confirmado)")
+      .eq("sigla_casa", profile.sigla_casa)
+      .gte("data_inicio", hojeStr)
+      .order("data_inicio", { ascending: true })
+      .limit(10);
+    setAgendaEventos((data as DashAgendaEvento[]) ?? []);
+  }, [user, profile?.sigla_casa]);
+
+  const handleConfirmarEvento = useCallback(async (eventoId: string) => {
+    if (!user) return;
+    await supabase.from("agenda_participantes").upsert(
+      { evento_id: eventoId, user_id: user.id, confirmado: true },
+      { onConflict: "evento_id,user_id" }
+    );
+    fetchAgenda();
+  }, [user, fetchAgenda]);
+
+  const handleResponderConvite = useCallback(async (participanteId: string, confirmado: boolean) => {
+    await supabase.from("agenda_participantes").update({ confirmado }).eq("id", participanteId);
+    fetchAgenda();
+  }, [fetchAgenda]);
+
+  const fetchVotes = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from("painel_votes").select("item_key, user_id");
+    if (!data) return;
+    const map: Record<string, { count: number; votedByMe: boolean }> = {};
+    for (const row of data) {
+      if (!map[row.item_key]) map[row.item_key] = { count: 0, votedByMe: false };
+      map[row.item_key].count++;
+      if (row.user_id === user.id) map[row.item_key].votedByMe = true;
+    }
+    setVotes(map);
+  }, [user]);
+
+  const handleCardVote = useCallback(async (title: string) => {
+    if (!user) return;
+    const key = title.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+    if (votingKey === key || votes[key]?.votedByMe) return;
+    setVotingKey(key);
+    try {
+      await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
+      setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
+    } finally {
+      setVotingKey(null);
+    }
+  }, [user, votes, votingKey]);
+
+  useEffect(() => {
+    if (user && profile?.sigla_casa && sigla === profile.sigla_casa) {
+      fetchAgenda();
+      fetchVotes();
+      
+      const todayStr = new Date().toISOString().slice(0, 10);
+      supabase
+        .from("mensagens_do_dia")
+        .select("texto, referencia, autor_nome, sigla_casa")
+        .eq("data_exibicao", todayStr)
+        .eq("aprovada", true)
+        .single()
+        .then(({ data }) => { if (data) setTodayMsg(data); });
+    }
+  }, [user, profile?.sigla_casa, sigla, fetchAgenda, fetchVotes]);
 
   /* ── Load membros (lazy) ── */
   const garantirMembros = useCallback(async () => {
@@ -546,6 +777,7 @@ function PaginaCasa() {
         {/* ── Tabs ── */}
         <div className="flex gap-0.5 border-b border-white/10 mb-6 overflow-x-auto">
           {([
+            ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
             { id: "mural",       label: "Mural",       Icon: MessageSquare },
             { id: "sobre",       label: "Sobre",        Icon: Info },
             { id: "programacao", label: "Programação",  Icon: Calendar },
@@ -560,6 +792,289 @@ function PaginaCasa() {
             </button>
           ))}
         </div>
+
+        {/* ══════════════ PAINEL ══════════════ */}
+        {aba === "painel" && isSameCasa && (
+          <div className="space-y-8 animate-fade-in-up" style={{ animationDuration: '400ms' }}>
+            
+            {/* Boas-vindas */}
+            <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-violet-600 mb-1 font-semibold">
+                  {new Date().getHours() < 12 ? "Bom dia" : new Date().getHours() < 18 ? "Boa tarde" : "Boa noite"}, irmão
+                </p>
+                <h2 className="text-3xl font-light tracking-tight text-foreground">
+                  Olá, <span className="font-medium text-gradient-aurora">{profile?.nome?.split(" ")[0]}</span>
+                </h2>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-violet-50 text-violet-700 border border-violet-100/50">
+                  Casa Espírita {profile?.sigla_casa}
+                </span>
+                {profile?.cargo_principal && (
+                  <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200/50">
+                    {profile?.cargo_principal}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Mensagem do Dia */}
+            <div
+              className="relative rounded-3xl overflow-hidden border border-violet-200/60 shadow-lg"
+              style={{ background: "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.965 0.01 260) 100%)" }}
+            >
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-violet-300/10 to-cyan-300/10 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-cyan-300/10 to-violet-300/10 blur-3xl pointer-events-none" />
+
+              <div className="relative px-6 py-6 md:px-10 md:py-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="shrink-0 w-12 h-12 rounded-2xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
+                  <Star size={22} strokeWidth={1.5} className="text-violet-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs uppercase tracking-[0.35em] text-violet-600 font-semibold mb-2">Mensagem do Dia</p>
+                  {todayMsg ? (
+                    <>
+                      <blockquote className="text-lg md:text-xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
+                        "{todayMsg.texto}"
+                      </blockquote>
+                      {todayMsg.referencia && (
+                        <p className="mt-2 text-sm text-gray-500 font-light italic">— {todayMsg.referencia}</p>
+                      )}
+                      <div className="mt-3 flex items-center gap-3 flex-wrap">
+                        <span className="text-xs font-medium text-violet-700">{todayMsg.autor_nome}</span>
+                        {todayMsg.sigla_casa && (
+                          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 bg-white/80 border border-violet-100/50 px-2.5 py-0.5 rounded-full">
+                            {todayMsg.sigla_casa}
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <blockquote className="text-lg md:text-xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
+                        "{DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].text}"
+                      </blockquote>
+                      <p className="mt-2 text-sm text-gray-500 font-light italic">
+                        — {DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].author}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="px-6 py-4 md:px-10 flex items-center gap-5 border-t border-violet-100/40 pt-3 bg-white/20">
+                <Link
+                  to="/mensagem-do-dia"
+                  className="text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
+                >
+                  Enviar mensagem
+                </Link>
+                <Link
+                  to="/mensagem-do-dia"
+                  search={{ tab: "fila" }}
+                  className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
+                >
+                  Ver fila
+                </Link>
+              </div>
+            </div>
+
+            {/* Próximos Eventos */}
+            {agendaEventos.length > 0 && (
+              <section className="mt-8">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-amber-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                      <CalendarDays size={18} strokeWidth={1.5} className="text-amber-600" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-amber-700 tracking-wide">Próximos Eventos da Casa</h3>
+                  </div>
+                  <Link
+                    to="/agenda"
+                    className="text-xs text-cyan-600 uppercase tracking-widest hover:text-foreground transition-colors font-semibold"
+                  >
+                    Ver agenda
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    ...agendaEventos.filter((e) => {
+                      const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                      return p?.confirmado === null || (!p && e.tipo === "aberto" && e.aceita_confirmacao);
+                    }),
+                    ...agendaEventos.filter((e) => {
+                      const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                      return p?.confirmado === true;
+                    }),
+                  ].map((evento) => {
+                    const minha = evento.agenda_participantes.find((p) => p.user_id === user.id);
+                    const pendente = minha?.confirmado === null;
+                    const confirmado = minha?.confirmado === true;
+                    const abertoPendente = evento.tipo === "aberto" && !minha && evento.aceita_confirmacao;
+                    return (
+                      <div
+                        key={evento.id}
+                        className={`glass rounded-2xl border px-4 py-3 flex items-center gap-4 transition-all hover-premium ${pendente ? "border-amber-300 bg-amber-50/10" : "border-gray-100"}`}
+                      >
+                        <div className="shrink-0 w-11 h-11 rounded-xl bg-violet-50 border border-violet-100/70 flex flex-col items-center justify-center">
+                          <p className="text-lg font-bold text-violet-700 leading-none">
+                            {String(new Date(evento.data_inicio).getDate()).padStart(2, "0")}
+                          </p>
+                          <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">
+                            {new Date(evento.data_inicio).toLocaleDateString("pt-BR", { month: "short" })}
+                          </p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">{evento.titulo}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                            <Clock size={10} className="text-gray-400" />
+                            <span className="font-light">{new Date(evento.data_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                            {pendente && <span className="text-amber-600 font-semibold animate-pulse">· Aguardando resposta</span>}
+                            {confirmado && <span className="text-emerald-600 font-medium">· Confirmado</span>}
+                            {abertoPendente && <span className="text-cyan-600 font-medium">· Confirmar presença</span>}
+                          </p>
+                        </div>
+                        {(pendente || abertoPendente) && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => pendente ? handleResponderConvite(minha!.id, true) : handleConfirmarEvento(evento.id)}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-300 text-emerald-600 text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm bg-white"
+                            >
+                              <Check size={12} strokeWidth={2.5} /> Confirmar
+                            </button>
+                            {pendente && (
+                              <button
+                                onClick={() => handleResponderConvite(minha!.id, false)}
+                                className="flex items-center justify-center w-8 h-8 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors shadow-sm bg-white"
+                              >
+                                <X size={14} strokeWidth={2.5} />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Gestão */}
+            <section className="mt-8">
+              <DashSectionHeader
+                Icon={LayoutDashboard}
+                label="Gestão"
+                color="text-slate-700"
+                iconColor="text-slate-500"
+                bg="bg-slate-50"
+                border="border-slate-200"
+                borderB="border-slate-200"
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <DashDashCard
+                  Icon={BarChart3}
+                  title="Meu Painel Pessoal"
+                  desc="Resumo das suas atividades, frequência e dados relevantes ao seu papel na casa espírita."
+                  status="breve"
+                  accent="slate"
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
+                <DashDashCard
+                  Icon={ClipboardList}
+                  title="Acompanhamento do Projeto"
+                  desc="Veja o progresso da plataforma, as novidades recentes e solicite novos recursos ao desenvolvedor."
+                  status="disponivel"
+                  accent="slate"
+                  href="/painel"
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
+                <DashDashCard
+                  Icon={Wallet}
+                  title="Tesouraria"
+                  desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
+                  status="disponivel"
+                  accent="amber"
+                  casa
+                  href="/tesouraria"
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
+                <DashDashCard
+                  Icon={CircleHelp}
+                  title="Ajuda com o Site"
+                  desc="Tire dúvidas sobre como usar o site, busque uma casa espírita ou encontre apoio pessoal."
+                  status="disponivel"
+                  accent="cyan"
+                  href="/ajuda"
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
+              </div>
+            </section>
+
+            {/* Grade de Funcionalidades */}
+            {DASH_FEATURES.map((cat) => (
+              <section key={cat.label} className="mt-8">
+                <DashSectionHeader
+                  Icon={cat.SectionIcon}
+                  label={cat.label}
+                  color={cat.color}
+                  iconColor={cat.iconColor}
+                  bg={cat.bg}
+                  border={cat.border}
+                  borderB={cat.borderB}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {cat.items.map((item) => (
+                    <DashFeatureCard
+                      key={item.title}
+                      item={item}
+                      cat={cat}
+                      votes={votes}
+                      votingKey={votingKey}
+                      onVote={handleCardVote}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            {/* Bazar */}
+            <section id="bazar" className="mt-8">
+              <DashSectionHeader
+                Icon={ShoppingBag}
+                label="Bazar On-line"
+                color="text-cyan-700"
+                iconColor="text-cyan-700"
+                bg="bg-cyan-50"
+                border="border-cyan-200"
+                borderB="border-cyan-200"
+              >
+                <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  Disponível
+                </span>
+                <span className="text-xs text-muted-foreground/50 bg-white/60 border border-border px-2 py-0.5 rounded-full">
+                  Por casa espírita
+                </span>
+              </DashSectionHeader>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {DASH_BAZAR.map((item) => (
+                  <DashBazarCard key={item.name} item={item} />
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-center text-muted-foreground/50">
+                Itens de exemplo · Cada casa espírita gerenciará seu próprio bazar
+              </p>
+            </section>
+
+          </div>
+        )}
 
         {/* ══════════════ MURAL ══════════════ */}
         {aba === "mural" && (
@@ -1394,6 +1909,152 @@ function EventoCard({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Dashboard Helper Components ───────────────────────────────── */
+
+function DashSectionHeader({ Icon, label, color, iconColor, bg, border, borderB, children }: {
+  Icon: LucideIcon; label: string; color: string; iconColor: string;
+  bg: string; border: string; borderB: string; children?: React.ReactNode;
+}) {
+  return (
+    <div className={`flex items-center gap-4 mb-5 pb-3 border-b-2 ${borderB}`}>
+      <div className={`w-9 h-9 rounded-xl ${bg} border ${border} flex items-center justify-center shrink-0`}>
+        <Icon size={18} strokeWidth={1.5} className={iconColor} />
+      </div>
+      <h3 className={`text-sm font-semibold ${color} tracking-wide`}>{label}</h3>
+      {children && <div className="ml-auto flex items-center gap-2">{children}</div>}
+    </div>
+  );
+}
+
+function DashVoteBadge({ title, votes, votingKey }: {
+  title: string; votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null;
+}) {
+  const key = title.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+  const voteData = votes[key];
+  const count = voteData?.count ?? 0;
+  const voted = voteData?.votedByMe ?? false;
+  const isVoting = votingKey === key;
+  return (
+    <span
+      className={`ml-auto flex items-center gap-1 text-[10px] rounded-full px-2 py-0.5 border transition-colors ${
+        voted
+          ? "text-cyan-600 border-cyan-300 bg-cyan-50"
+          : "text-muted-foreground/40 border-border bg-transparent"
+      } ${isVoting ? "opacity-50" : ""}`}
+      title={voted ? "Você já votou neste recurso" : "Clique no card para votar neste recurso"}
+    >
+      <ThumbsUp size={10} />
+      {count > 0 && <span className="font-medium">{count}</span>}
+    </span>
+  );
+}
+
+function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, votingKey, onVote }: {
+  Icon: LucideIcon; title: string; desc: string; status: DashStatus;
+  accent: string; href?: string; casa?: boolean;
+  votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null; onVote: (title: string) => void;
+}) {
+  const borderMap: Record<string, string> = {
+    slate: "border-t-slate-300/80 focus-within:border-t-slate-400",
+    amber: "border-t-amber-300/80 focus-within:border-t-amber-400",
+    cyan:  "border-t-cyan-300/80 focus-within:border-t-cyan-400",
+  };
+  const iconMap: Record<string, string> = {
+    slate: "bg-slate-50 border-slate-200 text-slate-600",
+    cyan:  "bg-cyan-50 border-cyan-200 text-cyan-600",
+    amber: "bg-amber-50 border-amber-200 text-amber-600",
+  };
+  const isPending = status === "breve";
+  const content = (
+    <div
+      className={`glass-premium hover-premium rounded-2xl p-5 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${isPending ? "cursor-pointer" : ""}`}
+      onClick={isPending ? () => onVote(title) : undefined}
+    >
+      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
+        <Icon size={18} strokeWidth={1.5} />
+      </div>
+      <div className="flex-1">
+        <h4 className="text-xs font-bold text-gray-800 leading-snug mb-1">{title}</h4>
+        <p className="text-[11px] text-gray-500 leading-relaxed font-light">{desc}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap mt-1">
+        <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>
+          {STATUS_LABEL[status]}
+        </span>
+        {casa && (
+          <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border border-gray-200 text-gray-400">
+            Por casa
+          </span>
+        )}
+        {isPending && (
+          <DashVoteBadge title={title} votes={votes} votingKey={votingKey} />
+        )}
+      </div>
+    </div>
+  );
+  if (href) return <Link to={href} className="block h-full">{content}</Link>;
+  return content;
+}
+
+function DashFeatureCard({ item, cat, votes, votingKey, onVote }: {
+  item: DashFeatureItem; cat: DashFeatureCategory;
+  votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null; onVote: (title: string) => void;
+}) {
+  const isAvailable = item.status === "disponivel";
+  const isPending = item.status === "breve";
+
+  const inner = (
+    <div
+      className={`group glass-premium hover-premium rounded-2xl p-5 flex flex-col gap-4 h-full ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
+      onClick={isPending ? () => onVote(item.title) : undefined}
+    >
+      <div className={`w-9 h-9 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}>
+        <item.Icon size={18} strokeWidth={1.5} className={cat.iconColor} />
+      </div>
+      <div className="flex-1">
+        <h4 className="text-xs font-bold text-gray-800 leading-snug mb-1">{item.title}</h4>
+        <p className="text-[11px] text-gray-500 leading-relaxed font-light">{item.desc}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap mt-1">
+        <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}>
+          {STATUS_LABEL[item.status]}
+        </span>
+        {item.casa && (
+          <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border border-gray-200 text-gray-400">
+            Por casa
+          </span>
+        )}
+        {isPending && (
+          <DashVoteBadge title={item.title} votes={votes} votingKey={votingKey} />
+        )}
+      </div>
+    </div>
+  );
+  if (item.href) return <a href={item.href} className="block h-full">{inner}</a>;
+  return inner;
+}
+
+function DashBazarCard({ item }: { item: typeof DASH_BAZAR[0] }) {
+  return (
+    <div className="glass-premium hover-premium rounded-2xl p-4 flex flex-col gap-3">
+      <div className="w-11 h-11 rounded-xl bg-cyan-50/70 border border-cyan-100 flex items-center justify-center mx-auto shadow-sm">
+        <item.Icon size={20} strokeWidth={1.5} className="text-cyan-600" />
+      </div>
+      <div className="text-center flex-1">
+        <p className="text-[9px] font-bold text-cyan-600/70 uppercase tracking-widest mb-0.5">{item.category}</p>
+        <h4 className="text-xs font-semibold text-gray-800 leading-snug mb-1">{item.name}</h4>
+        <p className="text-[9px] text-gray-400 font-light">{item.desc}</p>
+      </div>
+      <div className="text-center mt-1">
+        <p className="text-xs font-semibold text-cyan-600 mb-2">{item.price}</p>
+        <button className="w-full text-[9px] font-bold uppercase tracking-widest py-1.5 rounded-lg border border-cyan-200 text-cyan-600 hover:bg-cyan-50 transition-colors shadow-sm">
+          Consultar
+        </button>
+      </div>
     </div>
   );
 }
