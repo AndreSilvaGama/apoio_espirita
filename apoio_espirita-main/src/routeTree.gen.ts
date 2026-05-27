@@ -13,17 +13,23 @@ import { Route as TransparenciaRouteImport } from './routes/transparencia'
 import { Route as TesourariaRouteImport } from './routes/tesouraria'
 import { Route as SugestoesRouteImport } from './routes/sugestoes'
 import { Route as RadioRouteImport } from './routes/radio'
+import { Route as PermissoesRouteImport } from './routes/permissoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as KanbanRouteImport } from './routes/kanban'
 import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as FebRouteImport } from './routes/feb'
+import { Route as EvangelizacaoRouteImport } from './routes/evangelizacao'
+import { Route as ConfigurarMemoriaRouteImport } from './routes/configurar-memoria'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
+import { Route as JogosMemoriaEvangelizacaoRouteImport } from './routes/jogos/memoria-evangelizacao'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
@@ -46,6 +52,11 @@ const RadioRoute = RadioRouteImport.update({
   path: '/radio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PermissoesRoute = PermissoesRouteImport.update({
+  id: '/permissoes',
+  path: '/permissoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -66,6 +77,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KanbanRoute = KanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InicioRoute = InicioRouteImport.update({
   id: '/inicio',
   path: '/inicio',
@@ -74,6 +90,16 @@ const InicioRoute = InicioRouteImport.update({
 const FebRoute = FebRouteImport.update({
   id: '/feb',
   path: '/feb',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvangelizacaoRoute = EvangelizacaoRouteImport.update({
+  id: '/evangelizacao',
+  path: '/evangelizacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfigurarMemoriaRoute = ConfigurarMemoriaRouteImport.update({
+  id: '/configurar-memoria',
+  path: '/configurar-memoria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
@@ -96,11 +122,22 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JogosQuizEspiritaRoute = JogosQuizEspiritaRouteImport.update({
+  id: '/jogos/quiz-espirita',
+  path: '/jogos/quiz-espirita',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogosPlanteASementeRoute = JogosPlanteASementeRouteImport.update({
   id: '/jogos/plante-a-semente',
   path: '/jogos/plante-a-semente',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JogosMemoriaEvangelizacaoRoute =
+  JogosMemoriaEvangelizacaoRouteImport.update({
+    id: '/jogos/memoria-evangelizacao',
+    path: '/jogos/memoria-evangelizacao',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CasaSiglaRoute = CasaSiglaRouteImport.update({
   id: '/casa/$sigla',
   path: '/casa/$sigla',
@@ -112,36 +149,48 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
+  '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/permissoes': typeof PermissoesRoute
   '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
+  '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
+  '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/permissoes': typeof PermissoesRoute
   '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
+  '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,18 +198,24 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
+  '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/inicio': typeof InicioRoute
+  '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
+  '/permissoes': typeof PermissoesRoute
   '/radio': typeof RadioRoute
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
+  '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,54 +224,72 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/ajuda'
     | '/completar-perfil'
+    | '/configurar-memoria'
+    | '/evangelizacao'
     | '/feb'
     | '/inicio'
+    | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/permissoes'
     | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
     | '/casa/$sigla'
+    | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
+    | '/jogos/quiz-espirita'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/agenda'
     | '/ajuda'
     | '/completar-perfil'
+    | '/configurar-memoria'
+    | '/evangelizacao'
     | '/feb'
     | '/inicio'
+    | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/permissoes'
     | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
     | '/casa/$sigla'
+    | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
+    | '/jogos/quiz-espirita'
   id:
     | '__root__'
     | '/'
     | '/agenda'
     | '/ajuda'
     | '/completar-perfil'
+    | '/configurar-memoria'
+    | '/evangelizacao'
     | '/feb'
     | '/inicio'
+    | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/painel'
     | '/perfil'
+    | '/permissoes'
     | '/radio'
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
     | '/casa/$sigla'
+    | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
+    | '/jogos/quiz-espirita'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -224,18 +297,24 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   AjudaRoute: typeof AjudaRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
+  ConfigurarMemoriaRoute: typeof ConfigurarMemoriaRoute
+  EvangelizacaoRoute: typeof EvangelizacaoRoute
   FebRoute: typeof FebRoute
   InicioRoute: typeof InicioRoute
+  KanbanRoute: typeof KanbanRoute
   LoginRoute: typeof LoginRoute
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
+  PermissoesRoute: typeof PermissoesRoute
   RadioRoute: typeof RadioRoute
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
+  JogosMemoriaEvangelizacaoRoute: typeof JogosMemoriaEvangelizacaoRoute
   JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
+  JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -268,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RadioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/permissoes': {
+      id: '/permissoes'
+      path: '/permissoes'
+      fullPath: '/permissoes'
+      preLoaderRoute: typeof PermissoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil': {
       id: '/perfil'
       path: '/perfil'
@@ -296,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kanban': {
+      id: '/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof KanbanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inicio': {
       id: '/inicio'
       path: '/inicio'
@@ -308,6 +401,20 @@ declare module '@tanstack/react-router' {
       path: '/feb'
       fullPath: '/feb'
       preLoaderRoute: typeof FebRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evangelizacao': {
+      id: '/evangelizacao'
+      path: '/evangelizacao'
+      fullPath: '/evangelizacao'
+      preLoaderRoute: typeof EvangelizacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configurar-memoria': {
+      id: '/configurar-memoria'
+      path: '/configurar-memoria'
+      fullPath: '/configurar-memoria'
+      preLoaderRoute: typeof ConfigurarMemoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/completar-perfil': {
@@ -338,11 +445,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jogos/quiz-espirita': {
+      id: '/jogos/quiz-espirita'
+      path: '/jogos/quiz-espirita'
+      fullPath: '/jogos/quiz-espirita'
+      preLoaderRoute: typeof JogosQuizEspiritaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogos/plante-a-semente': {
       id: '/jogos/plante-a-semente'
       path: '/jogos/plante-a-semente'
       fullPath: '/jogos/plante-a-semente'
       preLoaderRoute: typeof JogosPlanteASementeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jogos/memoria-evangelizacao': {
+      id: '/jogos/memoria-evangelizacao'
+      path: '/jogos/memoria-evangelizacao'
+      fullPath: '/jogos/memoria-evangelizacao'
+      preLoaderRoute: typeof JogosMemoriaEvangelizacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/casa/$sigla': {
@@ -360,18 +481,24 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   AjudaRoute: AjudaRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
+  ConfigurarMemoriaRoute: ConfigurarMemoriaRoute,
+  EvangelizacaoRoute: EvangelizacaoRoute,
   FebRoute: FebRoute,
   InicioRoute: InicioRoute,
+  KanbanRoute: KanbanRoute,
   LoginRoute: LoginRoute,
   MensagemDoDiaRoute: MensagemDoDiaRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
+  PermissoesRoute: PermissoesRoute,
   RadioRoute: RadioRoute,
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
   CasaSiglaRoute: CasaSiglaRoute,
+  JogosMemoriaEvangelizacaoRoute: JogosMemoriaEvangelizacaoRoute,
   JogosPlanteASementeRoute: JogosPlanteASementeRoute,
+  JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -261,75 +261,6 @@ function ReportarProblema({ onClose }: { onClose: () => void }) {
   );
 }
 
-function BottomNav() {
-  const { user, profile } = useAuth();
-  const { location } = useRouterState();
-
-  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
-
-  const isActive = (path: string) =>
-    location.pathname === path || location.pathname.startsWith(path + "/");
-
-  const itemStyle = (path: string): React.CSSProperties => ({
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    padding: "8px 0",
-    textDecoration: "none",
-    color: isActive(path) ? "#004a8c" : "#a3adb8",
-    transition: "color .15s",
-  });
-
-  const labelStyle: React.CSSProperties = {
-    fontFamily: "Inter, sans-serif",
-    fontSize: "0.66rem",
-    fontWeight: 600,
-    letterSpacing: "0.04em",
-  };
-
-  return (
-    <nav
-      className="lg:hidden"
-      style={{
-        position: "fixed",
-        bottom: 0, left: 0, right: 0,
-        height: 72,
-        background: "rgba(255,255,255,.97)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderTop: "1px solid rgba(0,20,70,.08)",
-        display: "flex",
-        alignItems: "center",
-        zIndex: 50,
-      }}
-    >
-      <Link 
-        to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
-        params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
-        style={itemStyle(profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio")}
-      >
-        <Building2 size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Minha Casa</span>
-      </Link>
-      <Link to="/agenda" style={itemStyle("/agenda")}>
-        <CalendarDays size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Agenda</span>
-      </Link>
-      <Link to="/evangelizacao" style={itemStyle("/evangelizacao")}>
-        <GraduationCap size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Evangel.</span>
-      </Link>
-      <Link to="/perfil" style={itemStyle("/perfil")}>
-        <User size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Perfil</span>
-      </Link>
-    </nav>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const [reportarAberto, setReportarAberto] = useState(false);
@@ -338,7 +269,6 @@ function RootComponent() {
       <AuthProvider>
         <RadioProvider>
           <NavBar />
-          <BottomNav />
           <Outlet />
           <Footer onReportar={() => setReportarAberto(true)} />
           <BackToTop />
@@ -406,7 +336,7 @@ function NavBar() {
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
   return (
-    <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl glass-premium border border-white/50 shadow-[0_4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
+    <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl mx-auto">
       <div className="h-full px-5 flex items-center justify-between gap-4">
 
         {/* Brand */}
@@ -476,17 +406,13 @@ function NavBar() {
           <div ref={ajudaRef} className="relative">
             <button
               onClick={() => { setAjudaOpen((o) => !o); setRecursosOpen(false); }}
-              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/perfil", "/permissoes"])}
+              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/permissoes"])}
             >
               Ajuda
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`} />
             </button>
             {ajudaOpen && (
               <div className="absolute top-full right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
-                <Link to="/perfil" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <User size={14} strokeWidth={1.5} className="text-gray-400" />
-                  Meu Perfil
-                </Link>
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Status do Projeto
@@ -591,9 +517,6 @@ function NavBar() {
             </button>
             {ajudaMobileOpen && (
               <>
-                <Link to="/perfil" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Meu Perfil
-                </Link>
                 <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Status do Projeto
                 </Link>
@@ -632,7 +555,7 @@ function Footer({ onReportar }: { onReportar: () => void }) {
   if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
 
   return (
-    <footer className="fixed bottom-3 left-4 right-4 z-40 rounded-2xl glass-premium border border-white/50 shadow-[0_-4px_24px_rgba(0,0,0,0.04)] max-w-7xl mx-auto">
+    <footer className="relative mt-12 mb-6 mx-4 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl lg:mx-auto">
       <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 
         {/* Rádio */}
