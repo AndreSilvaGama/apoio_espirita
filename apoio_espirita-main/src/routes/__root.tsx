@@ -318,9 +318,9 @@ function BottomNav() {
         <CalendarDays size={24} strokeWidth={1.8} />
         <span style={labelStyle}>Agenda</span>
       </Link>
-      <Link to="/kanban" style={itemStyle("/kanban")}>
-        <KanbanSquare size={24} strokeWidth={1.8} />
-        <span style={labelStyle}>Kanban</span>
+      <Link to="/evangelizacao" style={itemStyle("/evangelizacao")}>
+        <GraduationCap size={24} strokeWidth={1.8} />
+        <span style={labelStyle}>Evangel.</span>
       </Link>
       <Link to="/perfil" style={itemStyle("/perfil")}>
         <User size={24} strokeWidth={1.8} />
@@ -430,7 +430,6 @@ function NavBar() {
             Minha Casa
           </Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
-          <Link to="/kanban" className={linkCls("/kanban")}>Quadro Kanban</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem do Dia</Link>
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
@@ -542,9 +541,6 @@ function NavBar() {
             </Link>
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Agenda
-            </Link>
-            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-              Quadro Kanban
             </Link>
             <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Mensagem do Dia

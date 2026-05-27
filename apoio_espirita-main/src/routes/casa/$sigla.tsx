@@ -20,6 +20,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { CasaHero } from "@/components/CasaHero";
+
 
 export const Route = createFileRoute("/casa/$sigla")({
   component: PaginaCasa,
@@ -318,6 +320,9 @@ function PaginaCasa() {
   const [votes, setVotes] = useState<Record<string, { count: number; votedByMe: boolean }>>({});
   const [votingKey, setVotingKey] = useState<string | null>(null);
   const [agendaEventos, setAgendaEventos] = useState<DashAgendaEvento[]>([]);
+  const [membrosCount, setMembrosCount] = useState<number | undefined>(undefined);
+  const [eventosCount, setEventosCount] = useState<number | undefined>(undefined);
+
 
   /* ── Admin check ── */
   const isAdmin = !loading && !!user && !!profile && (
@@ -342,20 +347,27 @@ function PaginaCasa() {
   /* ── Load data ── */
   const carregar = useCallback(async () => {
     setCarregando(true);
-    const [pRes, posRes, aRes, evRes] = await Promise.all([
+    const [pRes, posRes, aRes, evRes, mCountRes, eCountRes] = await Promise.all([
       supabase.from("paginas_casas").select("*").eq("sigla_casa", sigla).maybeSingle(),
       supabase.from("publicacoes_casa").select("*").eq("sigla_casa", sigla)
         .order("fixado", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("administradores_pagina").select("user_id").eq("sigla_casa", sigla),
       supabase.from("programacao_eventos").select("*").eq("sigla_casa", sigla)
         .order("data_evento", { ascending: true }).order("hora_inicio", { ascending: true }),
+      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("sigla_casa", sigla),
+      supabase.from("programacao_eventos").select("id", { count: "exact", head: true })
+        .eq("sigla_casa", sigla)
+        .gte("data_evento", new Date().toISOString().slice(0, 10)),
     ]);
     if (pRes.data) setPagina(pRes.data as PaginaData);
     if (posRes.data) setPosts(posRes.data as Post[]);
     if (aRes.data) setAdminIds(aRes.data.map((a: { user_id: string }) => a.user_id));
     if (evRes.data) setEventos(evRes.data as Evento[]);
+    if (mCountRes.count !== null) setMembrosCount(mCountRes.count);
+    if (eCountRes.count !== null) setEventosCount(eCountRes.count);
     setCarregando(false);
   }, [sigla]);
+
 
   useEffect(() => {
     if (!loading && user) carregar();
@@ -743,36 +755,26 @@ function PaginaCasa() {
   return (
     <main className="page-light min-h-screen pt-14 pb-20">
 
-      {/* ── Capa ── */}
-      <div className="h-32 md:h-44 bg-gradient-to-br from-cyan-50 via-slate-100 to-indigo-50 border-b border-white/30" />
+      {/* Premium Hero with espectacular destaque for the name */}
+      <CasaHero membros={membrosCount} eventos={eventosCount} />
 
       <div className="mx-auto max-w-4xl px-4">
 
-        {/* ── Identidade ── */}
-        <div className="-mt-9 flex items-end gap-4 mb-4">
-          <div className="w-16 h-16 rounded-2xl bg-white shadow-md border border-white/60 flex items-center justify-center shrink-0">
-            <Building2 size={28} strokeWidth={1.5} className="text-cyan-700" />
-          </div>
-          <div className="pb-1 min-w-0">
-            <h1 className="text-xl font-medium text-foreground leading-tight truncate">
-              {pagina.nome_completo || sigla}
-            </h1>
-            <p className="text-xs text-muted-foreground/60 mt-0.5">
-              {sigla}{pagina.cidade ? ` · ${pagina.cidade}/${pagina.uf}` : ""}
-            </p>
-          </div>
-          {isAdmin && (
+        {/* Option to toggle administration mode */}
+        {isAdmin && (
+          <div className="flex justify-end mb-4 pt-4">
             <button
               onClick={() => setModoAdmin(m => !m)}
-              className={`ml-auto shrink-0 flex items-center gap-2 text-xs uppercase tracking-widest px-4 py-2 rounded-xl border transition-colors ${
+              className={`flex items-center gap-2 text-xs uppercase tracking-widest px-4 py-2 rounded-xl border transition-colors ${
                 modoAdmin ? "border-amber-400/60 text-amber-600 bg-amber-50" : "border-white/20 text-muted-foreground/60 hover:border-cyan-glow/40 hover:text-cyan-glow"
               }`}
             >
               <Shield size={13} />
               {modoAdmin ? "Visitante" : "Administrar"}
             </button>
-          )}
-        </div>
+          </div>
+        )}
+
 
         {/* ── Tabs ── */}
         <div className="flex gap-0.5 border-b border-white/10 mb-6 overflow-x-auto">
@@ -970,7 +972,7 @@ function PaginaCasa() {
                 border="border-slate-200"
                 borderB="border-slate-200"
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                 <DashDashCard
                   Icon={BarChart3}
                   title="Meu Painel Pessoal"
@@ -1005,6 +1007,17 @@ function PaginaCasa() {
                   onVote={handleCardVote}
                 />
                 <DashDashCard
+                  Icon={ClipboardCheck}
+                  title="Organização de Tarefas"
+                  desc="Planeje e organize tarefas, ideias, grupos de trabalho e reuniões da casa espírita."
+                  status="disponivel"
+                  accent="cyan"
+                  href="/kanban"
+                  votes={votes}
+                  votingKey={votingKey}
+                  onVote={handleCardVote}
+                />
+                <DashDashCard
                   Icon={CircleHelp}
                   title="Ajuda com o Site"
                   desc="Tire dúvidas sobre como usar o site, busque uma casa espírita ou encontre apoio pessoal."
@@ -1016,6 +1029,7 @@ function PaginaCasa() {
                   onVote={handleCardVote}
                 />
               </div>
+
             </section>
 
             {/* Grade de Funcionalidades */}
