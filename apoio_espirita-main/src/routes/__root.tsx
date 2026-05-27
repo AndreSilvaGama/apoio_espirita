@@ -261,18 +261,58 @@ function ReportarProblema({ onClose }: { onClose: () => void }) {
   );
 }
 
+function AppLayout() {
+  const { user, loading } = useAuth();
+  const { location } = useRouterState();
+  const [reportarAberto, setReportarAberto] = useState(false);
+
+  const isPublic = PUBLIC_ROUTES.includes(location.pathname);
+  const isLightMode = !isPublic;
+
+  useEffect(() => {
+    if (isLightMode) {
+      document.body.style.backgroundColor = "#f7f8fc";
+      document.body.style.backgroundImage = "none";
+      document.body.style.color = "#111418";
+    } else {
+      document.body.style.backgroundColor = "";
+      document.body.style.backgroundImage = "";
+      document.body.style.color = "";
+    }
+  }, [isLightMode]);
+
+  if (loading && !isPublic) {
+    return (
+      <div className="page-light min-h-screen flex flex-col items-center justify-center bg-[#f7f8fc] text-[#111418] px-4">
+        <div className="text-center space-y-4 max-w-sm animate-pulse-glow" style={{ animationDuration: '3s' }}>
+          <div className="w-10 h-10 border-3 border-[#004a8c] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs uppercase tracking-[0.2em] text-[#004a8c] font-semibold">Apoio Espírita</p>
+          <p className="text-sm text-gray-500 font-light">Carregando painel de acolhimento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={isLightMode ? "page-light min-h-screen flex flex-col bg-[#f7f8fc]" : "min-h-screen flex flex-col"}>
+      <NavBar />
+      <div className="flex-1">
+        <Outlet />
+      </div>
+      <Footer onReportar={() => setReportarAberto(true)} />
+      <BackToTop />
+      {reportarAberto && <ReportarProblema onClose={() => setReportarAberto(false)} />}
+    </div>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [reportarAberto, setReportarAberto] = useState(false);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RadioProvider>
-          <NavBar />
-          <Outlet />
-          <Footer onReportar={() => setReportarAberto(true)} />
-          <BackToTop />
-          {reportarAberto && <ReportarProblema onClose={() => setReportarAberto(false)} />}
+          <AppLayout />
         </RadioProvider>
       </AuthProvider>
     </QueryClientProvider>
