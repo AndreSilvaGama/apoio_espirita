@@ -1,15 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
+import { Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users, ClipboardList } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CasaHero } from "@/components/CasaHero";
-
-export const Route = createFileRoute("/kanban")({
-  component: KanbanPage,
-});
 
 type Status = "ideia" | "planejado" | "em andamento" | "realizado";
 
@@ -74,12 +68,8 @@ function corPrazo(prazo: string | null): string {
   return "text-muted-foreground/50";
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
-
-function KanbanPage() {
-  const navigate = useNavigate();
-  const { user, profile, loading } = useAuth();
-
+export function ProjetosTab({ sigla }: { sigla: string }) {
+  const { user, profile } = useAuth();
   const [eventos, setEventos] = useState<KanbanEvento[]>([]);
   const [loadingEventos, setLoadingEventos] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -96,33 +86,20 @@ function KanbanPage() {
   const [grupos, setGrupos] = useState<Record<string, KanbanGrupo[]>>({});
   const [loadingGrupos, setLoadingGrupos] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user) {
-      if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade) {
-        navigate({ to: "/completar-perfil" });
-      } else {
-        navigate({ to: "/casa/$sigla", params: { sigla: profile.sigla_casa } });
-      }
-    }
-  }, [user, profile, loading, navigate]);
-
-  const fetchEventos = async (sigla: string) => {
+  const fetchEventos = async (siglaCasa: string) => {
     setLoadingEventos(true);
     const { data } = await supabase
       .from("kanban_eventos")
       .select("*")
-      .eq("sigla_casa", sigla)
+      .eq("sigla_casa", siglaCasa)
       .order("created_at", { ascending: true });
     setEventos((data as KanbanEvento[]) ?? []);
     setLoadingEventos(false);
   };
 
   useEffect(() => {
-    if (user && profile?.sigla_casa) fetchEventos(profile.sigla_casa);
-  }, [user, profile?.sigla_casa]);
-
-  if (loading || !user) return null;
+    if (sigla) fetchEventos(sigla);
+  }, [sigla]);
 
   const openCreate = () => {
     setEditingEvento(null);
@@ -149,7 +126,7 @@ function KanbanPage() {
 
   const handleSave = async () => {
     if (!fTitulo.trim()) { setFormError("Informe o título."); return; }
-    if (!profile?.sigla_casa || !user) return;
+    if (!sigla || !user) return;
     setSaving(true);
     setFormError("");
     try {
@@ -168,19 +145,19 @@ function KanbanPage() {
         const { error } = await supabase
           .from("kanban_eventos")
           .insert({
-            sigla_casa: profile.sigla_casa,
+            sigla_casa: sigla,
             titulo: fTitulo.trim(),
             descricao: fDescricao.trim() || null,
             data: fData || null,
             responsavel: fResponsavel.trim() || null,
             status: "ideia",
             criador_id: user.id,
-            criador_nome: profile.nome ?? "Membro",
+            criador_nome: profile?.nome ?? "Membro",
           });
         if (error) throw error;
       }
       closeForm();
-      if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
+      fetchEventos(sigla);
     } catch (e: unknown) {
       setFormError(e instanceof Error ? e.message : "Erro ao salvar.");
     } finally {
@@ -192,16 +169,16 @@ function KanbanPage() {
     if (!confirm("Excluir este card? Não pode ser desfeito.")) return;
     const { error } = await supabase.from("kanban_eventos").delete().eq("id", id);
     if (error) { alert("Erro ao excluir: " + error.message); return; }
-    if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
+    fetchEventos(sigla);
   };
 
-  const fetchGrupos = async (eventoId: string, sigla: string) => {
+  const fetchGrupos = async (eventoId: string, siglaCasa: string) => {
     setLoadingGrupos((prev) => ({ ...prev, [eventoId]: true }));
     const { data } = await supabase
       .from("kanban_grupos")
       .select("*, kanban_tarefas(*)")
       .eq("evento_id", eventoId)
-      .eq("sigla_casa", sigla)
+      .eq("sigla_casa", siglaCasa)
       .order("ordem");
     const sorted = ((data as KanbanGrupo[]) ?? []).map((g) => ({
       ...g,
@@ -214,7 +191,7 @@ function KanbanPage() {
   const handleToggleExpand = (eventoId: string) => {
     if (expandedId === eventoId) { setExpandedId(null); return; }
     setExpandedId(eventoId);
-    if (!grupos[eventoId] && profile?.sigla_casa) fetchGrupos(eventoId, profile.sigla_casa);
+    if (!grupos[eventoId] && sigla) fetchGrupos(eventoId, sigla);
   };
 
   const handleStatusChange = async (evento: KanbanEvento, direction: "prev" | "next") => {
@@ -254,67 +231,76 @@ function KanbanPage() {
     }
   };
 
-  return (
-    <main className="page-light min-h-screen pt-20 pb-28">
-      <CasaHero />
-      <div className="max-w-7xl mx-auto">
+  if (!user) return null;
 
-        {/* Header da seção */}
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4 px-4 sm:px-6">
-          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <KanbanSquare size={22} style={{ color: "#004a8c", opacity: 0.7 }} />
-            Quadro de Eventos
-          </h2>
-          <button
-            onClick={openCreate}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.88rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)" }}
-          >
-            <Plus size={14} />
-            Novo Card
+  return (
+    <section className="space-y-6 animate-fade-in-up" style={{ animationDuration: '400ms' }}>
+      {/* Header da seção */}
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-4 border-b border-gray-100 pb-4">
+        <div>
+          <h3 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.4rem", fontWeight: 400, color: "#111418", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
+            <ClipboardList size={22} style={{ color: "#004a8c", opacity: 0.7 }} />
+            Projetos e Tarefas da Casa
+          </h3>
+          <p className="text-xs text-muted-foreground/60 mt-1 font-light">Planeje ideias, reuniões e organize grupos de trabalho do seu centro espírita.</p>
+        </div>
+        <button
+          onClick={openCreate}
+          style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.82rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.2)" }}
+        >
+          <Plus size={14} />
+          Novo Projeto
+        </button>
+      </div>
+
+      {/* Board */}
+      {loadingEventos ? (
+        <p className="text-sm text-muted-foreground/50 text-center py-12">Carregando projetos…</p>
+      ) : eventos.length === 0 ? (
+        <div className="glass rounded-2xl p-10 text-center border border-dashed border-gray-200">
+          <ClipboardList size={36} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground/50 font-light">Nenhum projeto ou ideia cadastrada ainda.</p>
+          <button onClick={openCreate} className="mt-3 text-xs text-cyan-600 font-semibold hover:underline">
+            + Criar primeiro projeto
           </button>
         </div>
-
-        {/* Board */}
-        {loadingEventos ? (
-          <p className="text-sm text-muted-foreground/50 text-center py-16">Carregando…</p>
-        ) : (
-          <DndContext onDragEnd={handleDragEnd}>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {COLUNAS.map((col) => (
-                <KanbanColumn
-                  key={col.status}
-                  status={col.status}
-                  label={col.label}
-                  borda={col.borda}
-                  corHeader={col.corHeader}
-                  bgOver={col.bgOver}
-                  eventos={eventos.filter((e) => e.status === col.status)}
-                  userId={user.id}
-                  expandedId={expandedId}
-                  grupos={grupos}
-                  loadingGrupos={loadingGrupos}
-                  sigla={profile?.sigla_casa ?? ""}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onNewCard={openCreate}
-                  onToggleExpand={handleToggleExpand}
-                  onStatusChange={handleStatusChange}
-                  onRefreshGrupos={fetchGrupos}
-                />
-              ))}
-            </div>
-          </DndContext>
-        )}
-      </div>
+      ) : (
+        <DndContext onDragEnd={handleDragEnd}>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {COLUNAS.map((col) => (
+              <KanbanColumn
+                key={col.status}
+                status={col.status}
+                label={col.label}
+                borda={col.borda}
+                corHeader={col.corHeader}
+                bgOver={col.bgOver}
+                eventos={eventos.filter((e) => e.status === col.status)}
+                userId={user.id}
+                expandedId={expandedId}
+                grupos={grupos}
+                loadingGrupos={loadingGrupos}
+                sigla={sigla}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                onNewCard={openCreate}
+                onToggleExpand={handleToggleExpand}
+                onStatusChange={handleStatusChange}
+                onRefreshGrupos={fetchGrupos}
+              />
+            ))}
+          </div>
+        </DndContext>
+      )}
 
       {/* FormSlide */}
       {showForm && (
         <>
-          <div className="fixed inset-0 bg-black/30 z-40" onClick={closeForm} />
-          <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col">
+          <div className="fixed inset-0 bg-black/30 z-100" onClick={closeForm} />
+          <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-200 shadow-2xl flex flex-col animate-fade-in-right" style={{ animationDuration: '300ms' }}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-widest">
-                {editingEvento ? "Editar Card" : "Novo Card"}
+                {editingEvento ? "Editar Projeto" : "Novo Projeto"}
               </h2>
               <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={18} />
@@ -323,37 +309,37 @@ function KanbanPage() {
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
               <div>
                 <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Título <span className="text-cyan-glow">*</span>
+                  Título <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={fTitulo}
                   onChange={(e) => { setFTitulo(e.target.value); setFormError(""); }}
-                  placeholder="Nome do evento"
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                  placeholder="Nome do projeto ou ideia"
+                  className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Data
+                  Prazo Estimado
                 </label>
                 <input
                   type="date"
                   value={fData}
                   onChange={(e) => setFData(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                  className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:outline-none focus:border-cyan-600 transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Responsável
+                  Responsável Geral
                 </label>
                 <input
                   type="text"
                   value={fResponsavel}
                   onChange={(e) => setFResponsavel(e.target.value)}
                   placeholder="Nome do responsável"
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                  className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors"
                 />
               </div>
               <div>
@@ -363,26 +349,26 @@ function KanbanPage() {
                 <textarea
                   value={fDescricao}
                   onChange={(e) => setFDescricao(e.target.value)}
-                  placeholder="Detalhes do evento…"
+                  placeholder="Detalhes sobre o projeto…"
                   rows={4}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors resize-none"
+                  className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors resize-none"
                 />
               </div>
-              {formError && <p className="text-xs text-red-400">{formError}</p>}
+              {formError && <p className="text-xs text-red-500">{formError}</p>}
             </div>
             <div className="px-6 py-4 border-t border-gray-200">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
+                className="w-full py-3 rounded-xl text-xs font-semibold uppercase tracking-widest bg-[#004a8c] text-white hover:bg-[#00386b] disabled:opacity-40 transition-colors duration-300"
               >
-                {saving ? "Salvando…" : editingEvento ? "Salvar Alterações" : "Criar Card"}
+                {saving ? "Salvando…" : editingEvento ? "Salvar Alterações" : "Criar Projeto"}
               </button>
             </div>
           </div>
         </>
       )}
-    </main>
+    </section>
   );
 }
 
@@ -414,16 +400,16 @@ function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId
   return (
     <div
       ref={setNodeRef}
-      className={`min-w-[280px] flex-shrink-0 rounded-2xl border ${borda} p-5 transition-all duration-300 ${isOver ? bgOver : ""}`}
-      style={{ background: "#f7f8fc" }}
+      className={`min-w-[250px] max-w-[280px] flex-1 flex-shrink-0 rounded-2xl border ${borda} p-4 transition-all duration-300 ${isOver ? bgOver : ""}`}
+      style={{ background: "#f8f9fa" }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-xs font-semibold uppercase tracking-widest ${corHeader}`}>{label}</h3>
-        <span className="text-xs text-muted-foreground/50 bg-white/80 rounded-full px-2 py-0.5">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className={`text-xs font-bold uppercase tracking-wider ${corHeader}`}>{label}</h4>
+        <span className="text-[10px] font-bold text-gray-500 bg-white border border-gray-100 rounded-full px-2 py-0.5">
           {eventos.length}
         </span>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
         {eventos.map((evento) => (
           <KanbanCard
             key={evento.id}
@@ -443,10 +429,10 @@ function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId
       </div>
       <button
         onClick={onNewCard}
-        className="mt-3 w-full flex items-center gap-1 py-2 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors justify-center"
+        className="mt-3 w-full flex items-center gap-1 py-1.5 text-[11px] text-muted-foreground/50 hover:text-[#004a8c] transition-colors justify-center font-medium border border-dashed border-gray-200 rounded-xl"
       >
         <Plus size={12} />
-        Novo card
+        Adicionar item
       </button>
     </div>
   );
@@ -483,16 +469,15 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
         background: "#ffffff",
-        border: expanded ? "1px solid rgba(0,74,140,.25)" : "1px solid rgba(0,20,70,.08)",
-        borderRadius: 16,
+        border: expanded ? "1px solid rgba(0,74,140,.2)" : "1px solid rgba(0,20,70,.06)",
+        borderRadius: 14,
         boxShadow: expanded
-          ? "0 4px 16px rgba(0,20,70,.07), 0 8px 24px rgba(0,20,70,.06)"
-          : "0 1px 4px rgba(0,20,70,.04), 0 3px 10px rgba(0,20,70,.04)",
-        transition: "box-shadow .25s, border-color .25s",
+          ? "0 4px 14px rgba(0,20,70,.05), 0 6px 20px rgba(0,20,70,.04)"
+          : "0 1px 3px rgba(0,20,70,.02), 0 2px 6px rgba(0,20,70,.03)",
+        transition: "box-shadow .2s, border-color .2s",
       }}
     >
-      {/* Card header com drag handle e setas de status */}
-      <div className="p-4">
+      <div className="p-3">
         <div className="flex items-start gap-2">
           {/* Drag handle */}
           <div
@@ -500,99 +485,91 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
             {...attributes}
             className="cursor-grab active:cursor-grabbing select-none pt-0.5 shrink-0 text-gray-300 hover:text-gray-400"
           >
-            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+            <svg width="8" height="14" viewBox="0 0 10 16" fill="currentColor">
               <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
               <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
               <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
             </svg>
           </div>
 
-          {/* Título clicável para expandir */}
+          {/* Título clicável */}
           <button
             onClick={onToggleExpand}
             className="flex-1 text-left"
           >
-            <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
+            <p className="text-xs font-semibold text-gray-800 leading-snug">{evento.titulo}</p>
           </button>
-
-          {/* Setas de status */}
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
-              disabled={statusIdx <= 0}
-              aria-label="Status anterior"
-              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
-            >
-              <ChevronLeft size={13} />
-            </button>
-            <span className="text-xs text-muted-foreground/50 px-1 select-none whitespace-nowrap">
-              {COLUNAS[statusIdx]?.label}
-            </span>
-            <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
-              disabled={statusIdx === -1 || statusIdx === COLUNAS.length - 1}
-              aria-label="Próximo status"
-              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
-            >
-              <ChevronRight size={13} />
-            </button>
-          </div>
         </div>
 
-        {/* Meta: data e responsável */}
-        <div className="mt-2 pl-4">
+        {/* Meta */}
+        <div className="mt-1.5 pl-3">
           {evento.data && (
-            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
+            <p className="text-[10px] text-muted-foreground/60 flex items-center gap-1 mb-0.5">
               <Calendar size={10} />
               {fmtData(evento.data)}
             </p>
           )}
           {evento.responsavel && (
-            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
+            <p className="text-[10px] text-muted-foreground/60 flex items-center gap-1 mb-0.5">
               <User size={10} />
               {evento.responsavel}
             </p>
           )}
           {evento.descricao && !expanded && (
-            <p className="text-xs text-muted-foreground/50 mt-1 line-clamp-2 leading-relaxed">
+            <p className="text-[10px] text-muted-foreground/50 mt-1 line-clamp-2 leading-relaxed font-light">
               {evento.descricao}
             </p>
           )}
         </div>
 
-        {/* Resumo de grupos + botão expandir */}
-        <div className="mt-2 pl-4 flex items-center justify-between">
+        {/* Footer com setas de troca rápida */}
+        <div className="mt-2 pl-3 flex items-center justify-between border-t border-gray-50 pt-2 flex-wrap gap-1.5">
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1 text-xs text-[#004a8c]/60 hover:text-[#004a8c] transition-colors"
+            className="flex items-center gap-0.5 text-[10px] font-medium text-[#004a8c] hover:underline"
           >
-            {expanded
-              ? <ChevronUp size={11} />
-              : <ChevronDown size={11} />
-            }
+            {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             {gruposData.length > 0
-              ? `${gruposData.length} grupo${gruposData.length !== 1 ? "s" : ""} · ${totalTarefas} tarefa${totalTarefas !== 1 ? "s" : ""} (${totalFeitas} feita${totalFeitas !== 1 ? "s" : ""})`
-              : "Grupos de trabalho"
+              ? `${gruposData.length} grp · ${totalFeitas}/${totalTarefas}`
+              : "Grupos"
             }
           </button>
 
-          {/* Editar / excluir (só criador) */}
-          {isCriador && (
-            <div className="flex gap-1">
-              <button
-                onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
-                className="p-1 rounded text-muted-foreground/30 hover:text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <Pencil size={11} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
-                className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={11} />
-              </button>
-            </div>
-          )}
+          {/* Status quick controls */}
+          <div className="flex items-center shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
+              disabled={statusIdx <= 0}
+              aria-label="Status anterior"
+              className="p-0.5 rounded text-gray-300 hover:text-gray-600 disabled:opacity-20"
+            >
+              <ChevronLeft size={12} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
+              disabled={statusIdx === -1 || statusIdx === COLUNAS.length - 1}
+              aria-label="Próximo status"
+              className="p-0.5 rounded text-gray-300 hover:text-gray-600 disabled:opacity-20"
+            >
+              <ChevronRight size={12} />
+            </button>
+            {isCriador && (
+              <div className="flex gap-0.5 ml-1 border-l border-gray-100 pl-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
+                  className="p-0.5 rounded text-gray-300 hover:text-gray-600"
+                >
+                  <Pencil size={10} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
+                  className="p-0.5 rounded text-red-300/60 hover:text-red-500"
+                >
+                  <Trash2 size={10} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -624,12 +601,12 @@ function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPane
   const [showFormGrupo, setShowFormGrupo] = useState(false);
 
   return (
-    <div className="border-t border-cyan-100 bg-cyan-50/30 px-4 pb-4 pt-3 rounded-b-xl">
+    <div className="border-t border-cyan-100/50 bg-cyan-50/20 px-3 pb-3 pt-2.5 rounded-b-xl">
       {loading ? (
-        <p className="text-xs text-muted-foreground/40 text-center py-3">Carregando grupos…</p>
+        <p className="text-[10px] text-muted-foreground/40 text-center py-2">Carregando grupos…</p>
       ) : (
         <>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {grupos.map((grupo) => (
               <GrupoItem
                 key={grupo.id}
@@ -651,9 +628,9 @@ function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPane
           ) : (
             <button
               onClick={() => setShowFormGrupo(true)}
-              className="mt-3 w-full flex items-center justify-center gap-1 py-2 text-xs text-cyan-600/60 hover:text-cyan-600 border border-dashed border-cyan-200 rounded-lg hover:border-cyan-300 transition-colors"
+              className="mt-2.5 w-full flex items-center justify-center gap-1 py-1.5 text-[10px] text-cyan-700/60 hover:text-cyan-700 border border-dashed border-cyan-200/60 rounded-lg hover:border-cyan-300 transition-colors bg-white font-medium"
             >
-              <Plus size={11} />
+              <Plus size={10} />
               Novo Grupo de Trabalho
             </button>
           )}
@@ -688,12 +665,10 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
       membros: eMembros.split(",").map((m) => m.trim()).filter(Boolean),
     }).eq("id", grupo.id);
     setSaving(false);
-    if (error) {
-      console.error("Erro ao salvar grupo:", error);
-      return;
+    if (!error) {
+      setEditing(false);
+      onRefresh();
     }
-    setEditing(false);
-    onRefresh();
   };
 
   const handleDeleteGrupo = async () => {
@@ -705,74 +680,67 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
   const completadas = grupo.kanban_tarefas.filter((t) => t.feito).length;
 
   return (
-    <div className="bg-white border border-cyan-100 rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
       {/* Header do grupo */}
       {editing ? (
-        <div className="p-3 space-y-2">
+        <div className="p-2 space-y-1.5">
           <input
             value={eName}
             onChange={(e) => setEName(e.target.value)}
             placeholder="Nome do grupo *"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+            className="w-full rounded border border-gray-200 px-2 py-1 text-[11px] focus:outline-none focus:border-cyan-400"
           />
           <input
             value={eResp}
             onChange={(e) => setEResp(e.target.value)}
             placeholder="Responsável"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+            className="w-full rounded border border-gray-200 px-2 py-1 text-[11px] focus:outline-none focus:border-cyan-400"
           />
           <input
             value={eMembros}
             onChange={(e) => setEMembros(e.target.value)}
             placeholder="Membros (separados por vírgula)"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+            className="w-full rounded border border-gray-200 px-2 py-1 text-[11px] focus:outline-none focus:border-cyan-400"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <button
               onClick={handleSaveGrupo}
               disabled={saving || !eName.trim()}
-              className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+              className="flex-1 py-1 text-[10px] rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-40 transition-colors"
             >
-              {saving ? "Salvando…" : "Salvar"}
+              {saving ? "…" : "Salvar"}
             </button>
             <button
               onClick={() => setEditing(false)}
-              className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-1 text-[10px] rounded border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
           </div>
         </div>
       ) : (
-        <div className="px-3 py-2.5 flex items-start justify-between gap-2">
+        <div className="px-2.5 py-1.5 flex items-start justify-between gap-1.5 bg-gray-50/50">
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-cyan-700 leading-snug">{grupo.nome}</p>
+            <p className="text-[11px] font-bold text-gray-700 leading-snug">{grupo.nome}</p>
             {(grupo.responsavel || grupo.membros.length > 0) && (
-              <p className="text-xs text-muted-foreground/50 mt-0.5 flex items-center gap-1">
-                <Users size={9} />
+              <p className="text-[9px] text-muted-foreground/50 mt-0.5 flex items-center gap-1 font-light">
+                <Users size={8} />
                 {[grupo.responsavel, ...grupo.membros].filter(Boolean).join(" · ")}
               </p>
             )}
-            {grupo.kanban_tarefas.length > 0 && (
-              <p className="text-xs text-muted-foreground/40 mt-0.5">
-                {completadas}/{grupo.kanban_tarefas.length} tarefa{grupo.kanban_tarefas.length !== 1 ? "s" : ""}
-              </p>
-            )}
           </div>
-          <div className="flex gap-1 shrink-0">
+          <div className="flex gap-0.5 shrink-0">
             <button
               onClick={() => setEditing(true)}
-              aria-label="Editar grupo"
-              className="p-1 rounded text-muted-foreground/30 hover:text-gray-500 hover:bg-gray-50 transition-colors"
+              className="p-0.5 rounded text-gray-300 hover:text-gray-500"
             >
-              <Pencil size={10} />
+              <Pencil size={9} />
             </button>
             <button
               onClick={handleDeleteGrupo}
-              aria-label="Excluir grupo"
-              className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
+              className="p-0.5 rounded text-red-300 hover:text-red-500"
             >
-              <Trash2 size={10} />
+              <Trash2 size={9} />
             </button>
           </div>
         </div>
@@ -792,7 +760,7 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
       )}
 
       {/* Adicionar tarefa */}
-      <div className="border-t border-gray-50 px-3 py-2">
+      <div className="border-t border-gray-50 px-2 py-1.5 bg-gray-50/10">
         {showFormTarefa ? (
           <FormNovaTarefa
             grupoId={grupo.id}
@@ -804,10 +772,10 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
         ) : (
           <button
             onClick={() => setShowFormTarefa(true)}
-            className="text-xs text-muted-foreground/40 hover:text-cyan-600 transition-colors flex items-center gap-1"
+            className="text-[10px] text-cyan-600/70 hover:text-cyan-700 transition-colors flex items-center gap-0.5 font-semibold"
           >
             <Plus size={10} />
-            Adicionar tarefa
+            Tarefa
           </button>
         )}
       </div>
@@ -839,28 +807,27 @@ function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
   };
 
   return (
-    <div className="px-3 py-2 flex items-start gap-2 group">
+    <div className="px-2.5 py-1.5 flex items-start gap-1.5 group hover:bg-gray-50/30">
       {/* Checkbox */}
       <button
         onClick={handleToggle}
         disabled={toggling}
-        aria-label={tarefa.feito ? "Marcar como pendente" : "Marcar como feita"}
-        className={`shrink-0 mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+        className={`shrink-0 mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${
           tarefa.feito
             ? "bg-emerald-500 border-emerald-500"
-            : "border-gray-300 hover:border-emerald-400"
+            : "border-gray-300 hover:border-emerald-500"
         }`}
       >
-        {tarefa.feito && <Check size={9} className="text-white" strokeWidth={3} />}
+        {tarefa.feito && <Check size={8} className="text-white" strokeWidth={3} />}
       </button>
 
       {/* Conteúdo */}
       <div className="flex-1 min-w-0">
-        <p className={`text-xs leading-snug ${tarefa.feito ? "line-through text-muted-foreground/40" : "text-gray-700"}`}>
+        <p className={`text-[11px] leading-snug ${tarefa.feito ? "line-through text-muted-foreground/30 font-light" : "text-gray-600"}`}>
           {tarefa.titulo}
         </p>
         {(tarefa.responsavel || tarefa.prazo) && (
-          <p className="text-xs mt-0.5 flex items-center gap-2">
+          <p className="text-[9px] mt-0.5 flex items-center gap-1.5 font-light">
             {tarefa.responsavel && (
               <span className="text-muted-foreground/50">{tarefa.responsavel}</span>
             )}
@@ -874,7 +841,6 @@ function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
       {/* Excluir */}
       <button
         onClick={handleDelete}
-        aria-label="Excluir tarefa"
         className="shrink-0 opacity-0 group-hover:opacity-100 p-0.5 rounded text-red-300 hover:text-red-500 transition-all"
       >
         <X size={10} />
@@ -902,7 +868,7 @@ function FormNovoGrupo({ eventoId, sigla, nextOrdem, onSaved, onCancel }: FormNo
   const handleSave = async () => {
     if (!nome.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("kanban_grupos").insert({
+    await supabase.from("kanban_grupos").insert({
       evento_id: eventoId,
       sigla_casa: sigla,
       nome: nome.trim(),
@@ -911,41 +877,41 @@ function FormNovoGrupo({ eventoId, sigla, nextOrdem, onSaved, onCancel }: FormNo
       ordem: nextOrdem,
     });
     setSaving(false);
-    if (!error) onSaved();
+    onSaved();
   };
 
   return (
-    <div className="mt-3 space-y-2 p-3 bg-white border border-cyan-100 rounded-xl">
+    <div className="mt-2 space-y-1.5 p-2 bg-white border border-cyan-100 rounded-lg">
       <input
         value={nome}
         onChange={(e) => setNome(e.target.value)}
         placeholder="Nome do grupo *"
         autoFocus
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+        className="w-full rounded border border-gray-200 px-2 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
       />
       <input
         value={resp}
         onChange={(e) => setResp(e.target.value)}
         placeholder="Responsável"
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+        className="w-full rounded border border-gray-200 px-2 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
       />
       <input
         value={membros}
         onChange={(e) => setMembros(e.target.value)}
-        placeholder="Membros (separados por vírgula)"
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
+        placeholder="Membros (por vírgula)"
+        className="w-full rounded border border-gray-200 px-2 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
       />
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <button
           onClick={handleSave}
           disabled={saving || !nome.trim()}
-          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+          className="flex-1 py-1 text-[10px] rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-40 transition-colors"
         >
-          {saving ? "Salvando…" : "Criar Grupo"}
+          {saving ? "…" : "Criar Grupo"}
         </button>
         <button
           onClick={onCancel}
-          className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+          className="flex-1 py-1 text-[10px] rounded border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
         >
           Cancelar
         </button>
@@ -973,7 +939,7 @@ function FormNovaTarefa({ grupoId, sigla, nextOrdem, onSaved, onCancel }: FormNo
   const handleSave = async () => {
     if (!titulo.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("kanban_tarefas").insert({
+    await supabase.from("kanban_tarefas").insert({
       grupo_id: grupoId,
       sigla_casa: sigla,
       titulo: titulo.trim(),
@@ -982,45 +948,45 @@ function FormNovaTarefa({ grupoId, sigla, nextOrdem, onSaved, onCancel }: FormNo
       ordem: nextOrdem,
     });
     setSaving(false);
-    if (!error) onSaved();
+    onSaved();
   };
 
   return (
-    <div className="space-y-2 pt-1">
+    <div className="space-y-1.5 pt-1">
       <input
         value={titulo}
         onChange={(e) => setTitulo(e.target.value)}
         placeholder="Título da tarefa *"
         autoFocus
-        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+        className="w-full rounded border border-gray-200 px-2.5 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
       />
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <input
           value={resp}
           onChange={(e) => setResp(e.target.value)}
           placeholder="Responsável"
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+          className="flex-1 rounded border border-gray-200 px-2 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
         />
         <input
           type="date"
           value={prazo}
           onChange={(e) => setPrazo(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
+          className="flex-1 rounded border border-gray-200 px-2 py-1 text-[10px] focus:outline-none focus:border-cyan-400"
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <button
           onClick={handleSave}
           disabled={saving || !titulo.trim()}
-          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
+          className="flex-1 py-1 text-[10px] rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-40 transition-colors"
         >
-          {saving ? "…" : "Adicionar"}
+          Adicionar
         </button>
         <button
           onClick={onCancel}
-          className="py-1.5 px-3 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+          className="py-1 px-2 text-[10px] rounded border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
         >
-          <X size={10} />
+          <X size={8} />
         </button>
       </div>
     </div>

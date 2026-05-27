@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
+import { ProjetosTab } from "@/components/ProjetosTab";
 
 
 export const Route = createFileRoute("/casa/$sigla")({
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/casa/$sigla")({
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "painel" | "mural" | "sobre" | "programacao" | "doacoes";
+type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes";
 
 interface PaginaData {
   sigla_casa: string;
@@ -783,6 +784,7 @@ function PaginaCasa() {
             { id: "mural",       label: "Mural",       Icon: MessageSquare },
             { id: "sobre",       label: "Sobre",        Icon: Info },
             { id: "programacao", label: "Programação",  Icon: Calendar },
+            { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
           ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
             <button key={t.id} onClick={() => setAba(t.id)}
@@ -1008,11 +1010,11 @@ function PaginaCasa() {
                 />
                 <DashDashCard
                   Icon={ClipboardCheck}
-                  title="Organização de Tarefas"
-                  desc="Planeje e organize tarefas, ideias, grupos de trabalho e reuniões da casa espírita."
+                  title="Projetos"
+                  desc="Planeje e organize projetos, ideias, tarefas e reuniões da casa espírita."
                   status="disponivel"
                   accent="cyan"
-                  href="/kanban"
+                  onClick={() => setAba("projetos")}
                   votes={votes}
                   votingKey={votingKey}
                   onVote={handleCardVote}
@@ -1439,6 +1441,11 @@ function PaginaCasa() {
               )}
             </div>
           </div>
+        )}
+
+        {/* ══════════════ PROJETOS ══════════════ */}
+        {aba === "projetos" && (
+          <ProjetosTab sigla={sigla} />
         )}
 
         {/* ══════════════ DOAÇÕES ══════════════ */}
@@ -1967,10 +1974,11 @@ function DashVoteBadge({ title, votes, votingKey }: {
   );
 }
 
-function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, votingKey, onVote }: {
+function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, votingKey, onVote, onClick }: {
   Icon: LucideIcon; title: string; desc: string; status: DashStatus;
   accent: string; href?: string; casa?: boolean;
   votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null; onVote: (title: string) => void;
+  onClick?: () => void;
 }) {
   const borderMap: Record<string, string> = {
     slate: "border-t-slate-300/80 focus-within:border-t-slate-400",
@@ -1985,8 +1993,8 @@ function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, vo
   const isPending = status === "breve";
   const content = (
     <div
-      className={`glass-premium hover-premium rounded-2xl p-5 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${isPending ? "cursor-pointer" : ""}`}
-      onClick={isPending ? () => onVote(title) : undefined}
+      className={`glass-premium hover-premium rounded-2xl p-5 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${(isPending || onClick) ? "cursor-pointer" : ""}`}
+      onClick={onClick ? onClick : (isPending ? () => onVote(title) : undefined)}
     >
       <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
         <Icon size={18} strokeWidth={1.5} />
