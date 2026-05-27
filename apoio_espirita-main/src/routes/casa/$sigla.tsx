@@ -506,13 +506,19 @@ function PaginaCasa() {
   };
 
   const salvarEdicaoPost = async (id: string) => {
-    const { error } = await supabase.from("publicacoes_casa").update({
+    const { data, error } = await supabase.from("publicacoes_casa").update({
       conteudo: formEditPost.conteudo.trim(),
       imagem_url: formEditPost.imagem_url.trim() || null,
       video_url: formEditPost.video_url.trim() || null,
       editado_em: new Date().toISOString(),
-    }).eq("id", id);
-    if (error) { toast.error("Erro ao salvar."); return; }
+    }).eq("id", id).select();
+    
+    if (error) { toast.error(`Erro ao salvar: ${error.message}`); return; }
+    if (!data || data.length === 0) {
+      toast.error("Erro: Sem permissão para editar esta publicação.");
+      return;
+    }
+    
     setPosts(prev => prev.map(p => p.id === id ? {
       ...p, conteudo: formEditPost.conteudo.trim(),
       imagem_url: formEditPost.imagem_url.trim() || null,
@@ -524,7 +530,15 @@ function PaginaCasa() {
   };
 
   const excluirPost = async (id: string) => {
-    await supabase.from("publicacoes_casa").delete().eq("id", id);
+    if (!window.confirm("Deseja realmente excluir esta publicação do mural?")) return;
+    const { data, error } = await supabase.from("publicacoes_casa").delete().eq("id", id).select();
+    
+    if (error) { toast.error(`Erro ao excluir: ${error.message}`); return; }
+    if (!data || data.length === 0) {
+      toast.error("Erro: Sem permissão no banco de dados para excluir esta publicação.");
+      return;
+    }
+    
     setPosts(prev => prev.filter(p => p.id !== id));
     toast.success("Publicação removida.");
   };
@@ -1176,24 +1190,24 @@ function PaginaCasa() {
                         {post.editado_em && <span className="italic">· editado</span>}
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        {/* Editar: autor OU admin */}
+                        {/* Editar/Excluir: autor OU admin */}
                         {(modoAdmin || post.autor_id === user?.id) && (
-                          <button onClick={() => iniciarEdicaoPost(post)} title="Editar"
-                            className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-cyan-glow hover:bg-cyan-50 transition-colors">
-                            <Edit3 size={14} />
-                          </button>
-                        )}
-                        {modoAdmin && (
                           <>
-                            <button onClick={() => toggleFixar(post)} title={post.fixado ? "Desafixar" : "Fixar no topo"}
-                              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-amber-500 hover:bg-amber-50 transition-colors">
-                              {post.fixado ? <PinOff size={14} /> : <Pin size={14} />}
+                            <button onClick={() => iniciarEdicaoPost(post)} title="Editar"
+                              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-cyan-glow hover:bg-cyan-50 transition-colors">
+                              <Edit3 size={14} />
                             </button>
                             <button onClick={() => excluirPost(post.id)} title="Excluir"
                               className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 transition-colors">
                               <Trash2 size={14} />
                             </button>
                           </>
+                        )}
+                        {modoAdmin && (
+                          <button onClick={() => toggleFixar(post)} title={post.fixado ? "Desafixar" : "Fixar no topo"}
+                            className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-amber-500 hover:bg-amber-50 transition-colors">
+                            {post.fixado ? <PinOff size={14} /> : <Pin size={14} />}
+                          </button>
                         )}
                       </div>
                     </div>
