@@ -436,6 +436,7 @@ function PaginaCasa() {
       supabase
         .from("mensagens_do_dia")
         .select("texto, referencia, autor_nome, sigla_casa")
+        .eq("sigla_casa", sigla)   // ← isolamento: cada casa vê apenas sua mensagem
         .eq("data_exibicao", todayStr)
         .eq("aprovada", true)
         .single()
