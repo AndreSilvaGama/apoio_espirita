@@ -406,13 +406,19 @@ function NavBar() {
           <div ref={ajudaRef} className="relative">
             <button
               onClick={() => { setAjudaOpen((o) => !o); setRecursosOpen(false); }}
-              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/permissoes"])}
+              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/admin", "/permissoes"])}
             >
               Ajuda
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`} />
             </button>
             {ajudaOpen && (
               <div className="absolute top-full right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
+                {isDev && (
+                  <Link to="/admin" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
+                    <LayoutDashboard size={14} strokeWidth={1.5} className="text-violet-500" />
+                    Painel do Administrador
+                  </Link>
+                )}
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Status do Projeto
@@ -517,6 +523,11 @@ function NavBar() {
             </button>
             {ajudaMobileOpen && (
               <>
+                {isDev && (
+                  <Link to="/admin" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                    Painel do Administrador
+                  </Link>
+                )}
                 <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Status do Projeto
                 </Link>
