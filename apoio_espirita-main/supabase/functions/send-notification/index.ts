@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
 const DEST_EMAIL = "gama.andre@gmail.com";
-const FROM_EMAIL = "gama.andre@gmail.com";
+const FROM_EMAIL = "contato@apoioespirita.com.br";
 const FROM_NAME = "Apoio Espírita";
 
 const corsHeaders = {
