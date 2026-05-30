@@ -64,7 +64,7 @@ export function CasaHero({ membros, eventos }: CasaHeroProps) {
           <h1
             style={{
               fontFamily: '"Libre Caslon Text", Georgia, serif',
-              fontSize: "3.2rem",
+              fontSize: "2.6rem",
               fontWeight: 400,
               lineHeight: 1.1,
               letterSpacing: "-0.02em",

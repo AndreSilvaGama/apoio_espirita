@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle } from "lucide-react";
+import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle, Sparkles } from "lucide-react";
 import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/evangelizacao")({
@@ -294,7 +294,7 @@ function Evangelizacao() {
         {/* Links rápidos */}
         <section>
           <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3">Ferramentas</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link
               to="/jogos/memoria-evangelizacao"
               className="flex items-center gap-4 p-4 border border-cyan-200 group"
@@ -324,6 +324,22 @@ function Evangelizacao() {
                   Plante a Semente
                 </p>
                 <p className="text-xs text-gray-500 font-light mt-0.5">Jogo de palavras</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/jogos/semeador-mensagens"
+              className="flex items-center gap-4 p-4 border border-rose-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+            >
+              <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0 shadow-sm">
+                <Sparkles size={20} strokeWidth={1.5} className="text-rose-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-rose-700 transition-colors">
+                  Semeador de Mensagens
+                </p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Ordenação de palavras</p>
               </div>
             </Link>
 
