@@ -149,7 +149,16 @@ function AdminDashboard() {
 
       // Update statistics
       const totalCasas = casasData?.length || 0;
-      const ativasCasas = casasData?.filter(c => c.ativa).length || 0;
+      
+      // Casas ativas = aquelas que possuem pelo menos um usuário cadastrado (estão usando o sistema)
+      const siglasAtivas = new Set(
+        profilesData
+          ?.map(p => p.sigla_casa)
+          .filter((sigla): sigla is string => typeof sigla === "string" && sigla.trim().length > 0)
+          .map(sigla => sigla.trim().toUpperCase())
+      );
+      const ativasCasas = siglasAtivas.size;
+
       const totalUsuarios = profilesData?.length || 0;
       const totalProblemas = problemasData?.length || 0;
       const totalSugestoes = sugestoesData?.length || 0;
@@ -366,7 +375,7 @@ function AdminDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { label: "Casas Espíritas", value: `${stats.casasAtivas} / ${stats.casasTotal}`, sub: "ativas / total", icon: Building2, col: "text-blue-600 bg-blue-50/50" },
+            { label: "Casas Espíritas", value: `${stats.casasAtivas} / ${stats.casasTotal}`, sub: "ativas (uso) / registradas", icon: Building2, col: "text-blue-600 bg-blue-50/50" },
             { label: "Usuários / Perfis", value: stats.usuariosTotal, sub: "contas cadastradas", icon: Users, col: "text-indigo-600 bg-indigo-50/50" },
             { label: "Solicitações DEV", value: stats.solicitacoesTotal, sub: "pedidos pendentes", icon: LayoutDashboard, col: "text-violet-600 bg-violet-50/50" },
             { label: "Relatórios de Problemas", value: stats.problemasTotal, sub: "alertas do site", icon: AlertTriangle, col: "text-amber-600 bg-amber-50/50" },

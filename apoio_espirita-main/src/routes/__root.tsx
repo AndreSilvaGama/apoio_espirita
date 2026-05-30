@@ -400,7 +400,7 @@ function NavBar() {
             Minha Casa
           </Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
-          <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem do Dia</Link>
+          <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
@@ -409,21 +409,13 @@ function NavBar() {
           <div ref={recursosRef} className="relative">
             <button
               onClick={() => { setRecursosOpen((o) => !o); setAjudaOpen(false); }}
-              className={dropBtnCls(["/evangelizacao", "/jogos", "/configurar-memoria"])}
+              className={dropBtnCls(["/jogos", "/configurar-memoria"])}
             >
-              Jogos &amp; Evangelização
+              Jogos
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${recursosOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosOpen && (
               <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
-                <Link to="/jogos" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                  <Gamepad2 size={14} strokeWidth={1.5} className="text-violet-500" />
-                  Portal de Jogos
-                </Link>
-                <Link to="/evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                  <GraduationCap size={14} strokeWidth={1.5} className="text-orange-500" />
-                  Evangelização Infantil
-                </Link>
                 <Link to="/jogos/semeador-mensagens" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
                   Semeador de Mensagens
@@ -522,8 +514,8 @@ function NavBar() {
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Agenda
             </Link>
-            <Link to="/mensagem-do-dia" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-              Mensagem do Dia
+            <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+              Evangelização
             </Link>
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
@@ -536,17 +528,11 @@ function NavBar() {
               onClick={() => setRecursosMobileOpen((o) => !o)}
               className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
             >
-              Jogos &amp; Evangelização
+              Jogos
               <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`} />
             </button>
             {recursosMobileOpen && (
               <>
-                <Link to="/jogos" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Portal de Jogos
-                </Link>
-                <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Evangelização Infantil
-                </Link>
                 <Link to="/jogos/semeador-mensagens" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Semeador de Mensagens
                 </Link>
