@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle, Sparkles } from "lucide-react";
+import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle, Sparkles, Search } from "lucide-react";
 import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/evangelizacao")({
@@ -340,6 +340,22 @@ function Evangelizacao() {
                   Semeador de Mensagens
                 </p>
                 <p className="text-xs text-gray-500 font-light mt-0.5">Ordenação de palavras</p>
+              </div>
+            </Link>
+
+            <Link
+              to="/jogos/caca-palavras"
+              className="flex items-center gap-4 p-4 border border-indigo-200 group"
+              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+            >
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 shadow-sm">
+                <Search size={20} strokeWidth={1.5} className="text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">
+                  Caça-Palavras
+                </p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Grade dinâmica de virtudes</p>
               </div>
             </Link>
 

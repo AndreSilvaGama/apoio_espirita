@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard, Sprout, Sparkles } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard, Sprout, Sparkles, Search } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -420,6 +420,10 @@ function NavBar() {
                   <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
                   Semeador de Mensagens
                 </Link>
+                <Link to="/jogos/caca-palavras" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                  <Search size={14} strokeWidth={1.5} className="text-violet-500" />
+                  Caça-Palavras
+                </Link>
                 <Link to="/jogos/plante-a-semente" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
                   <Sprout size={14} strokeWidth={1.5} className="text-emerald-500" />
                   Plante a Semente
@@ -535,6 +539,9 @@ function NavBar() {
               <>
                 <Link to="/jogos/semeador-mensagens" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Semeador de Mensagens
+                </Link>
+                <Link to="/jogos/caca-palavras" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                  Caça-Palavras
                 </Link>
                 <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Plante a Semente

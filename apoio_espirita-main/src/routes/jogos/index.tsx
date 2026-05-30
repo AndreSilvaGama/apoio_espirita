@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Gamepad2, Sprout, Brain, HelpCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, Gamepad2, Sprout, Brain, HelpCircle, Sparkles, Search } from "lucide-react";
 
 export const Route = createFileRoute("/jogos/")({
   component: PortalJogos,
@@ -49,6 +49,16 @@ function PortalJogos() {
       accent: "text-rose-700 hover:bg-rose-50",
       buttonColor: "bg-rose-600 hover:bg-rose-700 shadow-rose-600/10",
       href: "/jogos/semeador-mensagens",
+    },
+    {
+      title: "Caça-Palavras das Virtudes",
+      desc: "Encontre termos morais e espíritas na grade de letras de forma totalmente dinâmica, e descubra belas explicações de cada virtude localizada.",
+      icon: Search,
+      color: "bg-violet-50 text-violet-600 border-violet-100",
+      border: "border-violet-200/60",
+      accent: "text-violet-700 hover:bg-violet-50",
+      buttonColor: "bg-violet-600 hover:bg-violet-700 shadow-violet-600/10",
+      href: "/jogos/caca-palavras",
       novo: true,
     },
     {
