@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard } from "lucide-react";
+import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard, Sprout, Sparkles } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -416,12 +416,20 @@ function NavBar() {
             </button>
             {recursosOpen && (
               <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up" style={{ animationDuration: '200ms' }}>
+                <Link to="/jogos" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                  <Gamepad2 size={14} strokeWidth={1.5} className="text-violet-500" />
+                  Portal de Jogos
+                </Link>
                 <Link to="/evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                  <GraduationCap size={14} strokeWidth={1.5} className="text-rose-500" />
+                  <GraduationCap size={14} strokeWidth={1.5} className="text-orange-500" />
                   Evangelização Infantil
                 </Link>
+                <Link to="/jogos/semeador-mensagens" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
+                  <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
+                  Semeador de Mensagens
+                </Link>
                 <Link to="/jogos/plante-a-semente" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                  <Gamepad2 size={14} strokeWidth={1.5} className="text-emerald-500" />
+                  <Sprout size={14} strokeWidth={1.5} className="text-emerald-500" />
                   Plante a Semente
                 </Link>
                 <Link to="/jogos/memoria-evangelizacao" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
@@ -533,8 +541,14 @@ function NavBar() {
             </button>
             {recursosMobileOpen && (
               <>
+                <Link to="/jogos" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                  Portal de Jogos
+                </Link>
                 <Link to="/evangelizacao" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Evangelização Infantil
+                </Link>
+                <Link to="/jogos/semeador-mensagens" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+                  Semeador de Mensagens
                 </Link>
                 <Link to="/jogos/plante-a-semente" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Plante a Semente
