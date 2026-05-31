@@ -557,7 +557,7 @@ function PaginaCasa() {
     if (membrosCarregados.current && !force) return;
     const { data } = await supabase.from("profiles").select("id, nome, cargo_principal, atividades")
       .eq("sigla_casa", sigla).order("nome");
-    if (data) setMembros(data as Membro[]);
+    if (data) setMembros((data as Membro[]).filter(m => m.cargo_principal !== "DEV"));
     membrosCarregados.current = true;
   }, [sigla]);
 
