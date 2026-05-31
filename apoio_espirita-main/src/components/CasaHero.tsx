@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { 
   MapPin, Phone, Mail, Globe, Building2, 
-  Heart, QrCode, Copy, Check, ChevronDown, 
-  ChevronUp, Info, Calendar 
+  Heart, QrCode, Copy, Check, Info, Calendar 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,30 +94,7 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
   const { profile } = useAuth();
   const [nomeCasa, setNomeCasa] = useState<string | null>(null);
   const [dataPagina, setDataPagina] = useState<any>(paginaData || null);
-  const [expanded, setExpanded] = useState(false);
   const [copiadoPix, setCopiadoPix] = useState(false);
-
-  // Inject keyframe animation on mount
-  useEffect(() => {
-    const styleId = "casa-hero-animation-styles";
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = `
-        @keyframes fadeInUpHero {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }, []);
 
   // Sync state if paginaData prop changes
   useEffect(() => {
@@ -231,13 +207,19 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
               )}
             </h1>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-              {(displayCidade || displayUf) && (
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              {/* Localização */}
+              {(dataPagina?.endereco || displayCidade || displayUf) && (
                 <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
                   <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
-                  {[displayCidade, displayUf].filter(Boolean).join(" · ")}
+                  {dataPagina?.endereco 
+                    ? [dataPagina.endereco, dataPagina.bairro, displayCidade].filter(Boolean).join(", ")
+                    : [displayCidade, displayUf].filter(Boolean).join(" · ")
+                  }
                 </span>
               )}
+
+              {/* Sigla */}
               {targetSigla && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
@@ -246,41 +228,44 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
                   </span>
                 </>
               )}
+
+              {/* Telefone Rápido */}
+              {dataPagina?.telefone && (
+                <>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
+                    <Phone size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+                    {dataPagina.telefone}
+                  </span>
+                </>
+              )}
+
+              {/* Site Rápido */}
+              {dataPagina?.site && (
+                <>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
+                    <Globe size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+                    <a 
+                      href={dataPagina.site.startsWith("http") ? dataPagina.site : `https://${dataPagina.site}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ color: "#004a8c", textDecoration: "none", fontWeight: 500 }}
+                      className="hover:underline"
+                    >
+                      {dataPagina.site.replace(/https?:\/\/(www\.)?/, "")}
+                    </a>
+                  </span>
+                </>
+              )}
+
+              {/* Membro Desde */}
               {membroSince && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
                   <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
                     Membro desde {membroSince}
                   </span>
-                </>
-              )}
-              {hasExtraInfo && (
-                <>
-                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
-                  <button
-                    onClick={() => setExpanded(!expanded)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "0.78rem",
-                      fontWeight: 600,
-                      color: "#004a8c",
-                      background: "rgba(0, 74, 140, 0.05)",
-                      border: "1px solid rgba(0, 74, 140, 0.1)",
-                      borderRadius: "8px",
-                      padding: "3px 10px",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      outline: "none"
-                    }}
-                    className="hover:bg-[rgba(0,74,140,0.1)] active:scale-95"
-                  >
-                    <Info size={12} />
-                    {expanded ? "Ocultar Informações" : "Conhecer a Casa / Doações"}
-                    {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  </button>
                 </>
               )}
             </div>
@@ -313,15 +298,14 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
           )}
         </div>
 
-        {/* Expandable Info Drawer */}
-        {expanded && dataPagina && (
+        {/* Detailed Info Grid (Always visible for superior aesthetics and clear organization) */}
+        {hasExtraInfo && (
           <div
             style={{
               marginTop: 32,
               paddingTop: 32,
               borderTop: "1px solid rgba(0, 20, 70, 0.06)",
               width: "100%",
-              animation: "fadeInUpHero 0.35s ease-out forwards",
             }}
           >
             <div style={{ 
