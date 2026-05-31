@@ -984,7 +984,6 @@ function PaginaCasa() {
             ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
             { id: "mural",       label: "Mural",       Icon: MessageSquare },
             { id: "sobre",       label: "Sobre",        Icon: Info },
-            { id: "programacao", label: "Programação",  Icon: Calendar },
             { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
           ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
@@ -1806,181 +1805,79 @@ function PaginaCasa() {
                     <p className="text-sm text-muted-foreground/50 text-center py-4">Nenhuma informação cadastrada ainda.{isAdmin && " Use 'Editar informações' para adicionar."}</p>
                   )}
                 </div>
+
+                {/* ── Atividades Regulares ── */}
+                <div className="glass rounded-2xl overflow-hidden mt-6">
+                  <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock size={15} strokeWidth={1.5} className="text-cyan-glow" />
+                      <span className="text-sm font-medium text-foreground">Atividades Regulares</span>
+                    </div>
+                    {modoAdmin && (
+                      <button onClick={() => setShowNovoHorario(s => !s)}
+                        className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
+                        <Plus size={13} />Adicionar
+                      </button>
+                    )}
+                  </div>
+
+                  {modoAdmin && showNovoHorario && (
+                    <div className="px-6 py-4 border-b border-white/10 bg-cyan-50/20 space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div><p className={labelCls}>Dia</p>
+                          <select value={novoHorario.dia} onChange={e => setNovoHorario(h => ({ ...h, dia: e.target.value }))} className={inputCls}>
+                            {DIAS.map(d => <option key={d}>{d}</option>)}
+                          </select>
+                        </div>
+                        <div><p className={labelCls}>Horário</p>
+                          <input type="time" value={novoHorario.hora} onChange={e => setNovoHorario(h => ({ ...h, hora: e.target.value }))} className={inputCls} />
+                        </div>
+                        <div><p className={labelCls}>Atividade</p>
+                          <input value={novoHorario.atividade} onChange={e => setNovoHorario(h => ({ ...h, atividade: e.target.value }))} placeholder="Ex.: Evangelização" className={inputCls} />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowNovoHorario(false)} className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
+                        <button onClick={adicionarHorario} className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">Adicionar</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
+                    if (horariosRegulares.length === 0) {
+                      return (
+                        <div className="px-6 py-8 text-center">
+                          <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="divide-y divide-white/5">
+                        {horariosRegulares.map((h, i) => (
+                          <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
+                            <div className="flex items-center gap-4">
+                              <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
+                              <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
+                              <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
+                            </div>
+                            {modoAdmin && (
+                              <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
+                                <X size={13} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* ══════════════ PROGRAMAÇÃO ══════════════ */}
-        {aba === "programacao" && (
-          <div className="space-y-6">
 
-            {/* ── Seção: Eventos ── */}
-            <div className="glass rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CalendarDays size={15} strokeWidth={1.5} className="text-cyan-glow" />
-                  <span className="text-sm font-medium text-foreground">Eventos</span>
-                </div>
-                {modoAdmin && (
-                  <button onClick={() => { setShowNovoEvento(s => !s); setFormNovoEvento(FORM_EVENTO_INICIAL); }}
-                    className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
-                    <Plus size={13} />Criar evento
-                  </button>
-                )}
-              </div>
-
-              {/* Formulário novo evento */}
-              {modoAdmin && showNovoEvento && (
-                <div className="px-6 py-5 border-b border-white/10 bg-cyan-50/20 space-y-4">
-                  <EventoForm form={formNovoEvento} onChange={setFormNovoEvento}
-                    onCancel={() => setShowNovoEvento(false)} onSubmit={criarEvento} submitLabel="Criar" />
-                </div>
-              )}
-
-              {/* Lista de eventos próximos */}
-              {eventosProximos.length === 0 && !showNovoEvento && (
-                <div className="px-6 py-10 text-center">
-                  <Calendar size={28} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground/50">Nenhum evento programado.</p>
-                </div>
-              )}
-
-              <div className="divide-y divide-white/5">
-                {eventosProximos.map(ev => (
-                  <EventoCard key={ev.id} ev={ev} user={user} profile={profile}
-                    isAdmin={modoAdmin} isSameCasa={isSameCasa}
-                    participantes={evParts[ev.id]}
-                    expandido={eventoExpandido === ev.id}
-                    editando={editandoEventoId === ev.id}
-                    formEdit={formEditEvento}
-                    membros={membros}
-                    addPartOpen={addPartEventoId === ev.id}
-                    onToggleExpand={async () => {
-                      const abrindo = eventoExpandido !== ev.id;
-                      setEventoExpandido(abrindo ? ev.id : null);
-                      setEditandoEventoId(null);
-                      if (abrindo) { await carregarParticipantes(ev.id); await garantirMembros(); }
-                    }}
-                    onEdit={() => { setEditandoEventoId(ev.id); setFormEditEvento({ titulo: ev.titulo, descricao: ev.descricao || "", data_evento: ev.data_evento, hora_inicio: ev.hora_inicio || "", hora_fim: ev.hora_fim || "", local_evento: ev.local_evento || "", publica: ev.publica }); }}
-                    onCancelEdit={() => setEditandoEventoId(null)}
-                    onSaveEdit={() => salvarEdicaoEvento(ev.id)}
-                    onChangeFormEdit={setFormEditEvento}
-                    onDelete={() => excluirEvento(ev.id)}
-                    onAddPart={membroId => adicionarParticipante(ev.id, membroId)}
-                    onRemovePart={userId => removerParticipante(ev.id, userId)}
-                    onToggleAddPart={() => { setAddPartEventoId(p => p === ev.id ? null : ev.id); garantirMembros(); }}
-                    onConfirmar={status => confirmarPresenca(ev.id, status)}
-                  />
-                ))}
-              </div>
-
-              {/* Eventos passados */}
-              {eventosPassados.length > 0 && (
-                <details className="border-t border-white/10">
-                  <summary className="px-6 py-3 text-xs text-muted-foreground/50 cursor-pointer hover:text-muted-foreground transition-colors select-none">
-                    {eventosPassados.length} evento{eventosPassados.length > 1 ? "s" : ""} passado{eventosPassados.length > 1 ? "s" : ""}
-                  </summary>
-                  <div className="divide-y divide-white/5 opacity-60">
-                    {eventosPassados.map(ev => (
-                      <EventoCard key={ev.id} ev={ev} user={user} profile={profile}
-                        isAdmin={modoAdmin} isSameCasa={isSameCasa}
-                        participantes={evParts[ev.id]}
-                        expandido={eventoExpandido === ev.id}
-                        editando={editandoEventoId === ev.id}
-                        formEdit={formEditEvento}
-                        membros={membros}
-                        addPartOpen={addPartEventoId === ev.id}
-                        onToggleExpand={async () => {
-                          const abrindo = eventoExpandido !== ev.id;
-                          setEventoExpandido(abrindo ? ev.id : null);
-                          setEditandoEventoId(null);
-                          if (abrindo) { await carregarParticipantes(ev.id); await garantirMembros(); }
-                        }}
-                        onEdit={() => { setEditandoEventoId(ev.id); setFormEditEvento({ titulo: ev.titulo, descricao: ev.descricao || "", data_evento: ev.data_evento, hora_inicio: ev.hora_inicio || "", hora_fim: ev.hora_fim || "", local_evento: ev.local_evento || "", publica: ev.publica }); }}
-                        onCancelEdit={() => setEditandoEventoId(null)}
-                        onSaveEdit={() => salvarEdicaoEvento(ev.id)}
-                        onChangeFormEdit={setFormEditEvento}
-                        onDelete={() => excluirEvento(ev.id)}
-                        onAddPart={membroId => adicionarParticipante(ev.id, membroId)}
-                        onRemovePart={userId => removerParticipante(ev.id, userId)}
-                        onToggleAddPart={() => { setAddPartEventoId(p => p === ev.id ? null : ev.id); garantirMembros(); }}
-                        onConfirmar={status => confirmarPresenca(ev.id, status)}
-                      />
-                    ))}
-                  </div>
-                </details>
-              )}
-            </div>
-
-            {/* ── Seção: Atividades Regulares ── */}
-            <div className="glass rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock size={15} strokeWidth={1.5} className="text-cyan-glow" />
-                  <span className="text-sm font-medium text-foreground">Atividades Regulares</span>
-                </div>
-                {modoAdmin && (
-                  <button onClick={() => setShowNovoHorario(s => !s)}
-                    className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
-                    <Plus size={13} />Adicionar
-                  </button>
-                )}
-              </div>
-
-              {modoAdmin && showNovoHorario && (
-                <div className="px-6 py-4 border-b border-white/10 bg-cyan-50/20 space-y-3">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div><p className={labelCls}>Dia</p>
-                      <select value={novoHorario.dia} onChange={e => setNovoHorario(h => ({ ...h, dia: e.target.value }))} className={inputCls}>
-                        {DIAS.map(d => <option key={d}>{d}</option>)}
-                      </select>
-                    </div>
-                    <div><p className={labelCls}>Horário</p>
-                      <input type="time" value={novoHorario.hora} onChange={e => setNovoHorario(h => ({ ...h, hora: e.target.value }))} className={inputCls} />
-                    </div>
-                    <div><p className={labelCls}>Atividade</p>
-                      <input value={novoHorario.atividade} onChange={e => setNovoHorario(h => ({ ...h, atividade: e.target.value }))} placeholder="Ex.: Evangelização" className={inputCls} />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowNovoHorario(false)} className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-                    <button onClick={adicionarHorario} className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">Adicionar</button>
-                  </div>
-                </div>
-              )}
-
-              {(() => {
-                const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
-                if (horariosRegulares.length === 0) {
-                  return (
-                    <div className="px-6 py-8 text-center">
-                      <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
-                    </div>
-                  );
-                }
-                return (
-                  <div className="divide-y divide-white/5">
-                    {horariosRegulares.map((h, i) => (
-                      <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
-                          <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
-                          <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
-                        </div>
-                        {modoAdmin && (
-                          <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
-                            <X size={13} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-            </div>
-          </div>
-        )}
 
         {/* ══════════════ PROJETOS ══════════════ */}
         {aba === "projetos" && (
