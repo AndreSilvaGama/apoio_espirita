@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { 
-  MapPin, Phone, Mail, Globe, Building2, 
-  Heart, QrCode, Copy, Check, Info, Calendar 
+  MapPin, Phone, Mail, Globe, Building2 
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface CasaHeroProps {
   membros?: number;
@@ -27,74 +25,10 @@ function splitNome(nome: string): [string, string] {
   return [words.slice(0, 2).join(" "), words.slice(2).join(" ")];
 }
 
-function InfoItem({ Icon, label, value, isLink }: { Icon: any; label: string; value: string; isLink?: boolean }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        width: 22, 
-        height: 22, 
-        borderRadius: 6, 
-        background: "rgba(0, 74, 140, 0.04)", 
-        color: "#004a8c", 
-        flexShrink: 0, 
-        justifyContent: "center", 
-        marginTop: 2 
-      }}>
-        <Icon size={12} strokeWidth={1.8} />
-      </div>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <span style={{ 
-          fontFamily: "Inter, sans-serif", 
-          fontSize: "0.6rem", 
-          fontWeight: 700, 
-          textTransform: "uppercase", 
-          color: "#a3adb8", 
-          display: "block", 
-          lineHeight: 1,
-          marginBottom: 3
-        }}>
-          {label}
-        </span>
-        {isLink ? (
-          <a 
-            href={value.startsWith("http") ? value : `https://${value}`} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            style={{ 
-              fontFamily: "Inter, sans-serif", 
-              fontSize: "0.8rem", 
-              color: "#004a8c", 
-              textDecoration: "none", 
-              fontWeight: 400, 
-              wordBreak: "break-all" 
-            }} 
-            className="hover:underline"
-          >
-            {value}
-          </a>
-        ) : (
-          <span style={{ 
-            fontFamily: "Inter, sans-serif", 
-            fontSize: "0.8rem", 
-            color: "#455060", 
-            fontWeight: 300, 
-            wordBreak: "break-word" 
-          }}>
-            {value}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData }: CasaHeroProps) {
   const { profile } = useAuth();
   const [nomeCasa, setNomeCasa] = useState<string | null>(null);
   const [dataPagina, setDataPagina] = useState<any>(paginaData || null);
-  const [copiadoPix, setCopiadoPix] = useState(false);
 
   // Sync state if paginaData prop changes
   useEffect(() => {
@@ -157,17 +91,6 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
       : null
     : null;
 
-  const hasExtraInfo = dataPagina && (
-    dataPagina.descricao ||
-    dataPagina.missao ||
-    dataPagina.ano_fundacao ||
-    dataPagina.endereco ||
-    dataPagina.telefone ||
-    dataPagina.email_contato ||
-    dataPagina.site ||
-    dataPagina.chave_pix
-  );
-
   return (
     <section
       className="sw-rise sw-rise-1"
@@ -208,7 +131,7 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
             </h1>
 
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-              {/* Localização */}
+              {/* Localização / Endereço */}
               {(dataPagina?.endereco || displayCidade || displayUf) && (
                 <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
                   <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
@@ -229,7 +152,7 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
                 </>
               )}
 
-              {/* Telefone Rápido */}
+              {/* Telefone */}
               {dataPagina?.telefone && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
@@ -240,7 +163,7 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
                 </>
               )}
 
-              {/* Site Rápido */}
+              {/* Website */}
               {dataPagina?.site && (
                 <>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
@@ -255,6 +178,17 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
                     >
                       {dataPagina.site.replace(/https?:\/\/(www\.)?/, "")}
                     </a>
+                  </span>
+                </>
+              )}
+
+              {/* E-mail */}
+              {dataPagina?.email_contato && (
+                <>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }} />
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter, sans-serif", fontSize: "0.82rem", color: "#637080" }}>
+                    <Mail size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+                    {dataPagina.email_contato}
                   </span>
                 </>
               )}
@@ -297,266 +231,6 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
             </div>
           )}
         </div>
-
-        {/* Detailed Info Grid (Always visible for superior aesthetics and clear organization) */}
-        {hasExtraInfo && (
-          <div
-            style={{
-              marginTop: 32,
-              paddingTop: 32,
-              borderTop: "1px solid rgba(0, 20, 70, 0.06)",
-              width: "100%",
-            }}
-          >
-            <div style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
-              gap: 24 
-            }}>
-              {/* Column 1: Description & Mission */}
-              {(dataPagina.descricao || dataPagina.missao) && (
-                <div style={{ 
-                  display: "flex", 
-                  flexDirection: "column", 
-                  gap: 16, 
-                  background: "linear-gradient(135deg, rgba(124, 58, 237, 0.02) 0%, rgba(6, 182, 212, 0.02) 100%)", 
-                  border: "1px solid rgba(0, 20, 70, 0.04)", 
-                  borderRadius: 20, 
-                  padding: 20 
-                }}>
-                  {dataPagina.descricao && (
-                    <div>
-                      <span style={{ 
-                        fontFamily: "Inter, sans-serif", 
-                        fontSize: "0.7rem", 
-                        fontWeight: 700, 
-                        letterSpacing: "0.1em", 
-                        textTransform: "uppercase", 
-                        color: "#637080", 
-                        display: "block", 
-                        marginBottom: 6 
-                      }}>
-                        Sobre a Casa
-                      </span>
-                      <p style={{ 
-                        fontFamily: "Inter, sans-serif", 
-                        fontSize: "0.85rem", 
-                        color: "#455060", 
-                        fontWeight: 300, 
-                        lineHeight: 1.6, 
-                        margin: 0 
-                      }}>
-                        {dataPagina.descricao}
-                      </p>
-                    </div>
-                  )}
-                  {dataPagina.missao && (
-                    <div style={{ borderTop: "1px solid rgba(0, 20, 70, 0.05)", paddingTop: 16 }}>
-                      <span style={{ 
-                        fontFamily: "Inter, sans-serif", 
-                        fontSize: "0.7rem", 
-                        fontWeight: 700, 
-                        letterSpacing: "0.1em", 
-                        textTransform: "uppercase", 
-                        color: "#637080", 
-                        display: "block", 
-                        marginBottom: 6 
-                      }}>
-                        Nossa Missão
-                      </span>
-                      <p style={{ 
-                        fontFamily: "Inter, sans-serif", 
-                        fontSize: "0.85rem", 
-                        color: "#455060", 
-                        fontWeight: 300, 
-                        lineHeight: 1.6, 
-                        margin: 0 
-                      }}>
-                        {dataPagina.missao}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Column 2: Contact & Location */}
-              <div style={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                gap: 16, 
-                background: "#fafbfc", 
-                border: "1px solid rgba(0, 20, 70, 0.04)", 
-                borderRadius: 20, 
-                padding: 20 
-              }}>
-                <span style={{ 
-                  fontFamily: "Inter, sans-serif", 
-                  fontSize: "0.7rem", 
-                  fontWeight: 700, 
-                  letterSpacing: "0.1em", 
-                  textTransform: "uppercase", 
-                  color: "#637080", 
-                  display: "block", 
-                  marginBottom: 4 
-                }}>
-                  Contato e Localização
-                </span>
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  {dataPagina.ano_fundacao && (
-                    <InfoItem Icon={Building2} label="Fundação" value={`Ano de ${dataPagina.ano_fundacao}`} />
-                  )}
-                  {dataPagina.telefone && (
-                    <InfoItem Icon={Phone} label="Telefone" value={dataPagina.telefone} />
-                  )}
-                  {dataPagina.email_contato && (
-                    <InfoItem Icon={Mail} label="E-mail" value={dataPagina.email_contato} />
-                  )}
-                  {dataPagina.site && (
-                    <InfoItem Icon={Globe} label="Website" value={dataPagina.site} isLink />
-                  )}
-                  {dataPagina.endereco && (
-                    <InfoItem 
-                      Icon={MapPin} 
-                      label="Endereço" 
-                      value={[
-                        dataPagina.endereco, 
-                        dataPagina.bairro, 
-                        dataPagina.cidade && `${dataPagina.cidade}/${dataPagina.uf}`, 
-                        dataPagina.cep
-                      ].filter(Boolean).join(", ")} 
-                    />
-                  )}
-                </div>
-              </div>
-
-              {/* Column 3: Donations & PIX */}
-              <div style={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                gap: 16, 
-                background: "linear-gradient(135deg, rgba(244, 63, 94, 0.02) 0%, rgba(244, 63, 94, 0.05) 100%)", 
-                border: "1px solid rgba(244, 63, 94, 0.1)", 
-                borderRadius: 20, 
-                padding: 20 
-              }}>
-                <span style={{ 
-                  fontFamily: "Inter, sans-serif", 
-                  fontSize: "0.7rem", 
-                  fontWeight: 700, 
-                  letterSpacing: "0.1em", 
-                  textTransform: "uppercase", 
-                  color: "#e11d48", 
-                  display: "block", 
-                  marginBottom: 2 
-                }}>
-                  Contribua com a Casa
-                </span>
-                <p style={{ 
-                  fontFamily: "Inter, sans-serif", 
-                  fontSize: "0.8rem", 
-                  color: "#637080", 
-                  fontWeight: 300, 
-                  lineHeight: 1.5, 
-                  margin: 0 
-                }}>
-                  {dataPagina.texto_doacao || "Sua contribuição ajuda a manter os trabalhos espirituais e de assistência da nossa casa."}
-                </p>
-
-                {dataPagina.chave_pix ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ 
-                        padding: 6, 
-                        background: "#ffffff", 
-                        borderRadius: 12, 
-                        border: "1px solid rgba(244, 63, 94, 0.15)", 
-                        boxShadow: "0 2px 8px rgba(244, 63, 94, 0.04)" 
-                      }}>
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(dataPagina.chave_pix)}&bgcolor=ffffff&color=1e3a5f&margin=2`}
-                          alt="QR Code PIX" 
-                          width={110} 
-                          height={110} 
-                          style={{ borderRadius: 8, display: "block" }} 
-                        />
-                      </div>
-                    </div>
-                    
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      <span style={{ 
-                        fontFamily: "Inter, sans-serif", 
-                        fontSize: "0.65rem", 
-                        fontWeight: 700, 
-                        textTransform: "uppercase", 
-                        color: "#a3adb8" 
-                      }}>
-                        Chave PIX
-                      </span>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <div style={{ 
-                          flex: 1, 
-                          fontFamily: "monospace", 
-                          fontSize: "0.75rem", 
-                          background: "#ffffff", 
-                          border: "1px solid rgba(0, 0, 0, 0.05)", 
-                          padding: "6px 10px", 
-                          borderRadius: 8, 
-                          overflow: "hidden", 
-                          textOverflow: "ellipsis", 
-                          whiteSpace: "nowrap", 
-                          color: "#455060" 
-                        }}>
-                          {dataPagina.chave_pix}
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(dataPagina.chave_pix);
-                            setCopiadoPix(true);
-                            toast.success("Chave PIX copiada com sucesso!");
-                            setTimeout(() => setCopiadoPix(false), 2000);
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 32,
-                            height: 32,
-                            borderRadius: 8,
-                            border: "1px solid rgba(244, 63, 94, 0.2)",
-                            background: "#ffffff",
-                            color: "#e11d48",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease",
-                            outline: "none"
-                          }}
-                          title="Copiar Chave PIX"
-                        >
-                          {copiadoPix ? <Check size={14} style={{ color: "#10b981" }} /> : <Copy size={14} />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ 
-                    display: "flex", 
-                    flexDirection: "column", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    padding: "16px 0", 
-                    border: "1px dashed rgba(244, 63, 94, 0.2)", 
-                    borderRadius: 12, 
-                    background: "rgba(255,255,255,0.4)" 
-                  }}>
-                    <QrCode size={24} strokeWidth={1} style={{ color: "rgba(244, 63, 94, 0.4)", marginBottom: 6 }} />
-                    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", color: "#a3adb8" }}>
-                      PIX não configurado
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );
