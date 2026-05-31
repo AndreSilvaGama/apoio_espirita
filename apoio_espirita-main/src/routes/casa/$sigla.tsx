@@ -838,65 +838,286 @@ function PaginaCasa() {
               </div>
             </div>
 
-            {/* Mensagem do Dia */}
+            {/* Mensagem do Dia (Compacta) */}
             <div
-              className="relative rounded-3xl overflow-hidden border border-violet-200/60 shadow-lg"
-              style={{ background: "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.965 0.01 260) 100%)" }}
+              className="relative rounded-2xl overflow-hidden border border-violet-200/50 shadow-sm"
+              style={{ background: "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.97 0.01 260) 100%)" }}
             >
-              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-violet-300/10 to-cyan-300/10 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-cyan-300/10 to-violet-300/10 blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-300/5 to-cyan-300/5 blur-2xl pointer-events-none" />
 
-              <div className="relative px-6 py-6 md:px-10 md:py-8 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="shrink-0 w-12 h-12 rounded-2xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
-                  <Star size={22} strokeWidth={1.5} className="text-violet-600" />
+              <div className="relative px-5 py-4 md:px-7 md:py-5 flex items-center gap-4">
+                <div className="shrink-0 w-10 h-10 rounded-xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
+                  <Star size={18} strokeWidth={1.5} className="text-violet-600" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs uppercase tracking-[0.35em] text-violet-600 font-semibold mb-2">Mensagem do Dia</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-violet-600 font-semibold">Mensagem do Dia</p>
+                    {todayMsg?.sigla_casa && (
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-violet-500/80 bg-violet-50 border border-violet-100/30 px-2 py-0.5 rounded-full">
+                        {todayMsg.sigla_casa}
+                      </span>
+                    )}
+                  </div>
                   {todayMsg ? (
-                    <>
-                      <blockquote className="text-lg md:text-xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
+                    <div className="space-y-1">
+                      <blockquote className="text-sm md:text-base font-serif font-light text-gray-800 leading-relaxed italic pr-4">
                         "{todayMsg.texto}"
                       </blockquote>
-                      {todayMsg.referencia && (
-                        <p className="mt-2 text-sm text-gray-500 font-light italic">— {todayMsg.referencia}</p>
-                      )}
-                      <div className="mt-3 flex items-center gap-3 flex-wrap">
-                        <span className="text-xs font-medium text-violet-700">{todayMsg.autor_nome}</span>
-                        {todayMsg.sigla_casa && (
-                          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 bg-white/80 border border-violet-100/50 px-2.5 py-0.5 rounded-full">
-                            {todayMsg.sigla_casa}
-                          </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold text-violet-700">{todayMsg.autor_nome}</span>
+                        {todayMsg.referencia && (
+                          <span className="text-xs text-gray-400 font-light italic">— {todayMsg.referencia}</span>
                         )}
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <>
-                      <blockquote className="text-lg md:text-xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
+                    <div className="space-y-1">
+                      <blockquote className="text-sm md:text-base font-serif font-light text-gray-800 leading-relaxed italic pr-4">
                         "{DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].text}"
                       </blockquote>
-                      <p className="mt-2 text-sm text-gray-500 font-light italic">
+                      <p className="text-xs text-gray-400 font-light italic">
                         — {DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].author}
                       </p>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
-              <div className="px-6 py-4 md:px-10 flex items-center gap-5 border-t border-violet-100/40 pt-3 bg-white/20">
+              <div className="px-5 py-2.5 md:px-7 flex items-center gap-4 border-t border-violet-100/30 bg-white/10">
                 <Link
                   to="/mensagem-do-dia"
-                  className="text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
+                  className="text-[10px] font-bold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
                 >
                   Enviar mensagem
                 </Link>
                 <Link
                   to="/mensagem-do-dia"
                   search={{ tab: "fila" }}
-                  className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
+                  className="text-[10px] font-semibold text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
                 >
                   Ver fila
                 </Link>
               </div>
             </div>
+
+            {/* Mural de Palestras GECAL */}
+            {sigla === "GECAL" && (
+              <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up" style={{ animationDuration: '500ms' }}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/40 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
+                      <Megaphone className="w-5 h-5 text-violet-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 leading-tight">Mural da Casa</h3>
+                      <p className="text-xs text-gray-500 font-light mt-0.5">Palestras Públicas &amp; Escalas de Junho 2026</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700">
+                      Sexta-feira · 20h
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                      Presencial &amp; Online
+                    </span>
+                  </div>
+                </div>
+
+                {/* Grid para Desktop */}
+                <div className="hidden md:block space-y-4">
+                  <div className="grid grid-cols-12 gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 pb-2 border-b border-violet-100/20">
+                    <div className="col-span-1 text-center">Data</div>
+                    <div className="col-span-4">Tema da Palestra</div>
+                    <div className="col-span-2.5">Facilitador / Casa</div>
+                    <div className="col-span-1.5">Coordenador</div>
+                    <div className="col-span-3">Equipes (Passe / Stream / Recepção)</div>
+                  </div>
+
+                  <div className="divide-y divide-violet-100/30">
+                    {[
+                      {
+                        dia: "05",
+                        tema: "Exemplificar o bem: Nossa luz deve brilhar",
+                        facilitador: "Sandra Helena",
+                        casa: "GECAL",
+                        coordenador: "BELO",
+                        passe: ["Luana", "Jacqueline", "Bárbara", "Lidiane"],
+                        streamyard: ["Bárbara", "Igor"],
+                        recepcao: "Marion",
+                      },
+                      {
+                        dia: "12",
+                        tema: "O Dever e a Consciência: O Serviço ao Próximo como mandamento.",
+                        facilitador: "Marco Antônio",
+                        casa: "GECAL",
+                        coordenador: "MARCELI",
+                        passe: ["Ana Lúcia", "Belo"],
+                        streamyard: ["André", "Tamires"],
+                        recepcao: "Zélia",
+                      },
+                      {
+                        dia: "19",
+                        tema: "A Causa Primária de Todas as Coisas: Raciocinando sobre a Existência do Criador",
+                        facilitador: "Jailton Guilherme",
+                        casa: "GENOVA",
+                        coordenador: "BEATRIZ",
+                        passe: ["Priscila", "Graça", "Belo", "Ana Lúcia"],
+                        streamyard: ["Fabiana", "Thiago"],
+                        recepcao: "Jacqueline",
+                      },
+                      {
+                        dia: "26",
+                        tema: "Zaqueu, o Publicano: Uma História de Transformação pelo Encontro com Jesus",
+                        facilitador: "Claudiomar Fernandes",
+                        casa: "G.E. Luz no Lar",
+                        coordenador: "PRISCILA",
+                        passe: ["Claudia Kaku", "Leda", "Luana", "Marceli"],
+                        streamyard: ["Emerson", "Virginia"],
+                        recepcao: "Jorge",
+                      },
+                    ].map((item) => (
+                      <div key={item.dia} className="grid grid-cols-12 gap-4 items-center py-4 first:pt-0 last:pb-0">
+                        {/* Data */}
+                        <div className="col-span-1 flex flex-col items-center">
+                          <span className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-base font-bold text-amber-700 shadow-sm">
+                            {item.dia}
+                          </span>
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Jun</span>
+                        </div>
+
+                        {/* Tema */}
+                        <div className="col-span-4 pr-3">
+                          <p className="text-sm font-semibold text-gray-800 leading-snug font-serif italic">
+                            "{item.tema}"
+                          </p>
+                        </div>
+
+                        {/* Facilitador */}
+                        <div className="col-span-2.5">
+                          <p className="text-sm font-semibold text-gray-800">{item.facilitador}</p>
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2.5 py-0.5 rounded-full mt-1">
+                            {item.casa}
+                          </span>
+                        </div>
+
+                        {/* Coordenador */}
+                        <div className="col-span-1.5">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{item.coordenador}</p>
+                        </div>
+
+                        {/* Equipes */}
+                        <div className="col-span-3 space-y-2 text-xs">
+                          <div className="flex gap-1.5 items-start">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
+                            <span className="text-gray-600 font-light leading-relaxed">{item.passe.join(" · ")}</span>
+                          </div>
+                          <div className="flex gap-1.5 items-start">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
+                            <span className="text-gray-600 font-light leading-relaxed">{item.streamyard.join(" e ")}</span>
+                          </div>
+                          <div className="flex gap-1.5 items-start">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
+                            <span className="text-gray-600 font-light leading-relaxed">{item.recepcao}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cards para Mobile */}
+                <div className="block md:hidden space-y-4">
+                  {[
+                    {
+                      dia: "05",
+                      tema: "Exemplificar o bem: Nossa luz deve brilhar",
+                      facilitador: "Sandra Helena",
+                      casa: "GECAL",
+                      coordenador: "BELO",
+                      passe: ["Luana", "Jacqueline", "Bárbara", "Lidiane"],
+                      streamyard: ["Bárbara", "Igor"],
+                      recepcao: "Marion",
+                    },
+                    {
+                      dia: "12",
+                      tema: "O Dever e a Consciência: O Serviço ao Próximo como mandamento.",
+                      facilitador: "Marco Antônio",
+                      casa: "GECAL",
+                      coordenador: "MARCELI",
+                      passe: ["Ana Lúcia", "Belo"],
+                      streamyard: ["André", "Tamires"],
+                      recepcao: "Zélia",
+                    },
+                    {
+                      dia: "19",
+                      tema: "A Causa Primária de Todas as Coisas: Raciocinando sobre a Existência do Criador",
+                      facilitador: "Jailton Guilherme",
+                      casa: "GENOVA",
+                      coordenador: "BEATRIZ",
+                      passe: ["Priscila", "Graça", "Belo", "Ana Lúcia"],
+                      streamyard: ["Fabiana", "Thiago"],
+                      recepcao: "Jacqueline",
+                    },
+                    {
+                      dia: "26",
+                      tema: "Zaqueu, o Publicano: Uma História de Transformação pelo Encontro com Jesus",
+                      facilitador: "Claudiomar Fernandes",
+                      casa: "G.E. Luz no Lar",
+                      coordenador: "PRISCILA",
+                      passe: ["Claudia Kaku", "Leda", "Luana", "Marceli"],
+                      streamyard: ["Emerson", "Virginia"],
+                      recepcao: "Jorge",
+                    },
+                  ].map((item) => (
+                    <div key={item.dia} className="glass rounded-2xl p-4 border border-violet-100/40 space-y-3">
+                      {/* Header do Card */}
+                      <div className="flex items-center justify-between border-b border-violet-100/30 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/50 flex items-center justify-center text-sm font-bold text-amber-700 shadow-inner">
+                            {item.dia}
+                          </span>
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Junho · Sexta</span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-gray-500">Coordenador: {item.coordenador}</span>
+                      </div>
+
+                      {/* Conteúdo do Card */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-gray-800 leading-relaxed font-serif italic">
+                          "{item.tema}"
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-xs font-semibold text-gray-700">{item.facilitador}</span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/40 px-2 py-0.5 rounded-full">
+                            {item.casa}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Rodapé / Equipes */}
+                      <div className="border-t border-violet-100/30 pt-2 space-y-1.5 text-xs">
+                        <div className="flex gap-1.5 items-start">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
+                          <span className="text-gray-500 font-light">{item.passe.join(" · ")}</span>
+                        </div>
+                        <div className="flex gap-1.5 items-start">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
+                          <span className="text-gray-500 font-light">{item.streamyard.join(" e ")}</span>
+                        </div>
+                        <div className="flex gap-1.5 items-start">
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
+                          <span className="text-gray-500 font-light">{item.recepcao}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between items-center text-[10px] text-gray-400 font-light border-t border-violet-100/30 pt-4">
+                  <p>Escala interna de tarefeiros · GECAL Itaboraí</p>
+                  <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>
+                </div>
+              </section>
+            )}
 
             {/* Próximos Eventos */}
             {agendaEventos.length > 0 && (
