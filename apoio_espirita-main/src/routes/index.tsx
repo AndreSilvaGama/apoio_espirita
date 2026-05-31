@@ -266,10 +266,15 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
 
   const handleGoogle = async () => {
     resetState();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/inicio` },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/inicio` },
+      });
+      if (error) throw error;
+    } catch (e: any) {
+      setError(e.message || "Erro ao conectar com o Google.");
+    }
   };
 
   const handleForgot = async (e: React.FormEvent) => {

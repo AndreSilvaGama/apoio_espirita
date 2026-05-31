@@ -31,10 +31,15 @@ function Login() {
 
   const handleGoogle = async () => {
     setError("");
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/inicio` },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/inicio` },
+      });
+      if (error) throw error;
+    } catch (e: any) {
+      setError(e.message || "Erro ao conectar com o Google.");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
