@@ -267,11 +267,16 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
   const handleGoogle = async () => {
     resetState();
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${window.location.origin}/inicio` },
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.");
+      }
     } catch (e: any) {
       setError(e.message || "Erro ao conectar com o Google.");
     }
