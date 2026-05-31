@@ -369,6 +369,7 @@ function PaginaCasa() {
   const [formDoacoes, setFormDoacoes] = useState({ chave_pix: "", texto_doacao: "" });
 
   /* Mural de Escalas UI */
+  const [escalaDiaAtivo, setEscalaDiaAtivo] = useState<string>("");
   const [showNovoMural, setShowNovoMural] = useState(false);
   const [editandoMuralId, setEditandoMuralId] = useState<string | null>(null);
   const [formMural, setFormMural] = useState({
@@ -1266,198 +1267,144 @@ function PaginaCasa() {
                   }
 
                   const diasSemana = Array.from(new Set(escalas.map(e => e.dia_semana)));
+                  const diaAtivo = escalaDiaAtivo || diasSemana[0] || "Sexta-feira";
+                  const items = escalas
+                    .filter(e => e.dia_semana === diaAtivo)
+                    .sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
 
                   return (
-                    <div className="space-y-8">
-                      {diasSemana.map(diaSemana => {
-                        const items = escalas
-                          .filter(e => e.dia_semana === diaSemana)
-                          .sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
+                    <div className="space-y-6">
+                      {/* Abas dos Dias da Semana */}
+                      {diasSemana.length > 1 && (
+                        <div className="flex gap-2 border-b border-violet-100/40 pb-2 overflow-x-auto">
+                          {diasSemana.map(d => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setEscalaDiaAtivo(d)}
+                              className={`px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all ${
+                                diaAtivo === d
+                                  ? "bg-violet-600 text-white shadow-sm"
+                                  : "bg-violet-50 text-violet-600 hover:bg-violet-100"
+                              }`}
+                            >
+                              {d}s
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
-                        if (items.length === 0) return null;
-
-                        return (
-                          <div key={diaSemana} className="space-y-4">
-                            <div className="flex items-center gap-2 pb-1 border-b border-violet-100/30">
-                              <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0 animate-pulse" />
-                              <h4 className="text-xs font-bold text-violet-700 uppercase tracking-widest">
-                                {diaSemana}s
-                              </h4>
-                            </div>
-
-                            {/* Desktop Grid */}
-                            <div className="hidden md:block space-y-4">
-                              <div className="grid grid-cols-12 gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 pb-1 border-b border-violet-100/10">
-                                <div className="col-span-1 text-center">Data</div>
-                                <div className="col-span-4">Tema da Palestra</div>
-                                <div className="col-span-2.5">Facilitador / Casa</div>
-                                <div className="col-span-1.5">Coordenador</div>
-                                <div className="col-span-3">Equipes (Passe / Stream / Recepção)</div>
-                              </div>
-
-                              <div className="divide-y divide-violet-100/20">
-                                {items.map((item) => (
-                                  <div key={item.id} className="grid grid-cols-12 gap-4 items-center py-4 first:pt-0 last:pb-0 relative group">
-                                    {/* Data */}
-                                    <div className="col-span-1 flex flex-col items-center">
-                                      <span className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-base font-bold text-amber-700 shadow-sm">
-                                        {item.dia}
-                                      </span>
-                                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                        {item.mes_ano.split(" ")[0].slice(0, 3)}
-                                      </span>
-                                    </div>
-
-                                    {/* Tema */}
-                                    <div className="col-span-4 pr-3 relative">
-                                      <p className="text-sm font-semibold text-gray-800 leading-snug font-serif italic">
-                                        "{item.tema}"
-                                      </p>
-                                      {/* Admin controls */}
-                                      {modoAdmin && (
-                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white/95 shadow-md rounded-xl p-0.5 border border-gray-100 z-10">
-                                          <button
-                                            type="button"
-                                            onClick={() => iniciarEdicaoMuralItem(item)}
-                                            className="p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 transition-colors"
-                                            title="Editar"
-                                          >
-                                            <Edit3 size={12} />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => removerMuralItem(item.id)}
-                                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                                            title="Excluir"
-                                          >
-                                            <Trash2 size={12} />
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* Facilitador */}
-                                    <div className="col-span-2.5">
-                                      <p className="text-sm font-semibold text-gray-800 leading-tight">{item.facilitador || "A definir"}</p>
-                                      {item.casa && (
-                                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2 py-0.5 rounded-full mt-1.5">
-                                          {item.casa}
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    {/* Coordenador */}
-                                    <div className="col-span-1.5">
-                                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{item.coordenador || "—"}</p>
-                                    </div>
-
-                                    {/* Equipes */}
-                                    <div className="col-span-3 space-y-1.5 text-xs">
-                                      {item.passe && (
-                                        <div className="flex gap-1.5 items-start">
-                                          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
-                                          <span className="text-gray-600 font-light leading-relaxed">{item.passe}</span>
-                                        </div>
-                                      )}
-                                      {item.streamyard && (
-                                        <div className="flex gap-1.5 items-start">
-                                          <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
-                                          <span className="text-gray-600 font-light leading-relaxed">{item.streamyard}</span>
-                                        </div>
-                                      )}
-                                      {item.recepcao && (
-                                        <div className="flex gap-1.5 items-start">
-                                          <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
-                                          <span className="text-gray-600 font-light leading-relaxed">{item.recepcao}</span>
-                                        </div>
-                                      )}
-                                    </div>
+                      {/* Lista de Escalas do Dia Ativo */}
+                      {items.length === 0 ? (
+                        <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
+                          Nenhuma escala registrada para este dia.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {items.map((item) => (
+                            <div key={item.id} className="relative bg-white border border-violet-100/50 rounded-2xl p-5 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-5">
+                              {/* Esquerda: Bloco de Data e Coordenador */}
+                              <div className="flex md:flex-col items-center justify-between md:justify-center md:border-r md:border-violet-100/30 pr-0 md:pr-5 md:w-32 shrink-0 gap-3">
+                                <div className="flex items-center md:flex-col gap-3">
+                                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex flex-col items-center justify-center shadow-inner">
+                                    <span className="text-xl font-bold text-amber-700 leading-none">{item.dia}</span>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Mobile list */}
-                            <div className="block md:hidden space-y-4">
-                              {items.map((item) => (
-                                <div key={item.id} className="glass rounded-2xl p-4 border border-violet-100/40 space-y-3 relative">
-                                  {/* Header */}
-                                  <div className="flex items-center justify-between border-b border-violet-100/20 pb-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/50 flex items-center justify-center text-sm font-bold text-amber-700 shadow-inner">
-                                        {item.dia}
-                                      </span>
-                                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                        {item.mes_ano}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] font-semibold text-gray-500">Coordenador: {item.coordenador || "—"}</span>
-                                      {modoAdmin && (
-                                        <div className="flex items-center gap-1 border-l border-gray-200 pl-2">
-                                          <button
-                                            type="button"
-                                            onClick={() => iniciarEdicaoMuralItem(item)}
-                                            className="p-1 text-cyan-600"
-                                            title="Editar"
-                                          >
-                                            <Edit3 size={14} />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => removerMuralItem(item.id)}
-                                            className="p-1 text-red-500"
-                                            title="Excluir"
-                                          >
-                                            <Trash2 size={14} />
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Content */}
-                                  <div className="space-y-2">
-                                    <p className="text-sm font-semibold text-gray-800 leading-relaxed font-serif italic">
-                                      "{item.tema}"
-                                    </p>
-                                    <div className="flex items-center gap-2 pt-0.5">
-                                      <span className="text-xs font-semibold text-gray-700">{item.facilitador || "A definir"}</span>
-                                      {item.casa && (
-                                        <span className="text-[8px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/40 px-2 py-0.5 rounded-full">
-                                          {item.casa}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* Equipes */}
-                                  <div className="border-t border-violet-100/20 pt-2 space-y-1.5 text-xs">
-                                    {item.passe && (
-                                      <div className="flex gap-1.5 items-start">
-                                        <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
-                                        <span className="text-gray-500 font-light">{item.passe}</span>
-                                      </div>
-                                    )}
-                                    {item.streamyard && (
-                                      <div className="flex gap-1.5 items-start">
-                                        <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
-                                        <span className="text-gray-500 font-light">{item.streamyard}</span>
-                                      </div>
-                                    )}
-                                    {item.recepcao && (
-                                      <div className="flex gap-1.5 items-start">
-                                        <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
-                                        <span className="text-gray-500 font-light">{item.recepcao}</span>
-                                      </div>
-                                    )}
+                                  <div className="text-left md:text-center">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                                      {item.mes_ano.split(" ")[0]}
+                                    </span>
+                                    <span className="text-[9px] text-gray-500 font-medium md:block">
+                                      {item.dia_semana}
+                                    </span>
                                   </div>
                                 </div>
-                              ))}
+                                
+                                {item.coordenador && (
+                                  <div className="text-right md:text-center mt-1">
+                                    <span className="text-[8px] uppercase tracking-widest font-bold text-gray-400 block">Coordenação</span>
+                                    <span className="text-xs font-semibold text-gray-700 block">{item.coordenador}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Centro: Palestra (Tema & Facilitador) */}
+                              <div className="flex-1 space-y-3">
+                                <div>
+                                  <span className="text-[9px] font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
+                                    Palestra Pública
+                                  </span>
+                                  <h5 className="text-base font-serif italic text-gray-800 font-medium leading-relaxed mt-2.5">
+                                    "{item.tema}"
+                                  </h5>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                                  <span className="text-sm font-semibold text-gray-700">{item.facilitador || "Facilitador a definir"}</span>
+                                  {item.casa && (
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2 py-0.5 rounded-full">
+                                      {item.casa}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Direita: Escala de Equipes */}
+                              <div className="md:w-64 shrink-0 bg-gray-50/50 border border-gray-100 rounded-xl p-3.5 space-y-2.5 text-xs">
+                                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-200/60 pb-1">
+                                  Tarefeiros da Escala
+                                </div>
+                                
+                                {item.passe && (
+                                  <div className="space-y-0.5">
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Passe</span>
+                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.passe}</p>
+                                  </div>
+                                )}
+                                
+                                {item.streamyard && (
+                                  <div className="space-y-0.5">
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Transmissão</span>
+                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.streamyard}</p>
+                                  </div>
+                                )}
+                                
+                                {item.recepcao && (
+                                  <div className="space-y-0.5">
+                                    <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Recepção</span>
+                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.recepcao}</p>
+                                  </div>
+                                )}
+                                
+                                {!item.passe && !item.streamyard && !item.recepcao && (
+                                  <p className="text-[11px] text-gray-400 italic">Nenhum tarefeiro escalado ainda.</p>
+                                )}
+                              </div>
+
+                              {/* Botões de Ação para Admin */}
+                              {modoAdmin && (
+                                <div className="absolute right-3 top-3 flex items-center gap-1 bg-white/95 shadow-sm rounded-xl p-0.5 border border-gray-200">
+                                  <button
+                                    type="button"
+                                    onClick={() => iniciarEdicaoMuralItem(item)}
+                                    className="p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 transition-colors"
+                                    title="Editar"
+                                  >
+                                    <Edit3 size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => removerMuralItem(item.id)}
+                                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                    title="Excluir"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        );
-                      })}
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
