@@ -401,6 +401,7 @@ function NavBar() {
           </Link>
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
+          <Link to="/feb" className={linkCls("/feb")}>Biblioteca</Link>
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
@@ -445,7 +446,7 @@ function NavBar() {
           <div ref={ajudaRef} className="relative">
             <button
               onClick={() => { setAjudaOpen((o) => !o); setRecursosOpen(false); }}
-              className={dropBtnCls(["/painel", "/feb", "/ajuda", "/admin", "/permissoes"])}
+              className={dropBtnCls(["/painel", "/ajuda", "/admin", "/permissoes"])}
             >
               Ajuda
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`} />
@@ -461,10 +462,6 @@ function NavBar() {
                 <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
                   Status do Projeto
-                </Link>
-                <Link to="/feb" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <BookOpen size={14} strokeWidth={1.5} className="text-[#004a8c]" />
-                  Documentos FEB
                 </Link>
                 <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
                   <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
@@ -515,6 +512,9 @@ function NavBar() {
             </Link>
             <Link to="/evangelizacao" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Evangelização
+            </Link>
+            <Link to="/feb" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+              Biblioteca
             </Link>
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
@@ -568,9 +568,6 @@ function NavBar() {
                 )}
                 <Link to="/painel" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Status do Projeto
-                </Link>
-                <Link to="/feb" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                  Documentos FEB
                 </Link>
                 <Link to="/ajuda" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   FAQ / Dúvidas

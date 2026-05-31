@@ -499,9 +499,9 @@ function Feb() {
         <div className="flex items-start justify-between mb-10 flex-wrap gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">Federação Espírita Brasileira</p>
-            <h1 className="text-3xl font-light text-foreground">Documentos e Orientações</h1>
+            <h1 className="text-3xl font-light text-foreground">Biblioteca</h1>
             <p className="mt-2 text-sm text-muted-foreground font-light">
-              Publicações oficiais da FEB disponíveis para consulta e download.
+              Documentos e orientações oficiais da FEB disponíveis para consulta e download.
             </p>
           </div>
           <button
