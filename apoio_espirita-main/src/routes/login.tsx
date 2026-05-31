@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -43,7 +44,11 @@ function Login() {
         throw new Error("Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.");
       }
     } catch (e: any) {
-      setError(e.message || "Erro ao conectar com o Google.");
+      console.error("Google OAuth error:", e);
+      const msg = e.message || "Erro ao conectar com o Google.";
+      setError(msg);
+      toast.error(msg);
+      alert("Erro ao conectar com o Google: " + msg);
     }
   };
 

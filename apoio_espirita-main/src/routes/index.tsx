@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Microscope, Infinity, Unlock, Heart } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Particles } from "@/components/Particles";
 import { SeamlessVideo } from "@/components/SeamlessVideo";
 import { AmbientAudio } from "@/components/AmbientAudio";
@@ -278,7 +279,11 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
         throw new Error("Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.");
       }
     } catch (e: any) {
-      setError(e.message || "Erro ao conectar com o Google.");
+      console.error("Google OAuth error:", e);
+      const msg = e.message || "Erro ao conectar com o Google.";
+      setError(msg);
+      toast.error(msg);
+      alert("Erro ao conectar com o Google: " + msg);
     }
   };
 
