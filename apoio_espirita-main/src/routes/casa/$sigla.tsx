@@ -433,6 +433,31 @@ function PaginaCasa() {
   const [eventosCount, setEventosCount] = useState<number | undefined>(undefined);
 
 
+  /* Sync form states with loaded page data */
+  useEffect(() => {
+    if (pagina) {
+      setFormSobre({
+        nome_completo: pagina.nome_completo || "",
+        descricao: pagina.descricao || "",
+        missao: pagina.missao || "",
+        ano_fundacao: pagina.ano_fundacao,
+        cep: pagina.cep || "",
+        endereco: pagina.endereco || "",
+        bairro: pagina.bairro || "",
+        cidade: pagina.cidade || "",
+        uf: pagina.uf || "",
+        telefone: pagina.telefone || "",
+        email_contato: pagina.email_contato || "",
+        site: pagina.site || "",
+      });
+      setFormDoacoes({
+        chave_pix: pagina.chave_pix || "",
+        texto_doacao: pagina.texto_doacao || "",
+      });
+    }
+  }, [pagina]);
+
+
   /* ── Admin check ── */
   const isAdmin = !loading && !!user && !!profile && (
     profile.cargo_principal === "DEV" ||
@@ -1029,7 +1054,15 @@ function PaginaCasa() {
     <main className="page-light min-h-screen pt-14 pb-20">
 
       {/* Premium Hero with espectacular destaque for the name */}
-      <CasaHero membros={membrosCount} eventos={eventosCount} />
+      <CasaHero 
+        membros={membrosCount} 
+        eventos={eventosCount} 
+        sigla={sigla}
+        nome={pagina.nome_completo || sigla}
+        cidade={pagina.cidade}
+        uf={pagina.uf}
+        paginaData={pagina}
+      />
 
       <div className="mx-auto max-w-4xl px-4">
 

@@ -42,9 +42,9 @@ const roadmap: Item[] = [
   { status: "planejado", titulo: "Perfil com habilidades, situação de emprego e disponibilidade para voluntariado", descricao: "Cada membro pode informar suas habilidades profissionais, se está empregado ou em busca de emprego, e se está disponível para ser voluntário dentro ou fora da casa espírita" },
   { status: "planejado", titulo: "Espaço pessoal para contar a própria história de vida", descricao: "Cada membro pode escrever sua história pessoal no perfil e escolher se quer que ela fique visível para outros membros ou apenas para si mesmo" },
   { status: "planejado", titulo: "Perfil infantil 'Pequena Vinha' — acesso especial para crianças", descricao: "Um tipo de login especial com um nome carinhoso para as crianças acessarem o site. Ao entrar como 'Pequena Vinha', a tela inicial mostra apenas conteúdos adequados para crianças — jogos, histórias e evangelização — ocultando o restante" },
-  { status: "planejado", titulo: "Cadastro completo da casa espírita pelo Presidente", descricao: "O Presidente cadastra os dados da casa: nome, endereço, telefone, foto e informações de contato · Os membros se vinculam à casa pela sigla" },
+  { status: "feito", titulo: "Cadastro completo da casa espírita pelo Presidente", descricao: "O Presidente cadastra os dados da casa: nome, endereço, telefone, foto e informações de contato · Os membros se vinculam à casa pela sigla" },
   { status: "planejado", titulo: "Mapa interativo das casas espíritas cadastradas", descricao: "Visualização no mapa de todas as casas cadastradas · Filtros por cidade e estado · Botão para abrir no Google Maps e traçar o caminho" },
-  { status: "planejado", titulo: "Chave PIX da casa espírita para receber doações e pagamentos do bazar", descricao: "O Presidente cadastra a chave PIX da casa · O sistema gera um QR Code para impressão e uso nas reuniões e no bazar on-line" },
+  { status: "feito", titulo: "Chave PIX da casa espírita para receber doações e pagamentos do bazar", descricao: "O Presidente cadastra a chave PIX da casa · O sistema gera um QR Code para impressão e uso nas reuniões e no bazar on-line" },
 
   // ── PENDENTE — Conteúdo e espiritualidade ────────────────────────────────
 
