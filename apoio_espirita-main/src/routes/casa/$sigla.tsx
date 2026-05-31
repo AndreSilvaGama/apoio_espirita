@@ -983,7 +983,7 @@ function PaginaCasa() {
           {([
             ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
             { id: "mural",       label: "Mural",       Icon: MessageSquare },
-            { id: "sobre",       label: "Sobre",        Icon: Info },
+            { id: "sobre",       label: "Atividades",   Icon: Info },
             { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
           ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
@@ -1093,7 +1093,7 @@ function PaginaCasa() {
                       <Megaphone className="w-5 h-5 text-violet-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 leading-tight">Programação da Casa</h3>
+                      <h3 className="text-lg font-semibold text-gray-800 leading-tight">Programação Pública</h3>
                       <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">Palestras Públicas &amp; Escalas de Trabalho</p>
                     </div>
                   </div>
