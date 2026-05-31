@@ -1047,6 +1047,8 @@ function PaginaCasa() {
   const eventosProximos = eventosVisiveis.filter(e => !isAfter(hoje, parseISO(e.data_evento)));
   const eventosPassados = eventosVisiveis.filter(e => isAfter(hoje, parseISO(e.data_evento)));
 
+  const totalEventosCount = (eventosCount || 0) + (agendaEventos?.length || 0) + (getEscalaItems()?.length || 0);
+
   /* ══════════════════════════════════════════════════════════════
      RENDER
   ══════════════════════════════════════════════════════════════ */
@@ -1056,7 +1058,7 @@ function PaginaCasa() {
       {/* Premium Hero with espectacular destaque for the name */}
       <CasaHero 
         membros={membrosCount} 
-        eventos={eventosCount} 
+        eventos={totalEventosCount} 
         sigla={sigla}
         nome={pagina.nome_completo || sigla}
         cidade={pagina.cidade}
