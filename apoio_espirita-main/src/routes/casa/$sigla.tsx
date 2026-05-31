@@ -30,7 +30,7 @@ export const Route = createFileRoute("/casa/$sigla")({
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes";
+type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes" | "configuracoes";
 
 interface PaginaData {
   sigla_casa: string;
@@ -986,6 +986,7 @@ function PaginaCasa() {
             { id: "sobre",       label: "Atividades",   Icon: Info },
             { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
+            ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
           ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
             <button key={t.id} onClick={() => setAba(t.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-light whitespace-nowrap border-b-2 transition-colors ${
@@ -1735,21 +1736,158 @@ function PaginaCasa() {
           </div>
         )}
 
-        {/* ══════════════ SOBRE ══════════════ */}
+        {/* ══════════════ ATIVIDADES ══════════════ */}
         {aba === "sobre" && (
           <div className="space-y-4">
-            {modoAdmin && !editSobre && (
-              <div className="flex justify-end">
-                <button onClick={() => { setFormSobre({ ...pagina }); setEditSobre(true); }}
-                  className="flex items-center gap-2 text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/30 px-4 py-2 rounded-xl hover:bg-cyan-glow/10 transition-colors">
-                  <Edit3 size={13} />Editar informações
-                </button>
+            <div className="space-y-4">
+              {(pagina.descricao || pagina.missao) && (
+                <div className="glass rounded-2xl p-6 space-y-4">
+                  {pagina.descricao && <div><p className={labelCls}>Sobre a casa</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.descricao}</p></div>}
+                  {pagina.missao && <div className="border-t border-white/10 pt-4"><p className={labelCls}>Missão</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.missao}</p></div>}
+                </div>
+              )}
+              <div className="glass rounded-2xl p-6 space-y-4">
+                {pagina.ano_fundacao && <InfoRow Icon={Building2} label="Fundada em" value={String(pagina.ano_fundacao)} />}
+                {pagina.endereco && <InfoRow Icon={MapPin} label="Endereço" value={[pagina.endereco, pagina.bairro, pagina.cidade && `${pagina.cidade}/${pagina.uf}`, pagina.cep].filter(Boolean).join(", ")} />}
+                {pagina.telefone && <InfoRow Icon={Phone} label="Telefone" value={pagina.telefone} />}
+                {pagina.email_contato && <InfoRow Icon={Mail} label="E-mail" value={pagina.email_contato} />}
+                {pagina.site && <InfoRow Icon={Globe} label="Site" value={pagina.site} link />}
+                {!pagina.ano_fundacao && !pagina.endereco && !pagina.telefone && !pagina.email_contato && !pagina.site && !pagina.descricao && !pagina.missao && (
+                  <p className="text-sm text-muted-foreground/50 text-center py-4">Nenhuma informação cadastrada ainda.</p>
+                )}
               </div>
-            )}
 
-            {editSobre ? (
-              <div className="glass rounded-2xl p-6 space-y-5">
-                <h2 className="text-sm font-medium text-foreground">Editar informações da casa</h2>
+              {/* ── Atividades Regulares ── */}
+              <div className="glass rounded-2xl overflow-hidden mt-6">
+                <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock size={15} strokeWidth={1.5} className="text-cyan-glow" />
+                    <span className="text-sm font-medium text-foreground">Atividades Regulares</span>
+                  </div>
+                  {modoAdmin && (
+                    <button onClick={() => setShowNovoHorario(s => !s)}
+                      className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
+                      <Plus size={13} />Adicionar
+                    </button>
+                  )}
+                </div>
+
+                {modoAdmin && showNovoHorario && (
+                  <div className="px-6 py-4 border-b border-white/10 bg-cyan-50/20 space-y-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div><p className={labelCls}>Dia</p>
+                        <select value={novoHorario.dia} onChange={e => setNovoHorario(h => ({ ...h, dia: e.target.value }))} className={inputCls}>
+                          {DIAS.map(d => <option key={d}>{d}</option>)}
+                        </select>
+                      </div>
+                      <div><p className={labelCls}>Horário</p>
+                        <input type="time" value={novoHorario.hora} onChange={e => setNovoHorario(h => ({ ...h, hora: e.target.value }))} className={inputCls} />
+                      </div>
+                      <div><p className={labelCls}>Atividade</p>
+                        <input value={novoHorario.atividade} onChange={e => setNovoHorario(h => ({ ...h, atividade: e.target.value }))} placeholder="Ex.: Evangelização" className={inputCls} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setShowNovoHorario(false)} className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
+                      <button onClick={adicionarHorario} className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">Adicionar</button>
+                    </div>
+                  </div>
+                )}
+
+                {(() => {
+                  const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
+                  if (horariosRegulares.length === 0) {
+                    return (
+                      <div className="px-6 py-8 text-center">
+                        <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="divide-y divide-white/5">
+                      {horariosRegulares.map((h, i) => (
+                        <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
+                            <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
+                            <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
+                          </div>
+                          {modoAdmin && (
+                            <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
+                              <X size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+        {/* ══════════════ PROJETOS ══════════════ */}
+        {aba === "projetos" && (
+          <ProjetosTab sigla={sigla} />
+        )}
+
+        {/* ══════════════ DOAÇÕES ══════════════ */}
+        {aba === "doacoes" && (
+          <div className="space-y-4">
+            <div className="glass rounded-2xl p-8 space-y-6">
+              <div className="text-center space-y-2">
+                <Heart size={22} strokeWidth={1.5} className="text-rose-400 mx-auto" />
+                <h2 className="text-base font-medium text-foreground">Contribua com nossa missão</h2>
+                <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-sm mx-auto">
+                  {pagina.texto_doacao || "Sua contribuição ajuda a manter os trabalhos espíritas."}
+                </p>
+              </div>
+              {pagina.chave_pix ? (
+                <>
+                  <div className="flex justify-center">
+                    <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100">
+                      <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pagina.chave_pix)}&bgcolor=ffffff&color=1e3a5f&margin=4`}
+                        alt="QR Code PIX" width={200} height={200} className="rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className={labelCls}>Chave PIX</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground/80 font-mono truncate">{pagina.chave_pix}</div>
+                      <button onClick={copiarPix} className="shrink-0 p-2.5 rounded-xl border border-white/10 hover:border-cyan-glow/40 hover:text-cyan-glow text-muted-foreground/60 transition-colors">
+                        {copiado ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-center text-xs text-muted-foreground/40">Aponte a câmera para o QR code ou copie a chave PIX.</p>
+                </>
+              ) : (
+                <div className="text-center py-6">
+                  <QrCode size={32} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground/50">
+                    Informações de doação ainda não configuradas.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════ CONFIGURAÇÕES (ADMIN ONLY) ══════════════ */}
+        {aba === "configuracoes" && modoAdmin && (
+          <div className="space-y-8 animate-fade-in-up">
+            
+            {/* Bloco 1: Editar Informações da Casa */}
+            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-violet-600" />
+                Informações da Casa Espírita
+              </h3>
+              
+              <div className="space-y-5">
                 <Field label="Nome completo da casa">
                   <input value={formSobre.nome_completo ?? ""} onChange={e => setFormSobre(s => ({ ...s, nome_completo: e.target.value }))} placeholder="Ex.: Centro Espírita Paz e Amor" className={inputCls} />
                 </Field>
@@ -1780,210 +1918,74 @@ function PaginaCasa() {
                   <Field label="E-mail de contato"><input type="email" value={formSobre.email_contato ?? ""} onChange={e => setFormSobre(s => ({ ...s, email_contato: e.target.value }))} placeholder="contato@…" className={inputCls} /></Field>
                 </div>
                 <Field label="Site (opcional)"><input value={formSobre.site ?? ""} onChange={e => setFormSobre(s => ({ ...s, site: e.target.value }))} placeholder="https://…" className={inputCls} /></Field>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setEditSobre(false)} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-                  <button onClick={salvarSobre} disabled={salvando} className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
-                    <Save size={13} />{salvando ? "Salvando…" : "Salvar"}
+                
+                <div className="pt-2">
+                  <button onClick={salvarSobre} disabled={salvando} className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm">
+                    <Save size={13} />{salvando ? "Salvando…" : "Salvar Alterações da Casa"}
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {(pagina.descricao || pagina.missao) && (
-                  <div className="glass rounded-2xl p-6 space-y-4">
-                    {pagina.descricao && <div><p className={labelCls}>Sobre a casa</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.descricao}</p></div>}
-                    {pagina.missao && <div className="border-t border-white/10 pt-4"><p className={labelCls}>Missão</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.missao}</p></div>}
-                  </div>
-                )}
-                <div className="glass rounded-2xl p-6 space-y-4">
-                  {pagina.ano_fundacao && <InfoRow Icon={Building2} label="Fundada em" value={String(pagina.ano_fundacao)} />}
-                  {pagina.endereco && <InfoRow Icon={MapPin} label="Endereço" value={[pagina.endereco, pagina.bairro, pagina.cidade && `${pagina.cidade}/${pagina.uf}`, pagina.cep].filter(Boolean).join(", ")} />}
-                  {pagina.telefone && <InfoRow Icon={Phone} label="Telefone" value={pagina.telefone} />}
-                  {pagina.email_contato && <InfoRow Icon={Mail} label="E-mail" value={pagina.email_contato} />}
-                  {pagina.site && <InfoRow Icon={Globe} label="Site" value={pagina.site} link />}
-                  {!pagina.ano_fundacao && !pagina.endereco && !pagina.telefone && !pagina.email_contato && !pagina.site && !pagina.descricao && !pagina.missao && (
-                    <p className="text-sm text-muted-foreground/50 text-center py-4">Nenhuma informação cadastrada ainda.{isAdmin && " Use 'Editar informações' para adicionar."}</p>
-                  )}
-                </div>
+            </section>
 
-                {/* ── Atividades Regulares ── */}
-                <div className="glass rounded-2xl overflow-hidden mt-6">
-                  <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock size={15} strokeWidth={1.5} className="text-cyan-glow" />
-                      <span className="text-sm font-medium text-foreground">Atividades Regulares</span>
-                    </div>
-                    {modoAdmin && (
-                      <button onClick={() => setShowNovoHorario(s => !s)}
-                        className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
-                        <Plus size={13} />Adicionar
-                      </button>
-                    )}
-                  </div>
-
-                  {modoAdmin && showNovoHorario && (
-                    <div className="px-6 py-4 border-b border-white/10 bg-cyan-50/20 space-y-3">
-                      <div className="grid grid-cols-3 gap-3">
-                        <div><p className={labelCls}>Dia</p>
-                          <select value={novoHorario.dia} onChange={e => setNovoHorario(h => ({ ...h, dia: e.target.value }))} className={inputCls}>
-                            {DIAS.map(d => <option key={d}>{d}</option>)}
-                          </select>
-                        </div>
-                        <div><p className={labelCls}>Horário</p>
-                          <input type="time" value={novoHorario.hora} onChange={e => setNovoHorario(h => ({ ...h, hora: e.target.value }))} className={inputCls} />
-                        </div>
-                        <div><p className={labelCls}>Atividade</p>
-                          <input value={novoHorario.atividade} onChange={e => setNovoHorario(h => ({ ...h, atividade: e.target.value }))} placeholder="Ex.: Evangelização" className={inputCls} />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => setShowNovoHorario(false)} className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-                        <button onClick={adicionarHorario} className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">Adicionar</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {(() => {
-                    const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
-                    if (horariosRegulares.length === 0) {
-                      return (
-                        <div className="px-6 py-8 text-center">
-                          <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="divide-y divide-white/5">
-                        {horariosRegulares.map((h, i) => (
-                          <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
-                              <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
-                              <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
-                            </div>
-                            {modoAdmin && (
-                              <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
-                                <X size={13} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-
-
-        {/* ══════════════ PROJETOS ══════════════ */}
-        {aba === "projetos" && (
-          <ProjetosTab sigla={sigla} />
-        )}
-
-        {/* ══════════════ DOAÇÕES ══════════════ */}
-        {aba === "doacoes" && (
-          <div className="space-y-4">
-            {modoAdmin && !editDoacoes && (
-              <div className="flex justify-end">
-                <button onClick={() => { setFormDoacoes({ chave_pix: pagina.chave_pix, texto_doacao: pagina.texto_doacao }); setEditDoacoes(true); }}
-                  className="flex items-center gap-2 text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/30 px-4 py-2 rounded-xl hover:bg-cyan-glow/10 transition-colors">
-                  <Edit3 size={13} />Editar doações
-                </button>
-              </div>
-            )}
-
-            {editDoacoes ? (
-              <div className="glass rounded-2xl p-6 space-y-5">
-                <h2 className="text-sm font-medium text-foreground">Configurar doações</h2>
+            {/* Bloco 2: Configurar Doações & Pix */}
+            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-500" />
+                Configurar Doações &amp; PIX
+              </h3>
+              
+              <div className="space-y-5">
                 <Field label="Chave PIX">
                   <input value={formDoacoes.chave_pix} onChange={e => setFormDoacoes(f => ({ ...f, chave_pix: e.target.value }))} placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" className={inputCls} />
-                  <p className="text-xs text-muted-foreground/50 mt-1">O QR code é gerado automaticamente a partir da chave inserida.</p>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">O QR code é gerado automaticamente para os visitantes a partir da chave inserida.</p>
                 </Field>
                 <Field label="Texto de apresentação">
                   <textarea value={formDoacoes.texto_doacao} onChange={e => setFormDoacoes(f => ({ ...f, texto_doacao: e.target.value }))} rows={3} className={`${inputCls} resize-none`} />
                 </Field>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setEditDoacoes(false)} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-                  <button onClick={salvarDoacoes} disabled={salvando} className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors flex items-center justify-center gap-2">
-                    <Save size={13} />{salvando ? "Salvando…" : "Salvar"}
+                
+                <div className="pt-2">
+                  <button onClick={salvarDoacoes} disabled={salvando} className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm">
+                    <Save size={13} />{salvando ? "Salvando…" : "Salvar Chave PIX"}
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="glass rounded-2xl p-8 space-y-6">
-                <div className="text-center space-y-2">
-                  <Heart size={22} strokeWidth={1.5} className="text-rose-400 mx-auto" />
-                  <h2 className="text-base font-medium text-foreground">Contribua com nossa missão</h2>
-                  <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-sm mx-auto">
-                    {pagina.texto_doacao || "Sua contribuição ajuda a manter os trabalhos espíritas."}
-                  </p>
-                </div>
-                {pagina.chave_pix ? (
-                  <>
-                    <div className="flex justify-center">
-                      <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100">
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pagina.chave_pix)}&bgcolor=ffffff&color=1e3a5f&margin=4`}
-                          alt="QR Code PIX" width={200} height={200} className="rounded-xl" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className={labelCls}>Chave PIX</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground/80 font-mono truncate">{pagina.chave_pix}</div>
-                        <button onClick={copiarPix} className="shrink-0 p-2.5 rounded-xl border border-white/10 hover:border-cyan-glow/40 hover:text-cyan-glow text-muted-foreground/60 transition-colors">
-                          {copiado ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-center text-xs text-muted-foreground/40">Aponte a câmera para o QR code ou copie a chave PIX.</p>
-                  </>
-                ) : (
-                  <div className="text-center py-6">
-                    <QrCode size={32} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground/50">
-                      {isAdmin ? "Nenhuma chave PIX cadastrada. Use 'Editar doações'." : "Informações de doação ainda não configuradas."}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+            </section>
 
-        {/* ══════════════ PAINEL ADMIN ══════════════ */}
-        {modoAdmin && (
-          <div className="mt-10 border-t border-white/10 pt-8">
-            <button onClick={() => { setShowAdmins(s => !s); if (!showAdmins) garantirMembros(); }}
-              className="flex items-center gap-2 text-sm text-muted-foreground/60 hover:text-foreground transition-colors mb-4 w-full">
-              <Users size={15} />Gerenciar administradores da página
-              <span className="ml-auto">{showAdmins ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
-            </button>
-            {showAdmins && (
-              <div className="glass rounded-2xl p-5 space-y-4">
-                <p className="text-xs text-muted-foreground/50 font-light">
-                  Administradores autorizados podem editar a página, publicar no mural e gerenciar eventos. O Presidente sempre tem acesso.
+            {/* Bloco 3: Gerenciar Administradores da Página */}
+            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                <Users className="w-5 h-5 text-cyan-600" />
+                Gerenciar Administradores da Página
+              </h3>
+              
+              <div className="space-y-4">
+                <p className="text-xs text-muted-foreground/50 font-light leading-relaxed">
+                  Administradores autorizados podem editar a página, publicar no mural e gerenciar eventos. O Presidente sempre tem acesso de administração automático.
                 </p>
-                <div className="space-y-1">
+                
+                <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
                   {membros.map(m => {
                     const jaAdmin = adminIds.includes(m.id);
                     return (
-                      <div key={m.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/5">
-                        <span className="text-sm text-foreground/80">{m.nome}</span>
+                      <div key={m.id} className="flex items-center justify-between py-3 px-4 hover:bg-gray-50/50 transition-colors">
+                        <span className="text-sm font-medium text-gray-700">{m.nome}</span>
                         <button onClick={() => jaAdmin ? removerAdmin(m.id) : adicionarAdmin(m.id)}
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-glow/30 text-cyan-glow hover:bg-cyan-glow/10"}`}>
+                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-600/30 text-cyan-600 hover:bg-cyan-50"}`}>
                           {jaAdmin ? <><UserMinus size={12} />Remover</> : <><UserPlus size={12} />Autorizar</>}
                         </button>
                       </div>
                     );
                   })}
-                  {membros.length === 0 && <p className="text-xs text-muted-foreground/40 text-center py-3">Nenhum outro membro encontrado.</p>}
+                  {membros.length === 0 && (
+                    <div className="text-center py-6">
+                      <button onClick={garantirMembros} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
+                        Carregar Lista de Membros da Casa
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </section>
           </div>
         )}
 
