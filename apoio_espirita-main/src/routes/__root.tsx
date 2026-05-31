@@ -436,12 +436,7 @@ function NavBar() {
                   <HelpCircle size={14} strokeWidth={1.5} className="text-[#004a8c]" />
                   Quiz Espírita
                 </Link>
-                {isEvangelizador && (
-                  <Link to="/configurar-memoria" className={dropItemCls} onClick={() => setRecursosOpen(false)}>
-                    <Volume2 size={14} strokeWidth={1.5} className="text-violet-500" />
-                    Configurar Memória
-                  </Link>
-                )}
+
               </div>
             )}
           </div>
@@ -552,11 +547,7 @@ function NavBar() {
                 <Link to="/jogos/quiz-espirita" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
                   Quiz Espírita
                 </Link>
-                {isEvangelizador && (
-                  <Link to="/configurar-memoria" className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                    Configurar Memória
-                  </Link>
-                )}
+
               </>
             )}
 
