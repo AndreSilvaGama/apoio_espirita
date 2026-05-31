@@ -359,13 +359,19 @@ function CompletarPerfil() {
             <select
               value={cargo}
               onChange={(e) => { setCargo(e.target.value); setError(""); }}
-              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              disabled={profile?.atividades?.includes("cargo_definido_por_admin")}
+              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <option value="">Selecione sua função…</option>
               {CARGOS.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+            {profile?.atividades?.includes("cargo_definido_por_admin") && (
+              <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
+                Sua função foi definida pela administração da casa espírita e não pode ser alterada por você. Caso precise alterar, entre em contato com o Presidente ou administradores autorizados.
+              </p>
+            )}
           </div>
 
           {error && <p className="text-xs text-red-400 text-center">{error}</p>}

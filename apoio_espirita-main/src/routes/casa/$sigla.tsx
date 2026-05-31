@@ -30,7 +30,7 @@ export const Route = createFileRoute("/casa/$sigla")({
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes" | "configuracoes";
+type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes" | "configuracoes" | "tarefeiros";
 
 interface PaginaData {
   sigla_casa: string;
@@ -89,9 +89,41 @@ interface EvParticipante {
   nome?: string;
 }
 
-interface Membro { id: string; nome: string; }
+interface Membro {
+  id: string;
+  nome: string;
+  cargo_principal?: string | null;
+  atividades?: string[] | null;
+}
 
 const DIAS = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
+
+const CARGOS = [
+  "Presidente",
+  "Vice-presidente",
+  "Coordenador",
+  "Diretoria",
+  "Dirigente",
+  "Dirigente de reunião mediúnica",
+  "Tesoureiro",
+  "Assistido",
+  "Associado",
+  "Atendente fraterno",
+  "Colaborador",
+  "Estudante",
+  "Evangelizador",
+  "Expositor",
+  "Facilitador",
+  "Frequentador",
+  "Médium",
+  "Palestrante",
+  "Participante de estudo",
+  "Passista",
+  "Sócio",
+  "Tarefeiro",
+  "Trabalhador",
+  "Visitante"
+];
 
 const FORM_POST_INICIAL = { conteudo: "", imagem_url: "", video_url: "" };
 const FORM_EVENTO_INICIAL = { titulo: "", descricao: "", data_evento: "", hora_inicio: "", hora_fim: "", local_evento: "", publica: true };
@@ -521,13 +553,19 @@ function PaginaCasa() {
   }, [user, profile?.sigla_casa, sigla, fetchAgenda, fetchVotes]);
 
   /* ── Load membros (lazy) ── */
-  const garantirMembros = useCallback(async () => {
-    if (membrosCarregados.current) return;
-    const { data } = await supabase.from("profiles").select("id, nome")
+  const garantirMembros = useCallback(async (force = false) => {
+    if (membrosCarregados.current && !force) return;
+    const { data } = await supabase.from("profiles").select("id, nome, cargo_principal, atividades")
       .eq("sigla_casa", sigla).order("nome");
     if (data) setMembros(data as Membro[]);
     membrosCarregados.current = true;
   }, [sigla]);
+
+  useEffect(() => {
+    if (aba === "tarefeiros") {
+      garantirMembros();
+    }
+  }, [aba, garantirMembros]);
 
   /* ── Load participants for an event ── */
   const carregarParticipantes = useCallback(async (eventoId: string) => {
@@ -811,6 +849,39 @@ function PaginaCasa() {
     toast.success(editandoMuralId ? "Escala editada." : "Escala adicionada.");
   };
 
+  const alterarFuncaoMembro = async (membroId: string, novoCargo: string) => {
+    try {
+      const { data: currentProfile, error: getError } = await supabase
+        .from("profiles")
+        .select("cargo_principal, atividades")
+        .eq("id", membroId)
+        .single();
+      if (getError) throw getError;
+
+      const currentAtividades = currentProfile?.atividades || [];
+      const novasAtividades = currentAtividades.includes("cargo_definido_por_admin")
+        ? currentAtividades
+        : [...currentAtividades, "cargo_definido_por_admin"];
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          cargo_principal: novoCargo,
+          atividades: novasAtividades,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", membroId);
+
+      if (updateError) throw updateError;
+
+      toast.success("Função do tarefeiro atualizada com sucesso!");
+      await garantirMembros(true);
+    } catch (err: any) {
+      console.error("Erro ao alterar função:", err);
+      toast.error("Não foi possível atualizar a função do tarefeiro.");
+    }
+  };
+
   const removerMuralItem = async (itemId: string) => {
     if (!window.confirm("Deseja realmente remover este item do mural?")) return;
     
@@ -986,6 +1057,7 @@ function PaginaCasa() {
             { id: "sobre",       label: "Atividades",   Icon: Info },
             { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
+            { id: "tarefeiros",  label: "Tarefeiros",   Icon: Users },
             ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
           ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
             <button key={t.id} onClick={() => setAba(t.id)}
@@ -1876,6 +1948,115 @@ function PaginaCasa() {
           </div>
         )}
 
+        {/* ══════════════ TAREFEIROS ══════════════ */}
+        {aba === "tarefeiros" && (
+          <div className="space-y-8 animate-fade-in-up">
+            
+            {/* Bloco relocated: Gerenciar Administradores da Página (Apenas para admin) */}
+            {modoAdmin && (
+              <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+                <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-cyan-600" />
+                  Gerenciar Administradores da Página
+                </h3>
+                
+                <div className="space-y-4">
+                  <p className="text-xs text-muted-foreground/50 font-light leading-relaxed">
+                    Administradores autorizados podem editar a página, publicar no mural e gerenciar eventos. O Presidente sempre tem acesso de administração automático.
+                  </p>
+                  
+                  <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
+                    {membros.map(m => {
+                      const jaAdmin = adminIds.includes(m.id);
+                      return (
+                        <div key={m.id} className="flex items-center justify-between py-3 px-4 hover:bg-gray-50/50 transition-colors">
+                          <span className="text-sm font-medium text-gray-700">{m.nome}</span>
+                          <button onClick={() => jaAdmin ? removerAdmin(m.id) : adicionarAdmin(m.id)}
+                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-600/30 text-cyan-600 hover:bg-cyan-50"}`}>
+                            {jaAdmin ? <><UserMinus size={12} />Remover</> : <><UserPlus size={12} />Autorizar</>}
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {membros.length === 0 && (
+                      <div className="text-center py-6">
+                        <button onClick={() => garantirMembros()} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
+                          Carregar Lista de Membros da Casa
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Listagem de Tarefeiros */}
+            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                <Users className="w-5 h-5 text-violet-600" />
+                Tarefeiros e Membros da Casa
+              </h3>
+              
+              <div className="space-y-4">
+                {modoAdmin && (
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
+                    <strong>Painel Administrativo Ativo:</strong> Você pode atribuir funções oficiais aos membros. Ao definir a função de um membro, a edição do próprio cargo será bloqueada na tela dele para garantir a segurança organizacional.
+                  </p>
+                )}
+
+                <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
+                  {membros.map(m => {
+                    const cargoDefinidoPorAdmin = m.atividades?.includes("cargo_definido_por_admin") ?? false;
+                    return (
+                      <div key={m.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-4 px-4 hover:bg-gray-50/50 transition-colors gap-3">
+                        <div className="min-w-0">
+                          <span className="text-sm font-semibold text-gray-800 block truncate">{m.nome}</span>
+                          <span className="text-xs text-muted-foreground/60 block mt-0.5">
+                            {m.cargo_principal || "Voluntário / Colaborador"}
+                            {cargoDefinidoPorAdmin && (
+                              <span className="ml-2 text-[10px] bg-amber-50 text-amber-700 border border-amber-200/40 px-2 py-0.5 rounded-full font-medium">
+                                Definido por admin
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        
+                        <div className="shrink-0 flex items-center gap-2">
+                          {modoAdmin ? (
+                            <select
+                              value={m.cargo_principal || ""}
+                              onChange={(e) => alterarFuncaoMembro(m.id, e.target.value)}
+                              className="rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white text-gray-700 focus:outline-none focus:border-cyan-500 w-full sm:w-auto"
+                            >
+                              <option value="">(Sem função / Colaborador)</option>
+                              {CARGOS.map(cargo => (
+                                <option key={cargo} value={cargo}>{cargo}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
+                              Trabalhador
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {membros.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-xs text-muted-foreground/50 mb-3">Nenhum tarefeiro carregado.</p>
+                      <button onClick={() => garantirMembros()} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
+                        Carregar Lista de Membros da Casa
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
         {/* ══════════════ CONFIGURAÇÕES (ADMIN ONLY) ══════════════ */}
         {aba === "configuracoes" && modoAdmin && (
           <div className="space-y-8 animate-fade-in-up">
@@ -1951,41 +2132,7 @@ function PaginaCasa() {
               </div>
             </section>
 
-            {/* Bloco 3: Gerenciar Administradores da Página */}
-            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
-              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
-                <Users className="w-5 h-5 text-cyan-600" />
-                Gerenciar Administradores da Página
-              </h3>
-              
-              <div className="space-y-4">
-                <p className="text-xs text-muted-foreground/50 font-light leading-relaxed">
-                  Administradores autorizados podem editar a página, publicar no mural e gerenciar eventos. O Presidente sempre tem acesso de administração automático.
-                </p>
-                
-                <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
-                  {membros.map(m => {
-                    const jaAdmin = adminIds.includes(m.id);
-                    return (
-                      <div key={m.id} className="flex items-center justify-between py-3 px-4 hover:bg-gray-50/50 transition-colors">
-                        <span className="text-sm font-medium text-gray-700">{m.nome}</span>
-                        <button onClick={() => jaAdmin ? removerAdmin(m.id) : adicionarAdmin(m.id)}
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-600/30 text-cyan-600 hover:bg-cyan-50"}`}>
-                          {jaAdmin ? <><UserMinus size={12} />Remover</> : <><UserPlus size={12} />Autorizar</>}
-                        </button>
-                      </div>
-                    );
-                  })}
-                  {membros.length === 0 && (
-                    <div className="text-center py-6">
-                      <button onClick={garantirMembros} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
-                        Carregar Lista de Membros da Casa
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
+
           </div>
         )}
 
