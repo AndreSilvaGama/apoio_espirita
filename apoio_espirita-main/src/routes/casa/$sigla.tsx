@@ -1847,22 +1847,6 @@ function PaginaCasa() {
         {aba === "sobre" && (
           <div className="space-y-4">
             <div className="space-y-4">
-              {(pagina.descricao || pagina.missao) && (
-                <div className="glass rounded-2xl p-6 space-y-4">
-                  {pagina.descricao && <div><p className={labelCls}>Sobre a casa</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.descricao}</p></div>}
-                  {pagina.missao && <div className="border-t border-white/10 pt-4"><p className={labelCls}>Missão</p><p className="text-sm text-foreground/80 font-light leading-relaxed">{pagina.missao}</p></div>}
-                </div>
-              )}
-              {(pagina.ano_fundacao || pagina.endereco || pagina.telefone || pagina.email_contato || pagina.site) && (
-                <div className="glass rounded-2xl p-6 space-y-4">
-                  {pagina.ano_fundacao && <InfoRow Icon={Building2} label="Fundada em" value={String(pagina.ano_fundacao)} />}
-                  {pagina.endereco && <InfoRow Icon={MapPin} label="Endereço" value={[pagina.endereco, pagina.bairro, pagina.cidade && `${pagina.cidade}/${pagina.uf}`, pagina.cep].filter(Boolean).join(", ")} />}
-                  {pagina.telefone && <InfoRow Icon={Phone} label="Telefone" value={pagina.telefone} />}
-                  {pagina.email_contato && <InfoRow Icon={Mail} label="E-mail" value={pagina.email_contato} />}
-                  {pagina.site && <InfoRow Icon={Globe} label="Site" value={pagina.site} link />}
-                </div>
-              )}
-
               {/* ── Atividades Regulares ── */}
               <div className="glass rounded-2xl overflow-hidden mt-6">
                 <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
