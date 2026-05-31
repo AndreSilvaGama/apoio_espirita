@@ -132,6 +132,65 @@ const DASH_BAZAR: { Icon: LucideIcon; name: string; category: string; price: str
   { Icon: Footprints, name: "Sapato",                            category: "Calçado",   price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
 ];
 
+const DEFAULT_GECAL_ESCALAS = [
+  {
+    id: "gecal-1",
+    tipo: "escala",
+    dia: "05",
+    mes_ano: "Junho 2026",
+    dia_semana: "Sexta-feira",
+    tema: "Exemplificar o bem: Nossa luz deve brilhar",
+    facilitador: "Sandra Helena",
+    casa: "GECAL",
+    coordenador: "BELO",
+    passe: "Luana · Jacqueline · Bárbara · Lidiane",
+    streamyard: "Bárbara e Igor",
+    recepcao: "Marion",
+  },
+  {
+    id: "gecal-2",
+    tipo: "escala",
+    dia: "12",
+    mes_ano: "Junho 2026",
+    dia_semana: "Sexta-feira",
+    tema: "O Dever e a Consciência: O Serviço ao Próximo como mandamento.",
+    facilitador: "Marco Antônio",
+    casa: "GECAL",
+    coordenador: "MARCELI",
+    passe: "Ana Lúcia · Belo",
+    streamyard: "André e Tamires",
+    recepcao: "Zélia",
+  },
+  {
+    id: "gecal-3",
+    tipo: "escala",
+    dia: "19",
+    mes_ano: "Junho 2026",
+    dia_semana: "Sexta-feira",
+    tema: "A Causa Primária de Todas as Coisas: Raciocinando sobre a Existência do Criador",
+    facilitador: "Jailton Guilherme",
+    casa: "GENOVA",
+    coordenador: "BEATRIZ",
+    passe: "Priscila · Graça · Belo · Ana Lúcia",
+    streamyard: "Fabiana e Thiago",
+    recepcao: "Jacqueline",
+  },
+  {
+    id: "gecal-4",
+    tipo: "escala",
+    dia: "26",
+    mes_ano: "Junho 2026",
+    dia_semana: "Sexta-feira",
+    tema: "Zaqueu, o Publicano: Uma História de Transformação pelo Encontro com Jesus",
+    facilitador: "Claudiomar Fernandes",
+    casa: "G.E. Luz no Lar",
+    coordenador: "PRISCILA",
+    passe: "Claudia Kaku · Leda · Luana · Marceli",
+    streamyard: "Emerson e Virginia",
+    recepcao: "Jorge",
+  },
+];
+
 type DashStatus = "disponivel" | "breve" | "beta";
 
 interface DashFeatureItem {
@@ -308,6 +367,22 @@ function PaginaCasa() {
   /* Doações */
   const [editDoacoes, setEditDoacoes] = useState(false);
   const [formDoacoes, setFormDoacoes] = useState({ chave_pix: "", texto_doacao: "" });
+
+  /* Mural de Escalas UI */
+  const [showNovoMural, setShowNovoMural] = useState(false);
+  const [editandoMuralId, setEditandoMuralId] = useState<string | null>(null);
+  const [formMural, setFormMural] = useState({
+    dia: "",
+    mes_ano: "Junho 2026",
+    dia_semana: "Sexta-feira",
+    tema: "",
+    facilitador: "",
+    casa: "",
+    coordenador: "",
+    passe: "",
+    streamyard: "",
+    recepcao: "",
+  });
 
   /* Admin panel */
   const [showAdmins, setShowAdmins] = useState(false);
@@ -581,8 +656,8 @@ function PaginaCasa() {
     setShowNovoHorario(false);
   };
 
-  const removerHorario = async (idx: number) => {
-    const updated = (pagina!.horarios ?? []).filter((_, i) => i !== idx);
+  const removerHorario = async (item: any) => {
+    const updated = (pagina!.horarios ?? []).filter(h => h !== item);
     const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
     if (error) { toast.error("Erro ao remover."); return; }
     setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
@@ -668,6 +743,116 @@ function PaginaCasa() {
     if (error) { toast.error("Erro."); return; }
     setEvParts(prev => ({ ...prev, [eventoId]: prev[eventoId]?.map(p => p.user_id === user!.id ? { ...p, status } : p) || [] }));
     toast.success(status === "confirmado" ? "Presenca confirmada!" : "Participacao recusada.");
+  };
+
+  /* ═══════════════════════════════════════════════
+     ACTIONS — MURAL DE ESCALAS (CRUD)
+  ═══════════════════════════════════════════════ */
+
+  const getEscalaItems = () => {
+    const list = ((pagina?.horarios as any[]) ?? []);
+    const dbItems = list.filter(h => h.tipo === "escala");
+    if (dbItems.length > 0) return dbItems;
+    if (sigla === "GECAL") return DEFAULT_GECAL_ESCALAS;
+    return [];
+  };
+
+  const salvarMuralItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formMural.dia || !formMural.tema.trim()) {
+      toast.error("Preencha o dia e o tema.");
+      return;
+    }
+
+    const currentList = ((pagina!.horarios ?? []) as any[]);
+    let updated: any[];
+
+    if (editandoMuralId) {
+      updated = currentList.map(item =>
+        item.id === editandoMuralId
+          ? { ...item, ...formMural }
+          : item
+      );
+    } else {
+      const newItem = {
+        id: "escala-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+        tipo: "escala",
+        ...formMural
+      };
+      
+      const dbEscalas = currentList.filter(h => h.tipo === "escala");
+      if (dbEscalas.length === 0 && sigla === "GECAL") {
+        const nonEscalas = currentList.filter(h => h.tipo !== "escala");
+        updated = [...nonEscalas, ...DEFAULT_GECAL_ESCALAS, newItem];
+      } else {
+        updated = [...currentList, newItem];
+      }
+    }
+
+    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
+    if (error) { toast.error("Erro ao salvar escala."); return; }
+    
+    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+    setFormMural({
+      dia: "",
+      mes_ano: "Junho 2026",
+      dia_semana: "Sexta-feira",
+      tema: "",
+      facilitador: "",
+      casa: "",
+      coordenador: "",
+      passe: "",
+      streamyard: "",
+      recepcao: "",
+    });
+    setShowNovoMural(false);
+    setEditandoMuralId(null);
+    toast.success(editandoMuralId ? "Escala editada." : "Escala adicionada.");
+  };
+
+  const removerMuralItem = async (itemId: string) => {
+    if (!window.confirm("Deseja realmente remover este item do mural?")) return;
+    
+    const currentList = ((pagina!.horarios ?? []) as any[]);
+    let updated: any[];
+
+    const dbEscalas = currentList.filter(h => h.tipo === "escala");
+    if (dbEscalas.length === 0 && sigla === "GECAL") {
+      const nonEscalas = currentList.filter(h => h.tipo !== "escala");
+      updated = [...nonEscalas, ...DEFAULT_GECAL_ESCALAS.filter(item => item.id !== itemId)];
+    } else {
+      updated = currentList.filter(item => item.id !== itemId);
+    }
+
+    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
+    if (error) { toast.error("Erro ao excluir."); return; }
+    
+    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+    toast.success("Escala removida.");
+  };
+
+  const iniciarEdicaoMuralItem = (item: any) => {
+    setEditandoMuralId(item.id);
+    setFormMural({
+      dia: item.dia,
+      mes_ano: item.mes_ano,
+      dia_semana: item.dia_semana,
+      tema: item.tema,
+      facilitador: item.facilitador,
+      casa: item.casa,
+      coordenador: item.coordenador,
+      passe: Array.isArray(item.passe) ? item.passe.join(" · ") : item.passe,
+      streamyard: Array.isArray(item.streamyard) ? item.streamyard.join(" e ") : item.streamyard,
+      recepcao: item.recepcao,
+    });
+    setShowNovoMural(true);
+    // Rola de forma suave para o formulário
+    const element = document.getElementById("escala-form-anchor");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 400, behavior: "smooth" });
+    }
   };
 
   /* ═══════════════════════════════════════════════
@@ -899,8 +1084,8 @@ function PaginaCasa() {
               </div>
             </div>
 
-            {/* Mural de Palestras GECAL */}
-            {sigla === "GECAL" && (
+            {/* Mural de Palestras Dinâmico */}
+            {(sigla === "GECAL" || getEscalaItems().length > 0) && (
               <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up" style={{ animationDuration: '500ms' }}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/40 pb-4">
                   <div className="flex items-center gap-2.5">
@@ -909,12 +1094,35 @@ function PaginaCasa() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-800 leading-tight">Mural da Casa</h3>
-                      <p className="text-xs text-gray-500 font-light mt-0.5">Palestras Públicas &amp; Escalas de Junho 2026</p>
+                      <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">Palestras Públicas &amp; Escalas de Trabalho</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {modoAdmin && !showNovoMural && (
+                      <button
+                        onClick={() => {
+                          setEditandoMuralId(null);
+                          setFormMural({
+                            dia: "",
+                            mes_ano: "Junho 2026",
+                            dia_semana: "Sexta-feira",
+                            tema: "",
+                            facilitador: "",
+                            casa: "",
+                            coordenador: "",
+                            passe: "",
+                            streamyard: "",
+                            recepcao: "",
+                          });
+                          setShowNovoMural(true);
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-violet-200 text-violet-600 bg-violet-50 text-[10px] font-bold hover:bg-violet-100 transition-colors uppercase tracking-wider"
+                      >
+                        <Plus size={12} strokeWidth={2.5} /> Adicionar Item
+                      </button>
+                    )}
                     <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700">
-                      Sexta-feira · 20h
+                      Palestras &amp; Passes
                     </span>
                     <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
                       Presencial &amp; Online
@@ -922,199 +1130,341 @@ function PaginaCasa() {
                   </div>
                 </div>
 
-                {/* Grid para Desktop */}
-                <div className="hidden md:block space-y-4">
-                  <div className="grid grid-cols-12 gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 pb-2 border-b border-violet-100/20">
-                    <div className="col-span-1 text-center">Data</div>
-                    <div className="col-span-4">Tema da Palestra</div>
-                    <div className="col-span-2.5">Facilitador / Casa</div>
-                    <div className="col-span-1.5">Coordenador</div>
-                    <div className="col-span-3">Equipes (Passe / Stream / Recepção)</div>
-                  </div>
-
-                  <div className="divide-y divide-violet-100/30">
-                    {[
-                      {
-                        dia: "05",
-                        tema: "Exemplificar o bem: Nossa luz deve brilhar",
-                        facilitador: "Sandra Helena",
-                        casa: "GECAL",
-                        coordenador: "BELO",
-                        passe: ["Luana", "Jacqueline", "Bárbara", "Lidiane"],
-                        streamyard: ["Bárbara", "Igor"],
-                        recepcao: "Marion",
-                      },
-                      {
-                        dia: "12",
-                        tema: "O Dever e a Consciência: O Serviço ao Próximo como mandamento.",
-                        facilitador: "Marco Antônio",
-                        casa: "GECAL",
-                        coordenador: "MARCELI",
-                        passe: ["Ana Lúcia", "Belo"],
-                        streamyard: ["André", "Tamires"],
-                        recepcao: "Zélia",
-                      },
-                      {
-                        dia: "19",
-                        tema: "A Causa Primária de Todas as Coisas: Raciocinando sobre a Existência do Criador",
-                        facilitador: "Jailton Guilherme",
-                        casa: "GENOVA",
-                        coordenador: "BEATRIZ",
-                        passe: ["Priscila", "Graça", "Belo", "Ana Lúcia"],
-                        streamyard: ["Fabiana", "Thiago"],
-                        recepcao: "Jacqueline",
-                      },
-                      {
-                        dia: "26",
-                        tema: "Zaqueu, o Publicano: Uma História de Transformação pelo Encontro com Jesus",
-                        facilitador: "Claudiomar Fernandes",
-                        casa: "G.E. Luz no Lar",
-                        coordenador: "PRISCILA",
-                        passe: ["Claudia Kaku", "Leda", "Luana", "Marceli"],
-                        streamyard: ["Emerson", "Virginia"],
-                        recepcao: "Jorge",
-                      },
-                    ].map((item) => (
-                      <div key={item.dia} className="grid grid-cols-12 gap-4 items-center py-4 first:pt-0 last:pb-0">
-                        {/* Data */}
-                        <div className="col-span-1 flex flex-col items-center">
-                          <span className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-base font-bold text-amber-700 shadow-sm">
-                            {item.dia}
-                          </span>
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Jun</span>
-                        </div>
-
-                        {/* Tema */}
-                        <div className="col-span-4 pr-3">
-                          <p className="text-sm font-semibold text-gray-800 leading-snug font-serif italic">
-                            "{item.tema}"
-                          </p>
-                        </div>
-
-                        {/* Facilitador */}
-                        <div className="col-span-2.5">
-                          <p className="text-sm font-semibold text-gray-800">{item.facilitador}</p>
-                          <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2.5 py-0.5 rounded-full mt-1">
-                            {item.casa}
-                          </span>
-                        </div>
-
-                        {/* Coordenador */}
-                        <div className="col-span-1.5">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{item.coordenador}</p>
-                        </div>
-
-                        {/* Equipes */}
-                        <div className="col-span-3 space-y-2 text-xs">
-                          <div className="flex gap-1.5 items-start">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
-                            <span className="text-gray-600 font-light leading-relaxed">{item.passe.join(" · ")}</span>
-                          </div>
-                          <div className="flex gap-1.5 items-start">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
-                            <span className="text-gray-600 font-light leading-relaxed">{item.streamyard.join(" e ")}</span>
-                          </div>
-                          <div className="flex gap-1.5 items-start">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
-                            <span className="text-gray-600 font-light leading-relaxed">{item.recepcao}</span>
-                          </div>
-                        </div>
+                {/* Formulário de Escala / Mural */}
+                {modoAdmin && showNovoMural && (
+                  <form onSubmit={salvarMuralItem} id="escala-form-anchor" className="glass rounded-2xl p-5 border border-amber-300 bg-amber-50/10 space-y-4">
+                    <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-amber-500" />
+                      {editandoMuralId ? "Editar Item do Mural" : "Adicionar Item ao Mural"}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dia (Número)</label>
+                        <input
+                          type="text" placeholder="Ex: 05" value={formMural.dia} required
+                          onChange={e => setFormMural(f => ({ ...f, dia: e.target.value.replace(/\D/g, "") }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Cards para Mobile */}
-                <div className="block md:hidden space-y-4">
-                  {[
-                    {
-                      dia: "05",
-                      tema: "Exemplificar o bem: Nossa luz deve brilhar",
-                      facilitador: "Sandra Helena",
-                      casa: "GECAL",
-                      coordenador: "BELO",
-                      passe: ["Luana", "Jacqueline", "Bárbara", "Lidiane"],
-                      streamyard: ["Bárbara", "Igor"],
-                      recepcao: "Marion",
-                    },
-                    {
-                      dia: "12",
-                      tema: "O Dever e a Consciência: O Serviço ao Próximo como mandamento.",
-                      facilitador: "Marco Antônio",
-                      casa: "GECAL",
-                      coordenador: "MARCELI",
-                      passe: ["Ana Lúcia", "Belo"],
-                      streamyard: ["André", "Tamires"],
-                      recepcao: "Zélia",
-                    },
-                    {
-                      dia: "19",
-                      tema: "A Causa Primária de Todas as Coisas: Raciocinando sobre a Existência do Criador",
-                      facilitador: "Jailton Guilherme",
-                      casa: "GENOVA",
-                      coordenador: "BEATRIZ",
-                      passe: ["Priscila", "Graça", "Belo", "Ana Lúcia"],
-                      streamyard: ["Fabiana", "Thiago"],
-                      recepcao: "Jacqueline",
-                    },
-                    {
-                      dia: "26",
-                      tema: "Zaqueu, o Publicano: Uma História de Transformação pelo Encontro com Jesus",
-                      facilitador: "Claudiomar Fernandes",
-                      casa: "G.E. Luz no Lar",
-                      coordenador: "PRISCILA",
-                      passe: ["Claudia Kaku", "Leda", "Luana", "Marceli"],
-                      streamyard: ["Emerson", "Virginia"],
-                      recepcao: "Jorge",
-                    },
-                  ].map((item) => (
-                    <div key={item.dia} className="glass rounded-2xl p-4 border border-violet-100/40 space-y-3">
-                      {/* Header do Card */}
-                      <div className="flex items-center justify-between border-b border-violet-100/30 pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/50 flex items-center justify-center text-sm font-bold text-amber-700 shadow-inner">
-                            {item.dia}
-                          </span>
-                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Junho · Sexta</span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-gray-500">Coordenador: {item.coordenador}</span>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dia da Semana</label>
+                        <select
+                          value={formMural.dia_semana}
+                          onChange={e => setFormMural(f => ({ ...f, dia_semana: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        >
+                          <option>Sexta-feira</option>
+                          <option>Domingo</option>
+                          <option>Segunda-feira</option>
+                          <option>Terça-feira</option>
+                          <option>Quarta-feira</option>
+                          <option>Quinta-feira</option>
+                          <option>Sábado</option>
+                        </select>
                       </div>
-
-                      {/* Conteúdo do Card */}
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-gray-800 leading-relaxed font-serif italic">
-                          "{item.tema}"
-                        </p>
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="text-xs font-semibold text-gray-700">{item.facilitador}</span>
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/40 px-2 py-0.5 rounded-full">
-                            {item.casa}
-                          </span>
-                        </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Mês / Ano</label>
+                        <input
+                          type="text" placeholder="Ex: Junho 2026" value={formMural.mes_ano} required
+                          onChange={e => setFormMural(f => ({ ...f, mes_ano: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
                       </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Coordenador</label>
+                        <input
+                          type="text" placeholder="Ex: BELO" value={formMural.coordenador}
+                          onChange={e => setFormMural(f => ({ ...f, coordenador: e.target.value.toUpperCase() }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    </div>
 
-                      {/* Rodapé / Equipes */}
-                      <div className="border-t border-violet-100/30 pt-2 space-y-1.5 text-xs">
-                        <div className="flex gap-1.5 items-start">
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
-                          <span className="text-gray-500 font-light">{item.passe.join(" · ")}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Tema da Palestra</label>
+                        <input
+                          type="text" placeholder="Ex: Exemplificar o bem..." value={formMural.tema} required
+                          onChange={e => setFormMural(f => ({ ...f, tema: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Facilitador</label>
+                          <input
+                            type="text" placeholder="Sandra Helena" value={formMural.facilitador}
+                            onChange={e => setFormMural(f => ({ ...f, facilitador: e.target.value }))}
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
                         </div>
-                        <div className="flex gap-1.5 items-start">
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
-                          <span className="text-gray-500 font-light">{item.streamyard.join(" e ")}</span>
-                        </div>
-                        <div className="flex gap-1.5 items-start">
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
-                          <span className="text-gray-500 font-light">{item.recepcao}</span>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Casa / Origem</label>
+                          <input
+                            type="text" placeholder="GECAL" value={formMural.casa}
+                            onChange={e => setFormMural(f => ({ ...f, casa: e.target.value }))}
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Equipe de Passe (separado por · ou /)</label>
+                        <input
+                          type="text" placeholder="Luana · Jacqueline · Bárbara" value={formMural.passe}
+                          onChange={e => setFormMural(f => ({ ...f, passe: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Equipe de Stream (separado por e)</label>
+                        <input
+                          type="text" placeholder="Bárbara e Igor" value={formMural.streamyard}
+                          onChange={e => setFormMural(f => ({ ...f, streamyard: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Recepção</label>
+                        <input
+                          type="text" placeholder="Marion" value={formMural.recepcao}
+                          onChange={e => setFormMural(f => ({ ...f, recepcao: e.target.value }))}
+                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setShowNovoMural(false); setEditandoMuralId(null); }}
+                        className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+                      >
+                        Salvar Item
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Listagem do Mural */}
+                {(() => {
+                  const escalas = getEscalaItems();
+                  if (escalas.length === 0) {
+                    return (
+                      <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
+                        Nenhuma palestra ou escala registrada no mural.
+                      </div>
+                    );
+                  }
+
+                  const diasSemana = Array.from(new Set(escalas.map(e => e.dia_semana)));
+
+                  return (
+                    <div className="space-y-8">
+                      {diasSemana.map(diaSemana => {
+                        const items = escalas
+                          .filter(e => e.dia_semana === diaSemana)
+                          .sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
+
+                        if (items.length === 0) return null;
+
+                        return (
+                          <div key={diaSemana} className="space-y-4">
+                            <div className="flex items-center gap-2 pb-1 border-b border-violet-100/30">
+                              <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0 animate-pulse" />
+                              <h4 className="text-xs font-bold text-violet-700 uppercase tracking-widest">
+                                {diaSemana}s
+                              </h4>
+                            </div>
+
+                            {/* Desktop Grid */}
+                            <div className="hidden md:block space-y-4">
+                              <div className="grid grid-cols-12 gap-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 pb-1 border-b border-violet-100/10">
+                                <div className="col-span-1 text-center">Data</div>
+                                <div className="col-span-4">Tema da Palestra</div>
+                                <div className="col-span-2.5">Facilitador / Casa</div>
+                                <div className="col-span-1.5">Coordenador</div>
+                                <div className="col-span-3">Equipes (Passe / Stream / Recepção)</div>
+                              </div>
+
+                              <div className="divide-y divide-violet-100/20">
+                                {items.map((item) => (
+                                  <div key={item.id} className="grid grid-cols-12 gap-4 items-center py-4 first:pt-0 last:pb-0 relative group">
+                                    {/* Data */}
+                                    <div className="col-span-1 flex flex-col items-center">
+                                      <span className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-base font-bold text-amber-700 shadow-sm">
+                                        {item.dia}
+                                      </span>
+                                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                        {item.mes_ano.split(" ")[0].slice(0, 3)}
+                                      </span>
+                                    </div>
+
+                                    {/* Tema */}
+                                    <div className="col-span-4 pr-3 relative">
+                                      <p className="text-sm font-semibold text-gray-800 leading-snug font-serif italic">
+                                        "{item.tema}"
+                                      </p>
+                                      {/* Admin controls */}
+                                      {modoAdmin && (
+                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white/95 shadow-md rounded-xl p-0.5 border border-gray-100 z-10">
+                                          <button
+                                            type="button"
+                                            onClick={() => iniciarEdicaoMuralItem(item)}
+                                            className="p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 transition-colors"
+                                            title="Editar"
+                                          >
+                                            <Edit3 size={12} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => removerMuralItem(item.id)}
+                                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                            title="Excluir"
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Facilitador */}
+                                    <div className="col-span-2.5">
+                                      <p className="text-sm font-semibold text-gray-800 leading-tight">{item.facilitador || "A definir"}</p>
+                                      {item.casa && (
+                                        <span className="inline-block text-[9px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2 py-0.5 rounded-full mt-1.5">
+                                          {item.casa}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Coordenador */}
+                                    <div className="col-span-1.5">
+                                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{item.coordenador || "—"}</p>
+                                    </div>
+
+                                    {/* Equipes */}
+                                    <div className="col-span-3 space-y-1.5 text-xs">
+                                      {item.passe && (
+                                        <div className="flex gap-1.5 items-start">
+                                          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
+                                          <span className="text-gray-600 font-light leading-relaxed">{item.passe}</span>
+                                        </div>
+                                      )}
+                                      {item.streamyard && (
+                                        <div className="flex gap-1.5 items-start">
+                                          <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
+                                          <span className="text-gray-600 font-light leading-relaxed">{item.streamyard}</span>
+                                        </div>
+                                      )}
+                                      {item.recepcao && (
+                                        <div className="flex gap-1.5 items-start">
+                                          <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
+                                          <span className="text-gray-600 font-light leading-relaxed">{item.recepcao}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Mobile list */}
+                            <div className="block md:hidden space-y-4">
+                              {items.map((item) => (
+                                <div key={item.id} className="glass rounded-2xl p-4 border border-violet-100/40 space-y-3 relative">
+                                  {/* Header */}
+                                  <div className="flex items-center justify-between border-b border-violet-100/20 pb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/50 flex items-center justify-center text-sm font-bold text-amber-700 shadow-inner">
+                                        {item.dia}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                        {item.mes_ano}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-semibold text-gray-500">Coordenador: {item.coordenador || "—"}</span>
+                                      {modoAdmin && (
+                                        <div className="flex items-center gap-1 border-l border-gray-200 pl-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => iniciarEdicaoMuralItem(item)}
+                                            className="p-1 text-cyan-600"
+                                            title="Editar"
+                                          >
+                                            <Edit3 size={14} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => removerMuralItem(item.id)}
+                                            className="p-1 text-red-500"
+                                            title="Excluir"
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Content */}
+                                  <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-gray-800 leading-relaxed font-serif italic">
+                                      "{item.tema}"
+                                    </p>
+                                    <div className="flex items-center gap-2 pt-0.5">
+                                      <span className="text-xs font-semibold text-gray-700">{item.facilitador || "A definir"}</span>
+                                      {item.casa && (
+                                        <span className="text-[8px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/40 px-2 py-0.5 rounded-full">
+                                          {item.casa}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Equipes */}
+                                  <div className="border-t border-violet-100/20 pt-2 space-y-1.5 text-xs">
+                                    {item.passe && (
+                                      <div className="flex gap-1.5 items-start">
+                                        <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded-full shrink-0">Passe</span>
+                                        <span className="text-gray-500 font-light">{item.passe}</span>
+                                      </div>
+                                    )}
+                                    {item.streamyard && (
+                                      <div className="flex gap-1.5 items-start">
+                                        <span className="text-[8px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100/60 px-2 py-0.5 rounded-full shrink-0">Stream</span>
+                                        <span className="text-gray-500 font-light">{item.streamyard}</span>
+                                      </div>
+                                    )}
+                                    {item.recepcao && (
+                                      <div className="flex gap-1.5 items-start">
+                                        <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-full shrink-0">Recepção</span>
+                                        <span className="text-gray-500 font-light">{item.recepcao}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 <div className="flex justify-between items-center text-[10px] text-gray-400 font-light border-t border-violet-100/30 pt-4">
-                  <p>Escala interna de tarefeiros · GECAL Itaboraí</p>
-                  <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>
+                  <p className="font-sans">Escala interna de tarefeiros · {pagina.nome_completo || sigla}</p>
+                  {sigla === "GECAL" && <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>}
                 </div>
               </section>
             )}
@@ -1653,28 +2003,34 @@ function PaginaCasa() {
                 </div>
               )}
 
-              {(pagina.horarios ?? []).length === 0 ? (
-                <div className="px-6 py-8 text-center">
-                  <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-white/5">
-                  {(pagina.horarios ?? []).map((h, i) => (
-                    <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
-                        <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
-                        <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
-                      </div>
-                      {modoAdmin && (
-                        <button onClick={() => removerHorario(i)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
-                          <X size={13} />
-                        </button>
-                      )}
+              {(() => {
+                const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
+                if (horariosRegulares.length === 0) {
+                  return (
+                    <div className="px-6 py-8 text-center">
+                      <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                }
+                return (
+                  <div className="divide-y divide-white/5">
+                    {horariosRegulares.map((h, i) => (
+                      <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
+                          <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
+                          <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
+                        </div>
+                        {modoAdmin && (
+                          <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
+                            <X size={13} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
