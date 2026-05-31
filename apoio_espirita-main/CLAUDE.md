@@ -5,16 +5,26 @@
 
 ---
 
+## REGRAS CRÍTICAS E INVIOLÁVEIS (PROTEÇÃO DE PÁGINAS)
+
+> [!CAUTION]
+> **PÁGINA PRINCIPAL / LANDING PAGE (`src/routes/index.tsx`) ESTÁ PROTEGIDA.**
+> Nenhuma alteração (de design, de rotas, de imports, etc.) deve ser feita na página pública antes do login (`src/routes/index.tsx`) sem autorização formal e explícita do usuário (`gama.andre@gmail.com`). 
+> Isso evita danos ao layout e ao visual homologado (como ocorreu recentemente com a adição de jogos). Qualquer nova feature ou jogo deve ser implementado de forma isolada em rotas dedicadas (`src/routes/jogos/` etc.), sem alterar a página principal.
+
+---
+
 ## Checklist obrigatório para QUALQUER feature
 
 ```
 1. [ ] Ler os arquivos relevantes antes de qualquer edição
-2. [ ] Usar Supabase MCP (execute_sql / list_tables) se envolver banco
-3. [ ] Implementar
-4. [ ] npm run build  — verificar zero erros
-5. [ ] npx wrangler deploy --config wrangler.json  (em dist/server/)
-6. [ ] Atualizar roadmap em src/routes/painel.tsx  (planejado → feito)
-7. [ ] git add <arquivos específicos> && git commit && git push
+2. [ ] NUNCA alterar `src/routes/index.tsx` sem autorização formal do usuário
+3. [ ] Usar Supabase MCP (execute_sql / list_tables) se envolver banco
+4. [ ] Implementar
+5. [ ] npm run build  — verificar zero erros
+6. [ ] npx wrangler deploy --config wrangler.json  (em dist/server/)
+7. [ ] Atualizar roadmap em src/routes/painel.tsx  (planejado → feito)
+8. [ ] git add <arquivos específicos> && git commit && git push
 ```
 
 **Nunca pular nenhum passo. Nunca perguntar — só executar.**
