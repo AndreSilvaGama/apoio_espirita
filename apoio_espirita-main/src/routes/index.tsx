@@ -117,7 +117,7 @@ function Index() {
           </Link>
 
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-light leading-[1.05] text-foreground animate-fade-in-up"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-[1.05] text-foreground animate-fade-in-up"
             style={{ animationDelay: "0.3s" }}
           >
             Fora da caridade
