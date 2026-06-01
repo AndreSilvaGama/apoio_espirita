@@ -220,14 +220,8 @@ function SemeadorMensagens() {
   }, []);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    if (user) {
-      iniciarRodada(MENSAGENS_SEMEADOR[0]);
-    }
-  }, [user, iniciarRodada]);
+    iniciarRodada(MENSAGENS_SEMEADOR[0]);
+  }, [iniciarRodada]);
 
   // Escolha aleatória de uma nova frase (excluindo a atual)
   const proximaFrase = () => {
@@ -269,7 +263,7 @@ function SemeadorMensagens() {
     }
   };
 
-  if (loading || !user) return null;
+  if (loading) return null;
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">

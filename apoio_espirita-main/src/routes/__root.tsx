@@ -266,8 +266,8 @@ function AppLayout() {
   const { location } = useRouterState();
   const [reportarAberto, setReportarAberto] = useState(false);
 
-  const isPublic = PUBLIC_ROUTES.includes(location.pathname);
-  const isLightMode = !isPublic || location.pathname === "/feb";
+  const isPublic = PUBLIC_ROUTES.includes(location.pathname) || location.pathname === "/jogos" || location.pathname.startsWith("/jogos/");
+  const isLightMode = !isPublic || location.pathname === "/feb" || location.pathname === "/jogos" || location.pathname.startsWith("/jogos/");
 
   useEffect(() => {
     if (isLightMode) {
@@ -352,7 +352,9 @@ function NavBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!user || (PUBLIC_ROUTES.includes(location.pathname) && location.pathname !== "/feb")) return null;
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname) || location.pathname === "/jogos" || location.pathname.startsWith("/jogos/");
+  const hideNavBar = isPublicRoute && location.pathname !== "/feb" && location.pathname !== "/jogos" && !location.pathname.startsWith("/jogos/");
+  if (!user || hideNavBar) return null;
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
   const isAnyActive = (paths: string[]) => paths.some((p) => isActive(p));

@@ -163,9 +163,6 @@ function CacaPalavras() {
     setFase("jogo");
   }, []);
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
 
   // Calcula se duas células estão em linha reta (Horizontal ou Vertical)
   const estaoEmLinha = (a: CelulaPos, b: CelulaPos) => {
@@ -287,7 +284,7 @@ function CacaPalavras() {
     return "bg-white border-gray-250 text-gray-700 hover:bg-gray-50 active:bg-gray-100 hover:border-gray-300";
   };
 
-  if (loading || !user) return null;
+  if (loading) return null;
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">

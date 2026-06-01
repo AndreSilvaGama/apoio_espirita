@@ -471,15 +471,6 @@ function MemoriaEvangelizacao() {
     }
   }, [cartas, dificuldade, fase]);
 
-  if (!user) {
-    return (
-      <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          <Link to="/login" className="text-cyan-600 hover:underline">Faça login</Link> para jogar.
-        </p>
-      </main>
-    );
-  }
 
   const colunas = cartas.length <= 12 ? "grid-cols-4" : cartas.length <= 16 ? "grid-cols-4" : "grid-cols-5";
   const modoLabel = modo === "virtudes" ? "Virtudes" : "Palavras do Evangelho";
@@ -491,7 +482,7 @@ function MemoriaEvangelizacao() {
       <div className="mx-auto max-w-2xl">
 
         <div className="flex items-center gap-3 mb-6">
-          <Link to="/evangelizacao" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          <Link to={user ? "/evangelizacao" : "/jogos"} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div>

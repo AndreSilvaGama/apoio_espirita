@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Lock, ChevronRight, RotateCcw, Trophy, CheckCircle, XCircle, HelpCircle } from "lucide-react";
+import { ArrowLeft, ChevronRight, RotateCcw, Trophy, CheckCircle, XCircle, HelpCircle } from "lucide-react";
 import {
   type FaixaQuiz,
   type Pergunta,
@@ -38,10 +38,6 @@ function TelaSelecao({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">Quiz Espírita</h1>
-        <p className="text-sm text-gray-500 mt-1">Teste seu conhecimento sobre virtudes e doutrina</p>
-      </div>
 
       {/* Faixa etária */}
       <div>
@@ -279,18 +275,6 @@ function QuizEspirita() {
     );
   }
 
-  if (!user) {
-    return (
-      <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Lock size={28} strokeWidth={1.5} className="text-gray-300 mx-auto" />
-          <p className="text-sm text-muted-foreground">
-            <Link to="/login" className="text-cyan-600 hover:underline">Faça login</Link> para jogar.
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   function iniciar(faixa: FaixaQuiz | "todas", qtde: QtdePerguntas) {
     setFaixaAtual(faixa);
@@ -313,7 +297,25 @@ function QuizEspirita() {
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
-      <div className="mx-auto max-w-xl">
+      <div className="mx-auto max-w-xl space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <Link
+            to="/jogos"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Jogos
+          </Link>
+          <span className="text-muted-foreground/40">|</span>
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-cyan-600" />
+            <h1 className="text-lg font-semibold tracking-wide text-foreground">
+              Quiz Espírita
+            </h1>
+          </div>
+        </div>
+
         {fase === "selecao" && <TelaSelecao onIniciar={iniciar} />}
         {fase === "jogo"    && <TelaJogo perguntas={perguntas} onConcluir={concluir} />}
         {fase === "resultado" && (

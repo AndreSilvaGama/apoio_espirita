@@ -215,9 +215,6 @@ function PlanteSemente() {
   const [palavra, setPalavra] = useState<Palavra>(() => palavraAleatoria());
   const [usadas, setUsadas] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [user, loading, navigate]);
 
   // Derived
   const unicas = letrasUnicas(palavra.palavra);
@@ -251,7 +248,7 @@ function PlanteSemente() {
     setUsadas(new Set());
   }
 
-  if (loading || !user) return null;
+  if (loading) return null;
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
@@ -260,7 +257,7 @@ function PlanteSemente() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
-            to="/inicio"
+            to={user ? "/inicio" : "/jogos"}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

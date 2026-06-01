@@ -17,18 +17,6 @@ function PortalJogos() {
     );
   }
 
-  if (!user) {
-    return (
-      <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-sm text-muted-foreground">
-            <Link to="/login" className="text-cyan-600 hover:underline">Faça login</Link> para acessar os jogos educativos.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
   const jogos = [
     {
       title: "Plante a Semente",
@@ -90,7 +78,7 @@ function PortalJogos() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
-            to="/inicio"
+            to={user ? "/inicio" : "/"}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
