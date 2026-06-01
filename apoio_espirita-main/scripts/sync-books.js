@@ -261,6 +261,40 @@ const LIVROS_DICIONARIO = {
   }
 };
 
+// Dicionários de autores e médiuns conhecidos para extração automática
+const BENFEITORES = [
+  { nome: "Emmanuel", padrao: "Emmanuel" },
+  { nome: "Andre Luiz", padrao: "André Luiz" },
+  { nome: "André Luiz", padrao: "André Luiz" },
+  { nome: "Humberto de Campos", padrao: "Humberto de Campos" },
+  { nome: "Irmao X", padrao: "Irmão X" },
+  { nome: "Irmão X", padrao: "Irmão X" },
+  { nome: "Meimei", padrao: "Meimei" },
+  { nome: "Maria Dolores", padrao: "Maria Dolores" },
+  { nome: "Joanna de Angelis", padrao: "Joanna de Ângelis" },
+  { nome: "Joanna de Ângelis", padrao: "Joanna de Ângelis" },
+  { nome: "Bezerra de Menezes", padrao: "Bezerra de Menezes" },
+  { nome: "Casimiro Cunha", padrao: "Casimiro Cunha" },
+  { nome: "Neio Lucio", padrao: "Neio Lúcio" },
+  { nome: "Neio Lúcio", padrao: "Neio Lúcio" },
+  { nome: "Patricia", padrao: "Patrícia" },
+  { nome: "Patrícia", padrao: "Patrícia" },
+  { nome: "Scheilla", padrao: "Scheilla" }
+];
+
+const MEDIUNS = [
+  { nome: "Chico Xavier", padrao: "Chico Xavier" },
+  { nome: "ChicoXavier", padrao: "Chico Xavier" },
+  { nome: "Divaldo Franco", padrao: "Divaldo Franco" },
+  { nome: "Divaldo", padrao: "Divaldo Franco" },
+  { nome: "Zibia Gasparetto", padrao: "Zíbia Gasparetto" },
+  { nome: "Zíbia Gasparetto", padrao: "Zíbia Gasparetto" },
+  { nome: "Vera Lucia", padrao: "Vera Lúcia Marinzeck" },
+  { nome: "Vera Lúcia", padrao: "Vera Lúcia Marinzeck" },
+  { nome: "Carlos Baccelli", padrao: "Carlos Baccelli" },
+  { nome: "Carlos Bacceli", padrao: "Carlos Baccelli" }
+];
+
 // Função para formatar fallback de arquivos novos
 function parseFallbackMetadata(filename) {
   const baseName = filename.replace(/\.pdf$/i, "");
@@ -280,31 +314,64 @@ function parseFallbackMetadata(filename) {
     cleanedName = cleanedName.replace(/[-_]?Ano[-_]?\d{4}/i, "");
   }
 
-  // Limpar hífens, underscores e termos repetitivos
+  // Tentar extrair autor espiritual
+  let autorEspiritual = "Espíritos Diversos";
+  for (const benfeitor of BENFEITORES) {
+    const regex = new RegExp(`[-_]?${benfeitor.nome}[-_]?`, "gi");
+    if (regex.test(cleanedName)) {
+      autorEspiritual = benfeitor.padrao;
+      cleanedName = cleanedName.replace(regex, " ");
+      break;
+    }
+  }
+
+  // Tentar extrair médium
+  let medium = null;
+  for (const med of MEDIUNS) {
+    const regex = new RegExp(`[-_]?${med.nome}[-_]?`, "gi");
+    if (regex.test(cleanedName)) {
+      medium = med.padrao;
+      cleanedName = cleanedName.replace(regex, " ");
+      break;
+    }
+  }
+
+  // Limpar termos repetitivos genéricos
   cleanedName = cleanedName
-    .replace(/Chico[-_]?Xavier/gi, "")
     .replace(/Espiritos[-_]?diversos/gi, "")
     .replace(/[-_]+/g, " ")
     .trim();
 
-  // Capitalizar palavras
-  const titulo = cleanedName
+  // Capitalizar palavras do título
+  let titulo = cleanedName
     .split(/\s+/)
     .map(word => {
-      if (word.length <= 2 && !["a", "o", "no", "do", "da", "de"].includes(word.toLowerCase())) {
+      if (word.length <= 2 && !["a", "o", "no", "do", "da", "de", "e", "em", "um", "uma"].includes(word.toLowerCase())) {
         return word.toUpperCase();
       }
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(" ");
 
-  // Retornar metadados padrão
+  // Remover espaços extras e pontuações remanescentes no título
+  titulo = titulo.replace(/\s+/g, " ").trim();
+
+  // Se o título ficou vazio
+  if (!titulo) {
+    titulo = "Obra Sincronizada";
+  }
+
+  let descricao = "Livro digitalizado em formato PDF, adicionado recentemente à biblioteca local.";
+  if (medium) {
+    descricao = `Obra psicografada pelo médium ${medium}. Disponível para estudos fraternos.`;
+  }
+
   return {
-    titulo: titulo || "Obra Sincronizada",
-    autorEspiritual: "Espíritos Diversos",
+    titulo,
+    autorEspiritual,
     categoria: "Mensagens / Diversos",
-    ano: ano,
-    descricao: "Livro digitalizado em formato PDF, adicionado recentemente à biblioteca local."
+    ano,
+    descricao
   };
 }
 
@@ -373,6 +440,21 @@ function sync() {
       // Fallback inteligente para arquivos novos
       meta = parseFallbackMetadata(file);
       console.log(`[Metadata Fallback] ${file} -> "${meta.titulo}"`);
+    }
+
+    // Evitar duplicados (mesmo título e mesmo autor espiritual)
+    const normalizedNewTitle = meta.titulo.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const normalizedNewAuthor = (meta.autorEspiritual || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    
+    const isDuplicate = booksList.find(b => {
+      const normalizedExistingTitle = b.titulo.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const normalizedExistingAuthor = (b.autorEspiritual || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      return normalizedExistingTitle === normalizedNewTitle && normalizedExistingAuthor === normalizedNewAuthor;
+    });
+
+    if (isDuplicate) {
+      console.log(`[Duplicado Ignorado] O arquivo "${file}" representa o livro "${meta.titulo}" que já foi catalogado através do arquivo "${isDuplicate.arquivo}".`);
+      continue;
     }
 
     booksList.push({
