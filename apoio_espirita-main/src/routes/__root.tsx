@@ -595,10 +595,9 @@ function NavBar() {
 
 /* ── Footer ── */
 function Footer({ onReportar }: { onReportar: () => void }) {
-  const { user } = useAuth();
   const { active, playing, buffering, volume, muted, activate, togglePlay, setVolume, toggleMute } = useRadio();
   const { location } = useRouterState();
-  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
+  if (location.pathname === "/login") return null;
 
   return (
     <footer className="relative mt-12 mb-6 mx-4 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl lg:mx-auto">
