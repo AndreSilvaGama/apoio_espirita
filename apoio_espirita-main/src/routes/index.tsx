@@ -95,7 +95,7 @@ function Index() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen md:h-screen w-full flex flex-col items-center justify-center pt-28 pb-12 overflow-hidden">
         <SeamlessVideo
           src="/hero-nebula.mp4"
           className="absolute inset-0 h-full w-full object-cover"
