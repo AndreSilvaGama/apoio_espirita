@@ -56,6 +56,44 @@ function Index() {
     <main className="relative min-h-screen overflow-x-hidden">
       <AmbientAudio src="/audio/ambient-piano.mp3" />
 
+      {/* ── HEADER FLOATING ── */}
+      <header 
+        className="absolute top-6 left-4 right-4 z-30 h-16 flex items-center justify-between max-w-7xl mx-auto px-6 rounded-full glass border border-white/10 animate-fade-in-up"
+        style={{ animationDelay: "0.1s" }}
+      >
+        {/* Brand */}
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto animate-pulse" />
+          <span className="text-sm font-semibold text-foreground tracking-tight hidden sm:inline">Apoio Espírita</span>
+        </Link>
+
+        {/* Links */}
+        <nav className="flex items-center gap-6 sm:gap-8">
+          <Link
+            to="/feb"
+            className="text-xs sm:text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground hover:text-cyan-glow transition-colors duration-300 font-medium"
+          >
+            Biblioteca
+          </Link>
+          <Link
+            to="/jogos"
+            className="text-xs sm:text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground hover:text-cyan-glow transition-colors duration-300 font-medium"
+          >
+            Jogos
+          </Link>
+        </nav>
+
+        {/* Action Button */}
+        <div>
+          <Link
+            to={user ? "/inicio" : "/login"}
+            className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/30 bg-transparent hover:bg-cyan-glow/5 transition-all duration-300 font-medium"
+          >
+            {user ? "Painel" : "Entrar"}
+          </Link>
+        </div>
+      </header>
+
       {/* ── HERO ── */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <SeamlessVideo
