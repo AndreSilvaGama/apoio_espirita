@@ -95,7 +95,7 @@ function Index() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen md:h-screen w-full flex flex-col items-center justify-center pt-28 pb-12 overflow-hidden">
+      <section className="relative h-screen w-full flex flex-col items-center justify-center pt-16 pb-6 overflow-hidden">
         <SeamlessVideo
           src="/hero-nebula.mp4"
           className="absolute inset-0 h-full w-full object-cover"
@@ -108,7 +108,7 @@ function Index() {
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
           <Link
             to="/transparencia"
-            className="mb-8 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.45em] text-cyan-glow/70 animate-fade-in-up hover:text-cyan-glow transition-colors"
+            className="mb-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.45em] text-cyan-glow/70 animate-fade-in-up hover:text-cyan-glow transition-colors"
             style={{ animationDelay: "0.1s" }}
           >
             <span className="w-6 h-px bg-cyan-glow/50 inline-block" />
@@ -117,7 +117,7 @@ function Index() {
           </Link>
 
           <h1
-            className="text-5xl md:text-7xl lg:text-8xl font-light leading-[1.05] text-foreground animate-fade-in-up"
+            className="text-4xl md:text-6xl lg:text-7xl font-light leading-[1.05] text-foreground animate-fade-in-up"
             style={{ animationDelay: "0.3s" }}
           >
             Fora da caridade
@@ -126,7 +126,7 @@ function Index() {
           </h1>
 
           <p
-            className="mt-10 max-w-lg mx-auto text-base md:text-lg text-muted-foreground font-light leading-loose animate-fade-in-up"
+            className="mt-6 max-w-lg mx-auto text-base md:text-lg text-muted-foreground font-light leading-loose animate-fade-in-up"
             style={{ animationDelay: "0.6s" }}
           >
             Amarás o Senhor teu Deus de todo o teu coração, de toda a tua alma
@@ -140,7 +140,7 @@ function Index() {
           </p>
 
           <div
-            className="mt-14 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up"
+            className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up"
             style={{ animationDelay: "0.9s" }}
           >
             <HelpDialog>
