@@ -1,4 +1,16 @@
+import { useEffect, useState } from "react";
+
 export function Particles({ count = 30 }: { count?: number }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <div className="absolute inset-0 overflow-hidden pointer-events-none" />;
+  }
+
   const particles = Array.from({ length: count }, (_, i) => {
     const size = Math.random() * 3 + 1;
     const left = Math.random() * 100;

@@ -1,0 +1,65 @@
+<h2>Como navegar entre Evento → Grupos → Tarefas?</h2>
+<p class="subtitle">Escolha como o usuário acessa os grupos e tarefas de cada evento</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:monospace;font-size:11px;line-height:1.6">
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px">
+        <div style="font-weight:600;font-size:12px;color:#1e293b">EJEI — Julho</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px">15/07 · João Silva</div>
+        <div style="font-size:10px;color:#0891b2;margin-top:6px;cursor:pointer">▶ Ver grupos (3)</div>
+      </div>
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px;margin-left:16px">
+        <div style="font-size:10px;color:#0369a1;font-weight:600">Grupo de Louvor</div>
+        <div style="font-size:9px;color:#64748b;margin-top:4px">☐ Preparar repertório &nbsp; ☐ Ensaio final</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Expansão inline</h3>
+      <p>O card se expande no próprio board mostrando os grupos e tarefas. Sem navegação de página.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:monospace;font-size:11px;line-height:1.6">
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer">
+        <div style="font-weight:600;font-size:12px;color:#1e293b">EJEI — Julho →</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px">15/07 · João Silva · 3 grupos</div>
+      </div>
+      <div style="background:#fff;border:1px solid #bae6fd;border-radius:8px;padding:8px;font-size:10px;color:#0369a1">
+        <div style="font-weight:600;margin-bottom:4px">◀ EJEI — Julho</div>
+        <div style="display:flex;gap:8px">
+          <div style="background:#f0f9ff;border-radius:6px;padding:6px;flex:1">Grupo Louvor<br/><span style="color:#94a3b8">2 tarefas</span></div>
+          <div style="background:#f0f9ff;border-radius:6px;padding:6px;flex:1">Grupo Técnico<br/><span style="color:#94a3b8">3 tarefas</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Página própria</h3>
+      <p>Clicar no card abre uma página dedicada <code>/kanban/{id}</code> com os grupos e suas tarefas.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:16px;font-family:monospace;font-size:11px;line-height:1.6">
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px">
+        <div style="font-weight:600;font-size:12px;color:#1e293b">EJEI — Julho</div>
+        <div style="font-size:10px;color:#64748b;margin-top:2px">15/07 · João Silva</div>
+      </div>
+      <div style="position:relative">
+        <div style="position:fixed;right:0;top:0;bottom:0;width:60%;background:#fff;border-left:1px solid #e2e8f0;border-radius:8px 0 0 8px;padding:10px;font-size:10px">
+          <div style="font-weight:600;color:#0369a1;margin-bottom:6px">EJEI — Grupos</div>
+          <div style="background:#f0f9ff;border-radius:6px;padding:6px;margin-bottom:4px">Grupo Louvor</div>
+          <div style="background:#f0f9ff;border-radius:6px;padding:6px">Grupo Técnico</div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px dashed #bae6fd;border-radius:8px;padding:8px;font-size:10px;color:#94a3b8;text-align:center">painel lateral →</div>
+    </div>
+    <div class="card-body">
+      <h3>C — Painel lateral (drawer)</h3>
+      <p>Clicar no card abre um drawer pela direita com os grupos e tarefas. O board fica visível ao fundo.</p>
+    </div>
+  </div>
+
+</div>

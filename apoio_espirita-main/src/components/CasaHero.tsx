@@ -231,6 +231,37 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
             </div>
           )}
         </div>
+
+        {/* Description & Mission (Always visible below contacts) */}
+        {(dataPagina?.descricao || dataPagina?.missao) && (
+          <div style={{ marginTop: 22, paddingTop: 16, borderTop: "1px dashed rgba(0,20,70,.06)" }}>
+            {dataPagina.descricao && (
+              <p style={{ 
+                fontFamily: "Inter, sans-serif", 
+                fontSize: "0.88rem", 
+                color: "#455060", 
+                fontWeight: 300, 
+                lineHeight: 1.6, 
+                margin: 0, 
+                fontStyle: "italic" 
+              }}>
+                "{dataPagina.descricao}"
+              </p>
+            )}
+            {dataPagina.missao && (
+              <p style={{ 
+                fontFamily: "Inter, sans-serif", 
+                fontSize: "0.8rem", 
+                color: "#637080", 
+                fontWeight: 400, 
+                marginTop: 8, 
+                margin: 0 
+              }}>
+                <strong>Nossa Missão:</strong> {dataPagina.missao}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

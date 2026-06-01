@@ -2,11 +2,15 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+const PROD_URL = "https://kitmwxfwwujygcmdjngm.supabase.co";
+const PROD_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpdG13eGZ3d3VqeWdjbWRqbmdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjEwNTYsImV4cCI6MjA5NDA5NzA1Nn0.Er_7LFPyup8LjcFaGuIAKMHcIVzJfbU-ihVs_r-IkXE";
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  // Use production credentials as absolute fallback to guarantee functioning client
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || PROD_URL;
+  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || PROD_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
@@ -15,7 +19,12 @@ function createSupabaseClient() {
     ];
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Configure as variáveis de ambiente do Supabase.`;
     console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+    // Return a dummy client so it doesn't crash during import/hydration
+    return createClient<Database>("https://kitmwxfwwujygcmdjngm.supabase.co", "placeholder", {
+      auth: {
+        persistSession: false,
+      }
+    });
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

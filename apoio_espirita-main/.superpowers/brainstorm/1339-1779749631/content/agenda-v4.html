@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apoio Espírita — Agenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:       #004a8c;
+  --blue-mid:   #1863a8;
+  --blue-pale:  #ebf0f9;
+  --blue-dim:   rgba(0,74,140,0.07);
+  --gold:       #b08826;
+  --gold-pale:  #faf5e8;
+  --gold-border:rgba(176,136,38,0.3);
+  --ink:        #111418;
+  --ink-2:      #2e3540;
+  --ink-3:      #637080;
+  --ink-4:      #a3adb8;
+  --surface:    #ffffff;
+  --bg:         #f7f8fc;
+  --border:     rgba(0,20,70,0.08);
+  --border-2:   rgba(0,20,70,0.15);
+}
+
+html { font-size: 18px; }
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Números sempre em Inter — sem distorção */
+.num { font-family: 'Inter', sans-serif; font-variant-numeric: lining-nums tabular-nums; }
+
+/* ── animações ── */
+@keyframes up {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+[data-a] { animation: up 0.65s cubic-bezier(.22,1,.36,1) both; }
+[data-a="1"] { animation-delay:.04s }
+[data-a="2"] { animation-delay:.12s }
+[data-a="3"] { animation-delay:.20s }
+[data-a="4"] { animation-delay:.28s }
+[data-a="5"] { animation-delay:.36s }
+[data-a="6"] { animation-delay:.44s }
+[data-a="7"] { animation-delay:.52s }
+
+/* ─────────────────────────────────────────
+   BARRA DE NAVEGAÇÃO
+───────────────────────────────────────── */
+.topbar {
+  position: sticky; top:0; z-index:100;
+  height: 60px;
+  background: rgba(247,248,252,.95);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 44px;
+  gap: 0;
+}
+
+.topbar-brand {
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-size: .95rem;
+  color: var(--blue);
+  letter-spacing: .025em;
+  margin-right: 44px;
+  white-space: nowrap;
+}
+
+.topbar-nav { display:flex; gap:2px; flex:1; }
+
+.topbar-link {
+  font-size: .86rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 8px 14px;
+  border-radius: 9px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+}
+.topbar-link:hover { background: var(--blue-pale); color: var(--blue); }
+.topbar-link.on { background: var(--blue-pale); color: var(--blue); font-weight: 600; }
+
+.topbar-user {
+  margin-left: auto;
+  width:38px; height:38px; border-radius:50%;
+  background: var(--blue-pale);
+  border: 1.5px solid rgba(0,74,140,.18);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.68rem; font-weight:700; color:var(--blue); letter-spacing:.05em;
+}
+
+/* ─────────────────────────────────────────
+   HERO DO CENTRO ESPÍRITA
+───────────────────────────────────────── */
+.casa-hero {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 52px 44px 44px;
+}
+
+.casa-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.casa-name-block {}
+
+.casa-supra {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.casa-supra::before {
+  content: '';
+  display: block;
+  width: 28px; height: 1.5px;
+  background: var(--gold);
+  border-radius: 1px;
+}
+
+.casa-name {
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-size: 3.2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.casa-name span {
+  display: block;
+  font-style: italic;
+  color: var(--blue);
+}
+
+.casa-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.casa-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .82rem;
+  color: var(--ink-3);
+}
+.casa-meta-item svg { width:14px; height:14px; opacity:.6; }
+.casa-sep { width:3px; height:3px; border-radius:50%; background:var(--ink-4); }
+
+.casa-stat-group {
+  display: flex;
+  gap: 28px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+.casa-stat {
+  text-align: right;
+}
+.casa-stat-n {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--blue);
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+}
+.casa-stat-l {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--ink-4);
+  margin-top: 4px;
+  letter-spacing: .03em;
+}
+
+/* ─────────────────────────────────────────
+   CORPO DA PÁGINA
+───────────────────────────────────────── */
+.body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 44px 96px;
+}
+
+/* ─────────────────────────────────────────
+   PENSAMENTO DO DIA
+───────────────────────────────────────── */
+.pensamento {
+  background: var(--gold-pale);
+  border: 1px solid var(--gold-border);
+  border-radius: 18px;
+  padding: 32px 40px;
+  margin-bottom: 48px;
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+
+.pensamento-acento {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: 40px;
+}
+
+.pensamento-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.pensamento-texto {
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--ink-2);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+
+.pensamento-autor {
+  font-size: .8rem;
+  color: var(--ink-4);
+  font-weight: 500;
+  letter-spacing: .03em;
+}
+
+/* ─────────────────────────────────────────
+   CABEÇALHO DA SEÇÃO DE EVENTOS
+───────────────────────────────────────── */
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.sec-title {
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -.01em;
+}
+
+.sec-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 3px;
+}
+.tab {
+  font-family: 'Inter', sans-serif;
+  font-size: .84rem;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 9px;
+  border: none; cursor: pointer;
+  color: var(--ink-3);
+  background: transparent;
+  transition: all .18s;
+}
+.tab:hover { color: var(--ink); }
+.tab.on {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,74,140,.25);
+}
+
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  padding: 10px 22px;
+  font-family: 'Inter', sans-serif;
+  font-size: .86rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .015em;
+  box-shadow: 0 2px 10px rgba(0,74,140,.22);
+  transition: all .2s cubic-bezier(.22,1,.36,1);
+}
+.btn-add:hover {
+  background: var(--blue-mid);
+  box-shadow: 0 4px 18px rgba(0,74,140,.32);
+  transform: translateY(-1px);
+}
+
+/* ─────────────────────────────────────────
+   SEPARADOR DE MÊS
+───────────────────────────────────────── */
+.mes {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 36px 0 18px;
+}
+.mes:first-of-type { margin-top: 0; }
+.mes-nome {
+  font-family: 'Inter', sans-serif;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  white-space: nowrap;
+  font-variant-numeric: lining-nums;
+}
+.mes-linha { flex:1; height:1px; background:var(--border); }
+
+/* ─────────────────────────────────────────
+   CARD DE EVENTO
+───────────────────────────────────────── */
+.evento {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05);
+  transition: box-shadow .3s cubic-bezier(.22,1,.36,1),
+              border-color .3s,
+              transform .3s cubic-bezier(.22,1,.36,1);
+}
+.evento:hover {
+  box-shadow: 0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08);
+  border-color: rgba(0,74,140,.2);
+  transform: translateY(-2px);
+}
+
+/* faixa de data no topo do card */
+.evento-topo {
+  background: var(--blue-dim);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.evento-data {
+  font-family: 'Inter', sans-serif;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--blue);
+  font-variant-numeric: lining-nums;
+}
+
+.evento-tipo {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 11px;
+  border-radius: 999px;
+}
+.tipo-aberto { background: #eaf8f1; color: #0a5c35; }
+.tipo-fechado { background: #fdf0f0; color: #8a1515; }
+
+/* corpo do card */
+.evento-corpo {
+  padding: 22px 28px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.evento-info { flex:1; min-width: 0; }
+
+.evento-titulo {
+  font-family: 'Libre Caslon Text', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.3;
+  margin-bottom: 10px;
+  letter-spacing: -.005em;
+}
+
+.evento-metas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.evento-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: .84rem;
+  color: var(--ink-3);
+  font-variant-numeric: lining-nums;
+}
+.evento-meta svg { width:14px; height:14px; opacity:.6; flex-shrink:0; }
+
+.evento-desc {
+  font-size: .93rem;
+  color: var(--ink-2);
+  line-height: 1.68;
+  font-weight: 300;
+}
+
+.evento-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+.etag {
+  font-family: 'Inter', sans-serif;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.etag-blue { background: var(--blue-pale); color: var(--blue); }
+.etag-gold { background: var(--gold-pale); color: #7a5800; }
+
+/* ações do card */
+.evento-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: .8rem;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pill svg { width:12px; height:12px; }
+.pill-ok   { background:#eaf8f1; color:#0a5c35; }
+.pill-wait { background:#fff8ec; color:#7a4f00; }
+
+.btn-conf {
+  font-family: 'Inter', sans-serif;
+  font-size: .88rem;
+  font-weight: 600;
+  padding: 11px 24px;
+  border-radius: 11px;
+  border: 1.5px solid rgba(0,74,140,.35);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  min-width: 164px;
+  text-align: center;
+  transition: background .15s, border-color .15s;
+}
+.btn-conf:hover { background: var(--blue-pale); border-color: var(--blue); }
+
+/* ─────────────────────────────────────────
+   RODAPÉ
+───────────────────────────────────────── */
+.rodape {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rodape-nota { font-size:.78rem; color:var(--ink-4); }
+.rodape-link { font-size:.78rem; color:var(--blue); font-weight:500; text-decoration:none; }
+.rodape-link:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<!-- barra de navegação do sistema -->
+<header class="topbar">
+  <span class="topbar-brand">Apoio Espírita</span>
+  <nav class="topbar-nav">
+    <a class="topbar-link on" href="#">Agenda</a>
+    <a class="topbar-link" href="#">Kanban</a>
+    <a class="topbar-link" href="#">Evangelização</a>
+    <a class="topbar-link" href="#">Perfil</a>
+  </nav>
+  <div class="topbar-user">AG</div>
+</header>
+
+<!-- identidade do centro espírita — destaque máximo -->
+<section class="casa-hero" data-a="1">
+  <div class="casa-inner">
+    <div class="casa-name-block">
+      <div class="casa-supra">Sua casa espírita</div>
+      <h1 class="casa-name">
+        Centro Espírita
+        <span>Luz e Caridade</span>
+      </h1>
+      <div class="casa-meta">
+        <span class="casa-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          São Paulo · SP
+        </span>
+        <span class="casa-sep"></span>
+        <span class="casa-meta-item">Sigla: CELC</span>
+        <span class="casa-sep"></span>
+        <span class="casa-meta-item">Membro desde 2019</span>
+      </div>
+    </div>
+
+    <div class="casa-stat-group">
+      <div class="casa-stat">
+        <div class="casa-stat-n">24</div>
+        <div class="casa-stat-l">Membros ativos</div>
+      </div>
+      <div class="casa-stat">
+        <div class="casa-stat-n">4</div>
+        <div class="casa-stat-l">Próximos eventos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- corpo da página -->
+<main class="body">
+
+  <!-- pensamento do dia -->
+  <div class="pensamento" data-a="2">
+    <div class="pensamento-acento"></div>
+    <div>
+      <div class="pensamento-label">Pensamento do dia</div>
+      <p class="pensamento-texto">"Fora da caridade não há salvação."</p>
+      <p class="pensamento-autor">Allan Kardec &mdash; O Evangelho Segundo o Espiritismo</p>
+    </div>
+  </div>
+
+  <!-- cabeçalho da seção de eventos -->
+  <div class="sec-head" data-a="3">
+    <h2 class="sec-title">Próximos eventos</h2>
+    <div class="sec-controls">
+      <div class="tabs">
+        <button class="tab on">Próximos</button>
+        <button class="tab">Este mês</button>
+        <button class="tab">Passados</button>
+      </div>
+      <button class="btn-add">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo evento
+      </button>
+    </div>
+  </div>
+
+  <!-- junho -->
+  <div class="mes" data-a="3">
+    <span class="mes-nome">Junho 2026</span>
+    <div class="mes-linha"></div>
+  </div>
+
+  <article class="evento" data-a="4">
+    <div class="evento-topo">
+      <span class="evento-data">Sábado, 07 de junho de 2026</span>
+      <span class="evento-tipo tipo-aberto">Aberto</span>
+    </div>
+    <div class="evento-corpo">
+      <div class="evento-info">
+        <h3 class="evento-titulo">Reunião de Estudo do Evangelho</h3>
+        <div class="evento-metas">
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            19h00 – 21h00
+          </span>
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Salão Principal
+          </span>
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            12 confirmados
+          </span>
+        </div>
+        <p class="evento-desc">Estudo e debate do capítulo 8 — "As bem-aventuranças". Aberto para todos os membros e visitantes.</p>
+        <div class="evento-tags">
+          <span class="etag etag-blue">Evangelho</span>
+        </div>
+      </div>
+      <div class="evento-acoes">
+        <span class="pill pill-ok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmado
+        </span>
+      </div>
+    </div>
+  </article>
+
+  <article class="evento" data-a="5">
+    <div class="evento-topo">
+      <span class="evento-data">Sábado, 14 de junho de 2026</span>
+      <span class="evento-tipo tipo-fechado">Fechado</span>
+    </div>
+    <div class="evento-corpo">
+      <div class="evento-info">
+        <h3 class="evento-titulo">Reunião Mediúnica — Passes e Desobsessão</h3>
+        <div class="evento-metas">
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            20h00 – 22h00
+          </span>
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Sala de Trabalho
+          </span>
+        </div>
+        <p class="evento-desc">Sessão fechada para médiuns em desenvolvimento. Presença obrigatória para os da turma avançada.</p>
+        <div class="evento-tags">
+          <span class="etag etag-gold">Mediunidade</span>
+        </div>
+      </div>
+      <div class="evento-acoes">
+        <span class="pill pill-wait">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Aguardando
+        </span>
+        <button class="btn-conf">Confirmar presença</button>
+      </div>
+    </div>
+  </article>
+
+  <article class="evento" data-a="5">
+    <div class="evento-topo">
+      <span class="evento-data">Sábado, 21 de junho de 2026</span>
+      <span class="evento-tipo tipo-aberto">Aberto</span>
+    </div>
+    <div class="evento-corpo">
+      <div class="evento-info">
+        <h3 class="evento-titulo">Palestra Pública — A Lei de Causa e Efeito</h3>
+        <div class="evento-metas">
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            18h30 – 20h00
+          </span>
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Auditório Central
+          </span>
+        </div>
+        <p class="evento-desc">Palestra aberta ao público em geral. Expositor: Irmão João Alves. Transmissão ao vivo pelo canal da casa.</p>
+        <div class="evento-tags">
+          <span class="etag etag-blue">Doutrina</span>
+        </div>
+      </div>
+      <div class="evento-acoes">
+        <button class="btn-conf">Confirmar presença</button>
+      </div>
+    </div>
+  </article>
+
+  <!-- julho -->
+  <div class="mes" data-a="6">
+    <span class="mes-nome">Julho 2026</span>
+    <div class="mes-linha"></div>
+  </div>
+
+  <article class="evento" data-a="6">
+    <div class="evento-topo">
+      <span class="evento-data">Domingo, 05 de julho de 2026</span>
+      <span class="evento-tipo tipo-aberto">Aberto</span>
+    </div>
+    <div class="evento-corpo">
+      <div class="evento-info">
+        <h3 class="evento-titulo">Confraternização Anual da Casa</h3>
+        <div class="evento-metas">
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            10h00 – 15h00
+          </span>
+          <span class="evento-meta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Jardim da Casa
+          </span>
+        </div>
+        <p class="evento-desc">Celebração do aniversário de fundação com almoço fraterno, atividades para crianças e música ao vivo.</p>
+        <div class="evento-tags">
+          <span class="etag etag-gold">Especial</span>
+        </div>
+      </div>
+      <div class="evento-acoes">
+        <button class="btn-conf">Confirmar presença</button>
+      </div>
+    </div>
+  </article>
+
+  <footer class="rodape" data-a="7">
+    <span class="rodape-nota">4 eventos · CELC</span>
+    <a class="rodape-link" href="#">Ver eventos passados</a>
+  </footer>
+
+</main>
+
+</body>
+</html>

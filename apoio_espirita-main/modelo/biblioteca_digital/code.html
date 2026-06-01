@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e1e2e7",
+                        "on-primary-fixed-variant": "#004883",
+                        "secondary-container": "#d6e0f6",
+                        "spiritual-blue": "#4A90E2",
+                        "tertiary-container": "#cca72f",
+                        "on-primary-container": "#fdfcff",
+                        "on-surface": "#191c1f",
+                        "surface": "#f8f9fe",
+                        "warm-grey": "#718096",
+                        "tertiary-fixed": "#ffe088",
+                        "primary-fixed-dim": "#a4c9ff",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "tertiary": "#735c00",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eceef3",
+                        "primary-fixed": "#d4e3ff",
+                        "on-error": "#ffffff",
+                        "secondary": "#555f71",
+                        "on-surface-variant": "#414751",
+                        "border-haze": "#E2E8F0",
+                        "on-secondary-fixed": "#121c2c",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#596376",
+                        "outline": "#717783",
+                        "on-background": "#191c1f",
+                        "background": "#f8f9fe",
+                        "secondary-fixed-dim": "#bdc7dc",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "primary-container": "#2976c7",
+                        "inverse-surface": "#2e3134",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f2f3f8",
+                        "surface-dim": "#d8dadf",
+                        "on-secondary-fixed-variant": "#3d4759",
+                        "primary": "#005da7",
+                        "surface-tint": "#0060ac",
+                        "surface-bright": "#f8f9fe",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e7e8ed",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e1e2e7",
+                        "on-tertiary-container": "#4e3d00",
+                        "ethereal-white": "#F8F9FE",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eff0f5",
+                        "outline-variant": "#c1c7d3",
+                        "sacred-gold": "#D4AF37",
+                        "on-tertiary-fixed": "#241a00",
+                        "deep-slate": "#2D3748",
+                        "secondary-fixed": "#d9e3f9",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#a4c9ff",
+                        "on-primary-fixed": "#001c39"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1120px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "unit": "8px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Libre Caslon Text"],
+                        "headline-md": ["Libre Caslon Text"],
+                        "headline-lg": ["Libre Caslon Text"],
+                        "display-lg-mobile": ["Libre Caslon Text"],
+                        "label-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
+                        "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "400"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .airy-shadow {
+            box-shadow: 0 24px 32px -12px rgba(74, 144, 226, 0.06);
+        }
+        .wisdom-block {
+            border-left: 4px solid #D4AF37;
+            padding-left: 24px;
+            font-style: italic;
+        }
+        body {
+            background-color: #f8f9fe;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background selection:bg-spiritual-blue/20">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-md border-b border-border-haze shadow-sm shadow-spiritual-blue/5">
+<div class="max-w-container-max mx-auto px-gutter flex justify-between items-center h-20">
+<div class="font-headline-md text-headline-md text-spiritual-blue font-bold tracking-tight">
+                Apoio Espírita
+            </div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Artigos</a>
+<a class="font-label-lg text-label-lg text-spiritual-blue border-b-2 border-spiritual-blue pb-1" href="#">Livros</a>
+<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Estudos</a>
+<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Eventos</a>
+<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Vídeos</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-border-haze rounded-full text-body-md focus:outline-none focus:ring-2 focus:ring-spiritual-blue/20 focus:border-spiritual-blue transition-all w-64" placeholder="Buscar na biblioteca..." type="text"/>
+</div>
+<button class="bg-spiritual-blue text-white px-6 py-2 rounded-full font-label-lg text-label-lg hover:brightness-110 active:scale-95 transition-all">
+                    Entrar
+                </button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24">
+<!-- Hero Section -->
+<section class="max-w-container-max mx-auto px-gutter mb-16">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div>
+<span class="inline-block px-4 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-lg text-label-lg mb-6">Biblioteca Digital</span>
+<h1 class="font-display-lg text-display-lg text-deep-slate mb-6">O conhecimento que ilumina a <span class="text-spiritual-blue italic">jornada da alma</span>.</h1>
+<p class="font-body-lg text-body-lg text-warm-grey mb-8 max-w-xl">Acesse centenas de obras clássicas e estudos contemporâneos sobre a doutrina espírita em um ambiente calmo e organizado para sua leitura.</p>
+<div class="wisdom-block mb-8">
+<p class="font-headline-md text-headline-md text-deep-slate">"Espíritas! amai-vos, este o primeiro ensinamento; instruí-vos, este o segundo."</p>
+<cite class="block mt-2 font-label-lg text-label-lg text-sacred-gold not-italic">— O Espírito de Verdade</cite>
+</div>
+</div>
+<div class="relative">
+<div class="aspect-[4/3] rounded-[2rem] overflow-hidden airy-shadow">
+<img class="w-full h-full object-cover" data-alt="A serene, high-end library setting with floor-to-ceiling wooden bookshelves filled with neatly arranged books. Sunlight streams through a large window, casting soft, warm light across a minimalist reading table and a comfortable blue armchair. The atmosphere is peaceful, intellectual, and inviting, reflecting a modern spiritual sanctuary with a palette of soft whites and calm blues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABB0CCoj4C0JLZfMaV7XAF8r1Dv3d5s4KTo99V6Mgb6-dJZV3b6dynqdCkvvv1cnKikHH2Qb072sHWZe5WIdktf18Kk0umzoz65GtdT1omhx6fQzXpALzYCpE8vZqqjuV-dTJ6KH7yyg-EMoSA6lJPtcyI9XqZ3UVk02U11aRInw_63-NjFAg-FdL4XTkTLKG78NglbEWXorGoz3qdqdgghTMygIUKQrXf4TgccBU4tFj3q4aDH9WVeTvBkUHso6GXZXgckByPtsA"/>
+</div>
+<div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl airy-shadow hidden sm:block">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-sacred-gold/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-sacred-gold">menu_book</span>
+</div>
+<div>
+<div class="font-label-lg text-label-lg text-deep-slate">Mais de 500 títulos</div>
+<div class="font-label-sm text-label-sm text-warm-grey">Acervo em constante atualização</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Categories Filter -->
+<section class="max-w-container-max mx-auto px-gutter mb-12">
+<div class="flex flex-wrap gap-4 items-center">
+<span class="font-label-lg text-label-lg text-deep-slate mr-2">Filtrar por:</span>
+<button class="px-6 py-2 rounded-full bg-spiritual-blue text-white font-label-lg text-label-lg transition-all">Todos</button>
+<button class="px-6 py-2 rounded-full bg-white border border-border-haze text-deep-slate hover:border-spiritual-blue hover:text-spiritual-blue transition-all">Obras Básicas</button>
+<button class="px-6 py-2 rounded-full bg-white border border-border-haze text-deep-slate hover:border-spiritual-blue hover:text-spiritual-blue transition-all">Chico Xavier</button>
+<button class="px-6 py-2 rounded-full bg-white border border-border-haze text-deep-slate hover:border-spiritual-blue hover:text-spiritual-blue transition-all">Yvonne Pereira</button>
+<button class="px-6 py-2 rounded-full bg-white border border-border-haze text-deep-slate hover:border-spiritual-blue hover:text-spiritual-blue transition-all">Estudos Científicos</button>
+<button class="px-6 py-2 rounded-full bg-white border border-border-haze text-deep-slate hover:border-spiritual-blue hover:text-spiritual-blue transition-all">Psicografias</button>
+</div>
+</section>
+<!-- Book Grid -->
+<section class="max-w-container-max mx-auto px-gutter">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Card 1 -->
+<div class="group bg-white rounded-[1.5rem] airy-shadow overflow-hidden transition-transform duration-300 hover:-translate-y-2">
+<div class="aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist book cover for a spiritual classic titled 'The Book of Spirits'. The cover design features a simple, elegant typography in charcoal grey against an off-white, textured paper background. A subtle, stylized illustration of a golden flame is centered at the bottom. The lighting is bright and airy, conveying a sense of timeless wisdom and spiritual clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw633FFP3FqlMdFIgep_fTchVwn2H0lBuCLFyHlyNcS2JS8r9yQ3YGAvRUGLx3D_pV9_OVADxttNSKb1rOwFTEk88PIU-Z9R2Ymwf3vGyY4vbdwspXl2E6z9OLEbrPVwAV9354GJGO12bj4fWxbG2Qk1sQYjN_0V-Jb879xtzbG6rSaTEN4ZG9DFGN6a2GlgOKcQigBtXfA9ruzRwpUH82U2gl3U507WL3FOdJUlQjxj3qEfYz7Kkkg1D5LgHzrSvCVdOH7C-jK7U"/>
+</div>
+<div class="p-8">
+<span class="font-label-sm text-label-sm text-sacred-gold mb-2 block">Allan Kardec</span>
+<h3 class="font-headline-md text-headline-md text-deep-slate mb-4">O Livro dos Espíritos</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-spiritual-blue text-white py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                Ler Online
+                            </button>
+<button class="w-full border border-border-haze text-deep-slate py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Download
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-white rounded-[1.5rem] airy-shadow overflow-hidden transition-transform duration-300 hover:-translate-y-2">
+<div class="aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern book cover for a spiritual memoir titled 'Our Home'. The design uses a serene palette of sky blue and ethereal white gradients. A delicate, translucent geometric representation of a city of light is floating in the center. The typography is a refined serif font, looking expensive and peaceful. The image quality is high with soft atmospheric lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKq8gteDeHM1x0OhTxZYFZ-zORjN5dirn56TxKRxVFtEOTITc458Ah8hY0zuAY4WNVA80fJ0yMHF_7y6oPbNKI9hiHAMpX5Q0n1CB3VxJJsCxNjk7GHsuzlCkyi6pgQ6gxNn6WejnT5WBpcrFW2zMWw-JGiMcMEF7ljdv4eP3qYtebvXglZMV5jbuEspj5zqriS_x3sV7_jYPYo2REDNyT4M6wSBboiConwbv2Enj6gkX0DoANpj1MWKh2A-wRk4PaIHKisgWx8-8"/>
+</div>
+<div class="p-8">
+<span class="font-label-sm text-label-sm text-sacred-gold mb-2 block">André Luiz / Chico Xavier</span>
+<h3 class="font-headline-md text-headline-md text-deep-slate mb-4">Nosso Lar</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-spiritual-blue text-white py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                Ler Online
+                            </button>
+<button class="w-full border border-border-haze text-deep-slate py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Download
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-white rounded-[1.5rem] airy-shadow overflow-hidden transition-transform duration-300 hover:-translate-y-2">
+<div class="aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A contemporary spiritual study book cover titled 'The Genesis'. The cover features a stunning macro photograph of a drop of water reflecting a universe of stars. The colors are deep blues and golds. The layout is clean and asymmetric, with a modern sans-serif font for the title. The overall feel is one of deep intellectual curiosity and cosmic wonder." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXmXMDXXt_6Sxsu5vDd6FuTzL2nofAD7G-WwbO5T3B3RaksUD6teY-HG1dB6xxhzVDo7vPSxU4J6tMKD8HhqCHkxEBtbiTqPsQqkHIwkJzeVqtZcPaku3KViztLzfmhw2yIdi7Mj1R8Qcv9nGmXTSJes6bRL9NoJawHuZetiyjIFysEfYcKsZFWmbKviD_3OleWuANvGscyOyFpVXy5n6wCn6iT7qbYPPvoNpC_PeUdfmrpx77wuqQbtSIVjk-Z5agpECqaGTtL_I"/>
+</div>
+<div class="p-8">
+<span class="font-label-sm text-label-sm text-sacred-gold mb-2 block">Allan Kardec</span>
+<h3 class="font-headline-md text-headline-md text-deep-slate mb-4">A Gênese</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-spiritual-blue text-white py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                Ler Online
+                            </button>
+<button class="w-full border border-border-haze text-deep-slate py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Download
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group bg-white rounded-[1.5rem] airy-shadow overflow-hidden transition-transform duration-300 hover:-translate-y-2">
+<div class="aspect-[3/4] overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A beautiful, soft-focus book cover for 'Memoirs of a Suicide'. The design is deeply emotional yet hopeful, featuring a single white feather floating on a calm, reflective lake at dawn. The lighting is a mix of soft lavender and gold. The title is embossed in a delicate, classical typeface. The aesthetic is one of profound compassion and spiritual transition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCnJqIiKxfpBC2KZh0CDvBRCywQOohyDFjVGHFPU9v8nl76N0N3dWgC4Tehkg9q9vtgdgC8h-mym8wgu8YT4CpHPyhbiuGBROj5hjWZfUTwupdRRW0pRFS1mSkG4ygRsYKBelB6Im4KprXWA8_XDtyMN5QurRTOb6SXeH6AbhYUChB4zYQe7HqE45SEIqPLslovOV29wycDsuWMsAzOJyQEs2GRAdOcmXRGvPUGr3l55GFh_2wizeM82hNMewQsuCEO1BTGVHqnCQ"/>
+</div>
+<div class="p-8">
+<span class="font-label-sm text-label-sm text-sacred-gold mb-2 block">Yvonne A. Pereira</span>
+<h3 class="font-headline-md text-headline-md text-deep-slate mb-4">Memórias de um Suicida</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-spiritual-blue text-white py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                Ler Online
+                            </button>
+<button class="w-full border border-border-haze text-deep-slate py-2 rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Download
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- More results button -->
+<div class="mt-16 flex justify-center">
+<button class="group flex items-center gap-3 text-spiritual-blue font-label-lg text-label-lg">
+                    Ver mais obras
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-border-haze w-full py-16">
+<div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-8">
+<div class="col-span-1 md:col-span-1">
+<div class="font-headline-md text-headline-md text-spiritual-blue mb-6">Apoio Espírita</div>
+<p class="font-body-md text-body-md text-warm-grey">Uma plataforma dedicada à divulgação e estudo da doutrina espírita, unindo ciência, filosofia e religião.</p>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Navegação</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Sobre Nós</a></li>
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Privacidade</a></li>
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Contato</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Comunidade</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Doações</a></li>
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Imprensa</a></li>
+<li><a class="font-body-md text-body-md text-warm-grey hover:text-spiritual-blue hover:underline transition-all" href="#">Voluntariado</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Newsletter</h4>
+<p class="font-body-md text-body-md text-warm-grey mb-4">Receba novos estudos e lançamentos literários.</p>
+<div class="flex gap-2">
+<input class="bg-white border border-border-haze rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-spiritual-blue/20" placeholder="Seu e-mail" type="email"/>
+<button class="bg-spiritual-blue text-white p-2 rounded-lg hover:brightness-110">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-gutter mt-16 pt-8 border-t border-border-haze text-center">
+<p class="font-body-md text-body-md text-warm-grey">© 2024 Apoio Espírita. Todos os direitos reservados.</p>
+</div>
+</footer>
+<script>
+        // Smooth scroll interaction
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Search bar micro-interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-105');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-105');
+        });
+    </script>
+</body></html>

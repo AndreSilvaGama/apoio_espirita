@@ -1,0 +1,75 @@
+<h2>Como mudar o status do evento?</h2>
+<p class="subtitle">O drag-and-drop continua funcionando pelo título. Mas quando o card está expandido, qual mecanismo adicional prefere?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-family:Inter,sans-serif">
+      <div style="background:#fff;border:2px solid #06b6d4;border-radius:10px;overflow:hidden">
+        <div style="padding:10px;background:#f0f9ff;border-bottom:1px solid #e0f2fe;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;font-weight:600;color:#1e293b;cursor:grab">⠿ EJEI — Julho</span>
+          <div style="display:flex;gap:4px">
+            <button style="font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer">◀</button>
+            <span style="font-size:10px;padding:2px 8px;border-radius:6px;background:#fef3c7;color:#d97706;font-weight:500">Planejado</span>
+            <button style="font-size:9px;padding:2px 6px;border-radius:6px;border:1px solid #06b6d4;background:#e0f2fe;color:#0891b2;cursor:pointer">▶</button>
+          </div>
+        </div>
+        <div style="padding:8px 10px;font-size:10px;color:#64748b">
+          <div style="margin-bottom:6px">Grupos: 2 · Tarefas: 5 (2 feitas)</div>
+          <div style="background:#f8fafc;border-radius:6px;padding:6px;font-size:10px;color:#0369a1">Grupo de Louvor · Grupo Técnico…</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Setas ◀ ▶ no header</h3>
+      <p>Botões de avanço/retrocesso no cabeçalho do card. Rápido e sempre visível. O drag-and-drop continua funcionando pelo ícone ⠿.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-family:Inter,sans-serif">
+      <div style="background:#fff;border:2px solid #06b6d4;border-radius:10px;overflow:hidden">
+        <div style="padding:10px;cursor:grab;border-bottom:1px solid #e0f2fe">
+          <span style="font-size:11px;font-weight:600;color:#1e293b">⠿ EJEI — Julho</span>
+        </div>
+        <div style="padding:8px 10px">
+          <div style="font-size:10px;color:#64748b;margin-bottom:6px">Mover para:</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button style="font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b">Ideia</button>
+            <button style="font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid #fbbf24;background:#fef3c7;color:#d97706;font-weight:600">● Planejado</button>
+            <button style="font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid #06b6d4;background:#e0f2fe;color:#0891b2">Em andamento</button>
+            <button style="font-size:9px;padding:3px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b">Realizado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Botões de todas as colunas</h3>
+      <p>Dentro do card expandido, mostra os 4 status como botões. Clicar muda direto para qualquer coluna. O status atual fica destacado.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-family:Inter,sans-serif">
+      <div style="background:#fff;border:2px solid #06b6d4;border-radius:10px;overflow:hidden">
+        <div style="padding:10px;cursor:grab;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e0f2fe">
+          <span style="font-size:11px;font-weight:600;color:#1e293b">⠿ EJEI — Julho</span>
+          <select style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #06b6d4;color:#0891b2;background:#f0f9ff">
+            <option>Ideia</option>
+            <option selected>Planejado</option>
+            <option>Em andamento</option>
+            <option>Realizado</option>
+          </select>
+        </div>
+        <div style="padding:8px 10px;font-size:10px;color:#94a3b8">
+          Grupos e tarefas aqui…
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Select dropdown</h3>
+      <p>Um &lt;select&gt; no header do card para escolher o status. Compacto, sem tomar espaço. O drag-and-drop continua disponível.</p>
+    </div>
+  </div>
+
+</div>
