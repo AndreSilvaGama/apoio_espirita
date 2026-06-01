@@ -9,7 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
-const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes"];
+const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes", "/feb"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -267,7 +267,7 @@ function AppLayout() {
   const [reportarAberto, setReportarAberto] = useState(false);
 
   const isPublic = PUBLIC_ROUTES.includes(location.pathname);
-  const isLightMode = !isPublic;
+  const isLightMode = !isPublic || location.pathname === "/feb";
 
   useEffect(() => {
     if (isLightMode) {
@@ -352,7 +352,7 @@ function NavBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!user || PUBLIC_ROUTES.includes(location.pathname)) return null;
+  if (!user || (PUBLIC_ROUTES.includes(location.pathname) && location.pathname !== "/feb")) return null;
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
   const isAnyActive = (paths: string[]) => paths.some((p) => isActive(p));

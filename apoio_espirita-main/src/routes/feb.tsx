@@ -508,13 +508,12 @@ function Feb() {
   const CATEGORIAS_LIVROS = ["Todos", ...new Set(BIBLIOTECA_LIVROS.map((l) => l.categoria))].sort();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
     if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) {
       navigate({ to: "/completar-perfil" });
     }
   }, [user, profile, loading, navigate]);
 
-  if (loading || !user) return null;
+  if (loading) return null;
 
   // Filtragem - Aba FEB
   const termo = busca.trim().toLowerCase();
@@ -558,7 +557,7 @@ function Feb() {
             </p>
           </div>
           <button
-            onClick={() => navigate({ to: "/inicio" })}
+            onClick={() => navigate({ to: user ? "/inicio" : "/" })}
             className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           >
             ← Voltar
