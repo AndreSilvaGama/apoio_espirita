@@ -80,31 +80,31 @@ function Login() {
   if (loading) return null;
 
   return (
-    <main className="page-light min-h-screen flex items-center justify-center px-6">
+    <main className="page-light min-h-screen flex flex-col items-center justify-center py-6 px-6 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.88_0.03_290/0.5)_0%,transparent_70%)]" />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo / title */}
-        <div className="text-center mb-10">
-          <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-3">
+        <div className="text-center mb-6">
+          <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">
             Apoio Espírita
           </p>
-          <h1 className="text-3xl font-light text-foreground">
+          <h1 className="text-2xl md:text-3xl font-light text-foreground">
             {mode === "entrar" ? "Bem-vindo(a) de volta" : "Criar conta"}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground font-light">
+          <p className="mt-1 text-sm text-muted-foreground font-light">
             {mode === "entrar"
               ? "Entre para acessar o painel e acompanhar o projeto."
               : "Cadastre-se para fazer parte desta comunidade."}
           </p>
         </div>
 
-        <div className="glass rounded-3xl p-8 space-y-6">
+        <div className="glass rounded-3xl p-6 md:p-8 space-y-5">
           {/* Google */}
           <button
             onClick={handleGoogle}
-            className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-base text-foreground"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-base text-foreground"
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -127,7 +127,7 @@ function Login() {
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(""); setInfo(""); }}
-                className={`flex-1 py-3 text-sm uppercase tracking-widest transition-colors ${
+                className={`flex-1 py-2.5 text-xs sm:text-sm uppercase tracking-widest transition-colors ${
                   mode === m
                     ? "bg-cyan-glow/10 text-cyan-glow"
                     : "text-muted-foreground hover:text-foreground"
@@ -138,16 +138,16 @@ function Login() {
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="email"
               placeholder="E-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-4 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+              className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <input
                 type="password"
                 placeholder="Senha"
@@ -155,7 +155,7 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-4 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
               />
               {mode === "entrar" && (
                 <div className="text-right">
@@ -174,15 +174,15 @@ function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 rounded-xl text-base uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
+              className="w-full py-3 rounded-xl text-base uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
             >
               {submitting ? "Aguarde…" : mode === "entrar" ? "Entrar" : "Criar conta"}
             </button>
           </form>
         </div>
 
-        <div className="mt-6 text-center space-y-3">
-          <p className="text-sm text-muted-foreground/50">Um espaço de serviço e fraternidade.</p>
+        <div className="mt-4 text-center space-y-2">
+          <p className="text-xs text-muted-foreground/50">Um espaço de serviço e fraternidade.</p>
           <Link
             to="/"
             className="inline-block text-sm text-cyan-glow/60 hover:text-cyan-glow transition-colors"
