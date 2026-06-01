@@ -600,7 +600,8 @@ function Footer({ onReportar }: { onReportar: () => void }) {
   if (location.pathname === "/login") return null;
 
   return (
-    <footer className="relative mt-12 mb-6 mx-4 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl lg:mx-auto">
+    <div className="page-light bg-transparent">
+      <footer className="relative mt-12 mb-6 mx-4 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl lg:mx-auto">
       <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
 
         {/* Rádio */}
@@ -701,5 +702,6 @@ function Footer({ onReportar }: { onReportar: () => void }) {
 
       </div>
     </footer>
+  </div>
   );
 }
