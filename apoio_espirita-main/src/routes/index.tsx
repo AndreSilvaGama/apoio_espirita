@@ -57,7 +57,7 @@ function Index() {
       <AmbientAudio src="/audio/ambient-piano.mp3" />
 
       <header 
-        className="absolute top-0 left-0 right-0 z-30 h-16 flex items-center justify-between max-w-7xl mx-auto px-6 rounded-none glass border-0 border-b border-white/10 animate-fade-in-up lg:top-6 lg:left-4 lg:right-4 lg:rounded-full lg:border lg:border-white/10"
+        className="absolute top-0 left-0 right-0 z-30 h-16 flex items-center justify-between w-full px-6 !rounded-none glass !border-t-0 !border-x-0 !border-b border-white/10 animate-fade-in-up lg:top-6 lg:left-4 lg:right-4 lg:w-auto lg:max-w-7xl lg:mx-auto lg:!rounded-full lg:!border lg:border-white/10"
         style={{ animationDelay: "0.1s" }}
       >
         {/* Brand */}

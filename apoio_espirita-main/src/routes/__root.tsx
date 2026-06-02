@@ -378,8 +378,8 @@ function NavBar() {
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
   return (
-    <header className={`fixed z-50 bg-white border-gray-200 shadow-sm transition-all duration-200 max-w-7xl mx-auto h-14 top-0 left-0 right-0 border-b rounded-none lg:top-3 lg:left-4 lg:right-4 lg:border lg:shadow-md ${
-      menuOpen ? "lg:rounded-t-2xl lg:rounded-b-none lg:border-b-transparent" : "lg:rounded-2xl"
+    <header className={`fixed z-50 bg-white shadow-sm transition-all duration-200 h-14 top-0 left-0 right-0 w-full !border-t-0 !border-x-0 !border-b border-gray-200 !rounded-none lg:top-3 lg:left-4 lg:right-4 lg:w-auto lg:max-w-7xl lg:mx-auto lg:!border lg:shadow-md ${
+      menuOpen ? "lg:!rounded-t-2xl lg:!rounded-b-none lg:border-b-transparent" : "lg:!rounded-2xl"
     }`}>
       <div className="h-full px-5 flex items-center justify-between gap-4">
 
