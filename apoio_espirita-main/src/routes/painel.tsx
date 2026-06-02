@@ -303,7 +303,7 @@ function Painel() {
   return (
     <main className="page-light min-h-screen pt-20 pb-20">
       <CasaHero />
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }} className="px-4 md:px-[44px] pt-12 pb-0">
         {/* Título da seção */}
         <div style={{ marginBottom: 32 }}>
           <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, marginBottom: 6 }}>

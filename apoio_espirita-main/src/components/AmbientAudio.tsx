@@ -65,7 +65,7 @@ export function AmbientAudio({ src }: { src: string }) {
         onClick={toggle}
         aria-label={playing ? "Pausar música" : "Tocar música suave"}
         title={playing ? "Pausar música" : "Tocar música suave"}
-        className="fixed bottom-5 right-5 z-50 h-11 w-11 rounded-full glass flex items-center justify-center text-cyan-glow hover:bg-white/10 transition-colors duration-500"
+        className="fixed bottom-5 left-5 sm:left-auto sm:right-5 z-50 h-11 w-11 rounded-full glass flex items-center justify-center text-cyan-glow hover:bg-white/10 transition-colors duration-500"
       >
         {playing ? (
           // Speaker with sound waves

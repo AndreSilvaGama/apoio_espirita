@@ -142,7 +142,7 @@ function BackToTop() {
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Voltar ao topo"
-      className="fixed bottom-20 right-4 z-50 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:shadow-lg transition-all duration-200"
+      className="fixed bottom-32 sm:bottom-20 right-4 z-50 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center text-gray-400 hover:text-gray-700 hover:shadow-lg transition-all duration-200"
     >
       <ArrowUp size={16} strokeWidth={2} />
     </button>
@@ -378,7 +378,9 @@ function NavBar() {
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
   return (
-    <header className="fixed top-3 left-4 right-4 h-14 z-50 rounded-2xl bg-white border border-gray-200 shadow-md max-w-7xl mx-auto">
+    <header className={`fixed z-50 bg-white border-gray-200 shadow-sm transition-all duration-200 max-w-7xl mx-auto h-14 top-0 left-0 right-0 border-b rounded-none lg:top-3 lg:left-4 lg:right-4 lg:border lg:shadow-md ${
+      menuOpen ? "lg:rounded-t-2xl lg:rounded-b-none lg:border-b-transparent" : "lg:rounded-2xl"
+    }`}>
       <div className="h-full px-5 flex items-center justify-between gap-4">
 
         {/* Brand */}
@@ -500,7 +502,7 @@ function NavBar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-b-2xl">
+        <div className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-none animate-fade-in-up" style={{ animationDuration: '200ms' }}>
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
             <Link 
               to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"} 
@@ -610,14 +612,14 @@ function Footer({ onReportar }: { onReportar: () => void }) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
 
           {/* Ícone */}
-          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 ${
+          <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-500 order-3 sm:order-none ${
             playing ? "bg-emerald-50/70 border-emerald-300/60 shadow-[0_0_15px_rgba(16,185,129,0.15)] animate-pulse" : "bg-gray-50/60 border-gray-200/50"
           }`}>
             <Radio size={18} strokeWidth={1.5} className={playing ? "text-emerald-600" : "text-gray-400"} />
           </div>
 
           {/* Info */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 order-2 sm:order-none">
             <Link to="/radio" className="hover:underline underline-offset-2">
               <p className="text-sm font-semibold text-gray-800 leading-tight">Rádio Rio de Janeiro</p>
             </Link>
@@ -651,7 +653,7 @@ function Footer({ onReportar }: { onReportar: () => void }) {
           <button
             onClick={active ? togglePlay : activate}
             disabled={buffering}
-            className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 text-base font-bold shadow-sm ${
+            className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition-all duration-300 text-base font-bold shadow-sm order-1 sm:order-none ${
               playing
                 ? "bg-emerald-500 border-emerald-400 text-white hover:bg-emerald-600 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] active:scale-95"
                 : "bg-white border-emerald-300 text-emerald-600 hover:bg-emerald-50 active:scale-95"

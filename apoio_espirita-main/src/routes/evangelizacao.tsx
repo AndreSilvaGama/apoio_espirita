@@ -279,7 +279,7 @@ function Evangelizacao() {
   return (
     <main className="page-light min-h-screen pt-20 pb-28">
       <CasaHero />
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }} className="space-y-8">
+      <div style={{ maxWidth: 860, margin: "0 auto" }} className="px-4 md:px-[44px] pt-12 pb-0 space-y-8">
 
         {/* Título da seção */}
         <div style={{ paddingBottom: 24, borderBottom: "1px solid rgba(0,20,70,.08)" }}>

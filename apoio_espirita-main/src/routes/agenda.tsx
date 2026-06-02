@@ -346,7 +346,7 @@ function AgendaPage() {
   return (
     <main className="page-light min-h-screen pt-20 pb-28">
       <CasaHero eventos={proximos.length} />
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }} className="px-4 md:px-[44px] pt-12 pb-0">
 
         {/* Ações de seção */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
