@@ -56,9 +56,8 @@ function Index() {
     <main className="relative min-h-screen overflow-x-hidden">
       <AmbientAudio src="/audio/ambient-piano.mp3" />
 
-      {/* ── HEADER FLOATING ── */}
       <header 
-        className="absolute top-6 left-4 right-4 z-30 h-16 flex items-center justify-between max-w-7xl mx-auto px-6 rounded-full glass border border-white/10 animate-fade-in-up"
+        className="absolute top-0 left-0 right-0 z-30 h-16 flex items-center justify-between max-w-7xl mx-auto px-6 rounded-none glass border-0 border-b border-white/10 animate-fade-in-up lg:top-6 lg:left-4 lg:right-4 lg:rounded-full lg:border lg:border-white/10"
         style={{ animationDelay: "0.1s" }}
       >
         {/* Brand */}
