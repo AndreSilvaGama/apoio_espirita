@@ -80,6 +80,12 @@ function Index() {
           >
             Jogos
           </Link>
+          <Link
+            to="/musicas-cifras"
+            className="text-xs sm:text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground hover:text-cyan-glow transition-colors duration-300 font-medium"
+          >
+            Músicas
+          </Link>
         </nav>
 
         {/* Action Button */}

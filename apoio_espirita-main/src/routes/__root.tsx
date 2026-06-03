@@ -9,7 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
-const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes", "/feb"];
+const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes", "/feb", "/musicas-cifras"];
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -406,6 +406,7 @@ function NavBar() {
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           <Link to="/feb" className={linkCls("/feb")}>Biblioteca</Link>
+          <Link to="/musicas-cifras" className={linkCls("/musicas-cifras")}>Músicas</Link>
           {isTesoureiro && (
             <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
           )}
@@ -519,6 +520,9 @@ function NavBar() {
             </Link>
             <Link to="/feb" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Biblioteca
+            </Link>
+            <Link to="/musicas-cifras" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+              Músicas
             </Link>
             {isTesoureiro && (
               <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">

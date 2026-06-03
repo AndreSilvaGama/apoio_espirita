@@ -614,7 +614,7 @@ function MusicasCifrasPage() {
     };
   }, []);
 
-  if (loading || !user) return null;
+  if (loading) return null;
 
   // Filtrar faixas da playlist ativa
   const activePlaylist = playlists.find((p) => p.id === activePlaylistId);
@@ -640,11 +640,11 @@ function MusicasCifrasPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
-            to="/inicio"
+            to={user ? "/inicio" : "/"}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Início
+            {user ? "Início" : "Voltar"}
           </Link>
           <span className="text-muted-foreground/40">|</span>
           <div className="flex items-center gap-2">
