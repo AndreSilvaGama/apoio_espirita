@@ -255,14 +255,13 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-violet-200",
     borderB: "border-violet-200",
     items: [
-      { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve", casa: true },
-      { Icon: Music,     title: "Área de Músicas",         desc: "Playlists espíritas para recepção, hora do passe e estudo. Inclui a Rádio Rio de Janeiro no rodapé.", status: "breve" },
-      { Icon: Guitar,    title: "Área de Cifras",          desc: "Cifras, partituras e letras de músicas espíritas enviadas pela comunidade.", status: "breve", casa: true },
-      { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve", casa: true },
-      { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve", casa: true },
+      { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve" },
+      { Icon: Music,     title: "Músicas e Cifras",        desc: "Playlists espíritas para passes, estudos, envio de áudios e cifras/partituras com transposição de tom.", status: "disponivel", href: "/musicas-cifras" },
+      { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve" },
+      { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve" },
       { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "disponivel", href: "/jogos" },
-      { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve", casa: true },
-      { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve", casa: true },
+      { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve" },
+      { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve" },
     ],
   },
   {
@@ -275,13 +274,13 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     borderB: "border-cyan-200",
     items: [
       { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
-      { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve", casa: true },
-      { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros and as necessidades da comunidade.", status: "breve", casa: true },
-      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "breve", casa: true },
+      { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve" },
+      { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve" },
+      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "breve" },
       { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
-      { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve", casa: true },
-      { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve", casa: true },
-      { Icon: FileHeart,      title: "Ficha de Atendimento Fraterno", desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.", status: "breve", casa: true },
+      { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve" },
+      { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve" },
+      { Icon: FileHeart,      title: "Ficha de Atendimento Fraterno", desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.", status: "breve" },
     ],
   },
   {
@@ -293,12 +292,12 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-amber-200",
     borderB: "border-amber-200",
     items: [
-      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.", status: "disponivel", casa: true, href: "/agenda" },
-      { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve", casa: true },
+      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.", status: "disponivel", href: "/agenda" },
+      { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve" },
       { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
-      { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve", casa: true },
-      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "disponivel", casa: true, href: "/agenda" },
-      { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve", casa: true },
+      { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve" },
+      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "disponivel", href: "/agenda" },
+      { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve" },
     ],
   },
   {
@@ -1614,17 +1613,7 @@ function PaginaCasa() {
                 border="border-slate-200"
                 borderB="border-slate-200"
               />
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-                <DashDashCard
-                  Icon={BarChart3}
-                  title="Meu Painel Pessoal"
-                  desc="Resumo das suas atividades, frequência e dados relevantes ao seu papel na casa espírita."
-                  status="breve"
-                  accent="slate"
-                  votes={votes}
-                  votingKey={votingKey}
-                  onVote={handleCardVote}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                 <DashDashCard
                   Icon={ClipboardList}
                   title="Acompanhamento do Projeto"
@@ -1642,7 +1631,6 @@ function PaginaCasa() {
                   desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
                   status="disponivel"
                   accent="amber"
-                  casa
                   href="/tesouraria"
                   votes={votes}
                   votingKey={votingKey}
@@ -1714,9 +1702,6 @@ function PaginaCasa() {
               >
                 <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                   Disponível
-                </span>
-                <span className="text-xs text-muted-foreground/50 bg-white/60 border border-border px-2 py-0.5 rounded-full">
-                  Por casa espírita
                 </span>
               </DashSectionHeader>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -2610,11 +2595,6 @@ function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, vo
         <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>
           {STATUS_LABEL[status]}
         </span>
-        {casa && (
-          <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border border-gray-200 text-gray-400">
-            Por casa
-          </span>
-        )}
         {isPending && (
           <DashVoteBadge title={title} votes={votes} votingKey={votingKey} />
         )}
@@ -2648,11 +2628,6 @@ function DashFeatureCard({ item, cat, votes, votingKey, onVote }: {
         <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}>
           {STATUS_LABEL[item.status]}
         </span>
-        {item.casa && (
-          <span className="text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border border-gray-200 text-gray-400">
-            Por casa
-          </span>
-        )}
         {isPending && (
           <DashVoteBadge title={item.title} votes={votes} votingKey={votingKey} />
         )}

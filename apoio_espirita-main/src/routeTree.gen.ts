@@ -16,6 +16,7 @@ import { Route as RadioRouteImport } from './routes/radio'
 import { Route as PermissoesRouteImport } from './routes/permissoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as MusicasCifrasRouteImport } from './routes/musicas-cifras'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KanbanRouteImport } from './routes/kanban'
@@ -70,6 +71,11 @@ const PerfilRoute = PerfilRouteImport.update({
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MusicasCifrasRoute = MusicasCifrasRouteImport.update({
+  id: '/musicas-cifras',
+  path: '/musicas-cifras',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MensagemDoDiaRoute = MensagemDoDiaRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
+  '/musicas-cifras': typeof MusicasCifrasRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
+  '/musicas-cifras': typeof MusicasCifrasRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
+  '/musicas-cifras': typeof MusicasCifrasRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
+    | '/musicas-cifras'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
+    | '/musicas-cifras'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
+    | '/musicas-cifras'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   KanbanRoute: typeof KanbanRoute
   LoginRoute: typeof LoginRoute
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
+  MusicasCifrasRoute: typeof MusicasCifrasRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
   PermissoesRoute: typeof PermissoesRoute
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/painel'
       fullPath: '/painel'
       preLoaderRoute: typeof PainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/musicas-cifras': {
+      id: '/musicas-cifras'
+      path: '/musicas-cifras'
+      fullPath: '/musicas-cifras'
+      preLoaderRoute: typeof MusicasCifrasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mensagem-do-dia': {
@@ -589,6 +609,7 @@ const rootRouteChildren: RootRouteChildren = {
   KanbanRoute: KanbanRoute,
   LoginRoute: LoginRoute,
   MensagemDoDiaRoute: MensagemDoDiaRoute,
+  MusicasCifrasRoute: MusicasCifrasRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
   PermissoesRoute: PermissoesRoute,
