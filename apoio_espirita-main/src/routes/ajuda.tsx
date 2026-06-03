@@ -13,20 +13,114 @@ interface FaqItem {
 }
 
 const FAQ: FaqItem[] = [
-  { pergunta: "O site é gratuito?", resposta: "Sim, completamente gratuito. Sem anúncios, sem planos pagos. O Apoio Espírita é mantido por trabalho voluntário e de caridade." },
-  { pergunta: "O site tem algum vínculo com a FEB ou federações?", resposta: "Não. O Apoio Espírita é uma plataforma independente, sem vínculo com a Federação Espírita Brasileira, UFE ou qualquer outra federação. Consulte a página de Transparência para mais detalhes." },
-  { pergunta: "Como completo ou altero meu perfil?", resposta: "Acesse 'Perfil' no menu. Lá você pode alterar nome, sigla da casa, cidade, cargo, atividades e senha. Também é possível excluir a conta definitivamente por lá." },
-  { pergunta: "Como adiciono ou mudo meu cargo?", resposta: "No primeiro acesso o sistema já pede o cargo. Depois, acesse 'Perfil' para alterar. Se o Presidente da sua casa tiver definido seu cargo, apenas ele poderá alterá-lo novamente." },
-  { pergunta: "Como envio a Mensagem do Dia?", resposta: "Acesse 'Mensagem' no menu. Digite o texto, a referência espírita (opcional) e escolha uma data disponível na fila. A mensagem aparecerá para todos os membros na data escolhida." },
-  { pergunta: "Como funciona a Agenda?", resposta: "Presidentes e coordenadores criam eventos abertos (todos os membros) ou fechados (convidados específicos). Membros confirmam ou recusam presença. A aba 'Presenças' mostra o histórico de frequência de cada membro por evento." },
-  { pergunta: "Como acesso a Tesouraria?", resposta: "A Tesouraria é restrita a Presidente e Tesoureiro. Se você tiver permissão, clique no card 'Tesouraria' na tela inicial ou acesse pelo menu. Quem não tem acesso verá uma mensagem informando a restrição." },
-  { pergunta: "Como funciona a Rádio Rio de Janeiro?", resposta: "O player da rádio fica no rodapé de todas as páginas. Clique no botão de play para ligar. A transmissão é ao vivo, 24 horas. Você também pode acessar a página dedicada pelo menu." },
-  { pergunta: "Como jogo o 'Plante a Semente'?", resposta: "Acesse 'Jogos' no menu. É um jogo estilo forca com termos da codificação espírita — a cada letra correta a planta cresce. Ao completar, o significado do termo é revelado com a referência exata no livro." },
-  { pergunta: "Como reporto um problema no site?", resposta: "Clique em 'Reportar problema' no rodapé de qualquer página. Descreva o que está acontecendo e envie por e-mail. Você também pode optar por avisar pelo WhatsApp, com a mensagem já preenchida." },
-  { pergunta: "Como faço sugestões?", resposta: "Clique em 'Sugestões' no rodapé ou acesse /sugestoes. Qualquer pessoa pode enviar sugestões, mesmo sem estar logada." },
-  { pergunta: "O site tem aplicativo para celular?", resposta: "Ainda não está nas lojas de aplicativos, mas você pode salvar o site como atalho na tela inicial do celular. No navegador do celular, use a opção 'Adicionar à tela inicial' (ou 'Compartilhar → Adicionar à tela de início' no iPhone)." },
-  { pergunta: "Como excluo minha conta?", resposta: "Acesse 'Perfil' e role até o final da página. Há um botão para excluir a conta permanentemente. Todos os seus dados serão removidos e a ação não pode ser desfeita." },
-  { pergunta: "Como cadastro minha casa espírita no mapa de busca?", resposta: "Ao completar o perfil pela primeira vez, ou ao editar a página de Perfil, você pode informar o nome e o endereço da sua casa. Se a sigla ainda não estiver cadastrada, a casa é adicionada automaticamente ao mapa de busca." },
+  {
+    pergunta: "O site é gratuito?",
+    resposta: "Sim, completamente gratuito. Sem anúncios, sem planos de assinatura, nem cobrança de taxas. O Apoio Espírita é uma plataforma beneficente e fraterna mantida inteiramente por trabalho voluntário de caridade."
+  },
+  {
+    pergunta: "O site tem algum vínculo com a FEB ou federações?",
+    resposta: "Não. O Apoio Espírita é uma plataforma totalmente independente, sem vínculo jurídico, financeiro ou institucional com a Federação Espírita Brasileira (FEB), uniões estaduais ou outras entidades federativas. Nós apenas disponibilizamos os documentos de orientações públicas oficiais da FEB em nossa biblioteca como um serviço fraterno facilitado para os trabalhadores da vinha."
+  },
+  {
+    pergunta: "Como completo ou altero meu perfil?",
+    resposta: "Acesse a opção 'Perfil' no menu superior. Lá você poderá atualizar suas informações básicas, como nome de exibição, a sigla da casa espírita em que trabalha, sua cidade, cargo principal e áreas de atuação. Pela mesma tela, é possível alterar sua senha de acesso ou efetuar a exclusão definitiva da conta."
+  },
+  {
+    pergunta: "Como adiciono ou mudo meu cargo e casa espírita?",
+    resposta: "Ao preencher o perfil no primeiro acesso, você informa sua Casa Espírita e seu cargo. Se precisar mudar de casa ou redefinir seu papel doutrinário depois, faça-o pela tela de Perfil. Contudo, se o Presidente de sua casa já tiver validado e fixado as permissões de cargo para seu usuário, certas edições administrativas de privilégios precisarão ser solicitadas diretamente a ele."
+  },
+  {
+    pergunta: "Como funciona a Área de Músicas e Cifras?",
+    resposta: "Este módulo unificado permite que os músicos e membros acessem cifras de músicas espíritas tradicionais e ouçam faixas. Ele é composto por duas abas interativas: 'Playlists & Músicas' (para uploads de arquivos, playlists e áudio ambiente de harmonização) e 'Letras & Cifras' (com buscador de acordes e transposição dinâmica)."
+  },
+  {
+    pergunta: "Como funciona a transposição de acordes nas cifras?",
+    resposta: "Na aba 'Letras & Cifras' da Área de Músicas, selecione uma música. Você verá botões '+1 tom' e '-1 tom'. Ao clicar neles, o sistema analisa os acordes demarcados em colchetes (ex: [C], [G7], [Am]) e recalcula as notas seguindo a escala cromática em tempo real, transpondo toda a cifra instantaneamente de acordo com a sua preferência vocal ou de instrumento."
+  },
+  {
+    pergunta: "Onde os meus arquivos de áudio enviados ficam salvos?",
+    resposta: "Para evitar limites de upload em servidores e garantir total controle do seu próprio dispositivo, os áudios locais e as playlists criadas são persistidos no navegador do usuário utilizando a tecnologia **IndexedDB**. Trata-se de um banco de dados interno e seguro no seu dispositivo. Caso você limpe os dados do navegador (cookies e dados de sites), essas faixas locais e playlists precisarão ser recarregadas."
+  },
+  {
+    pergunta: "Por que devo aceitar o Termo de Autorização Fraterno ao enviar músicas?",
+    resposta: "O Apoio Espírita preza pela integridade legal e moral das obras divulgadas. Ao enviar um áudio pessoal à sua biblioteca, o músico participante declara que possui os direitos da gravação e assina o termo de aceite confirmando que autoriza a reprodução e propagação gratuita da música dentro do portal, renunciando de forma definitiva a cobranças de direitos autorais ou compensações financeiras de qualquer espécie, agora ou no futuro."
+  },
+  {
+    pergunta: "O que são as faixas ambientes sintetizadas?",
+    resposta: "Na Área de Músicas, disponibilizamos faixas geradas em tempo real via sintetizador digital interno (Web Audio API), como a 'Harmonia das Virtudes' e a 'Prece de Luz'. Elas não necessitam de downloads de áudio por utilizarem frequências sonoras relaxantes e ondas senoidais geradas matematicamente pelo próprio navegador. São ideais para uso durante o Passe, preces iniciais ou momentos silenciosos de harmonização da reunião."
+  },
+  {
+    pergunta: "Como crio playlists personalizadas?",
+    resposta: "Acesse a aba 'Playlists & Músicas' e clique no botão 'Nova Playlist'. Digite um título inspirador e confirme. Depois, nas músicas listadas nas tabelas de áudios (sejam as faixas sintetizadas padrão ou os arquivos locais que você subiu), clique no ícone '+' (adicionar à playlist) e escolha qual das suas listas deseja associá-la. Elas persistirão localmente no seu aparelho."
+  },
+  {
+    pergunta: "Como jogo o 'Caminho da Luz'?",
+    resposta: "Este é um jogo de tabuleiro virtual sobre virtudes morais e conhecimento espírita. Você pode jogar individualmente (1 jogador) ou em turnos alternados contra um companheiro (2 jogadores). Cada jogador escolhe seu nome, cor e avatar. O objetivo é avançar no tabuleiro sinuoso respondendo a perguntas baseadas nos livros da codificação espírita e na moral cristã. Acertos fazem o peão se deslocar fisicamente pela trilha; erros mantêm o jogador na mesma casa. Ao final do percurso, há uma tela especial de celebração da vitória."
+  },
+  {
+    pergunta: "Quais outros jogos educativos estão disponíveis?",
+    resposta: "Além do Caminho da Luz, temos: \n- **Plante a Semente**: Um jogo estilo forca onde, ao acertar letras de palavras doutrinárias, a semente cresce até revelar o significado e referência do termo.\n- **Caça-Palavras**: Encontre conceitos e nomes chaves da literatura espírita ocultos no tabuleiro de letras.\n- **Semeador de Mensagens**: Crie belos cartões com trechos do Evangelho e doações de amor para compartilhar.\n- **Jogo da Memória**: Associe conceitos e ilustrações doutrinárias correspondentes.\n- **Quiz Espírita**: Desafios de perguntas diretas com contagem de pontos e feedback educativo."
+  },
+  {
+    pergunta: "Como funciona a Ficha de Atendimento Fraterno?",
+    resposta: "Trata-se de um formulário de registro confidencial destinado à assistência espiritual. Somente o Presidente da casa e o Coordenador específico do Atendimento Fraterno possuem autoridade de acesso para visualizar e preencher as fichas de acolhidos. As informações de aconselhamento e passes são armazenadas com criptografia para resguardar a intimidade do atendido."
+  },
+  {
+    pergunta: "Como funciona a Carona Solidária?",
+    resposta: "Um recurso de auxílio mútuo no qual membros que possuem veículo e vão ao centro espírita disponibilizam vagas para dar carona aos tarefeiros e frequentadores que necessitam de transporte. É uma ferramenta de segurança e fraternidade, permitindo visualizar quem oferece a carona, o itinerário, os horários e o número de assentos disponíveis."
+  },
+  {
+    pergunta: "Como funciona o Bazar On-line e a Entrega Solidária?",
+    resposta: "O Bazar permite o cadastro de livros espíritas, vestuários e artesanatos arrecadados pela comunidade para fins de doação. As pessoas interessadas reservam os itens e efetuam a doação diretamente via PIX para a chave do centro. A **Entrega Solidária** é um grupo de voluntários cadastrados que se oferecem para realizar as entregas físicas das mercadorias na residência dos compradores que possuem dificuldades de locomoção."
+  },
+  {
+    pergunta: "Quem tem acesso à Tesouraria e quais recursos ela oferece?",
+    resposta: "O módulo de Tesouraria é de acesso exclusivo para o Presidente e para os membros com cargo configurado como Tesoureiro. Ele oferece lançamentos rápidos de fluxo de caixa (receitas de bazar/doações e despesas gerais), balanços de saldo em tempo real, visualização de gráficos e relatórios mensais formatados para impressão ou exportação em planilhas Excel (.xlsx)."
+  },
+  {
+    pergunta: "Como funciona a Agenda e o Caderno de Presença Digital?",
+    resposta: "A coordenação cria eventos (palestras, grupos de estudo, reuniões de assistência). Os membros podem confirmar presença previamente pelo sistema. Ao chegar na reunião, o tarefeiro registra sua frequência com um clique no celular. A coordenação pode visualizar o percentual de frequência consolidado para avaliação pedagógica e assiduidade dos trabalhadores."
+  },
+  {
+    pergunta: "Como funciona a escala de trabalho de tarefeiros?",
+    resposta: "Os coordenadores e a presidência podem criar escalas eletrônicas de serviço (recepção, palestrantes do dia, aplicadores de passe, leitura de mensagens). Cada trabalhador cadastrado recebe um aviso sobre seus dias de plantão e tarefas escaladas diretamente em seu painel pessoal de entrada."
+  },
+  {
+    pergunta: "Como leio livros pelo site e faço pesquisas no leitor de PDF?",
+    resposta: "Na seção 'Biblioteca', você encontra a aba 'Obras & Livros' (psicografias consagradas de Chico Xavier) e 'Orientações FEB'. Ao selecionar um livro e clicar em 'Ler aqui', o sistema abrirá o leitor inteligente de PDF integrado. Nele, você pode ajustar o nível de zoom, digitar palavras chaves no campo de busca (pressionando Enter para destacar as linhas no texto) e navegar rapidamente entre as páginas."
+  },
+  {
+    pergunta: "O site tem aplicativo na App Store ou Google Play?",
+    resposta: "Não é necessário instalar das lojas oficiais de aplicativos. O site é desenvolvido como um PWA (Progressive Web App). Você pode adicioná-lo como um ícone na tela inicial de seu celular: no navegador do celular (Chrome ou Safari), acesse as opções de compartilhamento ou o menu de três pontos e clique em 'Adicionar à tela inicial'. Ele funcionará de forma idêntica a um aplicativo nativo."
+  },
+  {
+    pergunta: "Como funciona a fila da Mensagem do Dia?",
+    resposta: "Os trabalhadores autorizados podem redigir mensagens edificantes de autores espirituais ou trechos do Evangelho e agendá-las para exibição. O sistema organiza essas mensagens em uma fila cronológica. Ao acessar a página principal, os membros do portal verão a mensagem selecionada para o dia corrente no topo de suas telas, acompanhada da devida citação e autoria."
+  },
+  {
+    pergunta: "O que é o Mural de Avisos?",
+    resposta: "É o painel de recados digital de cada casa espírita. Coordenadores e presidentes o utilizam para divulgar comunicados importantes de última hora (ex: recesso de feriados, campanhas do agasalho, reuniões gerais de tarefeiros). Esses avisos aparecem em destaque na tela inicial de todos os membros vinculados àquela respectiva casa assim que eles se conectam."
+  },
+  {
+    pergunta: "Como funciona o Plantão de Orações?",
+    resposta: "É uma agenda virtual onde os membros e trabalhadores se voluntariam para realizar vibrações e preces em horários específicos da semana na comodidade de seus lares, criando uma corrente contínua de pensamentos elevados e amparo invisível voltado aos necessitados da casa e do mundo."
+  },
+  {
+    pergunta: "O site realiza gravação ou repasse de transações financeiras?",
+    resposta: "Não. O site não coleta, não processa e não retém nenhuma transação monetária. Para aquisições no Bazar Solidário ou doações, o sistema simplesmente exibe as chaves PIX ou QR Codes informados pela própria administração de cada Casa Espírita. O acerto e transferência financeira ocorrem fora da plataforma, diretamente no aplicativo bancário de escolha do doador."
+  },
+  {
+    pergunta: "Como faço para reportar um problema no site?",
+    resposta: "Se encontrar alguma lentidão, bug ou página que não carrega, role qualquer página até o rodapé e clique em 'Reportar problema'. Uma tela se abrirá permitindo que você descreva o erro. Esse relatório será enviado diretamente por e-mail para a equipe de desenvolvimento. Opcionalmente, você poderá abrir um link para enviar o relato pelo WhatsApp."
+  },
+  {
+    pergunta: "Como posso enviar sugestões de melhoria?",
+    resposta: "Suas sugestões e ideias de novos recursos são muito bem-vindas! Você pode registrá-las de forma rápida clicando no link 'Sugestões' no rodapé de qualquer página (ou acessando diretamente `/sugestoes`). O formulário é simplificado e pode ser preenchido até mesmo sem realizar login no sistema."
+  },
+  {
+    pergunta: "Como funciona o processo de exclusão da minha conta?",
+    resposta: "Sua privacidade é nossa prioridade. Se decidir não utilizar mais a plataforma, vá em 'Perfil', desça até o rodapé da página e clique no botão de exclusão permanente. O sistema removerá imediatamente todas as suas informações pessoais, vínculos com a casa espírita e preferências do banco de dados principal. Essa ação é irreversível."
+  }
 ];
 
 function Ajuda() {
