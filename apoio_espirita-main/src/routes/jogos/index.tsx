@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Gamepad2, Sprout, Brain, HelpCircle, Sparkles, Search } from "lucide-react";
+import { ArrowLeft, Gamepad2, Sprout, Brain, HelpCircle, Sparkles, Search, Compass } from "lucide-react";
 
 export const Route = createFileRoute("/jogos/")({
   component: PortalJogos,
@@ -18,6 +18,17 @@ function PortalJogos() {
   }
 
   const jogos = [
+    {
+      title: "Caminho da Luz",
+      desc: "Avance por uma trilha brilhante de virtudes morais e doutrinárias respondendo perguntas. Pode ser jogado sozinho ou em dupla com efeitos visuais e sonoros!",
+      icon: Compass,
+      color: "bg-indigo-50 text-indigo-600 border-indigo-100",
+      border: "border-indigo-200/60",
+      accent: "text-indigo-700 hover:bg-indigo-50",
+      buttonColor: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10",
+      href: "/jogos/caminho-da-luz",
+      novo: true,
+    },
     {
       title: "Plante a Semente",
       desc: "Descubra termos e palavras importantes da codificação espírita e saiba o significado de cada um deles.",

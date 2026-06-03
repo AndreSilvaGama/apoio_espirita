@@ -33,6 +33,7 @@ import { Route as JogosSemeadorMensagensRouteImport } from './routes/jogos/semea
 import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
 import { Route as JogosMemoriaEvangelizacaoRouteImport } from './routes/jogos/memoria-evangelizacao'
+import { Route as JogosCaminhoDaLuzRouteImport } from './routes/jogos/caminho-da-luz'
 import { Route as JogosCacaPalavrasRouteImport } from './routes/jogos/caca-palavras'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 
@@ -157,6 +158,11 @@ const JogosMemoriaEvangelizacaoRoute =
     path: '/jogos/memoria-evangelizacao',
     getParentRoute: () => rootRouteImport,
   } as any)
+const JogosCaminhoDaLuzRoute = JogosCaminhoDaLuzRouteImport.update({
+  id: '/jogos/caminho-da-luz',
+  path: '/jogos/caminho-da-luz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogosCacaPalavrasRoute = JogosCacaPalavrasRouteImport.update({
   id: '/jogos/caca-palavras',
   path: '/jogos/caca-palavras',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
+  '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
@@ -218,6 +225,7 @@ export interface FileRoutesByTo {
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
+  '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
@@ -247,6 +255,7 @@ export interface FileRoutesById {
   '/transparencia': typeof TransparenciaRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
+  '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/transparencia'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
+    | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/transparencia'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
+    | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/transparencia'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
+    | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
@@ -362,6 +374,7 @@ export interface RootRouteChildren {
   TransparenciaRoute: typeof TransparenciaRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
   JogosCacaPalavrasRoute: typeof JogosCacaPalavrasRoute
+  JogosCaminhoDaLuzRoute: typeof JogosCaminhoDaLuzRoute
   JogosMemoriaEvangelizacaoRoute: typeof JogosMemoriaEvangelizacaoRoute
   JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
   JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
@@ -539,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogosMemoriaEvangelizacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jogos/caminho-da-luz': {
+      id: '/jogos/caminho-da-luz'
+      path: '/jogos/caminho-da-luz'
+      fullPath: '/jogos/caminho-da-luz'
+      preLoaderRoute: typeof JogosCaminhoDaLuzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogos/caca-palavras': {
       id: '/jogos/caca-palavras'
       path: '/jogos/caca-palavras'
@@ -578,6 +598,7 @@ const rootRouteChildren: RootRouteChildren = {
   TransparenciaRoute: TransparenciaRoute,
   CasaSiglaRoute: CasaSiglaRoute,
   JogosCacaPalavrasRoute: JogosCacaPalavrasRoute,
+  JogosCaminhoDaLuzRoute: JogosCaminhoDaLuzRoute,
   JogosMemoriaEvangelizacaoRoute: JogosMemoriaEvangelizacaoRoute,
   JogosPlanteASementeRoute: JogosPlanteASementeRoute,
   JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
