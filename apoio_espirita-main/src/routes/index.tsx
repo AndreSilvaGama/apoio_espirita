@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Microscope, Infinity, Unlock, Heart } from "lucide-react";
+import { Microscope, Infinity, Unlock, Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Particles } from "@/components/Particles";
@@ -52,6 +52,8 @@ const points = [
 
 function Index() {
   const { user } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <main className="relative min-h-screen overflow-x-hidden">
       <AmbientAudio src="/audio/ambient-piano.mp3" />
@@ -61,13 +63,13 @@ function Index() {
         style={{ animationDelay: "0.1s" }}
       >
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
           <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto animate-pulse" />
           <span className="text-sm font-semibold text-foreground tracking-tight hidden sm:inline">Apoio Espírita</span>
         </Link>
 
-        {/* Links */}
-        <nav className="flex items-center gap-6 sm:gap-8">
+        {/* Links (Desktop) */}
+        <nav className="hidden md:flex items-center gap-6 sm:gap-8">
           <Link
             to="/feb"
             className="text-xs sm:text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground hover:text-cyan-glow transition-colors duration-300 font-medium"
@@ -88,8 +90,8 @@ function Index() {
           </Link>
         </nav>
 
-        {/* Action Button */}
-        <div>
+        {/* Action Button (Desktop) */}
+        <div className="hidden md:block">
           <Link
             to={user ? "/inicio" : "/login"}
             className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[11px] sm:text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/30 bg-transparent hover:bg-cyan-glow/5 transition-all duration-300 font-medium"
@@ -97,7 +99,56 @@ function Index() {
             {user ? "Painel" : "Entrar"}
           </Link>
         </div>
+
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
+        </button>
       </header>
+
+      {/* Mobile Drawer Overlay */}
+      {menuOpen && (
+        <div 
+          className="md:hidden fixed inset-x-0 top-16 bg-background/95 backdrop-blur-md border-b border-white/10 shadow-lg z-20 py-6 animate-fade-in-up" 
+          style={{ animationDuration: '200ms' }}
+        >
+          <nav className="flex flex-col items-center gap-5 px-6">
+            <Link
+              to="/feb"
+              className="text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors font-medium py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              Biblioteca
+            </Link>
+            <Link
+              to="/jogos"
+              className="text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors font-medium py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              Jogos
+            </Link>
+            <Link
+              to="/musicas-cifras"
+              className="text-sm uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors font-medium py-2"
+              onClick={() => setMenuOpen(false)}
+            >
+              Músicas
+            </Link>
+            <div className="h-px bg-white/10 w-full my-1" />
+            <Link
+              to={user ? "/inicio" : "/login"}
+              className="w-full text-center px-6 py-3 rounded-full text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/30 bg-transparent hover:bg-cyan-glow/5 transition-all duration-300 font-medium"
+              onClick={() => setMenuOpen(false)}
+            >
+              {user ? "Painel" : "Entrar"}
+            </Link>
+          </nav>
+        </div>
+      )}
 
       {/* ── HERO ── */}
       <section className="relative h-screen w-full flex flex-col items-center justify-center pt-16 pb-6 overflow-hidden">
