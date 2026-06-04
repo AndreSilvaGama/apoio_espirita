@@ -1,6 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Music,
@@ -19,6 +21,9 @@ import {
   Sparkles,
   Heart,
   FileMusic,
+  Lock,
+  Globe,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/musicas-cifras")({
@@ -31,7 +36,11 @@ interface Track {
   id: string;
   title: string;
   artist: string;
-  file?: Blob; // Presente para áudios locais enviados pelo usuário
+  file?: Blob; // Presente para áudios locais enviados pelo usuário (IndexedDB)
+  audio_url?: string; // URL do áudio remoto no Supabase
+  is_exclusive?: boolean; // Se a música é exclusiva da casa espírita
+  sigla_casa?: string | null;
+  user_id?: string | null;
   synthesized?: boolean; // Para as faixas ambientes sintetizadas
   synthType?: "passe" | "harmonizacao";
   durationLabel: string;
@@ -184,7 +193,7 @@ const openIndexedDB = (): Promise<IDBDatabase> => {
 
 function MusicasCifrasPage() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, profile, loading, isDev, isPresident } = useAuth();
 
   const [activeTab, setActiveTab] = useState<Tab>("musicas");
   const [db, setDb] = useState<IDBDatabase | null>(null);
@@ -218,8 +227,11 @@ function MusicasCifrasPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newArtist, setNewArtist] = useState("");
   const [newFile, setNewFile] = useState<File | null>(null);
+  const [newIsExclusive, setNewIsExclusive] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   // Estados de Nova Playlist
   const [newPlaylistName, setNewPlaylistName] = useState("");
@@ -231,101 +243,284 @@ function MusicasCifrasPage() {
   const [selectedCifra, setSelectedCifra] = useState<CifraSong | null>(null);
   const [transposeSteps, setTransposeSteps] = useState(0);
 
-  // Inicialização de IndexedDB
+  // Inicialização do IndexedDB e Supabase
   useEffect(() => {
     openIndexedDB()
       .then((database) => {
         setDb(database);
-        loadIndexedDBData(database);
+        loadIndexedDBAndSupabaseData(database);
       })
-      .catch((err) => console.error("IndexedDB Open Error:", err));
-  }, []);
+      .catch((err) => {
+        console.error("IndexedDB Open Error:", err);
+        loadIndexedDBAndSupabaseData(null);
+      });
+  }, [user, profile]);
 
-  const loadIndexedDBData = (database: IDBDatabase) => {
-    // 1. Carrega Faixas
-    const tx = database.transaction(["faixas", "playlists"], "readonly");
-    const faixasStore = tx.objectStore("faixas");
-    const faixasRequest = faixasStore.getAll();
+  const loadIndexedDBAndSupabaseData = async (database: IDBDatabase | null) => {
+    try {
+      // 1. Carrega músicas do Supabase
+      const { data: dbMusicas, error: dbError } = await supabase
+        .from("musicas")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    faixasRequest.onsuccess = () => {
-      const dbTracks: Track[] = faixasRequest.result.map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        artist: item.artist,
-        file: item.file,
-        durationLabel: "Áudio local",
+      if (dbError) throw dbError;
+
+      const supabaseTracks: Track[] = (dbMusicas ?? []).map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        artist: m.artist,
+        audio_url: m.audio_url,
+        is_exclusive: m.is_exclusive,
+        sigla_casa: m.sigla_casa,
+        user_id: m.user_id,
+        durationLabel: m.is_exclusive ? "Exclusiva" : "Pública"
       }));
 
+      // 2. Se houver banco IndexedDB local e usuário estiver autenticado, migra dados locais
+      let migratedTracksCount = 0;
+      if (database && user && profile?.sigla_casa) {
+        const tx = database.transaction(["faixas"], "readonly");
+        const store = tx.objectStore("faixas");
+        const localFaixas: any[] = await new Promise((resolve) => {
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        });
+
+        if (localFaixas.length > 0) {
+          setIsMigrating(true);
+          toast.info(`Detectamos ${localFaixas.length} música(s) local(is). Migrando para nuvem...`);
+
+          for (const localTrack of localFaixas) {
+            try {
+              if (localTrack.file) {
+                const ext = localTrack.file.name ? localTrack.file.name.split(".").pop() : "mp3";
+                const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
+                const path = `${profile.sigla_casa}/${filename}`;
+
+                // Upload para o storage
+                const { error: uploadError } = await supabase.storage
+                  .from("musicas")
+                  .upload(path, localTrack.file, {
+                    contentType: localTrack.file.type || "audio/mpeg",
+                    upsert: false
+                  });
+
+                if (uploadError) throw uploadError;
+
+                const audioUrl = `https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/${path}`;
+
+                // Registrar no banco
+                const { error: insertError } = await supabase.from("musicas").insert({
+                  title: localTrack.title,
+                  artist: localTrack.artist,
+                  audio_url: audioUrl,
+                  is_exclusive: false,
+                  sigla_casa: profile.sigla_casa,
+                  user_id: user.id
+                });
+
+                if (insertError) throw insertError;
+
+                // Deletar do IndexedDB local
+                const deleteTx = database.transaction(["faixas"], "readwrite");
+                await new Promise<void>((resolveDelete, rejectDelete) => {
+                  const deleteReq = deleteTx.objectStore("faixas").delete(localTrack.id);
+                  deleteReq.onsuccess = () => resolveDelete();
+                  deleteReq.onerror = () => rejectDelete(deleteReq.error);
+                });
+                migratedTracksCount++;
+              }
+            } catch (migrationErr) {
+              console.error(`Erro ao migrar faixa ${localTrack.title}:`, migrationErr);
+            }
+          }
+          setIsMigrating(false);
+          if (migratedTracksCount > 0) {
+            toast.success(`${migratedTracksCount} música(s) migrada(s) para nuvem com sucesso!`);
+            // Recarrega do Supabase após migrar
+            return loadIndexedDBAndSupabaseData(database);
+          }
+        }
+      }
+
+      // 3. Montar lista de músicas final
       const allTracks = [
         { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao" as const, durationLabel: "Gerado ao vivo" },
         { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe" as const, durationLabel: "Gerado ao vivo" },
-        ...dbTracks,
+        ...supabaseTracks,
       ];
       setTracks(allTracks);
 
-      // 2. Carrega Playlists
-      const playlistsStore = tx.objectStore("playlists");
-      const playlistsRequest = playlistsStore.getAll();
+      // 4. Carrega Playlists (IndexedDB continua para playlists locais por simplicidade)
+      if (database) {
+        const playlistTx = database.transaction(["playlists"], "readonly");
+        const playlistsStore = playlistTx.objectStore("playlists");
+        const playlistsRequest = playlistsStore.getAll();
 
-      playlistsRequest.onsuccess = () => {
-        const dbPlaylists: Playlist[] = playlistsRequest.result;
-        
-        // Playlist padrão com todas as faixas
+        playlistsRequest.onsuccess = () => {
+          const dbPlaylists: Playlist[] = playlistsRequest.result;
+          const defaultPlaylist: Playlist = {
+            id: "p01",
+            name: "Todas as Músicas",
+            trackIds: allTracks.map((t) => t.id),
+          };
+          setPlaylists([defaultPlaylist, ...dbPlaylists]);
+        };
+      } else {
         const defaultPlaylist: Playlist = {
           id: "p01",
           name: "Todas as Músicas",
           trackIds: allTracks.map((t) => t.id),
         };
-
-        setPlaylists([defaultPlaylist, ...dbPlaylists]);
-      };
-    };
+        setPlaylists([defaultPlaylist]);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+    }
   };
 
-  // Salvar áudio localmente no IndexedDB
-  const handleUploadAudio = (e: React.FormEvent) => {
+  // Enviar áudio para o Supabase
+  const handleUploadAudio = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !newFile || !newTitle.trim() || !newArtist.trim() || !acceptTerms) return;
+    if (!newFile || !newTitle.trim() || !newArtist.trim() || !acceptTerms) return;
 
-    const newTrackId = "track_" + Date.now();
-    const newTrackData = {
-      id: newTrackId,
-      title: newTitle.trim(),
-      artist: newArtist.trim(),
-      file: newFile,
-      createdAt: new Date().toISOString(),
-    };
+    if (!user) {
+      toast.error("Você precisa estar logado para publicar músicas.");
+      return;
+    }
+    if (!profile?.sigla_casa) {
+      toast.error("Complete seu perfil com sua casa espírita para publicar músicas.");
+      return;
+    }
 
-    const tx = db.transaction(["faixas"], "readwrite");
-    const store = tx.objectStore("faixas");
-    const request = store.put(newTrackData);
+    setIsUploading(true);
+    try {
+      const ext = newFile.name.split(".").pop() || "mp3";
+      const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
+      const path = `${profile.sigla_casa}/${filename}`;
 
-    request.onsuccess = () => {
-      // Limpa formulário
+      // Upload do arquivo
+      const { error: uploadError } = await supabase.storage
+        .from("musicas")
+        .upload(path, newFile, {
+          contentType: newFile.type,
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const audioUrl = `https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/${path}`;
+
+      // Salva no banco de dados
+      const { error: insertError } = await supabase.from("musicas").insert({
+        title: newTitle.trim(),
+        artist: newArtist.trim(),
+        audio_url: audioUrl,
+        is_exclusive: newIsExclusive,
+        sigla_casa: profile.sigla_casa,
+        user_id: user.id
+      });
+
+      if (insertError) throw insertError;
+
+      toast.success("Música publicada com sucesso!");
       setNewTitle("");
       setNewArtist("");
       setNewFile(null);
+      setNewIsExclusive(false);
       setAcceptTerms(false);
       setShowUploadForm(false);
-      // Recarrega faixas
-      loadIndexedDBData(db);
-    };
+
+      await loadIndexedDBAndSupabaseData(db);
+    } catch (err: any) {
+      console.error("Erro no upload:", err);
+      toast.error(`Erro ao publicar música: ${err.message || "Erro desconhecido"}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  // Deletar áudio do IndexedDB
-  const handleDeleteTrack = (trackId: string) => {
-    if (!db) return;
-    const tx = db.transaction(["faixas"], "readwrite");
-    const store = tx.objectStore("faixas");
-    const request = store.delete(trackId);
+  // Deletar áudio do Supabase ou IndexedDB local
+  const handleDeleteTrack = async (trackId: string) => {
+    const track = tracks.find((t) => t.id === trackId);
+    if (!track) return;
 
-    request.onsuccess = () => {
-      // Se a música deletada estava tocando, para ela
+    if (!confirm(`Tem certeza que deseja excluir a música "${track.title}"?`)) return;
+
+    try {
+      if (track.user_id) {
+        // Exclui do banco
+        const { error: deleteDbError } = await supabase
+          .from("musicas")
+          .delete()
+          .eq("id", trackId);
+
+        if (deleteDbError) throw deleteDbError;
+
+        // Exclui do storage
+        if (track.audio_url) {
+          const path = track.audio_url.replace(
+            "https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/",
+            ""
+          );
+          await supabase.storage.from("musicas").remove([path]);
+        }
+
+        toast.success("Música excluída com sucesso.");
+      } else {
+        // Exclui localmente caso tenha sobrado no IndexedDB
+        if (db) {
+          const tx = db.transaction(["faixas"], "readwrite");
+          tx.objectStore("faixas").delete(trackId);
+          toast.success("Música local excluída.");
+        }
+      }
+
       if (currentTrack?.id === trackId) {
         stopAudio();
       }
-      loadIndexedDBData(db);
-    };
+
+      await loadIndexedDBAndSupabaseData(db);
+    } catch (err: any) {
+      console.error("Erro ao deletar:", err);
+      toast.error(`Erro ao excluir música: ${err.message}`);
+    }
+  };
+
+  // Alterar status de exclusividade
+  const handleToggleExclusive = async (track: Track) => {
+    if (!track.user_id) return;
+
+    const isAdmin = isDev || isPresident;
+    const isOwner = user && user.id === track.user_id;
+
+    if (!isOwner && !isAdmin) {
+      toast.error("Você não tem permissão para alterar o status desta música.");
+      return;
+    }
+
+    try {
+      const nextExclusiveStatus = !track.is_exclusive;
+      const { error } = await supabase
+        .from("musicas")
+        .update({ is_exclusive: nextExclusiveStatus })
+        .eq("id", track.id);
+
+      if (error) throw error;
+
+      toast.success(
+        nextExclusiveStatus
+          ? "Música marcada como exclusiva da sua Casa Espírita!"
+          : "Música definida como pública para todas as pessoas."
+      );
+
+      await loadIndexedDBAndSupabaseData(db);
+    } catch (err: any) {
+      console.error("Erro ao alternar exclusividade:", err);
+      toast.error(`Erro ao atualizar exclusividade: ${err.message}`);
+    }
   };
 
   // Criar playlist
@@ -497,23 +692,25 @@ function MusicasCifrasPage() {
       // Sintetizador
       const synth = startAmbientSynth(track.synthType);
       if (synth) synthInstanceRef.current = synth;
-    } else if (track.file && audioElRef.current) {
-      // Arquivo local
-      const audioUrl = URL.createObjectURL(track.file);
-      audioElRef.current.src = audioUrl;
-      audioElRef.current.volume = muted ? 0 : volume;
-      audioElRef.current.play().catch((err) => console.error("Playback error:", err));
+    } else if ((track.file || track.audio_url) && audioElRef.current) {
+      // Arquivo local ou URL remota
+      const audioUrl = track.file ? URL.createObjectURL(track.file) : track.audio_url;
+      if (audioUrl) {
+        audioElRef.current.src = audioUrl;
+        audioElRef.current.volume = muted ? 0 : volume;
+        audioElRef.current.play().catch((err) => console.error("Playback error:", err));
 
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = setInterval(() => {
-        if (audioElRef.current) {
-          const cur = audioElRef.current.currentTime;
-          const dur = audioElRef.current.duration || 0;
-          setCurrentTime(cur);
-          setDuration(dur);
-          setProgress(dur > 0 ? (cur / dur) * 100 : 0);
-        }
-      }, 250);
+        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = setInterval(() => {
+          if (audioElRef.current) {
+            const cur = audioElRef.current.currentTime;
+            const dur = audioElRef.current.duration || 0;
+            setCurrentTime(cur);
+            setDuration(dur);
+            setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+          }
+        }, 250);
+      }
     }
   };
 
@@ -781,9 +978,38 @@ function MusicasCifrasPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded font-medium">
-                              {track.durationLabel}
-                            </span>
+                            {/* Marcação Exclusiva / Pública */}
+                            {track.user_id ? (
+                              (isDev || isPresident || user?.id === track.user_id) ? (
+                                <button
+                                  onClick={() => handleToggleExclusive(track)}
+                                  className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all duration-300 shadow-sm cursor-pointer uppercase tracking-wider ${
+                                    track.is_exclusive
+                                      ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                      : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                                  }`}
+                                  title="Clique para alternar privacidade da música"
+                                >
+                                  {track.is_exclusive ? <Lock size={11} strokeWidth={2.5} /> : <Globe size={11} strokeWidth={2.5} />}
+                                  {track.is_exclusive ? "Exclusiva" : "Pública"}
+                                </button>
+                              ) : (
+                                <span
+                                  className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold border uppercase tracking-wider ${
+                                    track.is_exclusive
+                                      ? "bg-amber-50/50 border-amber-100 text-amber-600"
+                                      : "bg-gray-50/50 border-gray-100 text-gray-400"
+                                  }`}
+                                >
+                                  {track.is_exclusive ? <Lock size={11} strokeWidth={2.5} /> : <Globe size={11} strokeWidth={2.5} />}
+                                  {track.is_exclusive ? "Exclusiva" : "Pública"}
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider">
+                                {track.durationLabel}
+                              </span>
+                            )}
                             
                             {/* Botão de adicionar à playlist */}
                             <button
@@ -794,12 +1020,12 @@ function MusicasCifrasPage() {
                               <Plus size={14} />
                             </button>
 
-                            {/* Botão de deletar (se for música local enviada) */}
-                            {!track.synthesized && (
+                            {/* Botão de deletar (se for do usuário logado ou admin) */}
+                            {!track.synthesized && (!track.user_id || isDev || isPresident || user?.id === track.user_id) && (
                               <button
                                 onClick={() => handleDeleteTrack(track.id)}
                                 className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                title="Remover música do dispositivo"
+                                title="Excluir música"
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -916,6 +1142,29 @@ function MusicasCifrasPage() {
                       />
                     </div>
 
+                    {/* Opção de Exclusividade */}
+                    {profile?.sigla_casa && (
+                      <div className="border border-indigo-100 bg-indigo-50/20 rounded-2xl p-4 space-y-2">
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newIsExclusive}
+                            onChange={(e) => setNewIsExclusive(e.target.checked)}
+                            className="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="space-y-0.5">
+                            <span className="text-[10.5px] text-gray-800 font-bold flex items-center gap-1">
+                              <Lock size={12} className="text-amber-500 shrink-0" />
+                              Música exclusiva da minha Casa Espírita
+                            </span>
+                            <p className="text-[9.5px] text-gray-500 font-light leading-relaxed">
+                              Se marcado, este áudio ficará visível apenas para os membros da casa <strong className="font-semibold text-indigo-600">{profile.sigla_casa}</strong>. Caso contrário, estará disponível para todas as pessoas.
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+
                     {/* Termo de autorização fraterna */}
                     <div className="border border-amber-200 bg-amber-50/30 rounded-2xl p-4 space-y-3">
                       <h4 className="text-[10px] uppercase tracking-wider font-extrabold text-amber-800 flex items-center gap-1.5">
@@ -945,10 +1194,17 @@ function MusicasCifrasPage() {
 
                     <button
                       type="submit"
-                      disabled={!acceptTerms || !newFile || !newTitle.trim() || !newArtist.trim()}
-                      className="w-full py-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-colors shadow-sm cursor-pointer uppercase tracking-wider"
+                      disabled={isUploading || !acceptTerms || !newFile || !newTitle.trim() || !newArtist.trim()}
+                      className="w-full py-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-all shadow-sm cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2"
                     >
-                      Publicar Música
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Publicando...
+                        </>
+                      ) : (
+                        "Publicar Música"
+                      )}
                     </button>
                   </form>
                 )}

@@ -461,6 +461,61 @@ export type Database = {
           },
         ]
       }
+      musicas: {
+        Row: {
+          id: string
+          title: string
+          artist: string
+          audio_url: string
+          is_exclusive: boolean
+          sigla_casa: string | null
+          created_at: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          artist: string
+          audio_url: string
+          is_exclusive?: boolean
+          sigla_casa?: string | null
+          created_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          artist?: string
+          audio_url?: string
+          is_exclusive?: boolean
+          sigla_casa?: string | null
+          created_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musicas_sigla_casa_fkey"
+            columns: ["sigla_casa"]
+            isOneToOne: false
+            referencedRelation: "siglas_casas"
+            referencedColumns: ["sigla"]
+          },
+          {
+            foreignKeyName: "musicas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musicas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       programacao_eventos: {
         Row: {
           created_at: string
