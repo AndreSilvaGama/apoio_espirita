@@ -17,6 +17,7 @@ import { useState, useEffect, useRef } from "react";
 import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, CalendarDays, KanbanSquare, Building2, LayoutDashboard, Sprout, Sparkles, Search } from "lucide-react";
 
 import appCss from "../styles.css?url";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -313,6 +314,7 @@ function RootComponent() {
       <AuthProvider>
         <RadioProvider>
           <AppLayout />
+          <Toaster />
         </RadioProvider>
       </AuthProvider>
     </QueryClientProvider>
@@ -407,9 +409,7 @@ function NavBar() {
           <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>Evangelização</Link>
           <Link to="/feb" className={linkCls("/feb")}>Biblioteca</Link>
           <Link to="/musicas-cifras" className={linkCls("/musicas-cifras")}>Músicas</Link>
-          {isTesoureiro && (
-            <Link to="/tesouraria" className={linkCls("/tesouraria")}>Tesouraria</Link>
-          )}
+          <Link to="/kanban" className={linkCls("/kanban")}>Projetos</Link>
 
           {/* Recursos dropdown */}
           <div ref={recursosRef} className="relative">
@@ -524,11 +524,9 @@ function NavBar() {
             <Link to="/musicas-cifras" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
               Músicas
             </Link>
-            {isTesoureiro && (
-              <Link to="/tesouraria" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
-                Tesouraria
-              </Link>
-            )}
+            <Link to="/kanban" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors">
+              Projetos
+            </Link>
 
             {/* Seção Recursos */}
             <button

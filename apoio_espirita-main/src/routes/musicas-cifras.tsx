@@ -232,6 +232,7 @@ function MusicasCifrasPage() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [publishingTrackId, setPublishingTrackId] = useState<string | null>(null);
 
   // Estados de Nova Playlist
   const [newPlaylistName, setNewPlaylistName] = useState("");
@@ -277,83 +278,98 @@ function MusicasCifrasPage() {
         durationLabel: m.is_exclusive ? "Exclusiva" : "Pública"
       }));
 
-      // 2. Se houver banco IndexedDB local e usuário estiver autenticado, migra dados locais
-      let migratedTracksCount = 0;
-      if (database && user && profile?.sigla_casa) {
+      // 2. Carrega faixas locais do IndexedDB
+      let localFaixas: any[] = [];
+      if (database) {
         const tx = database.transaction(["faixas"], "readonly");
         const store = tx.objectStore("faixas");
-        const localFaixas: any[] = await new Promise((resolve) => {
+        localFaixas = await new Promise((resolve) => {
           const req = store.getAll();
           req.onsuccess = () => resolve(req.result || []);
           req.onerror = () => resolve([]);
         });
+      }
 
-        if (localFaixas.length > 0) {
-          setIsMigrating(true);
-          toast.info(`Detectamos ${localFaixas.length} música(s) local(is). Migrando para nuvem...`);
+      // 3. Se houver faixas locais e o usuário estiver autenticado, tenta migrar para o Supabase
+      let migratedTracksCount = 0;
+      if (localFaixas.length > 0 && user) {
+        setIsMigrating(true);
+        toast.info(`Detectamos ${localFaixas.length} música(s) local(is). Migrando para nuvem...`);
 
-          for (const localTrack of localFaixas) {
-            try {
-              if (localTrack.file) {
-                const ext = localTrack.file.name ? localTrack.file.name.split(".").pop() : "mp3";
-                const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
-                const path = `${profile.sigla_casa}/${filename}`;
+        for (const localTrack of localFaixas) {
+          try {
+            if (localTrack.file) {
+              const ext = localTrack.file.name ? localTrack.file.name.split(".").pop() : "mp3";
+              const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
+              const folder = profile?.sigla_casa || "geral";
+              const path = `${folder}/${filename}`;
 
-                // Upload para o storage
-                const { error: uploadError } = await supabase.storage
-                  .from("musicas")
-                  .upload(path, localTrack.file, {
-                    contentType: localTrack.file.type || "audio/mpeg",
-                    upsert: false
-                  });
-
-                if (uploadError) throw uploadError;
-
-                const audioUrl = `https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/${path}`;
-
-                // Registrar no banco
-                const { error: insertError } = await supabase.from("musicas").insert({
-                  title: localTrack.title,
-                  artist: localTrack.artist,
-                  audio_url: audioUrl,
-                  is_exclusive: false,
-                  sigla_casa: profile.sigla_casa,
-                  user_id: user.id
+              // Upload para o storage
+              const { error: uploadError } = await supabase.storage
+                .from("musicas")
+                .upload(path, localTrack.file, {
+                  contentType: localTrack.file.type || "audio/mpeg",
+                  upsert: false
                 });
 
-                if (insertError) throw insertError;
+              if (uploadError) throw uploadError;
 
-                // Deletar do IndexedDB local
-                const deleteTx = database.transaction(["faixas"], "readwrite");
-                await new Promise<void>((resolveDelete, rejectDelete) => {
-                  const deleteReq = deleteTx.objectStore("faixas").delete(localTrack.id);
-                  deleteReq.onsuccess = () => resolveDelete();
-                  deleteReq.onerror = () => rejectDelete(deleteReq.error);
-                });
-                migratedTracksCount++;
-              }
-            } catch (migrationErr) {
-              console.error(`Erro ao migrar faixa ${localTrack.title}:`, migrationErr);
+              const audioUrl = `https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/${path}`;
+
+              // Registrar no banco
+              const { error: insertError } = await supabase.from("musicas").insert({
+                title: localTrack.title,
+                artist: localTrack.artist,
+                audio_url: audioUrl,
+                is_exclusive: false,
+                sigla_casa: profile?.sigla_casa || null,
+                user_id: user.id
+              });
+
+              if (insertError) throw insertError;
+
+              // Deletar do IndexedDB local
+              const deleteTx = database!.transaction(["faixas"], "readwrite");
+              await new Promise<void>((resolveDelete, rejectDelete) => {
+                const deleteReq = deleteTx.objectStore("faixas").delete(localTrack.id);
+                deleteReq.onsuccess = () => resolveDelete();
+                deleteReq.onerror = () => rejectDelete(deleteReq.error);
+              });
+              migratedTracksCount++;
             }
+          } catch (migrationErr: any) {
+            console.error(`Erro ao migrar faixa ${localTrack.title}:`, migrationErr);
+            toast.error(`Erro ao migrar música "${localTrack.title}": ${migrationErr.message || "Erro desconhecido"}`);
           }
-          setIsMigrating(false);
-          if (migratedTracksCount > 0) {
-            toast.success(`${migratedTracksCount} música(s) migrada(s) para nuvem com sucesso!`);
-            // Recarrega do Supabase após migrar
-            return loadIndexedDBAndSupabaseData(database);
-          }
+        }
+        setIsMigrating(false);
+
+        if (migratedTracksCount > 0) {
+          toast.success(`${migratedTracksCount} música(s) migrada(s) para nuvem com sucesso!`);
+          // Recarrega tudo para atualizar as listas
+          return loadIndexedDBAndSupabaseData(database);
         }
       }
 
-      // 3. Montar lista de músicas final
+      // 4. Mapear faixas locais restantes (que ainda não foram migradas)
+      const remainingLocalTracks: Track[] = localFaixas.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        artist: item.artist,
+        file: item.file,
+        durationLabel: "Áudio local"
+      }));
+
+      // 5. Montar lista de músicas final (inclui locais que ainda não foram migradas)
       const allTracks = [
         { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao" as const, durationLabel: "Gerado ao vivo" },
         { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe" as const, durationLabel: "Gerado ao vivo" },
         ...supabaseTracks,
+        ...remainingLocalTracks
       ];
       setTracks(allTracks);
 
-      // 4. Carrega Playlists (IndexedDB continua para playlists locais por simplicidade)
+      // 6. Carrega Playlists
       if (database) {
         const playlistTx = database.transaction(["playlists"], "readonly");
         const playlistsStore = playlistTx.objectStore("playlists");
@@ -376,8 +392,45 @@ function MusicasCifrasPage() {
         };
         setPlaylists([defaultPlaylist]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao carregar dados:", err);
+      toast.error(`Erro ao carregar dados da nuvem: ${err.message || "Erro desconhecido"}`);
+      // Fallback em caso de erro na consulta ao Supabase: carrega apenas locais do IndexedDB + sintetizadas
+      if (database) {
+        try {
+          const tx = database.transaction(["faixas"], "readonly");
+          const store = tx.objectStore("faixas");
+          const localFaixas = await new Promise<any[]>((resolve) => {
+            const req = store.getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => resolve([]);
+          });
+
+          const localTracksMapped = localFaixas.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+            file: item.file,
+            durationLabel: "Áudio local"
+          }));
+
+          const fallbackTracks = [
+            { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao" as const, durationLabel: "Gerado ao vivo" },
+            { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe" as const, durationLabel: "Gerado ao vivo" },
+            ...localTracksMapped
+          ];
+          setTracks(fallbackTracks);
+
+          const defaultPlaylist: Playlist = {
+            id: "p01",
+            name: "Todas as Músicas",
+            trackIds: fallbackTracks.map((t) => t.id),
+          };
+          setPlaylists([defaultPlaylist]);
+        } catch (localErr) {
+          console.error("Erro no fallback local:", localErr);
+        }
+      }
     }
   };
 
@@ -439,6 +492,69 @@ function MusicasCifrasPage() {
       toast.error(`Erro ao publicar música: ${err.message || "Erro desconhecido"}`);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Publicar faixa local manualmente
+  const handlePublishLocalTrack = async (track: Track) => {
+    if (!user) {
+      toast.error("Você precisa estar autenticado para publicar músicas.");
+      return;
+    }
+    if (!track.file) {
+      toast.error("Arquivo local não encontrado.");
+      return;
+    }
+
+    setPublishingTrackId(track.id);
+    try {
+      const file = track.file as any;
+      const ext = file.name ? file.name.split(".").pop() : "mp3";
+      const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
+      const folder = profile?.sigla_casa || "geral";
+      const path = `${folder}/${filename}`;
+
+      // Upload para o storage
+      const { error: uploadError } = await supabase.storage
+        .from("musicas")
+        .upload(path, file, {
+          contentType: file.type || "audio/mpeg",
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const audioUrl = `https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/${path}`;
+
+      // Registrar no banco
+      const { error: insertError } = await supabase.from("musicas").insert({
+        title: track.title,
+        artist: track.artist,
+        audio_url: audioUrl,
+        is_exclusive: false,
+        sigla_casa: profile?.sigla_casa || null,
+        user_id: user.id
+      });
+
+      if (insertError) throw insertError;
+
+      // Deletar do IndexedDB local
+      if (db) {
+        const deleteTx = db.transaction(["faixas"], "readwrite");
+        await new Promise<void>((resolveDelete, rejectDelete) => {
+          const deleteReq = deleteTx.objectStore("faixas").delete(track.id);
+          deleteReq.onsuccess = () => resolveDelete();
+          deleteReq.onerror = () => rejectDelete(deleteReq.error);
+        });
+      }
+
+      toast.success(`Música "${track.title}" disponibilizada online com sucesso!`);
+      await loadIndexedDBAndSupabaseData(db);
+    } catch (err: any) {
+      console.error(`Erro ao publicar faixa ${track.title}:`, err);
+      toast.error(`Erro ao publicar música: ${err.message || "Erro desconhecido"}`);
+    } finally {
+      setPublishingTrackId(null);
     }
   };
 
@@ -542,7 +658,7 @@ function MusicasCifrasPage() {
     request.onsuccess = () => {
       setNewPlaylistName("");
       setShowPlaylistForm(false);
-      loadIndexedDBData(db);
+      loadIndexedDBAndSupabaseData(db);
     };
   };
 
@@ -569,7 +685,7 @@ function MusicasCifrasPage() {
 
     request.onsuccess = () => {
       setAddingToPlaylistTrack(null);
-      loadIndexedDBData(db);
+      loadIndexedDBAndSupabaseData(db);
     };
   };
 
@@ -1006,9 +1122,31 @@ function MusicasCifrasPage() {
                                 </span>
                               )
                             ) : (
-                              <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider">
-                                {track.durationLabel}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {!track.synthesized && track.file && (
+                                  <button
+                                    onClick={() => handlePublishLocalTrack(track)}
+                                    disabled={publishingTrackId === track.id}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-700 transition-all shadow-sm cursor-pointer uppercase tracking-wider disabled:opacity-50"
+                                    title="Publicar esta música na nuvem para disponibilizar a todos os usuários"
+                                  >
+                                    {publishingTrackId === track.id ? (
+                                      <>
+                                        <Loader2 size={11} className="animate-spin" />
+                                        Publicando...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Globe size={11} />
+                                        Disponibilizar Online
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                                <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider">
+                                  {track.durationLabel}
+                                </span>
+                              </div>
                             )}
                             
                             {/* Botão de adicionar à playlist */}

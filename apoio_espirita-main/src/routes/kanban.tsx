@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, useDroppable, useDraggable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { 
   Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight, 
@@ -144,6 +144,13 @@ function getSupabaseClient(guestToken?: string | null) {
 function KanbanPage() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
+
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 8,
+    },
+  });
+  const sensors = useSensors(pointerSensor);
 
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [guestName, setGuestName] = useState<string | null>(null);
@@ -547,27 +554,106 @@ function KanbanPage() {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const cardId = active.id as string;
-    const targetListId = over.id as string;
-    
-    const card = eventos.find(e => e.id === cardId);
-    if (!card || card.lista_id === targetListId) return;
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    if (activeId === overId) return;
 
-    const sourceListId = card.lista_id;
-    
+    const activeCard = eventos.find(e => e.id === activeId);
+    if (!activeCard) return;
+
+    let targetListId = "";
+    let targetOrder = 0;
+
+    // Check if dropped on a list directly
+    const targetList = listas.find(l => l.id === overId);
+    if (targetList) {
+      targetListId = targetList.id;
+      // Get all cards in list (sorted) excluding the active card itself
+      const siblingCards = eventos
+        .filter(e => e.lista_id === targetListId && e.id !== activeId)
+        .sort((a, b) => a.ordem - b.ordem);
+      targetOrder = siblingCards.length;
+    } else {
+      // Check if dropped on another card
+      const targetCard = eventos.find(e => e.id === overId);
+      if (targetCard) {
+        targetListId = targetCard.lista_id;
+        targetOrder = targetCard.ordem;
+      } else {
+        return;
+      }
+    }
+
+    const sourceListId = activeCard.lista_id;
+    let newEventos = [...eventos];
+
+    if (sourceListId === targetListId) {
+      // Reordering within the same list
+      const listCards = newEventos
+        .filter(e => e.lista_id === sourceListId)
+        .sort((a, b) => a.ordem - b.ordem);
+
+      const oldIndex = listCards.findIndex(e => e.id === activeId);
+      const withoutActive = listCards.filter(e => e.id !== activeId);
+      withoutActive.splice(targetOrder, 0, { ...activeCard, lista_id: targetListId });
+
+      const updatedListCards = withoutActive.map((e, idx) => ({ ...e, ordem: idx }));
+
+      newEventos = newEventos.map(e => {
+        const updated = updatedListCards.find(ul => ul.id === e.id);
+        return updated ? updated : e;
+      });
+    } else {
+      // Moving to a different list
+      const sourceListCards = newEventos
+        .filter(e => e.lista_id === sourceListId && e.id !== activeId)
+        .sort((a, b) => a.ordem - b.ordem)
+        .map((e, idx) => ({ ...e, ordem: idx }));
+
+      const targetListCards = newEventos
+        .filter(e => e.lista_id === targetListId)
+        .sort((a, b) => a.ordem - b.ordem);
+
+      targetListCards.splice(targetOrder, 0, { ...activeCard, lista_id: targetListId });
+      const updatedTargetCards = targetListCards.map((e, idx) => ({ ...e, ordem: idx }));
+
+      newEventos = newEventos.map(e => {
+        if (e.id === activeId) {
+          return { ...activeCard, lista_id: targetListId, ordem: targetOrder };
+        }
+        const updSource = sourceListCards.find(ul => ul.id === e.id);
+        if (updSource) return updSource;
+
+        const updTarget = updatedTargetCards.find(ul => ul.id === e.id);
+        if (updTarget) return updTarget;
+
+        return e;
+      });
+    }
+
     // Update local state first
-    setEventos(prev => prev.map(e => e.id === cardId ? { ...e, lista_id: targetListId } : e));
-    
+    setEventos(newEventos);
+
     const client = getClient();
-    const { error } = await client
-      .from("kanban_eventos")
-      .update({ lista_id: targetListId })
-      .eq("id", cardId);
-    
-    if (error) {
-      // Revert local state
-      setEventos(prev => prev.map(e => e.id === cardId ? { ...e, lista_id: sourceListId } : e));
-      toast.error("Erro ao mover card.");
+    const changedCards = newEventos.filter(e => {
+      const original = eventos.find(o => o.id === e.id);
+      return original && (original.lista_id !== e.lista_id || original.ordem !== e.ordem);
+    });
+
+    try {
+      await Promise.all(
+        changedCards.map(c =>
+          client
+            .from("kanban_eventos")
+            .update({ lista_id: c.lista_id, ordem: c.ordem })
+            .eq("id", c.id)
+        )
+      );
+    } catch (e) {
+      console.error(e);
+      // Revert state
+      setEventos(eventos);
+      toast.error("Erro ao salvar ordenação no banco de dados.");
     }
   };
 
@@ -1005,7 +1091,7 @@ function KanbanPage() {
         {loadingBoard ? (
           <div className="py-20 text-center text-sm text-gray-500 font-light">Carregando quadro de projetos...</div>
         ) : (
-          <DndContext onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             <div className="flex gap-4 overflow-x-auto pb-4 items-start select-none">
               
               {/* Render Lists */}
@@ -1881,39 +1967,33 @@ interface CardProps {
 }
 
 function KanbanCardWrapper({ card, onCardClick }: CardProps) {
-  
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: card.id });
+  const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({ id: card.id });
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: card.id });
+
+  const setCombinedRef = (node: HTMLDivElement | null) => {
+    setDragRef(node);
+    setDropRef(node);
+  };
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setCombinedRef}
       onClick={() => onCardClick(card)}
+      {...listeners}
+      {...attributes}
       style={{
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.35 : 1,
         background: "#ffffff",
-        border: "1px solid rgba(0,20,70,.07)",
+        border: isOver ? "2px solid #004a8c" : "1px solid rgba(0,20,70,.07)",
         borderRadius: 14,
-        boxShadow: "0 1px 3px rgba(0,20,70,.015), 0 2px 5px rgba(0,20,70,.02)",
+        boxShadow: isOver ? "0 4px 12px rgba(0,74,140,.15)" : "0 1px 3px rgba(0,20,70,.015), 0 2px 5px rgba(0,20,70,.02)",
         transition: "box-shadow .2s, border-color .2s",
+        cursor: "grab",
       }}
-      className="p-3.5 hover:shadow-md hover:border-cyan-100 transition-all cursor-pointer relative group"
+      className="p-3.5 hover:shadow-md hover:border-cyan-100 transition-all relative group"
     >
       
-      {/* Drag handle overlay */}
-      <div 
-        {...listeners}
-        {...attributes}
-        className="absolute right-2 top-2 p-1 text-gray-300 hover:text-gray-500 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-        onClick={e => e.stopPropagation()}
-      >
-        <svg width="6" height="12" viewBox="0 0 10 16" fill="currentColor">
-          <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
-          <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
-          <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
-        </svg>
-      </div>
-
       {/* Labels row */}
       {card.labels && card.labels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2 pr-6">

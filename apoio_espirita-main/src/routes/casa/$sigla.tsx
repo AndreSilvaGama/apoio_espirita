@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
+import { TesourariaTab } from "@/components/TesourariaTab";
 
 
 
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/casa/$sigla")({
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "painel" | "mural" | "sobre" | "programacao" | "projetos" | "doacoes" | "configuracoes" | "tarefeiros";
+type Aba = "painel" | "mural" | "sobre" | "programacao" | "tesouraria" | "doacoes" | "configuracoes" | "tarefeiros";
 
 interface PaginaData {
   sigla_casa: string;
@@ -1089,7 +1090,7 @@ function PaginaCasa() {
             ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
             { id: "mural",       label: "Mural",       Icon: MessageSquare },
             { id: "sobre",       label: "Atividades",   Icon: Info },
-            { id: "projetos",    label: "Projetos",     Icon: ClipboardList },
+            { id: "tesouraria",  label: "Tesouraria",   Icon: Wallet },
             { id: "doacoes",     label: "Doações",      Icon: Heart },
             { id: "tarefeiros",  label: "Tarefeiros",   Icon: Users },
             ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
@@ -1631,18 +1632,7 @@ function PaginaCasa() {
                   desc="Registro de receitas e despesas, saldo mensal, exportação em Excel (.xlsx) e impressão formatada."
                   status="disponivel"
                   accent="amber"
-                  href="/tesouraria"
-                  votes={votes}
-                  votingKey={votingKey}
-                  onVote={handleCardVote}
-                />
-                <DashDashCard
-                  Icon={ClipboardCheck}
-                  title="Projetos"
-                  desc="Planeje e organize projetos, ideias, tarefas e reuniões da casa espírita."
-                  status="disponivel"
-                  accent="cyan"
-                  href="/kanban"
+                  onClick={() => setAba("tesouraria")}
                   votes={votes}
                   votingKey={votingKey}
                   onVote={handleCardVote}
@@ -1905,6 +1895,11 @@ function PaginaCasa() {
 
 
 
+
+        {/* ══════════════ TESOURARIA ══════════════ */}
+        {aba === "tesouraria" && (
+          <TesourariaTab sigla={sigla} />
+        )}
 
         {/* ══════════════ DOAÇÕES ══════════════ */}
         {aba === "doacoes" && (
