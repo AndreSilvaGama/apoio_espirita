@@ -1,18 +1,24 @@
 // @ts-nocheck
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState, useRef } from "react";
 import { DndContext, DragEndEvent, useDroppable, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
+import { 
+  Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight, 
+  ChevronDown, ChevronUp, Check, Users, Share2, Palette, Archive, 
+  Paperclip, MessageSquare, Search, ArrowLeft, CheckSquare, Tag, 
+  Sparkles, CheckCircle2, Clock
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { CasaHero } from "@/components/CasaHero";
+import { createClient } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/kanban")({
   component: KanbanPage,
 });
 
-type Status = "ideia" | "planejado" | "em andamento" | "realizado";
+type Status = string; // Now dynamic (references kanban_listas.id)
 
 interface KanbanEvento {
   id: string;
@@ -21,10 +27,16 @@ interface KanbanEvento {
   descricao: string | null;
   data: string | null;
   responsavel: string | null;
-  status: Status;
+  lista_id: string | null;
   criador_id: string | null;
   criador_nome: string | null;
   created_at: string;
+  labels: string[];
+  membros_atribuidos: string[];
+  prazo_concluido: boolean;
+  anexos: { nome: string; url: string }[];
+  arquivado: boolean;
+  ordem: number;
 }
 
 interface KanbanTarefa {
@@ -51,979 +63,1909 @@ interface KanbanGrupo {
   kanban_tarefas: KanbanTarefa[];
 }
 
-const COLUNAS: { status: Status; label: string; borda: string; corHeader: string; bgOver: string }[] = [
-  { status: "ideia",        label: "Ideia",        borda: "border-gray-200",    corHeader: "text-gray-500",    bgOver: "bg-gray-50" },
-  { status: "planejado",   label: "Planejado",   borda: "border-amber-200",   corHeader: "text-amber-600",   bgOver: "bg-amber-50/50" },
-  { status: "em andamento", label: "Em andamento", borda: "border-cyan-200",    corHeader: "text-cyan-600",    bgOver: "bg-cyan-50/50" },
-  { status: "realizado",   label: "Realizado",   borda: "border-emerald-200", corHeader: "text-emerald-600", bgOver: "bg-emerald-50/50" },
+interface KanbanLista {
+  id: string;
+  sigla_casa: string;
+  nome: string;
+  ordem: number;
+  created_at: string;
+}
+
+interface KanbanComentario {
+  id: string;
+  evento_id: string;
+  user_id: string | null;
+  autor_nome: string;
+  comentario: string;
+  created_at: string;
+}
+
+const ETIQUETAS = [
+  { id: "espiritual", label: "Espiritual", bg: "bg-emerald-50 border-emerald-200 text-emerald-700", dot: "bg-emerald-500" },
+  { id: "financeiro", label: "Financeiro", bg: "bg-amber-50 border-amber-200 text-amber-700", dot: "bg-amber-500" },
+  { id: "urgente", label: "Urgente", bg: "bg-rose-50 border-rose-200 text-rose-700", dot: "bg-rose-500" },
+  { id: "reuniao", label: "Reunião", bg: "bg-blue-50 border-blue-200 text-blue-700", dot: "bg-blue-500" },
+  { id: "evento", label: "Evento", bg: "bg-purple-50 border-purple-200 text-purple-700", dot: "bg-purple-500" },
+  { id: "infraestrutura", label: "Infraestrutura", bg: "bg-cyan-50 border-cyan-200 text-cyan-700", dot: "bg-cyan-500" }
 ];
+
+const BACKGROUNDS = [
+  { id: "bg-slate-50", label: "Branco Suave", css: "bg-slate-50 text-gray-800" },
+  { id: "bg-[#f4f5f8]", label: "Cinza Claro", css: "bg-[#f4f5f8] text-gray-800" },
+  { id: "bg-blue-50", label: "Azul Sereno", css: "bg-blue-50/50 text-gray-800" },
+  { id: "bg-emerald-50", label: "Verde Esperança", css: "bg-emerald-50/50 text-gray-800" },
+  { id: "bg-gradient-to-br from-indigo-50 to-cyan-50", label: "Gradiente Celestial", css: "bg-gradient-to-br from-indigo-50 to-cyan-50 text-gray-800" },
+  { id: "bg-gradient-to-br from-blue-50 to-purple-50", label: "Gradiente Harmonia", css: "bg-gradient-to-br from-blue-50 to-purple-50 text-gray-800" },
+  { id: "bg-gradient-to-br from-emerald-50 to-teal-50", label: "Gradiente Vitalidade", css: "bg-gradient-to-br from-emerald-50 to-teal-50 text-gray-800" },
+  { id: "bg-gradient-to-br from-amber-50 to-rose-50", label: "Gradiente Fraternidade", css: "bg-gradient-to-br from-amber-50 to-rose-50 text-gray-800" }
+];
+
+const DEFAULT_LISTAS = ["Ideia", "Planejado", "Em andamento", "Realizado"];
 
 function fmtData(iso: string) {
   const [year, month, day] = iso.slice(0, 10).split("-");
   return `${day}/${month}/${year}`;
 }
 
-function corPrazo(prazo: string | null): string {
-  if (!prazo) return "text-muted-foreground/50";
+function getPrazoInfo(prazo: string | null, concluido: boolean): { cor: string; texto: string } {
+  if (!prazo) return { cor: "text-muted-foreground/50", texto: "" };
+  if (concluido) return { cor: "text-emerald-600 bg-emerald-50 border-emerald-200 px-2 py-0.5 rounded", texto: "Concluído" };
+  
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   const amanha = new Date(hoje);
   amanha.setDate(amanha.getDate() + 1);
   const data = new Date(prazo + "T00:00:00");
-  if (data < hoje) return "text-red-500";
-  if (data <= amanha) return "text-amber-500";
-  return "text-muted-foreground/50";
+  
+  if (data < hoje) return { cor: "text-red-600 bg-red-50 border-red-200 px-2 py-0.5 rounded font-medium", texto: "Atrasado" };
+  if (data <= amanha) return { cor: "text-amber-600 bg-amber-50 border-amber-200 px-2 py-0.5 rounded font-medium", texto: "Amanhã" };
+  return { cor: "text-gray-500 bg-gray-100 px-2 py-0.5 rounded", texto: "" };
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
+// Custom guest client instantiation
+function getSupabaseClient(guestToken?: string | null) {
+  if (guestToken) {
+    const url = import.meta.env.VITE_SUPABASE_URL || "https://kitmwxfwwujygcmdjngm.supabase.co";
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpdG13eGZ3d3VqeWdjbWRqbmdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjEwNTYsImV4cCI6MjA5NDA5NzA1Nn0.Er_7LFPyup8LjcFaGuIAKMHcIVzJfbU-ihVs_r-IkXE";
+    return createClient(url, key, {
+      global: {
+        headers: {
+          "x-kanban-token": guestToken
+        }
+      },
+      auth: {
+        persistSession: false
+      }
+    });
+  }
+  return supabase;
+}
 
 function KanbanPage() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
 
+  const [guestToken, setGuestToken] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState<string | null>(null);
+  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
+  const [tempGuestName, setTempGuestName] = useState("");
+
+  const [sigla, setSigla] = useState<string | null>(null);
+  const [config, setConfig] = useState<{ board_background: string; share_token: string } | null>(null);
+  
+  const [listas, setListas] = useState<KanbanLista[]>([]);
   const [eventos, setEventos] = useState<KanbanEvento[]>([]);
-  const [loadingEventos, setLoadingEventos] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingEvento, setEditingEvento] = useState<KanbanEvento | null>(null);
+  const [membrosCasa, setMembrosCasa] = useState<{ id: string; nome: string }[]>([]);
+  
+  const [loadingBoard, setLoadingBoard] = useState(true);
+  const [showConfig, setShowConfig] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
-  const [fTitulo, setFTitulo]           = useState("");
-  const [fDescricao, setFDescricao]     = useState("");
-  const [fData, setFData]               = useState("");
-  const [fResponsavel, setFResponsavel] = useState("");
-  const [saving, setSaving]             = useState(false);
-  const [formError, setFormError]       = useState("");
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterLabel, setFilterLabel] = useState("");
+  const [filterMember, setFilterMember] = useState("");
+  const [filterPrazo, setFilterPrazo] = useState("");
 
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [grupos, setGrupos] = useState<Record<string, KanbanGrupo[]>>({});
-  const [loadingGrupos, setLoadingGrupos] = useState<Record<string, boolean>>({});
+  // Card & List editing state
+  const [showNewCardForm, setShowNewCardForm] = useState<string | null>(null);
+  const [newCardTitle, setNewCardTitle] = useState("");
+  const [showNewListForm, setShowNewListForm] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [editingListId, setEditingListId] = useState<string | null>(null);
+  const [editingListName, setEditingListName] = useState("");
 
+  // Card details modal
+  const [selectedCard, setSelectedCard] = useState<KanbanEvento | null>(null);
+  const [loadingCardDetails, setLoadingCardDetails] = useState(false);
+  const [gruposCard, setGruposCard] = useState<KanbanGrupo[]>([]);
+  const [comentariosCard, setComentariosCard] = useState<KanbanComentario[]>([]);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [tempDescription, setTempDescription] = useState("");
+  const [showAddLabelMenu, setShowAddLabelMenu] = useState(false);
+  const [showAddMemberMenu, setShowAddMemberMenu] = useState(false);
+  const [showMoveCardMenu, setShowMoveCardMenu] = useState(false);
+  const [newAttachmentName, setNewAttachmentName] = useState("");
+  const [newAttachmentUrl, setNewAttachmentUrl] = useState("");
+  const [newChecklistName, setNewChecklistName] = useState("");
+  const [showNewChecklistForm, setShowNewChecklistForm] = useState(false);
+  const [showNewChecklistItemForm, setShowNewChecklistItemForm] = useState<string | null>(null);
+  const [newChecklistItemTitle, setNewChecklistItemTitle] = useState("");
+
+  // Parse Guest Token on mount
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user) {
-      if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade) {
-        navigate({ to: "/completar-perfil" });
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      setGuestToken(token);
+      const name = sessionStorage.getItem("kanban_guest_name");
+      if (name) {
+        setGuestName(name);
       } else {
-        navigate({ to: "/casa/$sigla", params: { sigla: profile.sigla_casa } });
+        setShowGuestPrompt(true);
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, []);
 
-  const fetchEventos = async (sigla: string) => {
-    setLoadingEventos(true);
-    const { data } = await supabase
-      .from("kanban_eventos")
-      .select("*")
-      .eq("sigla_casa", sigla)
-      .order("created_at", { ascending: true });
-    setEventos((data as KanbanEvento[]) ?? []);
-    setLoadingEventos(false);
-  };
-
+  // Set sigla based on user or token
   useEffect(() => {
-    if (user && profile?.sigla_casa) fetchEventos(profile.sigla_casa);
-  }, [user, profile?.sigla_casa]);
+    if (!loading && !user && !guestToken) {
+      navigate({ to: "/login" });
+      return;
+    }
 
-  if (loading || !user) return null;
+    if (user && profile?.sigla_casa && !guestToken) {
+      setSigla(profile.sigla_casa);
+    }
+  }, [user, profile, loading, guestToken, navigate]);
 
-  const openCreate = () => {
-    setEditingEvento(null);
-    setFTitulo(""); setFDescricao(""); setFData(""); setFResponsavel("");
-    setFormError("");
-    setShowForm(true);
-  };
+  // Load house sigla from guest token if present
+  useEffect(() => {
+    if (guestToken) {
+      const fetchSiglaFromToken = async () => {
+        try {
+          const client = getSupabaseClient(guestToken);
+          const { data, error } = await client
+            .from("kanban_config")
+            .select("sigla_casa, board_background, share_token")
+            .eq("share_token", guestToken)
+            .maybeSingle();
 
-  const openEdit = (evento: KanbanEvento) => {
-    setEditingEvento(evento);
-    setFTitulo(evento.titulo);
-    setFDescricao(evento.descricao ?? "");
-    setFData(evento.data ?? "");
-    setFResponsavel(evento.responsavel ?? "");
-    setFormError("");
-    setShowForm(true);
-  };
+          if (error) throw error;
+          if (data) {
+            setSigla(data.sigla_casa);
+            setConfig(data);
+          } else {
+            toast.error("Link de convite inválido ou expirado.");
+          }
+        } catch (e) {
+          console.error(e);
+          toast.error("Erro ao validar token de convidado.");
+        }
+      };
+      fetchSiglaFromToken();
+    }
+  }, [guestToken]);
 
-  const closeForm = () => {
-    setShowForm(false);
-    setEditingEvento(null);
-    setFormError("");
-  };
-
-  const handleSave = async () => {
-    if (!fTitulo.trim()) { setFormError("Informe o título."); return; }
-    if (!profile?.sigla_casa || !user) return;
-    setSaving(true);
-    setFormError("");
+  // Load board data once sigla is resolved
+  const fetchBoardData = async (siglaCasa: string) => {
+    setLoadingBoard(true);
+    const client = getSupabaseClient(guestToken);
     try {
-      if (editingEvento) {
-        const { error } = await supabase
-          .from("kanban_eventos")
-          .update({
-            titulo: fTitulo.trim(),
-            descricao: fDescricao.trim() || null,
-            data: fData || null,
-            responsavel: fResponsavel.trim() || null,
-          })
-          .eq("id", editingEvento.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("kanban_eventos")
-          .insert({
-            sigla_casa: profile.sigla_casa,
-            titulo: fTitulo.trim(),
-            descricao: fDescricao.trim() || null,
-            data: fData || null,
-            responsavel: fResponsavel.trim() || null,
-            status: "ideia",
-            criador_id: user.id,
-            criador_nome: profile.nome ?? "Membro",
-          });
-        if (error) throw error;
+      // 1. Fetch Board Config
+      const { data: configData } = await client
+        .from("kanban_config")
+        .select("*")
+        .eq("sigla_casa", siglaCasa)
+        .maybeSingle();
+      
+      let currentConfig = configData;
+      if (!configData && !guestToken && user) {
+        // Create config if not exists (only authenticated users can do this)
+        const { data: newConfig } = await client
+          .from("kanban_config")
+          .insert({ sigla_casa: siglaCasa })
+          .select()
+          .single();
+        currentConfig = newConfig;
       }
-      closeForm();
-      if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
-    } catch (e: unknown) {
-      setFormError(e instanceof Error ? e.message : "Erro ao salvar.");
+      setConfig(currentConfig);
+
+      // 2. Fetch Lists
+      let { data: listasData } = await client
+        .from("kanban_listas")
+        .select("*")
+        .eq("sigla_casa", siglaCasa)
+        .order("ordem");
+
+      // Auto-create default columns if empty
+      if ((!listasData || listasData.length === 0) && !guestToken) {
+        const defaultLists = DEFAULT_LISTAS.map((nome, idx) => ({
+          sigla_casa: siglaCasa,
+          nome,
+          ordem: idx
+        }));
+        const { data: insertedListas } = await client
+          .from("kanban_listas")
+          .insert(defaultLists)
+          .select();
+        listasData = insertedListas || [];
+      }
+      setListas(listasData || []);
+
+      // 3. Fetch Cards
+      const { data: cardsData } = await client
+        .from("kanban_eventos")
+        .select("*")
+        .eq("sigla_casa", siglaCasa)
+        .order("ordem", { ascending: true });
+      
+      setEventos((cardsData as KanbanEvento[]) || []);
+
+      // 4. Fetch Members for assignment (from profiles_public)
+      const { data: membersData } = await client
+        .from("profiles_public")
+        .select("id, nome")
+        .eq("sigla_casa", siglaCasa)
+        .order("nome");
+      
+      setMembrosCasa(membersData || []);
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao carregar o quadro de projetos.");
     } finally {
-      setSaving(false);
+      setLoadingBoard(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Excluir este card? Não pode ser desfeito.")) return;
-    const { error } = await supabase.from("kanban_eventos").delete().eq("id", id);
-    if (error) { alert("Erro ao excluir: " + error.message); return; }
-    if (profile?.sigla_casa) fetchEventos(profile.sigla_casa);
+  useEffect(() => {
+    if (sigla) {
+      fetchBoardData(sigla);
+    }
+  }, [sigla, guestToken]);
+
+  // Load card details when card selection changes
+  const fetchCardDetails = async (cardId: string) => {
+    setLoadingCardDetails(true);
+    const client = getSupabaseClient(guestToken);
+    try {
+      // Fetch checkpoints/checklists
+      const { data: gruposData } = await client
+        .from("kanban_grupos")
+        .select("*, kanban_tarefas(*)")
+        .eq("evento_id", cardId)
+        .order("ordem");
+      
+      const sortedGrupos = (gruposData || []).map(g => ({
+        ...g,
+        kanban_tarefas: [...g.kanban_tarefas].sort((a, b) => a.ordem - b.ordem)
+      }));
+      setGruposCard(sortedGrupos);
+
+      // Fetch comments
+      const { data: comentariosData } = await client
+        .from("kanban_comentarios")
+        .select("*")
+        .eq("evento_id", cardId)
+        .order("created_at", { ascending: false });
+      
+      setComentariosCard(comentariosData || []);
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao carregar detalhes do card.");
+    } finally {
+      setLoadingCardDetails(false);
+    }
   };
 
-  const fetchGrupos = async (eventoId: string, sigla: string) => {
-    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: true }));
-    const { data } = await supabase
-      .from("kanban_grupos")
-      .select("*, kanban_tarefas(*)")
-      .eq("evento_id", eventoId)
-      .eq("sigla_casa", sigla)
-      .order("ordem");
-    const sorted = ((data as KanbanGrupo[]) ?? []).map((g) => ({
-      ...g,
-      kanban_tarefas: [...g.kanban_tarefas].sort((a, b) => a.ordem - b.ordem),
-    }));
-    setGrupos((prev) => ({ ...prev, [eventoId]: sorted }));
-    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: false }));
+  useEffect(() => {
+    if (selectedCard) {
+      fetchCardDetails(selectedCard.id);
+      setTempDescription(selectedCard.descricao || "");
+      setEditingDescription(false);
+    }
+  }, [selectedCard]);
+
+  if (loading || !sigla) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center space-y-4">
+          <div className="w-10 h-10 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm text-gray-500 font-light">Carregando quadro de projetos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper to get active client
+  const getClient = () => getSupabaseClient(guestToken);
+
+  // Handle Guest Prompt Submit
+  const handleGuestPromptSubmit = () => {
+    if (!tempGuestName.trim()) {
+      toast.error("Informe seu nome.");
+      return;
+    }
+    sessionStorage.setItem("kanban_guest_name", tempGuestName.trim());
+    setGuestName(tempGuestName.trim());
+    setShowGuestPrompt(false);
+    toast.success(`Acesso concedido como ${tempGuestName.trim()}`);
   };
 
-  const handleToggleExpand = (eventoId: string) => {
-    if (expandedId === eventoId) { setExpandedId(null); return; }
-    setExpandedId(eventoId);
-    if (!grupos[eventoId] && profile?.sigla_casa) fetchGrupos(eventoId, profile.sigla_casa);
+  // Actions for Lists
+  const handleAddList = async () => {
+    if (!newListName.trim()) return;
+    const client = getClient();
+    try {
+      const { data, error } = await client
+        .from("kanban_listas")
+        .insert({
+          sigla_casa: sigla,
+          nome: newListName.trim(),
+          ordem: listas.length
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setListas([...listas, data]);
+      setNewListName("");
+      setShowNewListForm(false);
+      toast.success("Lista criada.");
+    } catch (e) {
+      toast.error("Erro ao criar lista.");
+    }
   };
 
-  const handleStatusChange = async (evento: KanbanEvento, direction: "prev" | "next") => {
-    const idx = COLUNAS.findIndex((c) => c.status === evento.status);
-    const newIdx = direction === "next" ? idx + 1 : idx - 1;
-    if (newIdx < 0 || newIdx >= COLUNAS.length) return;
-    const novoStatus = COLUNAS[newIdx].status;
-    const statusAnterior = evento.status;
-    setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: novoStatus } : e));
-    const { error } = await supabase
-      .from("kanban_eventos")
-      .update({ status: novoStatus })
-      .eq("id", evento.id);
-    if (error) setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: statusAnterior } : e));
+  const handleRenameList = async (listId: string) => {
+    if (!editingListName.trim()) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_listas")
+        .update({ nome: editingListName.trim() })
+        .eq("id", listId);
+      
+      if (error) throw error;
+      setListas(listas.map(l => l.id === listId ? { ...l, nome: editingListName.trim() } : l));
+      setEditingListId(null);
+      toast.success("Lista renomeada.");
+    } catch (e) {
+      toast.error("Erro ao renomear lista.");
+    }
   };
 
+  const handleDeleteList = async (listId: string, listName: string) => {
+    if (!confirm(`Excluir a lista "${listName}"? Todos os cards nela também serão excluídos!`)) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_listas")
+        .delete()
+        .eq("id", listId);
+      
+      if (error) throw error;
+      setListas(listas.filter(l => l.id !== listId));
+      setEventos(eventos.filter(e => e.lista_id !== listId));
+      toast.success("Lista excluída.");
+    } catch (e) {
+      toast.error("Erro ao excluir lista.");
+    }
+  };
+
+  // Actions for Cards (KanbanEventos)
+  const handleCreateCard = async (listId: string) => {
+    if (!newCardTitle.trim()) return;
+    const client = getClient();
+    const authorId = user?.id || null;
+    const authorName = user ? (profile?.nome || "Membro") : (guestName || "Visitante");
+    
+    // Calculate new card order
+    const listCards = eventos.filter(e => e.lista_id === listId);
+    const ordem = listCards.length;
+
+    try {
+      const { data, error } = await client
+        .from("kanban_eventos")
+        .insert({
+          sigla_casa: sigla,
+          titulo: newCardTitle.trim(),
+          lista_id: listId,
+          criador_id: authorId,
+          criador_nome: authorName,
+          ordem,
+          status: "ideia", // legacy field default
+          labels: [],
+          membros_atribuidos: [],
+          anexos: []
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setEventos([...eventos, data]);
+      setNewCardTitle("");
+      setShowNewCardForm(null);
+      toast.success("Projeto criado.");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao criar projeto.");
+    }
+  };
+
+  const handleUpdateCard = async (updatedCard: KanbanEvento) => {
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_eventos")
+        .update({
+          titulo: updatedCard.titulo,
+          descricao: updatedCard.descricao,
+          data: updatedCard.data,
+          responsavel: updatedCard.responsavel,
+          labels: updatedCard.labels,
+          membros_atribuidos: updatedCard.membros_atribuidos,
+          prazo_concluido: updatedCard.prazo_concluido,
+          anexos: updatedCard.anexos,
+          arquivado: updatedCard.arquivado,
+          lista_id: updatedCard.lista_id
+        })
+        .eq("id", updatedCard.id);
+      
+      if (error) throw error;
+      setEventos(eventos.map(e => e.id === updatedCard.id ? updatedCard : e));
+      if (selectedCard?.id === updatedCard.id) {
+        setSelectedCard(updatedCard);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao atualizar card.");
+    }
+  };
+
+  const handleDeleteCard = async (cardId: string) => {
+    if (!confirm("Excluir este card permanentemente?")) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_eventos")
+        .delete()
+        .eq("id", cardId);
+      
+      if (error) throw error;
+      setEventos(eventos.filter(e => e.id !== cardId));
+      setSelectedCard(null);
+      toast.success("Card excluído.");
+    } catch (e) {
+      toast.error("Erro ao excluir card.");
+    }
+  };
+
+  // Drag and Drop End
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    const eventoId = active.id as string;
-    const novoStatus = over.id as Status;
-    const evento = eventos.find((e) => e.id === eventoId);
-    if (!evento || evento.status === novoStatus) return;
+    const cardId = active.id as string;
+    const targetListId = over.id as string;
+    
+    const card = eventos.find(e => e.id === cardId);
+    if (!card || card.lista_id === targetListId) return;
 
-    const statusAnterior = evento.status;
-    setEventos((prev) =>
-      prev.map((e) => (e.id === eventoId ? { ...e, status: novoStatus } : e))
-    );
-    const { error } = await supabase
+    const sourceListId = card.lista_id;
+    
+    // Update local state first
+    setEventos(prev => prev.map(e => e.id === cardId ? { ...e, lista_id: targetListId } : e));
+    
+    const client = getClient();
+    const { error } = await client
       .from("kanban_eventos")
-      .update({ status: novoStatus })
-      .eq("id", eventoId);
+      .update({ lista_id: targetListId })
+      .eq("id", cardId);
+    
     if (error) {
-      setEventos((prev) =>
-        prev.map((e) => (e.id === eventoId ? { ...e, status: statusAnterior } : e))
-      );
+      // Revert local state
+      setEventos(prev => prev.map(e => e.id === cardId ? { ...e, lista_id: sourceListId } : e));
+      toast.error("Erro ao mover card.");
     }
   };
 
-  return (
-    <main className="page-light min-h-screen pt-20 pb-28">
-      <CasaHero />
-      <div className="max-w-7xl mx-auto">
+  // Comments Operations
+  const handleAddComment = async () => {
+    if (!newCommentText.trim() || !selectedCard) return;
+    const client = getClient();
+    const authorName = user ? (profile?.nome || "Membro") : (guestName || "Visitante");
+    try {
+      const { data, error } = await client
+        .from("kanban_comentarios")
+        .insert({
+          evento_id: selectedCard.id,
+          user_id: user?.id || null,
+          autor_nome: authorName,
+          comentario: newCommentText.trim()
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setComentariosCard([data, ...comentariosCard]);
+      setNewCommentText("");
+      toast.success("Comentário publicado.");
+    } catch (e) {
+      toast.error("Erro ao adicionar comentário.");
+    }
+  };
 
-        {/* Header da seção */}
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4 px-4 sm:px-6">
-          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <KanbanSquare size={22} style={{ color: "#004a8c", opacity: 0.7 }} />
-            Quadro de Eventos
-          </h2>
-          <button
-            onClick={openCreate}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.88rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)" }}
-          >
-            <Plus size={14} />
-            Novo Card
-          </button>
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Excluir seu comentário?")) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_comentarios")
+        .delete()
+        .eq("id", commentId);
+      
+      if (error) throw error;
+      setComentariosCard(comentariosCard.filter(c => c.id !== commentId));
+      toast.success("Comentário excluído.");
+    } catch (e) {
+      toast.error("Erro ao excluir comentário.");
+    }
+  };
+
+  // Checklist Operations
+  const handleAddChecklist = async () => {
+    if (!newChecklistName.trim() || !selectedCard) return;
+    const client = getClient();
+    try {
+      const { data, error } = await client
+        .from("kanban_grupos")
+        .insert({
+          evento_id: selectedCard.id,
+          sigla_casa: sigla,
+          nome: newChecklistName.trim(),
+          ordem: gruposCard.length
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setGruposCard([...gruposCard, { ...data, kanban_tarefas: [] }]);
+      setNewChecklistName("");
+      setShowNewChecklistForm(false);
+      toast.success("Checklist criado.");
+    } catch (e) {
+      toast.error("Erro ao criar checklist.");
+    }
+  };
+
+  const handleDeleteChecklist = async (grupoId: string, name: string) => {
+    if (!confirm(`Excluir o checklist "${name}"?`)) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_grupos")
+        .delete()
+        .eq("id", grupoId);
+      
+      if (error) throw error;
+      setGruposCard(gruposCard.filter(g => g.id !== grupoId));
+      toast.success("Checklist excluído.");
+    } catch (e) {
+      toast.error("Erro ao excluir checklist.");
+    }
+  };
+
+  const handleAddChecklistItem = async (grupoId: string) => {
+    if (!newChecklistItemTitle.trim()) return;
+    const client = getClient();
+    const grupo = gruposCard.find(g => g.id === grupoId);
+    if (!grupo) return;
+    try {
+      const { data, error } = await client
+        .from("kanban_tarefas")
+        .insert({
+          grupo_id: grupoId,
+          sigla_casa: sigla,
+          titulo: newChecklistItemTitle.trim(),
+          feito: false,
+          ordem: grupo.kanban_tarefas.length
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      setGruposCard(gruposCard.map(g => {
+        if (g.id === grupoId) {
+          return { ...g, kanban_tarefas: [...g.kanban_tarefas, data] };
+        }
+        return g;
+      }));
+      setNewChecklistItemTitle("");
+      setShowNewChecklistItemForm(null);
+    } catch (e) {
+      toast.error("Erro ao adicionar tarefa.");
+    }
+  };
+
+  const handleToggleChecklistItem = async (tarefaId: string, feito: boolean, grupoId: string) => {
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_tarefas")
+        .update({ feito })
+        .eq("id", tarefaId);
+      
+      if (error) throw error;
+      
+      setGruposCard(gruposCard.map(g => {
+        if (g.id === grupoId) {
+          return {
+            ...g,
+            kanban_tarefas: g.kanban_tarefas.map(t => t.id === tarefaId ? { ...t, feito } : t)
+          };
+        }
+        return g;
+      }));
+    } catch (e) {
+      toast.error("Erro ao atualizar tarefa.");
+    }
+  };
+
+  const handleDeleteChecklistItem = async (tarefaId: string, grupoId: string) => {
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_tarefas")
+        .delete()
+        .eq("id", tarefaId);
+      
+      if (error) throw error;
+      
+      setGruposCard(gruposCard.map(g => {
+        if (g.id === grupoId) {
+          return {
+            ...g,
+            kanban_tarefas: g.kanban_tarefas.filter(t => t.id !== tarefaId)
+          };
+        }
+        return g;
+      }));
+    } catch (e) {
+      toast.error("Erro ao excluir tarefa.");
+    }
+  };
+
+  // Attachments Operations
+  const handleAddAttachment = () => {
+    if (!newAttachmentName.trim() || !newAttachmentUrl.trim() || !selectedCard) return;
+    
+    // Add protocol if missing
+    let url = newAttachmentUrl.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = "https://" + url;
+    }
+
+    const updatedAnexos = [...(selectedCard.anexos || []), { nome: newAttachmentName.trim(), url }];
+    const updatedCard = { ...selectedCard, anexos: updatedAnexos };
+    
+    handleUpdateCard(updatedCard);
+    setNewAttachmentName("");
+    setNewAttachmentUrl("");
+    toast.success("Anexo adicionado.");
+  };
+
+  const handleDeleteAttachment = (idx: number) => {
+    if (!selectedCard) return;
+    const updatedAnexos = selectedCard.anexos.filter((_, i) => i !== idx);
+    const updatedCard = { ...selectedCard, anexos: updatedAnexos };
+    handleUpdateCard(updatedCard);
+    toast.success("Anexo excluído.");
+  };
+
+  // Change Background
+  const handleChangeBackground = async (bgId: string) => {
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_config")
+        .update({ board_background: bgId })
+        .eq("sigla_casa", sigla);
+      
+      if (error) throw error;
+      setConfig(prev => prev ? { ...prev, board_background: bgId } : null);
+      toast.success("Plano de fundo atualizado.");
+    } catch (e) {
+      toast.error("Erro ao alterar plano de fundo.");
+    }
+  };
+
+  // Generate Invite URL
+  const getInviteUrl = () => {
+    if (!config?.share_token) return "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `${origin}/kanban?token=${config.share_token}`;
+  };
+
+  const handleCopyInvite = () => {
+    const url = getInviteUrl();
+    if (url) {
+      navigator.clipboard.writeText(url);
+      toast.success("Link de convite copiado para a área de transferência!");
+    }
+  };
+
+  // Filtering Logic
+  const filteredEventos = eventos.filter(evento => {
+    // 1. Arquivado check
+    if (evento.arquivado !== showArchived) return false;
+
+    // 2. Text Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchTitle = evento.titulo.toLowerCase().includes(q);
+      const matchDesc = (evento.descricao || "").toLowerCase().includes(q);
+      if (!matchTitle && !matchDesc) return false;
+    }
+
+    // 3. Label Filter
+    if (filterLabel) {
+      if (!evento.labels || !evento.labels.includes(filterLabel)) return false;
+    }
+
+    // 4. Member Filter
+    if (filterMember) {
+      if (!evento.membros_atribuidos || !evento.membros_atribuidos.includes(filterMember)) return false;
+    }
+
+    // 5. Prazo/Deadline Filter
+    if (filterPrazo) {
+      if (!evento.data) return false;
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const amanha = new Date(hoje);
+      amanha.setDate(amanha.getDate() + 1);
+      const data = new Date(evento.data + "T00:00:00");
+
+      if (filterPrazo === "atrasado" && (data >= hoje || evento.prazo_concluido)) return false;
+      if (filterPrazo === "amanha" && (data.getTime() !== amanha.getTime() || evento.prazo_concluido)) return false;
+      if (filterPrazo === "concluido" && !evento.prazo_concluido) return false;
+    }
+
+    return true;
+  });
+
+  const activeBg = BACKGROUNDS.find(b => b.id === (config?.board_background)) || BACKGROUNDS[0];
+
+  return (
+    <main className={`min-h-screen ${activeBg.id} pt-20 pb-20 transition-all duration-500`}>
+      <div className="max-w-7xl mx-auto px-4 md:px-8">
+        
+        {/* Guest Warning */}
+        {guestToken && guestName && (
+          <div className="mb-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 rounded-xl px-4 py-2 flex items-center justify-between text-xs">
+            <p className="font-light">
+              <span className="font-semibold">Modo Visitante:</span> Você está acessando como <strong className="font-medium">{guestName}</strong> via link de convite.
+            </p>
+            <button 
+              onClick={() => {
+                sessionStorage.removeItem("kanban_guest_name");
+                setGuestName(null);
+                setShowGuestPrompt(true);
+              }}
+              className="text-amber-800 underline font-medium cursor-pointer"
+            >
+              Alterar Nome
+            </button>
+          </div>
+        )}
+
+        {/* Board Header Toolbar */}
+        <div className="glass rounded-2xl p-4 md:p-6 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border border-white/20">
+          <div>
+            <div className="flex items-center gap-3">
+              <Link
+                to={user ? `/casa/${sigla}` : "/inicio"}
+                className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600"
+              >
+                <ArrowLeft size={16} />
+              </Link>
+              <div>
+                <h1 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.45rem", fontWeight: 400, color: "#111418" }}>
+                  Projetos · {sigla}
+                </h1>
+                <p className="text-xs text-muted-foreground/60 font-light mt-0.5">
+                  Gerenciamento dinâmico de projetos e tarefas da casa espírita.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Controls */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setShowConfig(!showConfig)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
+            >
+              <Palette size={14} className="text-violet-600" />
+              Fundo
+            </button>
+            <button
+              onClick={handleCopyInvite}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-xs"
+            >
+              <Share2 size={14} className="text-cyan-600" />
+              Convidar
+            </button>
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+                showArchived 
+                  ? "bg-amber-100 border-amber-300 text-amber-800" 
+                  : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Archive size={14} className="text-amber-600" />
+              {showArchived ? "Ver Ativos" : "Arquivados"}
+            </button>
+          </div>
         </div>
 
-        {/* Board */}
-        {loadingEventos ? (
-          <p className="text-sm text-muted-foreground/50 text-center py-16">Carregando…</p>
+        {/* Background Config Drawer */}
+        {showConfig && (
+          <div className="glass rounded-2xl p-5 mb-6 border border-white/20 animate-fade-in-up">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <Palette size={14} className="text-violet-600" /> Alterar Plano de Fundo
+              </h2>
+              <button onClick={() => setShowConfig(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={15} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {BACKGROUNDS.map(bg => (
+                <button
+                  key={bg.id}
+                  onClick={() => handleChangeBackground(bg.id)}
+                  className={`p-3 rounded-xl border text-xs font-medium transition-all text-center cursor-pointer ${
+                    config?.board_background === bg.id
+                      ? "border-violet-600 ring-2 ring-violet-600/20"
+                      : "border-gray-200 hover:border-gray-300"
+                  } ${bg.id}`}
+                >
+                  {bg.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Filters Panel */}
+        <div className="glass rounded-2xl p-4 mb-6 border border-white/20 flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Buscar cards..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl bg-white/70 border border-gray-200 pl-9 pr-4 py-2 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={filterLabel}
+              onChange={e => setFilterLabel(e.target.value)}
+              className="rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white/70 text-gray-700 focus:outline-none focus:border-cyan-600"
+            >
+              <option value="">Todas Etiquetas</option>
+              {ETIQUETAS.map(tag => (
+                <option key={tag.id} value={tag.id}>{tag.label}</option>
+              ))}
+            </select>
+            <select
+              value={filterMember}
+              onChange={e => setFilterMember(e.target.value)}
+              className="rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white/70 text-gray-700 focus:outline-none focus:border-cyan-600"
+            >
+              <option value="">Todos Responsáveis</option>
+              {membrosCasa.map(m => (
+                <option key={m.id} value={m.nome}>{m.nome}</option>
+              ))}
+            </select>
+            <select
+              value={filterPrazo}
+              onChange={e => setFilterPrazo(e.target.value)}
+              className="rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white/70 text-gray-700 focus:outline-none focus:border-cyan-600"
+            >
+              <option value="">Todos Prazos</option>
+              <option value="atrasado">Atrasados</option>
+              <option value="amanha">Vencendo amanhã</option>
+              <option value="concluido">Concluídos</option>
+            </select>
+            {(searchQuery || filterLabel || filterMember || filterPrazo) && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setFilterLabel("");
+                  setFilterMember("");
+                  setFilterPrazo("");
+                }}
+                className="text-xs text-cyan-600 hover:text-cyan-700 font-semibold cursor-pointer px-1"
+              >
+                Limpar Filtros
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Board lists layout */}
+        {loadingBoard ? (
+          <div className="py-20 text-center text-sm text-gray-500 font-light">Carregando quadro de projetos...</div>
         ) : (
           <DndContext onDragEnd={handleDragEnd}>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {COLUNAS.map((col) => (
-                <KanbanColumn
-                  key={col.status}
-                  status={col.status}
-                  label={col.label}
-                  borda={col.borda}
-                  corHeader={col.corHeader}
-                  bgOver={col.bgOver}
-                  eventos={eventos.filter((e) => e.status === col.status)}
-                  userId={user.id}
-                  expandedId={expandedId}
-                  grupos={grupos}
-                  loadingGrupos={loadingGrupos}
-                  sigla={profile?.sigla_casa ?? ""}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onNewCard={openCreate}
-                  onToggleExpand={handleToggleExpand}
-                  onStatusChange={handleStatusChange}
-                  onRefreshGrupos={fetchGrupos}
+            <div className="flex gap-4 overflow-x-auto pb-4 items-start select-none">
+              
+              {/* Render Lists */}
+              {listas.map(lista => (
+                <KanbanColumnWrapper
+                  key={lista.id}
+                  list={lista}
+                  cards={filteredEventos.filter(e => e.lista_id === lista.id)}
+                  editingListId={editingListId}
+                  editingListName={editingListName}
+                  setEditingListId={setEditingListId}
+                  setEditingListName={setEditingListName}
+                  handleRenameList={handleRenameList}
+                  handleDeleteList={handleDeleteList}
+                  showNewCardForm={showNewCardForm}
+                  setShowNewCardForm={setShowNewCardForm}
+                  newCardTitle={newCardTitle}
+                  setNewCardTitle={setNewCardTitle}
+                  handleCreateCard={handleCreateCard}
+                  onCardClick={setSelectedCard}
+                  membros={membrosCasa}
                 />
               ))}
+
+              {/* Add List Trigger */}
+              {showNewListForm ? (
+                <div className="min-w-[260px] bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                  <input
+                    type="text"
+                    placeholder="Título da lista..."
+                    value={newListName}
+                    onChange={e => setNewListName(e.target.value)}
+                    autoFocus
+                    className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 mb-2"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAddList}
+                      className="flex-1 py-2 text-xs font-semibold bg-[#004a8c] text-white rounded-xl hover:bg-[#003c73] transition-colors cursor-pointer"
+                    >
+                      Adicionar
+                    </button>
+                    <button
+                      onClick={() => setShowNewListForm(false)}
+                      className="p-2 text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 rounded-xl cursor-pointer"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowNewListForm(true)}
+                  className="min-w-[260px] flex items-center justify-center gap-1.5 py-4 border border-dashed border-white/40 rounded-2xl text-xs font-semibold text-gray-700 bg-white/30 hover:bg-white/50 hover:border-white/70 transition-all cursor-pointer shrink-0"
+                >
+                  <Plus size={14} />
+                  Adicionar Lista
+                </button>
+              )}
+
             </div>
           </DndContext>
         )}
+
       </div>
 
-      {/* FormSlide */}
-      {showForm && (
-        <>
-          <div className="fixed inset-0 bg-black/30 z-40" onClick={closeForm} />
-          <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-widest">
-                {editingEvento ? "Editar Card" : "Novo Card"}
+      {/* ── Guest Access Prompt Modal ── */}
+      {showGuestPrompt && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl space-y-4 border border-gray-100 animate-scale-up">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-cyan-50 border border-cyan-100 rounded-full flex items-center justify-center mx-auto text-cyan-600">
+                <Sparkles size={22} />
+              </div>
+              <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.25rem", color: "#111418" }}>
+                Acesso de Convidado
               </h2>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <p className="text-xs text-gray-500 font-light leading-relaxed">
+                Você foi convidado para o quadro. Para colaborar (criar e mover cards, checklists e comentar), informe seu nome abaixo:
+              </p>
+            </div>
+            <input
+              type="text"
+              placeholder="Digite seu nome..."
+              value={tempGuestName}
+              onChange={e => setTempGuestName(e.target.value)}
+              autoFocus
+              className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors"
+            />
+            <button
+              onClick={handleGuestPromptSubmit}
+              className="w-full py-3 rounded-xl text-sm font-semibold uppercase tracking-widest text-white bg-[#004a8c] hover:bg-[#00386b] transition-all cursor-pointer shadow-md"
+            >
+              Começar a colaborar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Card Details Modal (Trello style) ── */}
+      {selectedCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col border border-gray-100 max-h-[90vh] animate-scale-up">
+            
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-100 flex items-start justify-between">
+              <div className="flex-1 pr-4">
+                <input
+                  type="text"
+                  value={selectedCard.titulo}
+                  onChange={e => handleUpdateCard({ ...selectedCard, titulo: e.target.value })}
+                  className="w-full text-base font-semibold text-gray-800 bg-transparent border-b border-transparent hover:border-gray-200 focus:border-cyan-600 focus:outline-none transition-colors"
+                />
+                <p className="text-[10px] text-gray-400 mt-1 font-light flex items-center gap-1">
+                  na lista <strong className="font-semibold">{listas.find(l => l.id === selectedCard.lista_id)?.nome}</strong>
+                  {selectedCard.criador_nome && ` · Criado por ${selectedCard.criador_nome}`}
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedCard(null)}
+                className="p-1 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              >
                 <X size={18} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Título <span className="text-cyan-glow">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={fTitulo}
-                  onChange={(e) => { setFTitulo(e.target.value); setFormError(""); }}
-                  placeholder="Nome do evento"
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
-                />
+
+            {/* Content Body */}
+            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Left Column (Details, Checklists, Comments, Attachments) */}
+              <div className="md:col-span-2 space-y-6">
+                
+                {/* Meta Summary Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {selectedCard.labels && selectedCard.labels.map(lId => {
+                    const tag = ETIQUETAS.find(t => t.id === lId);
+                    if (!tag) return null;
+                    return (
+                      <span key={lId} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${tag.bg}`}>
+                        {tag.label}
+                      </span>
+                    );
+                  })}
+                  {selectedCard.membros_atribuidos && selectedCard.membros_atribuidos.map(mNome => (
+                    <span key={mNome} className="text-[10px] font-medium bg-cyan-50 border border-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <User size={10} />
+                      {mNome}
+                    </span>
+                  ))}
+                  {selectedCard.data && (
+                    <span className={`text-[10px] font-medium border flex items-center gap-1 ${getPrazoInfo(selectedCard.data, selectedCard.prazo_concluido).cor}`}>
+                      <Clock size={10} />
+                      {fmtData(selectedCard.data)} {getPrazoInfo(selectedCard.data, selectedCard.prazo_concluido).texto}
+                    </span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                      <MessageSquare size={13} className="text-gray-400" /> Descrição
+                    </h3>
+                    {!editingDescription && (
+                      <button
+                        onClick={() => setEditingDescription(true)}
+                        className="text-[10px] font-semibold text-cyan-600 hover:underline cursor-pointer"
+                      >
+                        Editar
+                      </button>
+                    )}
+                  </div>
+
+                  {editingDescription ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={tempDescription}
+                        onChange={e => setTempDescription(e.target.value)}
+                        placeholder="Adicione detalhes sobre o projeto..."
+                        rows={3}
+                        className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            handleUpdateCard({ ...selectedCard, descricao: tempDescription.trim() || null });
+                            setEditingDescription(false);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold bg-[#004a8c] text-white rounded-lg hover:bg-[#003c73] cursor-pointer"
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          onClick={() => {
+                            setTempDescription(selectedCard.descricao || "");
+                            setEditingDescription(false);
+                          }}
+                          className="px-3 py-1.5 text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 rounded-lg cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-600 font-light whitespace-pre-wrap bg-gray-50/50 border border-gray-100 rounded-xl p-3 leading-relaxed">
+                      {selectedCard.descricao || <span className="italic text-gray-400">Nenhuma descrição adicionada.</span>}
+                    </p>
+                  )}
+                </div>
+
+                {/* Attachments (Links) */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                    <Paperclip size={13} className="text-gray-400" /> Anexos e Links
+                  </h3>
+                  
+                  {selectedCard.anexos && selectedCard.anexos.length > 0 && (
+                    <div className="space-y-1.5 max-w-md">
+                      {selectedCard.anexos.map((anexo, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 text-xs">
+                          <a 
+                            href={anexo.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="font-medium text-cyan-600 hover:underline truncate max-w-[80%]"
+                          >
+                            {anexo.nome}
+                          </a>
+                          <button
+                            onClick={() => handleDeleteAttachment(idx)}
+                            className="text-red-400 hover:text-red-600 p-0.5 rounded cursor-pointer"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add Attachment */}
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-lg items-end">
+                    <input
+                      type="text"
+                      placeholder="Nome do link..."
+                      value={newAttachmentName}
+                      onChange={e => setNewAttachmentName(e.target.value)}
+                      className="w-full sm:w-1/3 rounded-lg border border-gray-200 px-2.5 py-1.5 text-[11px] focus:outline-none focus:border-cyan-600"
+                    />
+                    <input
+                      type="text"
+                      placeholder="URL (ex: drive.google.com)..."
+                      value={newAttachmentUrl}
+                      onChange={e => setNewAttachmentUrl(e.target.value)}
+                      className="w-full sm:flex-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-[11px] focus:outline-none focus:border-cyan-600"
+                    />
+                    <button
+                      onClick={handleAddAttachment}
+                      disabled={!newAttachmentName.trim() || !newAttachmentUrl.trim()}
+                      className="px-3 py-1.5 text-[11px] font-semibold bg-gray-100 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      Anexar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Checklists (Nested Groups & Tasks) */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                      <CheckSquare size={13} className="text-gray-400" /> Checklists de Trabalho
+                    </h3>
+                    {!showNewChecklistForm && (
+                      <button
+                        onClick={() => setShowNewChecklistForm(true)}
+                        className="text-[10px] font-semibold text-cyan-600 hover:underline cursor-pointer"
+                      >
+                        + Novo Checklist
+                      </button>
+                    )}
+                  </div>
+
+                  {showNewChecklistForm && (
+                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 max-w-sm space-y-2">
+                      <input
+                        type="text"
+                        placeholder="Nome do checklist..."
+                        value={newChecklistName}
+                        onChange={e => setNewChecklistName(e.target.value)}
+                        autoFocus
+                        className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:border-cyan-600"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAddChecklist}
+                          className="px-2.5 py-1 text-xs font-semibold bg-cyan-600 text-white rounded hover:bg-cyan-700 cursor-pointer"
+                        >
+                          Criar
+                        </button>
+                        <button
+                          onClick={() => setShowNewChecklistForm(false)}
+                          className="px-2.5 py-1 text-xs font-semibold border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {loadingCardDetails ? (
+                    <p className="text-[10px] text-gray-400">Carregando checklists...</p>
+                  ) : gruposCard.length === 0 ? (
+                    <p className="text-[10px] text-gray-400 italic">Nenhum checklist criado para este projeto.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {gruposCard.map(grupo => {
+                        const total = grupo.kanban_tarefas.length;
+                        const concluídas = grupo.kanban_tarefas.filter(t => t.feito).length;
+                        const porcentagem = total > 0 ? Math.round((concluídas / total) * 100) : 0;
+
+                        return (
+                          <div key={grupo.id} className="bg-white border border-gray-150 rounded-xl p-4 shadow-xs space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-xs font-semibold text-gray-700">{grupo.nome}</h4>
+                              <button
+                                onClick={() => handleDeleteChecklist(grupo.id, grupo.nome)}
+                                className="text-red-400 hover:text-red-500 p-0.5 rounded cursor-pointer"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            </div>
+
+                            {/* Progress bar */}
+                            {total > 0 && (
+                              <div className="flex items-center gap-3">
+                                <span className="text-[9px] font-bold text-gray-500 w-8">{porcentagem}%</span>
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-emerald-500 transition-all duration-300"
+                                    style={{ width: `${porcentagem}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Task List */}
+                            {grupo.kanban_tarefas.length > 0 && (
+                              <div className="space-y-2 border-t border-gray-50 pt-2">
+                                {grupo.kanban_tarefas.map(tarefa => (
+                                  <div key={tarefa.id} className="flex items-start justify-between gap-2 group/task text-xs">
+                                    <label className="flex items-start gap-2 flex-1 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={tarefa.feito}
+                                        onChange={e => handleToggleChecklistItem(tarefa.id, e.target.checked, grupo.id)}
+                                        className="mt-0.5 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                                      />
+                                      <span className={`${tarefa.feito ? "line-through text-gray-400" : "text-gray-600"}`}>
+                                        {tarefa.titulo}
+                                      </span>
+                                    </label>
+                                    <button
+                                      onClick={() => handleDeleteChecklistItem(tarefa.id, grupo.id)}
+                                      className="opacity-0 group-hover/task:opacity-100 text-red-300 hover:text-red-500 transition-opacity p-0.5 cursor-pointer"
+                                    >
+                                      <X size={10} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Add checklist item */}
+                            {showNewChecklistItemForm === grupo.id ? (
+                              <div className="space-y-2 pt-2 border-t border-gray-50">
+                                <input
+                                  type="text"
+                                  placeholder="Nome da tarefa..."
+                                  value={newChecklistItemTitle}
+                                  onChange={e => setNewChecklistItemTitle(e.target.value)}
+                                  autoFocus
+                                  className="w-full rounded-lg border border-gray-200 px-2 py-1 text-xs focus:outline-none focus:border-cyan-600"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleAddChecklistItem(grupo.id)}
+                                    className="px-2 py-1 text-[10px] font-semibold bg-cyan-600 text-white rounded hover:bg-cyan-700 cursor-pointer"
+                                  >
+                                    Adicionar
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setNewChecklistItemTitle("");
+                                      setShowNewChecklistItemForm(null);
+                                    }}
+                                    className="px-2 py-1 text-[10px] font-semibold border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setShowNewChecklistItemForm(grupo.id)}
+                                className="text-[10px] font-semibold text-cyan-600 hover:text-cyan-700 flex items-center gap-1 cursor-pointer pt-1"
+                              >
+                                <Plus size={10} /> Adicionar Item
+                              </button>
+                            )}
+
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Comments & Activities timeline */}
+                <div className="space-y-4 border-t border-gray-100 pt-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                    <MessageSquare size={13} className="text-gray-400" /> Comentários
+                  </h3>
+
+                  {/* Add comment */}
+                  <div className="flex items-start gap-3 max-w-xl">
+                    <div className="w-8 h-8 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center shrink-0 text-cyan-600 text-xs font-bold uppercase">
+                      {user ? (profile?.nome?.slice(0, 2) || "ME") : (guestName?.slice(0, 2) || "VI")}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <textarea
+                        value={newCommentText}
+                        onChange={e => setNewCommentText(e.target.value)}
+                        placeholder="Escreva um comentário..."
+                        rows={2}
+                        className="w-full rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors resize-none"
+                      />
+                      <button
+                        onClick={handleAddComment}
+                        disabled={!newCommentText.trim()}
+                        className="px-3 py-1.5 text-xs font-semibold bg-[#004a8c] text-white rounded-lg hover:bg-[#003c73] transition-colors disabled:opacity-45 cursor-pointer"
+                      >
+                        Comentar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Comments Timeline */}
+                  {loadingCardDetails ? (
+                    <p className="text-[10px] text-gray-400">Carregando comentários...</p>
+                  ) : (
+                    <div className="space-y-3 pt-2 max-w-xl">
+                      {comentariosCard.map(comment => {
+                        const isMyComment = user ? (comment.user_id === user.id) : (comment.autor_nome === guestName);
+                        
+                        return (
+                          <div key={comment.id} className="flex items-start gap-3 bg-gray-50/45 border border-gray-100 rounded-2xl p-3 animate-fade-in-up">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center shrink-0 text-gray-600 text-[10px] font-bold uppercase">
+                              {comment.autor_nome?.slice(0, 2)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-gray-700">{comment.autor_nome}</span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px] text-gray-400">
+                                    {new Date(comment.created_at).toLocaleString("pt-BR", {
+                                      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"
+                                    })}
+                                  </span>
+                                  {isMyComment && (
+                                    <button 
+                                      onClick={() => handleDeleteComment(comment.id)}
+                                      className="text-red-300 hover:text-red-500 p-0.5 rounded cursor-pointer"
+                                    >
+                                      <X size={10} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-600 font-light mt-1 whitespace-pre-wrap">{comment.comentario}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                </div>
+
               </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Data
-                </label>
-                <input
-                  type="date"
-                  value={fData}
-                  onChange={(e) => setFData(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground focus:outline-none focus:border-cyan-glow/40 transition-colors"
-                />
+
+              {/* Right Column (Settings and Actions) */}
+              <div className="space-y-4">
+                
+                {/* Labels Selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAddLabelMenu(!showAddLabelMenu)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer bg-white"
+                  >
+                    <span className="flex items-center gap-1.5"><Tag size={13} className="text-gray-400" /> Etiquetas</span>
+                    <ChevronDown size={12} className="text-gray-400" />
+                  </button>
+                  
+                  {showAddLabelMenu && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl p-2.5 shadow-lg z-10 space-y-1">
+                      {ETIQUETAS.map(tag => {
+                        const active = selectedCard.labels && selectedCard.labels.includes(tag.id);
+                        return (
+                          <button
+                            key={tag.id}
+                            onClick={() => {
+                              const labels = selectedCard.labels || [];
+                              const newLabels = active 
+                                ? labels.filter(id => id !== tag.id) 
+                                : [...labels, tag.id];
+                              handleUpdateCard({ ...selectedCard, labels: newLabels });
+                            }}
+                            className={`w-full flex items-center justify-between p-2 rounded-lg text-xs font-medium cursor-pointer ${tag.bg}`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${tag.dot}`}></span>
+                              {tag.label}
+                            </span>
+                            {active && <Check size={12} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Member Selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAddMemberMenu(!showAddMemberMenu)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer bg-white"
+                  >
+                    <span className="flex items-center gap-1.5"><Users size={13} className="text-gray-400" /> Membros</span>
+                    <ChevronDown size={12} className="text-gray-400" />
+                  </button>
+                  
+                  {showAddMemberMenu && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl p-2 shadow-lg z-10 max-h-48 overflow-y-auto space-y-0.5">
+                      {membrosCasa.map(m => {
+                        const active = selectedCard.membros_atribuidos && selectedCard.membros_atribuidos.includes(m.nome);
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => {
+                              const membros = selectedCard.membros_atribuidos || [];
+                              const newMembros = active 
+                                ? membros.filter(n => n !== m.nome) 
+                                : [...membros, m.nome];
+                              
+                              // Legacy compatibility for single responsavel string
+                              const mainResp = newMembros.length > 0 ? newMembros[0] : null;
+                              
+                              handleUpdateCard({ 
+                                ...selectedCard, 
+                                membros_atribuidos: newMembros,
+                                responsavel: mainResp
+                              });
+                            }}
+                            className="w-full flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg text-xs text-left cursor-pointer text-gray-700"
+                          >
+                            {m.nome}
+                            {active && <Check size={12} className="text-cyan-600" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Date Picker & Completion */}
+                <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider font-bold text-gray-500 flex items-center gap-1">
+                      <Calendar size={11} /> Prazo Estimado
+                    </label>
+                    <input
+                      type="date"
+                      value={selectedCard.data || ""}
+                      onChange={e => handleUpdateCard({ ...selectedCard, data: e.target.value || null })}
+                      className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-cyan-600 bg-white text-gray-700"
+                    />
+                  </div>
+                  
+                  {selectedCard.data && (
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={selectedCard.prazo_concluido}
+                        onChange={e => handleUpdateCard({ ...selectedCard, prazo_concluido: e.target.checked })}
+                        className="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                      />
+                      Marcar data como concluída
+                    </label>
+                  )}
+                </div>
+
+                {/* Move Card Option */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowMoveCardMenu(!showMoveCardMenu)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer bg-white"
+                  >
+                    <span className="flex items-center gap-1.5"><ChevronRight size={13} className="text-gray-400" /> Mover para Lista</span>
+                    <ChevronDown size={12} className="text-gray-400" />
+                  </button>
+                  
+                  {showMoveCardMenu && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl p-2 shadow-lg z-10 space-y-0.5">
+                      {listas.map(l => {
+                        const active = selectedCard.lista_id === l.id;
+                        return (
+                          <button
+                            key={l.id}
+                            disabled={active}
+                            onClick={() => {
+                              handleUpdateCard({ ...selectedCard, lista_id: l.id });
+                              setShowMoveCardMenu(false);
+                              toast.success(`Movido para ${l.nome}`);
+                            }}
+                            className={`w-full flex items-center justify-between p-2 rounded-lg text-xs text-left cursor-pointer ${
+                              active ? "text-cyan-600 font-semibold bg-cyan-50" : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {l.nome}
+                            {active && <Check size={12} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Archiving & Delete Actions */}
+                <div className="pt-4 border-t border-gray-150 space-y-2">
+                  <button
+                    onClick={() => {
+                      const updated = { ...selectedCard, arquivado: !selectedCard.arquivado };
+                      handleUpdateCard(updated);
+                      setSelectedCard(null);
+                      toast.success(updated.arquivado ? "Card arquivado." : "Card restaurado.");
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-all cursor-pointer bg-white"
+                  >
+                    <Archive size={14} className="text-amber-600" />
+                    {selectedCard.arquivado ? "Desarquivar Card" : "Arquivar Card"}
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDeleteCard(selectedCard.id)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition-all cursor-pointer bg-white"
+                  >
+                    <Trash2 size={14} className="text-red-500" />
+                    Excluir Card
+                  </button>
+                </div>
+
               </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Responsável
-                </label>
-                <input
-                  type="text"
-                  value={fResponsavel}
-                  onChange={(e) => setFResponsavel(e.target.value)}
-                  placeholder="Nome do responsável"
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                  Descrição
-                </label>
-                <textarea
-                  value={fDescricao}
-                  onChange={(e) => setFDescricao(e.target.value)}
-                  placeholder="Detalhes do evento…"
-                  rows={4}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors resize-none"
-                />
-              </div>
-              {formError && <p className="text-xs text-red-400">{formError}</p>}
+
             </div>
-            <div className="px-6 py-4 border-t border-gray-200">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300"
-              >
-                {saving ? "Salvando…" : editingEvento ? "Salvar Alterações" : "Criar Card"}
+
+          </div>
+        </div>
+      )}
+
+      {/* Archived Cards List Modal */}
+      {showArchived && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 max-h-[80vh] animate-scale-up">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <Archive size={14} className="text-amber-600" /> Cards Arquivados
+              </h2>
+              <button onClick={() => setShowArchived(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                <X size={15} />
               </button>
             </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {filteredEventos.length === 0 ? (
+                <p className="text-xs text-gray-400 text-center py-8 italic">Nenhum card arquivado nesta busca.</p>
+              ) : (
+                filteredEventos.map(evento => (
+                  <div key={evento.id} className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                    <span className="text-xs font-medium text-gray-700 truncate max-w-[60%]">{evento.titulo}</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          handleUpdateCard({ ...evento, arquivado: false });
+                          toast.success("Card restaurado.");
+                        }}
+                        title="Restaurar Card"
+                        className="p-1 text-cyan-600 hover:bg-cyan-50 rounded-lg text-xs flex items-center gap-1 font-semibold cursor-pointer"
+                      >
+                        <Undo size={12} /> Restaurar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCard(evento.id)}
+                        title="Excluir Definitivamente"
+                        className="p-1 text-red-500 hover:bg-red-50 rounded-lg text-xs cursor-pointer"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </>
+        </div>
       )}
+
     </main>
   );
 }
 
-// ── KanbanColumn ────────────────────────────────────────────────────────────
-
-interface KanbanColumnProps {
-  status: Status;
-  label: string;
-  borda: string;
-  corHeader: string;
-  bgOver: string;
-  eventos: KanbanEvento[];
-  userId: string;
-  expandedId: string | null;
-  grupos: Record<string, KanbanGrupo[]>;
-  loadingGrupos: Record<string, boolean>;
-  sigla: string;
-  onEdit: (evento: KanbanEvento) => void;
-  onDelete: (id: string) => void;
-  onNewCard: () => void;
-  onToggleExpand: (id: string) => void;
-  onStatusChange: (evento: KanbanEvento, direction: "prev" | "next") => void;
-  onRefreshGrupos: (eventoId: string, sigla: string) => void;
+// ── Kanban Column Wrapper (useDroppable) ──
+interface ColumnProps {
+  list: KanbanLista;
+  cards: KanbanEvento[];
+  editingListId: string | null;
+  editingListName: string;
+  setEditingListId: (id: string | null) => void;
+  setEditingListName: (name: string) => void;
+  handleRenameList: (id: string) => void;
+  handleDeleteList: (id: string, name: string) => void;
+  showNewCardForm: string | null;
+  setShowNewCardForm: (id: string | null) => void;
+  newCardTitle: string;
+  setNewCardTitle: (title: string) => void;
+  handleCreateCard: (listId: string) => void;
+  onCardClick: (card: KanbanEvento) => void;
+  membros: { id: string; nome: string }[];
 }
 
-function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, expandedId, grupos, loadingGrupos, sigla, onEdit, onDelete, onNewCard, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanColumnProps) {
-  const { isOver, setNodeRef } = useDroppable({ id: status });
+function KanbanColumnWrapper({ 
+  list, cards, editingListId, editingListName, setEditingListId, setEditingListName,
+  handleRenameList, handleDeleteList, showNewCardForm, setShowNewCardForm,
+  newCardTitle, setNewCardTitle, handleCreateCard, onCardClick, membros
+}: ColumnProps) {
+  
+  const { isOver, setNodeRef } = useDroppable({ id: list.id });
+  const isEditing = editingListId === list.id;
 
   return (
     <div
       ref={setNodeRef}
-      className={`min-w-[280px] flex-shrink-0 rounded-2xl border ${borda} p-5 transition-all duration-300 ${isOver ? bgOver : ""}`}
-      style={{ background: "#f7f8fc" }}
+      className={`min-w-[272px] max-w-[272px] flex-shrink-0 rounded-2xl border border-gray-150 p-4 transition-all duration-300 ${
+        isOver ? "bg-white/90 border-cyan-300 shadow-md" : "bg-white/60 border-white/20"
+      } glass shrink-0`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-xs font-semibold uppercase tracking-widest ${corHeader}`}>{label}</h3>
-        <span className="text-xs text-muted-foreground/50 bg-white/80 rounded-full px-2 py-0.5">
-          {eventos.length}
-        </span>
-      </div>
-      <div className="space-y-3">
-        {eventos.map((evento) => (
-          <KanbanCard
-            key={evento.id}
-            evento={evento}
-            userId={userId}
-            expanded={expandedId === evento.id}
-            gruposData={grupos[evento.id] ?? []}
-            loadingGrupos={loadingGrupos[evento.id] ?? false}
-            sigla={sigla}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleExpand={() => onToggleExpand(evento.id)}
-            onStatusChange={(dir) => onStatusChange(evento, dir)}
-            onRefreshGrupos={() => onRefreshGrupos(evento.id, sigla)}
-          />
-        ))}
-      </div>
-      <button
-        onClick={onNewCard}
-        className="mt-3 w-full flex items-center gap-1 py-2 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors justify-center"
-      >
-        <Plus size={12} />
-        Novo card
-      </button>
-    </div>
-  );
-}
-
-// ── KanbanCard ──────────────────────────────────────────────────────────────
-
-interface KanbanCardProps {
-  evento: KanbanEvento;
-  userId: string;
-  expanded: boolean;
-  gruposData: KanbanGrupo[];
-  loadingGrupos: boolean;
-  sigla: string;
-  onEdit: (evento: KanbanEvento) => void;
-  onDelete: (id: string) => void;
-  onToggleExpand: () => void;
-  onStatusChange: (direction: "prev" | "next") => void;
-  onRefreshGrupos: () => void;
-}
-
-function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla, onEdit, onDelete, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: evento.id });
-
-  const isCriador = evento.criador_id === userId;
-  const statusIdx = COLUNAS.findIndex((c) => c.status === evento.status);
-  const totalTarefas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.length, 0);
-  const totalFeitas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.filter((t) => t.feito).length, 0);
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
-        background: "#ffffff",
-        border: expanded ? "1px solid rgba(0,74,140,.25)" : "1px solid rgba(0,20,70,.08)",
-        borderRadius: 16,
-        boxShadow: expanded
-          ? "0 4px 16px rgba(0,20,70,.07), 0 8px 24px rgba(0,20,70,.06)"
-          : "0 1px 4px rgba(0,20,70,.04), 0 3px 10px rgba(0,20,70,.04)",
-        transition: "box-shadow .25s, border-color .25s",
-      }}
-    >
-      {/* Card header com drag handle e setas de status */}
-      <div className="p-4">
-        <div className="flex items-start gap-2">
-          {/* Drag handle */}
-          <div
-            {...listeners}
-            {...attributes}
-            className="cursor-grab active:cursor-grabbing select-none pt-0.5 shrink-0 text-gray-300 hover:text-gray-400"
-          >
-            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-              <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
-              <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
-              <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
-            </svg>
-          </div>
-
-          {/* Título clicável para expandir */}
-          <button
-            onClick={onToggleExpand}
-            className="flex-1 text-left"
-          >
-            <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
-          </button>
-
-          {/* Setas de status */}
-          <div className="flex items-center gap-0.5 shrink-0">
+      
+      {/* List Header */}
+      <div className="flex items-center justify-between mb-3 gap-2">
+        {isEditing ? (
+          <div className="flex-1 flex gap-1">
+            <input
+              type="text"
+              value={editingListName}
+              onChange={e => setEditingListName(e.target.value)}
+              autoFocus
+              className="flex-1 rounded-lg border border-gray-200 px-2 py-0.5 text-xs text-gray-800 focus:outline-none focus:border-cyan-600 bg-white"
+            />
             <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
-              disabled={statusIdx <= 0}
-              aria-label="Status anterior"
-              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
+              onClick={() => handleRenameList(list.id)}
+              className="p-1 bg-cyan-600 text-white rounded hover:bg-cyan-700 cursor-pointer"
             >
-              <ChevronLeft size={13} />
+              <Check size={12} />
             </button>
-            <span className="text-xs text-muted-foreground/50 px-1 select-none whitespace-nowrap">
-              {COLUNAS[statusIdx]?.label}
+            <button
+              onClick={() => setEditingListId(null)}
+              className="p-1 border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 
+              onDoubleClick={() => {
+                setEditingListId(list.id);
+                setEditingListName(list.nome);
+              }}
+              className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate cursor-pointer hover:text-gray-900 flex-1"
+            >
+              {list.nome}
+            </h3>
+            <span className="text-[10px] font-bold text-gray-400 bg-white border border-gray-100/50 rounded-full px-2 py-0.5 shrink-0 select-none">
+              {cards.length}
             </span>
-            <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
-              disabled={statusIdx === -1 || statusIdx === COLUNAS.length - 1}
-              aria-label="Próximo status"
-              className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
-            >
-              <ChevronRight size={13} />
-            </button>
-          </div>
-        </div>
-
-        {/* Meta: data e responsável */}
-        <div className="mt-2 pl-4">
-          {evento.data && (
-            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
-              <Calendar size={10} />
-              {fmtData(evento.data)}
-            </p>
-          )}
-          {evento.responsavel && (
-            <p className="text-xs text-muted-foreground/60 flex items-center gap-1 mb-1">
-              <User size={10} />
-              {evento.responsavel}
-            </p>
-          )}
-          {evento.descricao && !expanded && (
-            <p className="text-xs text-muted-foreground/50 mt-1 line-clamp-2 leading-relaxed">
-              {evento.descricao}
-            </p>
-          )}
-        </div>
-
-        {/* Resumo de grupos + botão expandir */}
-        <div className="mt-2 pl-4 flex items-center justify-between">
-          <button
-            onClick={onToggleExpand}
-            className="flex items-center gap-1 text-xs text-[#004a8c]/60 hover:text-[#004a8c] transition-colors"
-          >
-            {expanded
-              ? <ChevronUp size={11} />
-              : <ChevronDown size={11} />
-            }
-            {gruposData.length > 0
-              ? `${gruposData.length} grupo${gruposData.length !== 1 ? "s" : ""} · ${totalTarefas} tarefa${totalTarefas !== 1 ? "s" : ""} (${totalFeitas} feita${totalFeitas !== 1 ? "s" : ""})`
-              : "Grupos de trabalho"
-            }
-          </button>
-
-          {/* Editar / excluir (só criador) */}
-          {isCriador && (
-            <div className="flex gap-1">
+            <div className="flex gap-0.5 shrink-0 opacity-40 hover:opacity-100 transition-opacity">
               <button
-                onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
-                className="p-1 rounded text-muted-foreground/30 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                onClick={() => {
+                  setEditingListId(list.id);
+                  setEditingListName(list.nome);
+                }}
+                className="p-1 hover:bg-gray-200/50 rounded text-gray-500 cursor-pointer"
               >
                 <Pencil size={11} />
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
-                className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
+                onClick={() => handleDeleteList(list.id, list.nome)}
+                className="p-1 hover:bg-red-50 rounded text-red-400 hover:text-red-500 cursor-pointer"
               >
                 <Trash2 size={11} />
               </button>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Painel de grupos (expandido) */}
-      {expanded && (
-        <GruposPanel
-          eventoId={evento.id}
-          sigla={sigla}
-          grupos={gruposData}
-          loading={loadingGrupos}
-          onRefresh={onRefreshGrupos}
-        />
-      )}
-    </div>
-  );
-}
-
-// ── GruposPanel ─────────────────────────────────────────────────────────────
-
-interface GruposPanelProps {
-  eventoId: string;
-  sigla: string;
-  grupos: KanbanGrupo[];
-  loading: boolean;
-  onRefresh: () => void;
-}
-
-function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPanelProps) {
-  const [showFormGrupo, setShowFormGrupo] = useState(false);
-
-  return (
-    <div className="border-t border-cyan-100 bg-cyan-50/30 px-4 pb-4 pt-3 rounded-b-xl">
-      {loading ? (
-        <p className="text-xs text-muted-foreground/40 text-center py-3">Carregando grupos…</p>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {grupos.map((grupo) => (
-              <GrupoItem
-                key={grupo.id}
-                grupo={grupo}
-                sigla={sigla}
-                onRefresh={onRefresh}
-              />
-            ))}
-          </div>
-
-          {showFormGrupo ? (
-            <FormNovoGrupo
-              eventoId={eventoId}
-              sigla={sigla}
-              nextOrdem={grupos.length}
-              onSaved={() => { setShowFormGrupo(false); onRefresh(); }}
-              onCancel={() => setShowFormGrupo(false)}
-            />
-          ) : (
-            <button
-              onClick={() => setShowFormGrupo(true)}
-              className="mt-3 w-full flex items-center justify-center gap-1 py-2 text-xs text-cyan-600/60 hover:text-cyan-600 border border-dashed border-cyan-200 rounded-lg hover:border-cyan-300 transition-colors"
-            >
-              <Plus size={11} />
-              Novo Grupo de Trabalho
-            </button>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-// ── GrupoItem ────────────────────────────────────────────────────────────────
-
-interface GrupoItemProps {
-  grupo: KanbanGrupo;
-  sigla: string;
-  onRefresh: () => void;
-}
-
-function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
-  const [editing, setEditing] = useState(false);
-  const [showFormTarefa, setShowFormTarefa] = useState(false);
-  const [eName, setEName] = useState(grupo.nome);
-  const [eResp, setEResp] = useState(grupo.responsavel ?? "");
-  const [eMembros, setEMembros] = useState(grupo.membros.join(", "));
-  const [saving, setSaving] = useState(false);
-
-  const handleSaveGrupo = async () => {
-    if (!eName.trim()) return;
-    setSaving(true);
-    const { error } = await supabase.from("kanban_grupos").update({
-      nome: eName.trim(),
-      responsavel: eResp.trim() || null,
-      membros: eMembros.split(",").map((m) => m.trim()).filter(Boolean),
-    }).eq("id", grupo.id);
-    setSaving(false);
-    if (error) {
-      console.error("Erro ao salvar grupo:", error);
-      return;
-    }
-    setEditing(false);
-    onRefresh();
-  };
-
-  const handleDeleteGrupo = async () => {
-    if (!confirm(`Excluir o grupo "${grupo.nome}" e todas as suas tarefas?`)) return;
-    await supabase.from("kanban_grupos").delete().eq("id", grupo.id);
-    onRefresh();
-  };
-
-  const completadas = grupo.kanban_tarefas.filter((t) => t.feito).length;
-
-  return (
-    <div className="bg-white border border-cyan-100 rounded-xl overflow-hidden">
-      {/* Header do grupo */}
-      {editing ? (
-        <div className="p-3 space-y-2">
-          <input
-            value={eName}
-            onChange={(e) => setEName(e.target.value)}
-            placeholder="Nome do grupo *"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-          />
-          <input
-            value={eResp}
-            onChange={(e) => setEResp(e.target.value)}
-            placeholder="Responsável"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-          />
-          <input
-            value={eMembros}
-            onChange={(e) => setEMembros(e.target.value)}
-            placeholder="Membros (separados por vírgula)"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={handleSaveGrupo}
-              disabled={saving || !eName.trim()}
-              className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
-            >
-              {saving ? "Salvando…" : "Salvar"}
-            </button>
-            <button
-              onClick={() => setEditing(false)}
-              className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="px-3 py-2.5 flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-cyan-700 leading-snug">{grupo.nome}</p>
-            {(grupo.responsavel || grupo.membros.length > 0) && (
-              <p className="text-xs text-muted-foreground/50 mt-0.5 flex items-center gap-1">
-                <Users size={9} />
-                {[grupo.responsavel, ...grupo.membros].filter(Boolean).join(" · ")}
-              </p>
-            )}
-            {grupo.kanban_tarefas.length > 0 && (
-              <p className="text-xs text-muted-foreground/40 mt-0.5">
-                {completadas}/{grupo.kanban_tarefas.length} tarefa{grupo.kanban_tarefas.length !== 1 ? "s" : ""}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-1 shrink-0">
-            <button
-              onClick={() => setEditing(true)}
-              aria-label="Editar grupo"
-              className="p-1 rounded text-muted-foreground/30 hover:text-gray-500 hover:bg-gray-50 transition-colors"
-            >
-              <Pencil size={10} />
-            </button>
-            <button
-              onClick={handleDeleteGrupo}
-              aria-label="Excluir grupo"
-              className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
-            >
-              <Trash2 size={10} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Tarefas */}
-      {grupo.kanban_tarefas.length > 0 && (
-        <div className="border-t border-gray-50 divide-y divide-gray-50">
-          {grupo.kanban_tarefas.map((tarefa) => (
-            <TarefaItem
-              key={tarefa.id}
-              tarefa={tarefa}
-              onRefresh={onRefresh}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Adicionar tarefa */}
-      <div className="border-t border-gray-50 px-3 py-2">
-        {showFormTarefa ? (
-          <FormNovaTarefa
-            grupoId={grupo.id}
-            sigla={sigla}
-            nextOrdem={grupo.kanban_tarefas.length}
-            onSaved={() => { setShowFormTarefa(false); onRefresh(); }}
-            onCancel={() => setShowFormTarefa(false)}
-          />
-        ) : (
-          <button
-            onClick={() => setShowFormTarefa(true)}
-            className="text-xs text-muted-foreground/40 hover:text-cyan-600 transition-colors flex items-center gap-1"
-          >
-            <Plus size={10} />
-            Adicionar tarefa
-          </button>
+          </>
         )}
       </div>
+
+      {/* Cards List container */}
+      <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+        {cards.map(card => (
+          <KanbanCardWrapper
+            key={card.id}
+            card={card}
+            onCardClick={onCardClick}
+          />
+        ))}
+      </div>
+
+      {/* Add Card form */}
+      {showNewCardForm === list.id ? (
+        <div className="mt-3 bg-white border border-gray-100 rounded-xl p-3 shadow-xs">
+          <input
+            type="text"
+            placeholder="Título do card..."
+            value={newCardTitle}
+            onChange={e => setNewCardTitle(e.target.value)}
+            autoFocus
+            className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 mb-2"
+          />
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => handleCreateCard(list.id)}
+              className="flex-1 py-1 text-xs font-semibold bg-[#004a8c] text-white rounded-lg hover:bg-[#003c73] transition-colors cursor-pointer"
+            >
+              Adicionar
+            </button>
+            <button
+              onClick={() => {
+                setNewCardTitle("");
+                setShowNewCardForm(null);
+              }}
+              className="p-1 text-xs border border-gray-200 text-gray-500 hover:bg-gray-50 rounded-lg cursor-pointer"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setShowNewCardForm(list.id)}
+          className="mt-3 w-full flex items-center gap-1.5 py-1.5 text-[10px] text-gray-500 hover:text-[#004a8c] transition-colors justify-center font-bold border border-dashed border-gray-200 hover:border-gray-300 rounded-xl bg-white/50 cursor-pointer"
+        >
+          <Plus size={12} />
+          Criar Card
+        </button>
+      )}
+
     </div>
   );
 }
 
-// ── TarefaItem ───────────────────────────────────────────────────────────────
-
-interface TarefaItemProps {
-  tarefa: KanbanTarefa;
-  onRefresh: () => void;
+// ── Kanban Card Wrapper (useDraggable) ──
+interface CardProps {
+  card: KanbanEvento;
+  onCardClick: (card: KanbanEvento) => void;
 }
 
-function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
-  const [toggling, setToggling] = useState(false);
-
-  const handleToggle = async () => {
-    setToggling(true);
-    await supabase.from("kanban_tarefas").update({ feito: !tarefa.feito }).eq("id", tarefa.id);
-    setToggling(false);
-    onRefresh();
-  };
-
-  const handleDelete = async () => {
-    if (!confirm("Excluir esta tarefa?")) return;
-    await supabase.from("kanban_tarefas").delete().eq("id", tarefa.id);
-    onRefresh();
-  };
+function KanbanCardWrapper({ card, onCardClick }: CardProps) {
+  
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: card.id });
 
   return (
-    <div className="px-3 py-2 flex items-start gap-2 group">
-      {/* Checkbox */}
-      <button
-        onClick={handleToggle}
-        disabled={toggling}
-        aria-label={tarefa.feito ? "Marcar como pendente" : "Marcar como feita"}
-        className={`shrink-0 mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-          tarefa.feito
-            ? "bg-emerald-500 border-emerald-500"
-            : "border-gray-300 hover:border-emerald-400"
-        }`}
+    <div
+      ref={setNodeRef}
+      onClick={() => onCardClick(card)}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.35 : 1,
+        background: "#ffffff",
+        border: "1px solid rgba(0,20,70,.07)",
+        borderRadius: 14,
+        boxShadow: "0 1px 3px rgba(0,20,70,.015), 0 2px 5px rgba(0,20,70,.02)",
+        transition: "box-shadow .2s, border-color .2s",
+      }}
+      className="p-3.5 hover:shadow-md hover:border-cyan-100 transition-all cursor-pointer relative group"
+    >
+      
+      {/* Drag handle overlay */}
+      <div 
+        {...listeners}
+        {...attributes}
+        className="absolute right-2 top-2 p-1 text-gray-300 hover:text-gray-500 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        onClick={e => e.stopPropagation()}
       >
-        {tarefa.feito && <Check size={9} className="text-white" strokeWidth={3} />}
-      </button>
+        <svg width="6" height="12" viewBox="0 0 10 16" fill="currentColor">
+          <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+          <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
+          <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
+        </svg>
+      </div>
 
-      {/* Conteúdo */}
-      <div className="flex-1 min-w-0">
-        <p className={`text-xs leading-snug ${tarefa.feito ? "line-through text-muted-foreground/40" : "text-gray-700"}`}>
-          {tarefa.titulo}
+      {/* Labels row */}
+      {card.labels && card.labels.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2 pr-6">
+          {card.labels.map(lId => {
+            const tag = ETIQUETAS.find(t => t.id === lId);
+            if (!tag) return null;
+            return (
+              <span key={lId} className={`w-3.5 h-1.5 rounded-full ${tag.dot}`} title={tag.label}></span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Card title */}
+      <p className="text-xs font-semibold text-gray-800 leading-snug pr-4">{card.titulo}</p>
+
+      {/* Description preview */}
+      {card.descricao && (
+        <p className="text-[10px] text-gray-400 font-light mt-1.5 line-clamp-2 leading-relaxed">
+          {card.descricao}
         </p>
-        {(tarefa.responsavel || tarefa.prazo) && (
-          <p className="text-xs mt-0.5 flex items-center gap-2">
-            {tarefa.responsavel && (
-              <span className="text-muted-foreground/50">{tarefa.responsavel}</span>
+      )}
+
+      {/* Badges footer */}
+      {(card.data || card.responsavel || (card.anexos && card.anexos.length > 0)) && (
+        <div className="mt-2.5 pt-2 border-t border-gray-50 flex items-center justify-between flex-wrap gap-1.5 text-[9px] text-gray-400 font-light">
+          
+          <div className="flex items-center gap-1.5">
+            {card.data && (
+              <span className={`flex items-center gap-0.5 ${getPrazoInfo(card.data, card.prazo_concluido).cor.split(" ")[0]}`}>
+                {card.prazo_concluido ? <CheckCircle2 size={10} className="text-emerald-500" /> : <Clock size={10} />}
+                {fmtData(card.data)}
+              </span>
             )}
-            {tarefa.prazo && (
-              <span className={corPrazo(tarefa.prazo)}>{fmtData(tarefa.prazo)}</span>
+            {card.anexos && card.anexos.length > 0 && (
+              <span className="flex items-center gap-0.5">
+                <Paperclip size={9} />
+                {card.anexos.length}
+              </span>
             )}
-          </p>
-        )}
-      </div>
+          </div>
 
-      {/* Excluir */}
-      <button
-        onClick={handleDelete}
-        aria-label="Excluir tarefa"
-        className="shrink-0 opacity-0 group-hover:opacity-100 p-0.5 rounded text-red-300 hover:text-red-500 transition-all"
-      >
-        <X size={10} />
-      </button>
-    </div>
-  );
-}
+          {card.responsavel && (
+            <span className="flex items-center gap-0.5 font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-sm">
+              <User size={8} />
+              {card.responsavel}
+            </span>
+          )}
 
-// ── FormNovoGrupo ────────────────────────────────────────────────────────────
+        </div>
+      )}
 
-interface FormNovoGrupoProps {
-  eventoId: string;
-  sigla: string;
-  nextOrdem: number;
-  onSaved: () => void;
-  onCancel: () => void;
-}
-
-function FormNovoGrupo({ eventoId, sigla, nextOrdem, onSaved, onCancel }: FormNovoGrupoProps) {
-  const [nome, setNome] = useState("");
-  const [resp, setResp] = useState("");
-  const [membros, setMembros] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    if (!nome.trim()) return;
-    setSaving(true);
-    const { error } = await supabase.from("kanban_grupos").insert({
-      evento_id: eventoId,
-      sigla_casa: sigla,
-      nome: nome.trim(),
-      responsavel: resp.trim() || null,
-      membros: membros.split(",").map((m) => m.trim()).filter(Boolean),
-      ordem: nextOrdem,
-    });
-    setSaving(false);
-    if (!error) onSaved();
-  };
-
-  return (
-    <div className="mt-3 space-y-2 p-3 bg-white border border-cyan-100 rounded-xl">
-      <input
-        value={nome}
-        onChange={(e) => setNome(e.target.value)}
-        placeholder="Nome do grupo *"
-        autoFocus
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-      />
-      <input
-        value={resp}
-        onChange={(e) => setResp(e.target.value)}
-        placeholder="Responsável"
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-      />
-      <input
-        value={membros}
-        onChange={(e) => setMembros(e.target.value)}
-        placeholder="Membros (separados por vírgula)"
-        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-400"
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={handleSave}
-          disabled={saving || !nome.trim()}
-          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
-        >
-          {saving ? "Salvando…" : "Criar Grupo"}
-        </button>
-        <button
-          onClick={onCancel}
-          className="flex-1 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── FormNovaTarefa ───────────────────────────────────────────────────────────
-
-interface FormNovaTarefaProps {
-  grupoId: string;
-  sigla: string;
-  nextOrdem: number;
-  onSaved: () => void;
-  onCancel: () => void;
-}
-
-function FormNovaTarefa({ grupoId, sigla, nextOrdem, onSaved, onCancel }: FormNovaTarefaProps) {
-  const [titulo, setTitulo] = useState("");
-  const [resp, setResp] = useState("");
-  const [prazo, setPrazo] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    if (!titulo.trim()) return;
-    setSaving(true);
-    const { error } = await supabase.from("kanban_tarefas").insert({
-      grupo_id: grupoId,
-      sigla_casa: sigla,
-      titulo: titulo.trim(),
-      responsavel: resp.trim() || null,
-      prazo: prazo || null,
-      ordem: nextOrdem,
-    });
-    setSaving(false);
-    if (!error) onSaved();
-  };
-
-  return (
-    <div className="space-y-2 pt-1">
-      <input
-        value={titulo}
-        onChange={(e) => setTitulo(e.target.value)}
-        placeholder="Título da tarefa *"
-        autoFocus
-        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
-      />
-      <div className="flex gap-2">
-        <input
-          value={resp}
-          onChange={(e) => setResp(e.target.value)}
-          placeholder="Responsável"
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
-        />
-        <input
-          type="date"
-          value={prazo}
-          onChange={(e) => setPrazo(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-400"
-        />
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={handleSave}
-          disabled={saving || !titulo.trim()}
-          className="flex-1 py-1.5 text-xs rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-40 transition-colors"
-        >
-          {saving ? "…" : "Adicionar"}
-        </button>
-        <button
-          onClick={onCancel}
-          className="py-1.5 px-3 text-xs rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-        >
-          <X size={10} />
-        </button>
-      </div>
     </div>
   );
 }

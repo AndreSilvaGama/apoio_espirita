@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
-import { ProjetosTab } from "@/components/ProjetosTab";
+
 
 
 export const Route = createFileRoute("/casa/$sigla")({
@@ -1642,7 +1642,7 @@ function PaginaCasa() {
                   desc="Planeje e organize projetos, ideias, tarefas e reuniões da casa espírita."
                   status="disponivel"
                   accent="cyan"
-                  onClick={() => setAba("projetos")}
+                  href="/kanban"
                   votes={votes}
                   votingKey={votingKey}
                   onVote={handleCardVote}
@@ -1904,10 +1904,7 @@ function PaginaCasa() {
 
 
 
-        {/* ══════════════ PROJETOS ══════════════ */}
-        {aba === "projetos" && (
-          <ProjetosTab sigla={sigla} />
-        )}
+
 
         {/* ══════════════ DOAÇÕES ══════════════ */}
         {aba === "doacoes" && (
