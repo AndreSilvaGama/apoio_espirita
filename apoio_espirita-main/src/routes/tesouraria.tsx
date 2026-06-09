@@ -47,7 +47,7 @@ function fmtData(iso: string) {
 
 function Tesouraria() {
   const navigate = useNavigate();
-  const { user, profile, loading, isTesoureiro } = useAuth();
+  const { user, profile, loading, canTesouraria } = useAuth();
 
   const hoje = new Date();
   const [mes, setMes] = useState(hoje.getMonth());
@@ -91,17 +91,18 @@ function Tesouraria() {
   };
 
   useEffect(() => {
-    if (user && profile?.sigla_casa && isTesoureiro) fetchTransacoes();
-  }, [user, profile?.sigla_casa, mes, ano, isTesoureiro]);
+    if (user && profile?.sigla_casa && canTesouraria) fetchTransacoes();
+  }, [user, profile?.sigla_casa, mes, ano, canTesouraria]);
 
   if (loading || !user) return null;
 
-  if (!isTesoureiro) {
+  if (!canTesouraria) {
     return (
       <main className="page-light min-h-screen flex items-center justify-center px-6">
-        <div className="text-center">
-          <p className="text-muted-foreground font-light">
-            Acesso restrito a Presidente, Vice-presidente e Tesoureiro.
+        <div className="text-center max-w-md">
+          <Wallet size={32} strokeWidth={1.5} className="text-muted-foreground/40 mx-auto mb-4" />
+          <p className="text-muted-foreground font-light leading-relaxed">
+            Somente o(a) Presidente e pessoas autorizadas pelo(a) Presidente podem acessar a Tesouraria.
           </p>
           <button
             onClick={() => navigate({ to: "/inicio" })}

@@ -32,6 +32,9 @@ interface AuthContextValue {
   isDev: boolean;
   isPresident: boolean;
   isTesoureiro: boolean;
+  isTesourariaAutorizado: boolean;
+  canTesouraria: boolean;
+  isTesourariaAdmin: boolean;
   isDecisao: boolean;
   isEvangelizador: boolean;
   refreshProfile: () => Promise<void>;
@@ -45,6 +48,9 @@ const AuthContext = createContext<AuthContextValue>({
   isDev: false,
   isPresident: false,
   isTesoureiro: false,
+  isTesourariaAutorizado: false,
+  canTesouraria: false,
+  isTesourariaAdmin: false,
   isDecisao: false,
   isEvangelizador: false,
   refreshProfile: async () => {},
@@ -55,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tesourariaAutorizado, setTesourariaAutorizado] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -63,6 +70,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq("id", userId)
       .single();
     setProfile(data ?? null);
+
+    // Autorização explícita de acesso à Tesouraria concedida pelo Presidente
+    const { data: autoriz } = await supabase
+      .from("tesouraria_autorizacoes")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    setTesourariaAutorizado(!!autoriz);
   };
 
   const refreshProfile = async () => {
@@ -85,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
+        setTesourariaAutorizado(false);
       }
     });
 
@@ -95,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
+    setTesourariaAutorizado(false);
   };
 
   const isDev = user?.email === DEV_EMAIL && profile?.cargo_principal === "DEV";
@@ -106,6 +123,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isDev ||
     profile?.cargo_principal === "Presidente" ||
     profile?.cargo_principal === "Tesoureiro";
+
+  // Acesso à Tesouraria: Presidente, Vice, Tesoureiro, DEV ou autorizado pelo Presidente
+  const canTesouraria =
+    isDev ||
+    profile?.cargo_principal === "Presidente" ||
+    profile?.cargo_principal === "Vice-presidente" ||
+    profile?.cargo_principal === "Tesoureiro" ||
+    tesourariaAutorizado;
+
+  // Quem pode conceder/revogar acesso à Tesouraria: Presidente da casa ou DEV
+  const isTesourariaAdmin = isDev || profile?.cargo_principal === "Presidente";
+
   const isDecisao =
     isDev ||
     (profile?.cargo_principal != null &&
@@ -117,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile?.cargo_principal === "Evangelizador";
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, isTesoureiro, isDecisao, isEvangelizador, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, isTesoureiro, isTesourariaAutorizado: tesourariaAutorizado, canTesouraria, isTesourariaAdmin, isDecisao, isEvangelizador, refreshProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );

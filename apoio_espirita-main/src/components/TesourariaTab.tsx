@@ -41,7 +41,7 @@ function fmtData(iso: string) {
 }
 
 export function TesourariaTab({ sigla }: { sigla: string }) {
-  const { user, profile, isTesoureiro } = useAuth();
+  const { user, profile, canTesouraria } = useAuth();
 
   const hoje = new Date();
   const [mes, setMes] = useState(hoje.getMonth());
@@ -80,10 +80,21 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
   };
 
   useEffect(() => {
-    if (user && sigla) fetchTransacoes();
-  }, [user, sigla, mes, ano]);
+    if (user && sigla && canTesouraria) fetchTransacoes();
+  }, [user, sigla, mes, ano, canTesouraria]);
 
   if (!user) return null;
+
+  if (!canTesouraria) {
+    return (
+      <div className="glass rounded-2xl p-10 text-center max-w-md mx-auto">
+        <Wallet size={32} strokeWidth={1.5} className="text-muted-foreground/40 mx-auto mb-4" />
+        <p className="text-muted-foreground font-light leading-relaxed">
+          Somente o(a) Presidente e pessoas autorizadas pelo(a) Presidente podem acessar a Tesouraria.
+        </p>
+      </div>
+    );
+  }
 
   // Totais do mês
   const receitas = transacoes.filter((t) => t.tipo === "receita").reduce((s, t) => s + Number(t.valor), 0);
@@ -102,7 +113,7 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
   const categorias = fTipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA;
 
   const handleSalvar = async () => {
-    if (!isTesoureiro) return;
+    if (!canTesouraria) return;
     if (!fCategoria) { setFormError("Selecione a categoria."); return; }
     if (!fDescricao.trim()) { setFormError("Informe a descrição."); return; }
     const valor = parseFloat(fValor.replace(",", "."));
@@ -138,7 +149,7 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
   };
 
   const handleExcluir = async (id: string) => {
-    if (!isTesoureiro) return;
+    if (!canTesouraria) return;
     if (!confirm("Excluir este lançamento? A ação não pode ser desfeita.")) return;
     await supabase.from("tesouraria_transacoes").delete().eq("id", id);
     fetchTransacoes();
@@ -252,10 +263,10 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
             Tesouraria · {sigla}
           </h3>
           <p className="text-xs text-muted-foreground/60 mt-1 font-light">
-            Fluxo financeiro da casa espírita. {!isTesoureiro && "Modo de visualização (somente leitura)."}
+            Fluxo financeiro da casa espírita.
           </p>
         </div>
-        {isTesoureiro && (
+        {canTesouraria && (
           <button
             onClick={() => { setShowForm((v) => !v); setFormError(""); }}
             style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 12, background: "#004a8c", color: "#fff", fontFamily: "Inter", fontSize: "0.82rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.2)" }}
@@ -334,7 +345,7 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
       </div>
 
       {/* Formulário de nova transação (Authorized Only) */}
-      {isTesoureiro && showForm && (
+      {canTesouraria && showForm && (
         <div className="glass rounded-3xl p-6 mb-6 space-y-4 border border-white/20">
           <div className="flex items-center justify-between pb-2 border-b border-gray-100">
             <h4 className="text-xs uppercase tracking-widest font-semibold text-cyan-800">Novo Lançamento</h4>
@@ -433,7 +444,7 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
           <p className="text-xs text-gray-400 font-light">
             Nenhum lançamento registrado em {MESES[mes]} de {ano}.
           </p>
-          {isTesoureiro && (
+          {canTesouraria && (
             <button
               onClick={() => setShowForm(true)}
               className="mt-3 text-xs text-cyan-600 font-semibold hover:underline cursor-pointer"
@@ -466,7 +477,7 @@ export function TesourariaTab({ sigla }: { sigla: string }) {
                 <p className={`text-xs font-bold ${tx.tipo === "receita" ? "text-emerald-600" : "text-rose-500"}`}>
                   {tx.tipo === "receita" ? "+" : "−"}{fmtBRL(Number(tx.valor))}
                 </p>
-                {isTesoureiro && (
+                {canTesouraria && (
                   <button
                     onClick={() => handleExcluir(tx.id)}
                     className="mt-1 text-gray-300 hover:text-red-400 transition-colors cursor-pointer"

@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ShieldAlert, Check, X, Minus, Info } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ShieldAlert, Check, X, Minus, Info, Wallet, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/permissoes")({
   component: Permissoes,
@@ -37,11 +40,11 @@ const PERMISSOES: Permissao[] = [
     area: "Tesouraria",
     descricao: "Acessar movimentações financeiras, receitas e despesas da casa",
     presidente: "sim",
-    vice: "nao",
+    vice: "sim",
     decisao: "nao",
     tesoureiro: "sim",
-    membros: "nao",
-    nota: "O Presidente pode conceder acesso ao Tesoureiro ou revogar a qualquer momento.",
+    membros: "parcial",
+    nota: "Presidente, Vice-presidente e Tesoureiro têm acesso automático. Demais membros somente com autorização expressa do Presidente, concedida aqui no Painel de Permissões.",
   },
   {
     area: "Evangelização",
@@ -185,10 +188,145 @@ function Badge({ label, cor }: { label: string; cor: string }) {
   );
 }
 
+// ── Gestão de acesso à Tesouraria (somente Presidente / DEV) ───────────────────
+
+const CARGOS_ACESSO_AUTOMATICO = ["Presidente", "Vice-presidente", "Tesoureiro"];
+
+interface Membro {
+  id: string;
+  nome: string | null;
+  cargo_principal: string | null;
+}
+
+function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
+  const { user } = useAuth();
+  const [membros, setMembros] = useState<Membro[]>([]);
+  const [autorizados, setAutorizados] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState<string | null>(null);
+
+  const carregar = async () => {
+    setLoading(true);
+    const [{ data: membrosData }, { data: autorizData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, nome, cargo_principal")
+        .eq("sigla_casa", sigla)
+        .order("nome"),
+      supabase
+        .from("tesouraria_autorizacoes")
+        .select("user_id")
+        .eq("sigla_casa", sigla),
+    ]);
+    setMembros((membrosData as Membro[]) ?? []);
+    setAutorizados(new Set((autorizData ?? []).map((a: { user_id: string }) => a.user_id)));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (sigla) carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sigla]);
+
+  const alternar = async (membroId: string, jaAutorizado: boolean) => {
+    setSalvando(membroId);
+    try {
+      if (jaAutorizado) {
+        const { error } = await supabase
+          .from("tesouraria_autorizacoes")
+          .delete()
+          .eq("sigla_casa", sigla)
+          .eq("user_id", membroId);
+        if (error) throw error;
+        setAutorizados(prev => {
+          const next = new Set(prev);
+          next.delete(membroId);
+          return next;
+        });
+        toast.success("Acesso revogado.");
+      } else {
+        const { error } = await supabase
+          .from("tesouraria_autorizacoes")
+          .insert({ sigla_casa: sigla, user_id: membroId, autorizado_por: user?.id ?? null });
+        if (error) throw error;
+        setAutorizados(prev => new Set(prev).add(membroId));
+        toast.success("Acesso concedido.");
+      }
+    } catch (e) {
+      toast.error("Não foi possível atualizar o acesso.");
+    } finally {
+      setSalvando(null);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="flex items-start gap-3 p-4 border-b border-gray-100 bg-gray-50/60">
+        <Wallet size={18} strokeWidth={1.5} className="text-emerald-600 mt-0.5 shrink-0" />
+        <div>
+          <h2 className="text-sm font-bold text-gray-800">Gerenciar acesso à Tesouraria</h2>
+          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+            Conceda ou revogue o acesso de cada membro. Presidente, Vice-presidente e Tesoureiro têm acesso automático.
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loader2 size={20} className="text-emerald-500 animate-spin" />
+        </div>
+      ) : membros.length === 0 ? (
+        <p className="text-xs text-gray-400 text-center py-8 italic">Nenhum membro encontrado nesta casa.</p>
+      ) : (
+        <ul className="divide-y divide-gray-100">
+          {membros.map(m => {
+            const automatico = CARGOS_ACESSO_AUTOMATICO.includes(m.cargo_principal ?? "");
+            const autorizado = autorizados.has(m.id);
+            const temAcesso = automatico || autorizado;
+            return (
+              <li key={m.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{m.nome || "Sem nome"}</p>
+                  <p className="text-xs text-gray-400">{m.cargo_principal || "—"}</p>
+                </div>
+                {automatico ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
+                    <Check size={12} strokeWidth={2.5} /> Acesso automático
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => alternar(m.id, autorizado)}
+                    disabled={salvando === m.id}
+                    className={`flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors shrink-0 cursor-pointer disabled:opacity-50 ${
+                      autorizado
+                        ? "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100"
+                        : "text-gray-600 bg-white border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {salvando === m.id ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : autorizado ? (
+                      <Check size={12} strokeWidth={2.5} />
+                    ) : (
+                      <X size={12} strokeWidth={2.5} className="text-gray-400" />
+                    )}
+                    {autorizado ? "Autorizado" : "Sem acesso"}
+                  </button>
+                )}
+                {!automatico && <span className="sr-only">{temAcesso ? "com acesso" : "sem acesso"}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ── Componente principal ──────────────────────────────────────────────────────
 
 function Permissoes() {
-  const { user, isDecisao, isDev, loading, profile } = useAuth();
+  const { user, isDecisao, isDev, loading, profile, isTesourariaAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -240,6 +378,11 @@ function Permissoes() {
             de alteração deve ser feita diretamente ao Presidente da casa.
           </p>
         </div>
+
+        {/* Gestão funcional de acesso à Tesouraria — somente Presidente / DEV */}
+        {isTesourariaAdmin && profile?.sigla_casa && (
+          <GerenciarAcessoTesouraria sigla={profile.sigla_casa} />
+        )}
 
         {/* Legenda */}
         <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
