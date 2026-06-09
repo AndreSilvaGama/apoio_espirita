@@ -220,6 +220,7 @@ function KanbanPage() {
 
   // Drag overlay (Trello-style smooth dragging)
   const [activeDrag, setActiveDrag] = useState<{ type: "card" | "list"; id: string } | null>(null);
+  const eventosSnapshot = useRef<KanbanEvento[]>([]);
   
   const [loadingBoard, setLoadingBoard] = useState(true);
   const [showConfig, setShowConfig] = useState(false);
@@ -719,8 +720,6 @@ function KanbanPage() {
   };
 
   // ── Drag and Drop (estilo Trello, com DragOverlay) ──
-  const eventosSnapshot = useRef<KanbanEvento[]>([]);
-
   const findListIdByCard = (cardId: string) => eventos.find(e => e.id === cardId)?.lista_id || null;
 
   const handleDragStart = (event: DragStartEvent) => {
