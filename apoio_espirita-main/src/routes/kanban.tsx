@@ -1,13 +1,14 @@
 // @ts-nocheck
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { DndContext, DragEndEvent, useDroppable, useDraggable, PointerSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, DragOverlay, PointerSensor, useSensor, useSensors, closestCorners, useDroppable } from "@dnd-kit/core";
+import { SortableContext, useSortable, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { 
-  Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight, 
-  ChevronDown, ChevronUp, Check, Users, Share2, Palette, Archive, 
-  Paperclip, MessageSquare, Search, ArrowLeft, CheckSquare, Tag, 
-  Sparkles, CheckCircle2, Clock
+import {
+  Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight,
+  ChevronDown, ChevronUp, Check, Users, Share2, Palette, Archive,
+  Paperclip, MessageSquare, Search, ArrowLeft, CheckSquare, Tag,
+  Sparkles, CheckCircle2, Clock, Undo, GripVertical, LayoutGrid, Image as ImageIcon
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ interface KanbanEvento {
   anexos: { nome: string; url: string }[];
   arquivado: boolean;
   ordem: number;
+  cover: string | null;
 }
 
 interface KanbanTarefa {
@@ -64,6 +66,15 @@ interface KanbanGrupo {
 }
 
 interface KanbanLista {
+  id: string;
+  sigla_casa: string;
+  nome: string;
+  ordem: number;
+  board_id: string | null;
+  created_at: string;
+}
+
+interface KanbanBoard {
   id: string;
   sigla_casa: string;
   nome: string;
@@ -101,6 +112,40 @@ const BACKGROUNDS = [
 ];
 
 const DEFAULT_LISTAS = ["Ideia", "Planejado", "Em andamento", "Realizado"];
+
+// Cores de capa do card (estilo Trello)
+const COVERS = [
+  { id: "cyan", css: "bg-cyan-500" },
+  { id: "blue", css: "bg-blue-600" },
+  { id: "emerald", css: "bg-emerald-500" },
+  { id: "amber", css: "bg-amber-500" },
+  { id: "rose", css: "bg-rose-500" },
+  { id: "violet", css: "bg-violet-500" },
+  { id: "slate", css: "bg-slate-600" }
+];
+
+function coverCss(id: string | null): string {
+  if (!id) return "";
+  return COVERS.find(c => c.id === id)?.css || "";
+}
+
+// Cor determinística para avatar com base no nome
+const AVATAR_COLORS = [
+  "bg-cyan-500", "bg-blue-500", "bg-emerald-500", "bg-amber-500",
+  "bg-rose-500", "bg-violet-500", "bg-teal-500", "bg-indigo-500"
+];
+
+function avatarColor(nome: string): string {
+  let hash = 0;
+  for (let i = 0; i < nome.length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function avatarInitials(nome: string): string {
+  const parts = nome.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 function fmtData(iso: string) {
   const [year, month, day] = iso.slice(0, 10).split("-");
@@ -160,9 +205,21 @@ function KanbanPage() {
   const [sigla, setSigla] = useState<string | null>(null);
   const [config, setConfig] = useState<{ board_background: string; share_token: string } | null>(null);
   
+  const [boards, setBoards] = useState<KanbanBoard[]>([]);
+  const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
   const [listas, setListas] = useState<KanbanLista[]>([]);
   const [eventos, setEventos] = useState<KanbanEvento[]>([]);
   const [membrosCasa, setMembrosCasa] = useState<{ id: string; nome: string }[]>([]);
+
+  // Board management UI
+  const [showBoardMenu, setShowBoardMenu] = useState(false);
+  const [showNewBoardForm, setShowNewBoardForm] = useState(false);
+  const [newBoardName, setNewBoardName] = useState("");
+  const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
+  const [editingBoardName, setEditingBoardName] = useState("");
+
+  // Drag overlay (Trello-style smooth dragging)
+  const [activeDrag, setActiveDrag] = useState<{ type: "card" | "list"; id: string } | null>(null);
   
   const [loadingBoard, setLoadingBoard] = useState(true);
   const [showConfig, setShowConfig] = useState(false);
@@ -279,19 +336,47 @@ function KanbanPage() {
       }
       setConfig(currentConfig);
 
-      // 2. Fetch Lists
+      // 2. Fetch Boards (quadros nomeados)
+      let { data: boardsData } = await client
+        .from("kanban_boards")
+        .select("*")
+        .eq("sigla_casa", siglaCasa)
+        .order("ordem");
+
+      // Auto-create a default board if none exists
+      if ((!boardsData || boardsData.length === 0) && !guestToken && user) {
+        const { data: newBoard } = await client
+          .from("kanban_boards")
+          .insert({ sigla_casa: siglaCasa, nome: "Geral", ordem: 0 })
+          .select()
+          .single();
+        boardsData = newBoard ? [newBoard] : [];
+      }
+      const boardsList = boardsData || [];
+      setBoards(boardsList);
+
+      // Resolve active board (preserva seleção atual / localStorage / primeiro)
+      const stored = typeof window !== "undefined" ? localStorage.getItem(`kanban_board_${siglaCasa}`) : null;
+      const chosenBoardId =
+        (activeBoardId && boardsList.some(b => b.id === activeBoardId) && activeBoardId) ||
+        (stored && boardsList.some(b => b.id === stored) && stored) ||
+        (boardsList[0]?.id ?? null);
+      setActiveBoardId(chosenBoardId);
+
+      // 3. Fetch Lists (todas da casa; a filtragem por board ocorre na renderização)
       let { data: listasData } = await client
         .from("kanban_listas")
         .select("*")
         .eq("sigla_casa", siglaCasa)
         .order("ordem");
 
-      // Auto-create default columns if empty
-      if ((!listasData || listasData.length === 0) && !guestToken) {
+      // Auto-create default columns only on first-time setup (casa sem nenhuma lista)
+      if ((!listasData || listasData.length === 0) && chosenBoardId && !guestToken && user) {
         const defaultLists = DEFAULT_LISTAS.map((nome, idx) => ({
           sigla_casa: siglaCasa,
           nome,
-          ordem: idx
+          ordem: idx,
+          board_id: chosenBoardId
         }));
         const { data: insertedListas } = await client
           .from("kanban_listas")
@@ -401,21 +486,104 @@ function KanbanPage() {
     toast.success(`Acesso concedido como ${tempGuestName.trim()}`);
   };
 
+  // Actions for Boards (quadros)
+  const switchBoard = (boardId: string) => {
+    setActiveBoardId(boardId);
+    setShowBoardMenu(false);
+    if (typeof window !== "undefined" && sigla) {
+      localStorage.setItem(`kanban_board_${sigla}`, boardId);
+    }
+  };
+
+  const handleAddBoard = async () => {
+    if (!newBoardName.trim()) return;
+    const client = getClient();
+    try {
+      const { data, error } = await client
+        .from("kanban_boards")
+        .insert({
+          sigla_casa: sigla,
+          nome: newBoardName.trim(),
+          ordem: boards.length
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setBoards([...boards, data]);
+      setNewBoardName("");
+      setShowNewBoardForm(false);
+      switchBoard(data.id);
+      toast.success("Projeto criado.");
+    } catch (e) {
+      toast.error("Erro ao criar projeto.");
+    }
+  };
+
+  const handleRenameBoard = async (boardId: string) => {
+    if (!editingBoardName.trim()) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_boards")
+        .update({ nome: editingBoardName.trim() })
+        .eq("id", boardId);
+
+      if (error) throw error;
+      setBoards(boards.map(b => b.id === boardId ? { ...b, nome: editingBoardName.trim() } : b));
+      setEditingBoardId(null);
+      toast.success("Projeto renomeado.");
+    } catch (e) {
+      toast.error("Erro ao renomear projeto.");
+    }
+  };
+
+  const handleDeleteBoard = async (boardId: string, boardName: string) => {
+    if (boards.length <= 1) {
+      toast.error("Você precisa manter ao menos um projeto.");
+      return;
+    }
+    if (!confirm(`Excluir o projeto "${boardName}"? Todas as listas e cards dele serão excluídos!`)) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_boards")
+        .delete()
+        .eq("id", boardId);
+
+      if (error) throw error;
+      const remaining = boards.filter(b => b.id !== boardId);
+      setBoards(remaining);
+      // Remove listas/cards do board excluído do estado local (cascade no banco)
+      const removedListaIds = listas.filter(l => l.board_id === boardId).map(l => l.id);
+      setListas(listas.filter(l => l.board_id !== boardId));
+      setEventos(eventos.filter(e => !removedListaIds.includes(e.lista_id || "")));
+      if (activeBoardId === boardId) {
+        switchBoard(remaining[0].id);
+      }
+      toast.success("Projeto excluído.");
+    } catch (e) {
+      toast.error("Erro ao excluir projeto.");
+    }
+  };
+
   // Actions for Lists
   const handleAddList = async () => {
-    if (!newListName.trim()) return;
+    if (!newListName.trim() || !activeBoardId) return;
     const client = getClient();
+    const boardListas = listas.filter(l => l.board_id === activeBoardId);
     try {
       const { data, error } = await client
         .from("kanban_listas")
         .insert({
           sigla_casa: sigla,
           nome: newListName.trim(),
-          ordem: listas.length
+          ordem: boardListas.length,
+          board_id: activeBoardId
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       setListas([...listas, data]);
       setNewListName("");
@@ -550,110 +718,126 @@ function KanbanPage() {
     }
   };
 
-  // Drag and Drop End
+  // ── Drag and Drop (estilo Trello, com DragOverlay) ──
+  const eventosSnapshot = useRef<KanbanEvento[]>([]);
+
+  const findListIdByCard = (cardId: string) => eventos.find(e => e.id === cardId)?.lista_id || null;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const data = event.active.data.current as any;
+    if (data?.type) {
+      eventosSnapshot.current = eventos;
+      setActiveDrag({ type: data.type, id: event.active.id as string });
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const activeData = active.data.current as any;
+    if (activeData?.type !== "card") return; // reordenação de listas é tratada no end
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+    const overData = over.data.current as any;
+
+    const sourceListId = findListIdByCard(activeId);
+    let targetListId: string | null = null;
+    if (overData?.type === "card") targetListId = findListIdByCard(overId);
+    else if (overData?.type === "column") targetListId = overData.listId;
+    if (!targetListId || targetListId === sourceListId) return;
+
+    // Move o card para a lista de destino no estado local (preview entre colunas)
+    setEventos(prev => {
+      const moving = prev.find(e => e.id === activeId);
+      if (!moving) return prev;
+      const without = prev.filter(e => e.id !== activeId);
+      const targetCards = without.filter(e => e.lista_id === targetListId).sort((a, b) => a.ordem - b.ordem);
+      let insertIndex = targetCards.length;
+      if (overData?.type === "card") {
+        const idx = targetCards.findIndex(e => e.id === overId);
+        if (idx >= 0) insertIndex = idx;
+      }
+      targetCards.splice(insertIndex, 0, { ...moving, lista_id: targetListId });
+      const reTarget = targetCards.map((e, i) => ({ ...e, ordem: i }));
+      return without.filter(e => e.lista_id !== targetListId).concat(reTarget);
+    });
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    const activeData = active.data.current as any;
+    setActiveDrag(null);
     if (!over) return;
     const activeId = active.id as string;
     const overId = over.id as string;
-    if (activeId === overId) return;
+    const overData = over.data.current as any;
 
-    const activeCard = eventos.find(e => e.id === activeId);
-    if (!activeCard) return;
-
-    let targetListId = "";
-    let targetOrder = 0;
-
-    // Check if dropped on a list directly
-    const targetList = listas.find(l => l.id === overId);
-    if (targetList) {
-      targetListId = targetList.id;
-      // Get all cards in list (sorted) excluding the active card itself
-      const siblingCards = eventos
-        .filter(e => e.lista_id === targetListId && e.id !== activeId)
-        .sort((a, b) => a.ordem - b.ordem);
-      targetOrder = siblingCards.length;
-    } else {
-      // Check if dropped on another card
-      const targetCard = eventos.find(e => e.id === overId);
-      if (targetCard) {
-        targetListId = targetCard.lista_id;
-        targetOrder = targetCard.ordem;
-      } else {
-        return;
+    // ── Reordenação de LISTAS ──
+    if (activeData?.type === "list") {
+      if (activeId === overId) return;
+      const ordered = listas.filter(l => l.board_id === activeBoardId).sort((a, b) => a.ordem - b.ordem);
+      const oldIndex = ordered.findIndex(l => l.id === activeId);
+      const newIndex = ordered.findIndex(l => l.id === overId);
+      if (oldIndex < 0 || newIndex < 0) return;
+      const reordered = arrayMove(ordered, oldIndex, newIndex).map((l, i) => ({ ...l, ordem: i }));
+      setListas(listas.map(l => reordered.find(r => r.id === l.id) || l));
+      const client = getClient();
+      try {
+        await Promise.all(reordered.map(l => client.from("kanban_listas").update({ ordem: l.ordem }).eq("id", l.id)));
+      } catch (err) {
+        toast.error("Erro ao salvar ordem das listas.");
       }
+      return;
     }
 
-    const sourceListId = activeCard.lista_id;
-    let newEventos = [...eventos];
+    // ── Reordenação / movimentação de CARDS ──
+    if (activeData?.type === "card") {
+      const snapshot = eventosSnapshot.current;
+      const activeListId = findListIdByCard(activeId); // lista atual (após dragOver)
+      if (!activeListId) return;
 
-    if (sourceListId === targetListId) {
-      // Reordering within the same list
-      const listCards = newEventos
-        .filter(e => e.lista_id === sourceListId)
-        .sort((a, b) => a.ordem - b.ordem);
-
+      let working = [...eventos];
+      const listCards = working.filter(e => e.lista_id === activeListId).sort((a, b) => a.ordem - b.ordem);
       const oldIndex = listCards.findIndex(e => e.id === activeId);
-      const withoutActive = listCards.filter(e => e.id !== activeId);
-      withoutActive.splice(targetOrder, 0, { ...activeCard, lista_id: targetListId });
+      let newIndex = listCards.length - 1;
+      if (overData?.type === "card") {
+        const idx = listCards.findIndex(e => e.id === overId);
+        if (idx >= 0) newIndex = idx;
+      }
+      let orderedCards = listCards;
+      if (oldIndex >= 0 && newIndex >= 0 && oldIndex !== newIndex) {
+        orderedCards = arrayMove(listCards, oldIndex, newIndex);
+      }
+      const normalized = orderedCards.map((e, i) => ({ ...e, ordem: i }));
+      working = working.map(e => normalized.find(r => r.id === e.id) || e);
 
-      const updatedListCards = withoutActive.map((e, idx) => ({ ...e, ordem: idx }));
+      // Renormaliza a lista de origem (fecha buracos deixados pelo card movido)
+      const sourceListId = snapshot.find(s => s.id === activeId)?.lista_id;
+      if (sourceListId && sourceListId !== activeListId) {
+        const srcCards = working
+          .filter(e => e.lista_id === sourceListId)
+          .sort((a, b) => a.ordem - b.ordem)
+          .map((e, i) => ({ ...e, ordem: i }));
+        working = working.map(e => srcCards.find(r => r.id === e.id) || e);
+      }
+      setEventos(working);
 
-      newEventos = newEventos.map(e => {
-        const updated = updatedListCards.find(ul => ul.id === e.id);
-        return updated ? updated : e;
+      const changed = working.filter(e => {
+        const orig = snapshot.find(o => o.id === e.id);
+        return orig && (orig.lista_id !== e.lista_id || orig.ordem !== e.ordem);
       });
-    } else {
-      // Moving to a different list
-      const sourceListCards = newEventos
-        .filter(e => e.lista_id === sourceListId && e.id !== activeId)
-        .sort((a, b) => a.ordem - b.ordem)
-        .map((e, idx) => ({ ...e, ordem: idx }));
-
-      const targetListCards = newEventos
-        .filter(e => e.lista_id === targetListId)
-        .sort((a, b) => a.ordem - b.ordem);
-
-      targetListCards.splice(targetOrder, 0, { ...activeCard, lista_id: targetListId });
-      const updatedTargetCards = targetListCards.map((e, idx) => ({ ...e, ordem: idx }));
-
-      newEventos = newEventos.map(e => {
-        if (e.id === activeId) {
-          return { ...activeCard, lista_id: targetListId, ordem: targetOrder };
-        }
-        const updSource = sourceListCards.find(ul => ul.id === e.id);
-        if (updSource) return updSource;
-
-        const updTarget = updatedTargetCards.find(ul => ul.id === e.id);
-        if (updTarget) return updTarget;
-
-        return e;
-      });
-    }
-
-    // Update local state first
-    setEventos(newEventos);
-
-    const client = getClient();
-    const changedCards = newEventos.filter(e => {
-      const original = eventos.find(o => o.id === e.id);
-      return original && (original.lista_id !== e.lista_id || original.ordem !== e.ordem);
-    });
-
-    try {
-      await Promise.all(
-        changedCards.map(c =>
-          client
-            .from("kanban_eventos")
-            .update({ lista_id: c.lista_id, ordem: c.ordem })
-            .eq("id", c.id)
-        )
-      );
-    } catch (e) {
-      console.error(e);
-      // Revert state
-      setEventos(eventos);
-      toast.error("Erro ao salvar ordenação no banco de dados.");
+      if (changed.length === 0) return;
+      const client = getClient();
+      try {
+        await Promise.all(changed.map(c =>
+          client.from("kanban_eventos").update({ lista_id: c.lista_id, ordem: c.ordem }).eq("id", c.id)
+        ));
+      } catch (err) {
+        console.error(err);
+        setEventos(snapshot);
+        toast.error("Erro ao salvar ordenação no banco de dados.");
+      }
     }
   };
 
@@ -924,6 +1108,9 @@ function KanbanPage() {
   });
 
   const activeBg = BACKGROUNDS.find(b => b.id === (config?.board_background)) || BACKGROUNDS[0];
+  const boardListas = listas.filter(l => l.board_id === activeBoardId).sort((a, b) => a.ordem - b.ordem);
+  const activeDragCard = activeDrag?.type === "card" ? eventos.find(e => e.id === activeDrag.id) : null;
+  const activeDragList = activeDrag?.type === "list" ? boardListas.find(l => l.id === activeDrag.id) : null;
 
   return (
     <main className={`min-h-screen ${activeBg.id} pt-20 pb-20 transition-all duration-500`}>
@@ -958,13 +1145,103 @@ function KanbanPage() {
               >
                 <ArrowLeft size={16} />
               </Link>
-              <div>
-                <h1 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.45rem", fontWeight: 400, color: "#111418" }}>
+              <div className="relative">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
                   Projetos · {sigla}
-                </h1>
-                <p className="text-xs text-muted-foreground/60 font-light mt-0.5">
-                  Gerenciamento dinâmico de projetos e tarefas da casa espírita.
                 </p>
+                <button
+                  onClick={() => setShowBoardMenu(!showBoardMenu)}
+                  className="mt-0.5 flex items-center gap-2 group cursor-pointer"
+                >
+                  <LayoutGrid size={18} className="text-cyan-600 shrink-0" />
+                  <span style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.35rem", fontWeight: 400, color: "#111418" }} className="truncate max-w-[60vw] group-hover:text-cyan-700 transition-colors">
+                    {boards.find(b => b.id === activeBoardId)?.nome || "Selecionar projeto"}
+                  </span>
+                  <ChevronDown size={15} className="text-gray-400 group-hover:text-gray-600 shrink-0" />
+                </button>
+
+                {showBoardMenu && (
+                  <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 p-2 animate-fade-in-up">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1">Seus projetos</p>
+                    <div className="max-h-64 overflow-y-auto space-y-0.5">
+                      {boards.map(b => (
+                        <div key={b.id} className="group/board flex items-center gap-1">
+                          {editingBoardId === b.id ? (
+                            <div className="flex-1 flex gap-1 p-1">
+                              <input
+                                type="text"
+                                value={editingBoardName}
+                                onChange={e => setEditingBoardName(e.target.value)}
+                                onKeyDown={e => e.key === "Enter" && handleRenameBoard(b.id)}
+                                autoFocus
+                                className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:outline-none focus:border-cyan-600 bg-white"
+                              />
+                              <button onClick={() => handleRenameBoard(b.id)} className="p-1 bg-cyan-600 text-white rounded hover:bg-cyan-700 cursor-pointer"><Check size={12} /></button>
+                              <button onClick={() => setEditingBoardId(null)} className="p-1 border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"><X size={12} /></button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => switchBoard(b.id)}
+                                className={`flex-1 flex items-center justify-between px-2.5 py-2 rounded-lg text-xs text-left cursor-pointer ${
+                                  b.id === activeBoardId ? "bg-cyan-50 text-cyan-700 font-semibold" : "text-gray-700 hover:bg-gray-50"
+                                }`}
+                              >
+                                <span className="truncate">{b.nome}</span>
+                                {b.id === activeBoardId && <Check size={13} className="shrink-0" />}
+                              </button>
+                              {user && (
+                                <div className="flex gap-0.5 opacity-0 group-hover/board:opacity-100 transition-opacity pr-1">
+                                  <button
+                                    onClick={() => { setEditingBoardId(b.id); setEditingBoardName(b.nome); }}
+                                    className="p-1 hover:bg-gray-200/50 rounded text-gray-500 cursor-pointer"
+                                  >
+                                    <Pencil size={11} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteBoard(b.id, b.nome)}
+                                    className="p-1 hover:bg-red-50 rounded text-red-400 hover:text-red-500 cursor-pointer"
+                                  >
+                                    <Trash2 size={11} />
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {user && (
+                      <div className="border-t border-gray-100 mt-1.5 pt-1.5">
+                        {showNewBoardForm ? (
+                          <div className="p-1 space-y-1.5">
+                            <input
+                              type="text"
+                              placeholder="Nome do novo projeto..."
+                              value={newBoardName}
+                              onChange={e => setNewBoardName(e.target.value)}
+                              onKeyDown={e => e.key === "Enter" && handleAddBoard()}
+                              autoFocus
+                              className="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-cyan-600"
+                            />
+                            <div className="flex gap-1.5">
+                              <button onClick={handleAddBoard} className="flex-1 py-1.5 text-xs font-semibold bg-[#004a8c] text-white rounded-lg hover:bg-[#003c73] cursor-pointer">Criar projeto</button>
+                              <button onClick={() => { setShowNewBoardForm(false); setNewBoardName(""); }} className="p-1.5 border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50 cursor-pointer"><X size={13} /></button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowNewBoardForm(true)}
+                            className="w-full flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-cyan-600 hover:bg-cyan-50 cursor-pointer"
+                          >
+                            <Plus size={13} /> Novo projeto
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1091,30 +1368,38 @@ function KanbanPage() {
         {loadingBoard ? (
           <div className="py-20 text-center text-sm text-gray-500 font-light">Carregando quadro de projetos...</div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
             <div className="flex gap-4 overflow-x-auto pb-4 items-start select-none">
-              
-              {/* Render Lists */}
-              {listas.map(lista => (
-                <KanbanColumnWrapper
-                  key={lista.id}
-                  list={lista}
-                  cards={filteredEventos.filter(e => e.lista_id === lista.id)}
-                  editingListId={editingListId}
-                  editingListName={editingListName}
-                  setEditingListId={setEditingListId}
-                  setEditingListName={setEditingListName}
-                  handleRenameList={handleRenameList}
-                  handleDeleteList={handleDeleteList}
-                  showNewCardForm={showNewCardForm}
-                  setShowNewCardForm={setShowNewCardForm}
-                  newCardTitle={newCardTitle}
-                  setNewCardTitle={setNewCardTitle}
-                  handleCreateCard={handleCreateCard}
-                  onCardClick={setSelectedCard}
-                  membros={membrosCasa}
-                />
-              ))}
+
+              {/* Render Lists (sortable horizontalmente) */}
+              <SortableContext items={boardListas.map(l => l.id)} strategy={horizontalListSortingStrategy}>
+                {boardListas.map(lista => (
+                  <KanbanColumnWrapper
+                    key={lista.id}
+                    list={lista}
+                    cards={filteredEventos.filter(e => e.lista_id === lista.id).sort((a, b) => a.ordem - b.ordem)}
+                    editingListId={editingListId}
+                    editingListName={editingListName}
+                    setEditingListId={setEditingListId}
+                    setEditingListName={setEditingListName}
+                    handleRenameList={handleRenameList}
+                    handleDeleteList={handleDeleteList}
+                    showNewCardForm={showNewCardForm}
+                    setShowNewCardForm={setShowNewCardForm}
+                    newCardTitle={newCardTitle}
+                    setNewCardTitle={setNewCardTitle}
+                    handleCreateCard={handleCreateCard}
+                    onCardClick={setSelectedCard}
+                    membros={membrosCasa}
+                  />
+                ))}
+              </SortableContext>
 
               {/* Add List Trigger */}
               {showNewListForm ? (
@@ -1153,6 +1438,20 @@ function KanbanPage() {
               )}
 
             </div>
+
+            {/* Drag Overlay (flutua sob o cursor, estilo Trello) */}
+            <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
+              {activeDragCard ? (
+                <div className="rotate-3 cursor-grabbing">
+                  <CardPresentation card={activeDragCard} membros={membrosCasa} />
+                </div>
+              ) : activeDragList ? (
+                <div className="min-w-[272px] max-w-[272px] rounded-2xl border border-cyan-300 bg-white shadow-xl p-4 rotate-2 cursor-grabbing">
+                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider truncate">{activeDragList.nome}</h3>
+                  <p className="text-[10px] text-gray-400 mt-1">{eventos.filter(e => e.lista_id === activeDragList.id && !e.arquivado).length} card(s)</p>
+                </div>
+              ) : null}
+            </DragOverlay>
           </DndContext>
         )}
 
@@ -1665,6 +1964,34 @@ function KanbanPage() {
                   )}
                 </div>
 
+                {/* Cover Color */}
+                <div className="bg-white border border-gray-200 rounded-xl p-3 space-y-2">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                    <ImageIcon size={13} className="text-gray-400" /> Capa
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {COVERS.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => handleUpdateCard({ ...selectedCard, cover: selectedCard.cover === c.id ? null : c.id })}
+                        title={c.id}
+                        className={`w-7 h-7 rounded-lg ${c.css} transition-transform hover:scale-110 cursor-pointer ${
+                          selectedCard.cover === c.id ? "ring-2 ring-offset-1 ring-gray-700" : ""
+                        }`}
+                      />
+                    ))}
+                    {selectedCard.cover && (
+                      <button
+                        onClick={() => handleUpdateCard({ ...selectedCard, cover: null })}
+                        title="Remover capa"
+                        className="w-7 h-7 rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 flex items-center justify-center cursor-pointer"
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Date Picker & Completion */}
                 <div className="bg-gray-50 border border-gray-150 rounded-xl p-4 space-y-3">
                   <div className="space-y-1">
@@ -1704,7 +2031,7 @@ function KanbanPage() {
                   
                   {showMoveCardMenu && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl p-2 shadow-lg z-10 space-y-0.5">
-                      {listas.map(l => {
+                      {boardListas.map(l => {
                         const active = selectedCard.lista_id === l.id;
                         return (
                           <button
@@ -1830,23 +2157,25 @@ interface ColumnProps {
   membros: { id: string; nome: string }[];
 }
 
-function KanbanColumnWrapper({ 
+function KanbanColumnWrapper({
   list, cards, editingListId, editingListName, setEditingListId, setEditingListName,
   handleRenameList, handleDeleteList, showNewCardForm, setShowNewCardForm,
   newCardTitle, setNewCardTitle, handleCreateCard, onCardClick, membros
 }: ColumnProps) {
-  
-  const { isOver, setNodeRef } = useDroppable({ id: list.id });
+
   const isEditing = editingListId === list.id;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: list.id, data: { type: "list" } });
+  const { setNodeRef: setCardDropRef, isOver } = useDroppable({ id: `col-${list.id}`, data: { type: "column", listId: list.id } });
 
   return (
     <div
       ref={setNodeRef}
-      className={`min-w-[272px] max-w-[272px] flex-shrink-0 rounded-2xl border border-gray-150 p-4 transition-all duration-300 ${
+      style={{ transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      className={`min-w-[272px] max-w-[272px] flex-shrink-0 rounded-2xl border p-4 transition-colors duration-300 ${
         isOver ? "bg-white/90 border-cyan-300 shadow-md" : "bg-white/60 border-white/20"
       } glass shrink-0`}
     >
-      
+
       {/* List Header */}
       <div className="flex items-center justify-between mb-3 gap-2">
         {isEditing ? (
@@ -1873,7 +2202,15 @@ function KanbanColumnWrapper({
           </div>
         ) : (
           <>
-            <h3 
+            <button
+              {...attributes}
+              {...listeners}
+              className="p-0.5 -ml-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none shrink-0"
+              title="Arraste para reordenar a lista"
+            >
+              <GripVertical size={13} />
+            </button>
+            <h3
               onDoubleClick={() => {
                 setEditingListId(list.id);
                 setEditingListName(list.nome);
@@ -1906,15 +2243,21 @@ function KanbanColumnWrapper({
         )}
       </div>
 
-      {/* Cards List container */}
-      <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
-        {cards.map(card => (
-          <KanbanCardWrapper
-            key={card.id}
-            card={card}
-            onCardClick={onCardClick}
-          />
-        ))}
+      {/* Cards List container (droppable + sortable) */}
+      <div ref={setCardDropRef} className="space-y-3 max-h-[55vh] overflow-y-auto pr-1 min-h-[12px]">
+        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+          {cards.map(card => (
+            <KanbanCardWrapper
+              key={card.id}
+              card={card}
+              onCardClick={onCardClick}
+              membros={membros}
+            />
+          ))}
+        </SortableContext>
+        {cards.length === 0 && (
+          <div className="text-[10px] text-gray-300 italic text-center py-3 select-none">Solte cards aqui</div>
+        )}
       </div>
 
       {/* Add Card form */}
@@ -1960,21 +2303,15 @@ function KanbanColumnWrapper({
   );
 }
 
-// ── Kanban Card Wrapper (useDraggable) ──
+// ── Kanban Card Wrapper (sortable) ──
 interface CardProps {
   card: KanbanEvento;
   onCardClick: (card: KanbanEvento) => void;
+  membros: { id: string; nome: string }[];
 }
 
-function KanbanCardWrapper({ card, onCardClick }: CardProps) {
-  const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({ id: card.id });
-  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: card.id });
-
-  const setCombinedRef = (node: HTMLDivElement | null) => {
-    setDragRef(node);
-    setDropRef(node);
-  };
-
+function KanbanCardWrapper({ card, onCardClick, membros }: CardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id, data: { type: "card" } });
   const startCoords = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -1996,76 +2333,102 @@ function KanbanCardWrapper({ card, onCardClick }: CardProps) {
 
   return (
     <div
-      ref={setCombinedRef}
+      ref={setNodeRef}
       onPointerDown={handlePointerDown}
       onClick={handleCardClick}
       {...listeners}
       {...attributes}
       style={{
         transform: CSS.Translate.toString(transform),
+        transition,
         opacity: isDragging ? 0.35 : 1,
-        background: "#ffffff",
-        border: isOver ? "2px solid #004a8c" : "1px solid rgba(0,20,70,.07)",
-        borderRadius: 14,
-        boxShadow: isOver ? "0 4px 12px rgba(0,74,140,.15)" : "0 1px 3px rgba(0,20,70,.015), 0 2px 5px rgba(0,20,70,.02)",
-        transition: "box-shadow .2s, border-color .2s",
-        cursor: "grab",
       }}
-      className="p-3.5 hover:shadow-md hover:border-cyan-100 transition-all relative group"
+      className="touch-none cursor-grab active:cursor-grabbing group"
     >
-      
-      {/* Labels row */}
-      {card.labels && card.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2 pr-6">
-          {card.labels.map(lId => {
-            const tag = ETIQUETAS.find(t => t.id === lId);
-            if (!tag) return null;
-            return (
-              <span key={lId} className={`w-3.5 h-1.5 rounded-full ${tag.dot}`} title={tag.label}></span>
-            );
-          })}
-        </div>
-      )}
+      <CardPresentation card={card} membros={membros} />
+    </div>
+  );
+}
 
-      {/* Card title */}
-      <p className="text-xs font-semibold text-gray-800 leading-snug pr-4">{card.titulo}</p>
+// ── Card Presentation (visual compartilhado entre coluna e DragOverlay) ──
+function CardPresentation({ card, membros }: { card: KanbanEvento; membros: { id: string; nome: string }[] }) {
+  const cover = coverCss(card.cover);
+  const assigned = (card.membros_atribuidos && card.membros_atribuidos.length > 0)
+    ? card.membros_atribuidos
+    : (card.responsavel ? [card.responsavel] : []);
 
-      {/* Description preview */}
-      {card.descricao && (
-        <p className="text-[10px] text-gray-400 font-light mt-1.5 line-clamp-2 leading-relaxed">
-          {card.descricao}
-        </p>
-      )}
+  return (
+    <div className="bg-white rounded-[14px] border border-[rgba(0,20,70,.07)] shadow-[0_1px_3px_rgba(0,20,70,.015),0_2px_5px_rgba(0,20,70,.02)] hover:shadow-md hover:border-cyan-100 transition-all relative overflow-hidden">
 
-      {/* Badges footer */}
-      {(card.data || card.responsavel || (card.anexos && card.anexos.length > 0)) && (
-        <div className="mt-2.5 pt-2 border-t border-gray-50 flex items-center justify-between flex-wrap gap-1.5 text-[9px] text-gray-400 font-light">
-          
-          <div className="flex items-center gap-1.5">
-            {card.data && (
-              <span className={`flex items-center gap-0.5 ${getPrazoInfo(card.data, card.prazo_concluido).cor.split(" ")[0]}`}>
-                {card.prazo_concluido ? <CheckCircle2 size={10} className="text-emerald-500" /> : <Clock size={10} />}
-                {fmtData(card.data)}
-              </span>
-            )}
-            {card.anexos && card.anexos.length > 0 && (
-              <span className="flex items-center gap-0.5">
-                <Paperclip size={9} />
-                {card.anexos.length}
-              </span>
-            )}
+      {/* Cover color bar */}
+      {cover && <div className={`h-2.5 w-full ${cover}`} />}
+
+      <div className="p-3.5">
+        {/* Labels row */}
+        {card.labels && card.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2 pr-6">
+            {card.labels.map(lId => {
+              const tag = ETIQUETAS.find(t => t.id === lId);
+              if (!tag) return null;
+              return (
+                <span key={lId} className={`w-3.5 h-1.5 rounded-full ${tag.dot}`} title={tag.label}></span>
+              );
+            })}
           </div>
+        )}
 
-          {card.responsavel && (
-            <span className="flex items-center gap-0.5 font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-sm">
-              <User size={8} />
-              {card.responsavel}
-            </span>
-          )}
+        {/* Card title */}
+        <p className="text-xs font-semibold text-gray-800 leading-snug pr-1">{card.titulo}</p>
 
-        </div>
-      )}
+        {/* Description preview */}
+        {card.descricao && (
+          <p className="text-[10px] text-gray-400 font-light mt-1.5 line-clamp-2 leading-relaxed">
+            {card.descricao}
+          </p>
+        )}
 
+        {/* Badges footer */}
+        {(card.data || assigned.length > 0 || (card.anexos && card.anexos.length > 0)) && (
+          <div className="mt-2.5 pt-2 border-t border-gray-50 flex items-center justify-between flex-wrap gap-1.5 text-[9px] text-gray-400 font-light">
+
+            <div className="flex items-center gap-1.5">
+              {card.data && (
+                <span className={`flex items-center gap-0.5 ${getPrazoInfo(card.data, card.prazo_concluido).cor.split(" ")[0]}`}>
+                  {card.prazo_concluido ? <CheckCircle2 size={10} className="text-emerald-500" /> : <Clock size={10} />}
+                  {fmtData(card.data)}
+                </span>
+              )}
+              {card.anexos && card.anexos.length > 0 && (
+                <span className="flex items-center gap-0.5">
+                  <Paperclip size={9} />
+                  {card.anexos.length}
+                </span>
+              )}
+            </div>
+
+            {/* Member avatars */}
+            {assigned.length > 0 && (
+              <div className="flex -space-x-1.5">
+                {assigned.slice(0, 3).map(nome => (
+                  <span
+                    key={nome}
+                    title={nome}
+                    className={`w-5 h-5 rounded-full ${avatarColor(nome)} text-white text-[8px] font-bold flex items-center justify-center ring-2 ring-white`}
+                  >
+                    {avatarInitials(nome)}
+                  </span>
+                ))}
+                {assigned.length > 3 && (
+                  <span className="w-5 h-5 rounded-full bg-gray-300 text-gray-700 text-[8px] font-bold flex items-center justify-center ring-2 ring-white">
+                    +{assigned.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -117,7 +117,7 @@ const roadmap: Item[] = [
 
   // ── FEITO — Organização e gestão de eventos ──────────────────────────────
 
-  { status: "feito", titulo: "Board Kanban de projetos da casa espírita", cardTitle: "Kanban de Projetos", descricao: "Quadro Kanban completo de projetos estilo Trello, com colunas dinâmicas, comentários, tags, prazos de conclusão, anexos, fundos personalizáveis e link para convidados · Disponível em /kanban" },
+  { status: "feito", titulo: "Board Kanban de projetos da casa espírita", cardTitle: "Kanban de Projetos", descricao: "Quadro Kanban completo estilo Trello: múltiplos projetos nomeados por casa, arrastar cards entre listas e reordenar listas com animação suave (DragOverlay), capas coloridas e avatares dos membros nos cards, além de comentários, checklists, tags, prazos, anexos, fundos personalizáveis e link para convidados · Disponível em /kanban" },
   { status: "feito", titulo: "Grupos de trabalho com Kanban de tarefas", cardTitle: "Kanban de Grupos", descricao: "Criação de grupos de trabalho com Kanban individual para gerenciar tarefas · Cada grupo tem sua própria coluna de atividades (Pendente, Em progresso, Concluído) · Membros podem ser atribuídos a tarefas e acompanhar progresso em tempo real · Disponível em /grupos" },
 ];
 
