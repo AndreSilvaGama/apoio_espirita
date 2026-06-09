@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
-import { DndContext, DragEndEvent, useDroppable, useDraggable, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, useDroppable, useDraggable, PointerSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { 
   Plus, Calendar, User, Pencil, Trash2, X, ChevronLeft, ChevronRight, 
@@ -1091,7 +1091,7 @@ function KanbanPage() {
         {loadingBoard ? (
           <div className="py-20 text-center text-sm text-gray-500 font-light">Carregando quadro de projetos...</div>
         ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <div className="flex gap-4 overflow-x-auto pb-4 items-start select-none">
               
               {/* Render Lists */}
@@ -1975,10 +1975,30 @@ function KanbanCardWrapper({ card, onCardClick }: CardProps) {
     setDropRef(node);
   };
 
+  const startCoords = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    startCoords.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const distance = Math.sqrt(
+      Math.pow(e.clientX - startCoords.current.x, 2) +
+      Math.pow(e.clientY - startCoords.current.y, 2)
+    );
+    if (distance > 5) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    onCardClick(card);
+  };
+
   return (
     <div
       ref={setCombinedRef}
-      onClick={() => onCardClick(card)}
+      onPointerDown={handlePointerDown}
+      onClick={handleCardClick}
       {...listeners}
       {...attributes}
       style={{
