@@ -248,6 +248,7 @@ function KanbanPage() {
   const [newCommentText, setNewCommentText] = useState("");
   const [editingDescription, setEditingDescription] = useState(false);
   const [tempDescription, setTempDescription] = useState("");
+  const [tempTitle, setTempTitle] = useState("");
   const [showAddLabelMenu, setShowAddLabelMenu] = useState(false);
   const [showAddMemberMenu, setShowAddMemberMenu] = useState(false);
   const [showMoveCardMenu, setShowMoveCardMenu] = useState(false);
@@ -457,6 +458,7 @@ function KanbanPage() {
     if (selectedCard) {
       fetchCardDetails(selectedCard.id);
       setTempDescription(selectedCard.descricao || "");
+      setTempTitle(selectedCard.titulo || "");
       setEditingDescription(false);
     }
   }, [selectedCard]);
@@ -1499,8 +1501,19 @@ function KanbanPage() {
               <div className="flex-1 pr-4">
                 <input
                   type="text"
-                  value={selectedCard.titulo}
-                  onChange={e => handleUpdateCard({ ...selectedCard, titulo: e.target.value })}
+                  value={tempTitle}
+                  onChange={e => setTempTitle(e.target.value)}
+                  onBlur={() => {
+                    const novo = tempTitle.trim();
+                    if (novo && novo !== selectedCard.titulo) {
+                      handleUpdateCard({ ...selectedCard, titulo: novo });
+                    } else {
+                      setTempTitle(selectedCard.titulo || "");
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  }}
                   className="w-full text-base font-semibold text-gray-800 bg-transparent border-b border-transparent hover:border-gray-200 focus:border-cyan-600 focus:outline-none transition-colors"
                 />
                 <p className="text-[10px] text-gray-400 mt-1 font-light flex items-center gap-1">
@@ -2333,7 +2346,7 @@ function KanbanCardWrapper({ card, onCardClick, membros }: CardProps) {
   return (
     <div
       ref={setNodeRef}
-      onPointerDown={handlePointerDown}
+      onPointerDownCapture={handlePointerDown}
       onClick={handleCardClick}
       {...listeners}
       {...attributes}
