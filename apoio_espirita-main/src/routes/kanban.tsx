@@ -71,6 +71,7 @@ interface KanbanLista {
   nome: string;
   ordem: number;
   board_id: string | null;
+  frente_id: string | null;
   created_at: string;
 }
 
@@ -79,6 +80,16 @@ interface KanbanBoard {
   sigla_casa: string;
   nome: string;
   ordem: number;
+  created_at: string;
+}
+
+interface KanbanFrente {
+  id: string;
+  sigla_casa: string;
+  board_id: string;
+  nome: string;
+  ordem: number;
+  membros: string[];
   created_at: string;
 }
 
@@ -207,6 +218,8 @@ function KanbanPage() {
   
   const [boards, setBoards] = useState<KanbanBoard[]>([]);
   const [activeBoardId, setActiveBoardId] = useState<string | null>(null);
+  const [frentes, setFrentes] = useState<KanbanFrente[]>([]);
+  const [activeFrenteId, setActiveFrenteId] = useState<string | null>(null);
   const [listas, setListas] = useState<KanbanLista[]>([]);
   const [eventos, setEventos] = useState<KanbanEvento[]>([]);
   const [membrosCasa, setMembrosCasa] = useState<{ id: string; nome: string }[]>([]);
@@ -217,6 +230,13 @@ function KanbanPage() {
   const [newBoardName, setNewBoardName] = useState("");
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
   const [editingBoardName, setEditingBoardName] = useState("");
+
+  // Frente de Trabalho management UI
+  const [showNewFrenteForm, setShowNewFrenteForm] = useState(false);
+  const [newFrenteName, setNewFrenteName] = useState("");
+  const [editingFrenteId, setEditingFrenteId] = useState<string | null>(null);
+  const [editingFrenteName, setEditingFrenteName] = useState("");
+  const [showFrenteMembros, setShowFrenteMembros] = useState(false);
 
   // Drag overlay (Trello-style smooth dragging)
   const [activeDrag, setActiveDrag] = useState<{ type: "card" | "list"; id: string } | null>(null);
@@ -365,7 +385,35 @@ function KanbanPage() {
         (boardsList[0]?.id ?? null);
       setActiveBoardId(chosenBoardId);
 
-      // 3. Fetch Lists (todas da casa; a filtragem por board ocorre na renderização)
+      // 2b. Fetch Frentes de Trabalho (nível entre o board e as listas)
+      let { data: frentesData } = await client
+        .from("kanban_frentes")
+        .select("*")
+        .eq("sigla_casa", siglaCasa)
+        .order("ordem");
+
+      // Garante uma frente padrão "Geral" no board ativo, se ele ainda não tiver nenhuma
+      if (chosenBoardId && !guestToken && user && !(frentesData || []).some(f => f.board_id === chosenBoardId)) {
+        const { data: newFrente } = await client
+          .from("kanban_frentes")
+          .insert({ sigla_casa: siglaCasa, board_id: chosenBoardId, nome: "Geral", ordem: 0 })
+          .select()
+          .single();
+        if (newFrente) frentesData = [...(frentesData || []), newFrente];
+      }
+      const frentesList = frentesData || [];
+      setFrentes(frentesList);
+
+      // Resolve frente ativa do board escolhido (preserva seleção / localStorage / primeira)
+      const storedFrente = typeof window !== "undefined" ? localStorage.getItem(`kanban_frente_${chosenBoardId}`) : null;
+      const boardFrentes = frentesList.filter(f => f.board_id === chosenBoardId).sort((a, b) => a.ordem - b.ordem);
+      const chosenFrenteId =
+        (activeFrenteId && boardFrentes.some(f => f.id === activeFrenteId) && activeFrenteId) ||
+        (storedFrente && boardFrentes.some(f => f.id === storedFrente) && storedFrente) ||
+        (boardFrentes[0]?.id ?? null);
+      setActiveFrenteId(chosenFrenteId);
+
+      // 3. Fetch Lists (todas da casa; a filtragem por frente ocorre na renderização)
       let { data: listasData } = await client
         .from("kanban_listas")
         .select("*")
@@ -373,12 +421,13 @@ function KanbanPage() {
         .order("ordem");
 
       // Auto-create default columns only on first-time setup (casa sem nenhuma lista)
-      if ((!listasData || listasData.length === 0) && chosenBoardId && !guestToken && user) {
+      if ((!listasData || listasData.length === 0) && chosenBoardId && chosenFrenteId && !guestToken && user) {
         const defaultLists = DEFAULT_LISTAS.map((nome, idx) => ({
           sigla_casa: siglaCasa,
           nome,
           ordem: idx,
-          board_id: chosenBoardId
+          board_id: chosenBoardId,
+          frente_id: chosenFrenteId
         }));
         const { data: insertedListas } = await client
           .from("kanban_listas")
@@ -489,6 +538,15 @@ function KanbanPage() {
     toast.success(`Acesso concedido como ${tempGuestName.trim()}`);
   };
 
+  // Actions for Frentes de Trabalho
+  const switchFrente = (frenteId: string) => {
+    setActiveFrenteId(frenteId);
+    if (typeof window !== "undefined") {
+      const bId = frentes.find(f => f.id === frenteId)?.board_id;
+      if (bId) localStorage.setItem(`kanban_frente_${bId}`, frenteId);
+    }
+  };
+
   // Actions for Boards (quadros)
   const switchBoard = (boardId: string) => {
     setActiveBoardId(boardId);
@@ -496,6 +554,11 @@ function KanbanPage() {
     if (typeof window !== "undefined" && sigla) {
       localStorage.setItem(`kanban_board_${sigla}`, boardId);
     }
+    // Seleciona a frente do board (última usada ou a primeira)
+    const bf = frentes.filter(f => f.board_id === boardId).sort((a, b) => a.ordem - b.ordem);
+    const storedFrente = typeof window !== "undefined" ? localStorage.getItem(`kanban_frente_${boardId}`) : null;
+    const fId = (storedFrente && bf.some(f => f.id === storedFrente) && storedFrente) || (bf[0]?.id ?? null);
+    setActiveFrenteId(fId);
   };
 
   const handleAddBoard = async () => {
@@ -514,9 +577,19 @@ function KanbanPage() {
 
       if (error) throw error;
       setBoards([...boards, data]);
+      // Todo projeto novo começa com uma frente de trabalho padrão
+      const { data: frente } = await client
+        .from("kanban_frentes")
+        .insert({ sigla_casa: sigla, board_id: data.id, nome: "Geral", ordem: 0, membros: [] })
+        .select()
+        .single();
+      if (frente) setFrentes(prev => [...prev, frente]);
       setNewBoardName("");
       setShowNewBoardForm(false);
-      switchBoard(data.id);
+      setActiveBoardId(data.id);
+      setShowBoardMenu(false);
+      if (typeof window !== "undefined" && sigla) localStorage.setItem(`kanban_board_${sigla}`, data.id);
+      if (frente) setActiveFrenteId(frente.id);
       toast.success("Projeto criado.");
     } catch (e) {
       toast.error("Erro ao criar projeto.");
@@ -557,8 +630,9 @@ function KanbanPage() {
       if (error) throw error;
       const remaining = boards.filter(b => b.id !== boardId);
       setBoards(remaining);
-      // Remove listas/cards do board excluído do estado local (cascade no banco)
+      // Remove frentes/listas/cards do board excluído do estado local (cascade no banco)
       const removedListaIds = listas.filter(l => l.board_id === boardId).map(l => l.id);
+      setFrentes(frentes.filter(f => f.board_id !== boardId));
       setListas(listas.filter(l => l.board_id !== boardId));
       setEventos(eventos.filter(e => !removedListaIds.includes(e.lista_id || "")));
       if (activeBoardId === boardId) {
@@ -570,19 +644,100 @@ function KanbanPage() {
     }
   };
 
+  const handleAddFrente = async () => {
+    if (!newFrenteName.trim() || !activeBoardId) return;
+    const client = getClient();
+    const boardFrentes = frentes.filter(f => f.board_id === activeBoardId);
+    try {
+      const { data, error } = await client
+        .from("kanban_frentes")
+        .insert({ sigla_casa: sigla, board_id: activeBoardId, nome: newFrenteName.trim(), ordem: boardFrentes.length, membros: [] })
+        .select()
+        .single();
+      if (error) throw error;
+      setFrentes([...frentes, data]);
+      setNewFrenteName("");
+      setShowNewFrenteForm(false);
+      switchFrente(data.id);
+      toast.success("Frente de trabalho criada.");
+    } catch (e) {
+      toast.error("Erro ao criar frente de trabalho.");
+    }
+  };
+
+  const handleRenameFrente = async (frenteId: string) => {
+    if (!editingFrenteName.trim()) return;
+    const client = getClient();
+    try {
+      const { error } = await client
+        .from("kanban_frentes")
+        .update({ nome: editingFrenteName.trim() })
+        .eq("id", frenteId);
+      if (error) throw error;
+      setFrentes(frentes.map(f => f.id === frenteId ? { ...f, nome: editingFrenteName.trim() } : f));
+      setEditingFrenteId(null);
+      toast.success("Frente renomeada.");
+    } catch (e) {
+      toast.error("Erro ao renomear frente.");
+    }
+  };
+
+  const handleDeleteFrente = async (frenteId: string, nome: string) => {
+    const boardFrentes = frentes.filter(f => f.board_id === activeBoardId);
+    if (boardFrentes.length <= 1) {
+      toast.error("Cada projeto precisa de ao menos uma frente de trabalho.");
+      return;
+    }
+    if (!confirm(`Excluir a frente "${nome}"? Todas as listas e cards dela serão excluídos!`)) return;
+    const client = getClient();
+    try {
+      const listaIds = listas.filter(l => l.frente_id === frenteId).map(l => l.id);
+      // Listas têm cascade da frente, mas card→lista é SET NULL: apaga os cards explicitamente
+      if (listaIds.length > 0) {
+        await client.from("kanban_eventos").delete().in("lista_id", listaIds);
+      }
+      const { error } = await client.from("kanban_frentes").delete().eq("id", frenteId);
+      if (error) throw error;
+      const remaining = boardFrentes.filter(f => f.id !== frenteId);
+      setFrentes(frentes.filter(f => f.id !== frenteId));
+      setListas(listas.filter(l => l.frente_id !== frenteId));
+      setEventos(eventos.filter(e => !listaIds.includes(e.lista_id || "")));
+      if (activeFrenteId === frenteId) switchFrente(remaining[0].id);
+      toast.success("Frente de trabalho excluída.");
+    } catch (e) {
+      toast.error("Erro ao excluir frente.");
+    }
+  };
+
+  const toggleFrenteMembro = async (frenteId: string, nome: string) => {
+    const frente = frentes.find(f => f.id === frenteId);
+    if (!frente) return;
+    const has = frente.membros.includes(nome);
+    const novos = has ? frente.membros.filter(n => n !== nome) : [...frente.membros, nome];
+    const anterior = frentes;
+    setFrentes(frentes.map(f => f.id === frenteId ? { ...f, membros: novos } : f));
+    const client = getClient();
+    const { error } = await client.from("kanban_frentes").update({ membros: novos }).eq("id", frenteId);
+    if (error) {
+      setFrentes(anterior);
+      toast.error("Erro ao atualizar membros da frente.");
+    }
+  };
+
   // Actions for Lists
   const handleAddList = async () => {
-    if (!newListName.trim() || !activeBoardId) return;
+    if (!newListName.trim() || !activeBoardId || !activeFrenteId) return;
     const client = getClient();
-    const boardListas = listas.filter(l => l.board_id === activeBoardId);
+    const frenteListas = listas.filter(l => l.frente_id === activeFrenteId);
     try {
       const { data, error } = await client
         .from("kanban_listas")
         .insert({
           sigla_casa: sigla,
           nome: newListName.trim(),
-          ordem: boardListas.length,
-          board_id: activeBoardId
+          ordem: frenteListas.length,
+          board_id: activeBoardId,
+          frente_id: activeFrenteId
         })
         .select()
         .single();
@@ -777,7 +932,7 @@ function KanbanPage() {
     // ── Reordenação de LISTAS ──
     if (activeData?.type === "list") {
       if (activeId === overId) return;
-      const ordered = listas.filter(l => l.board_id === activeBoardId).sort((a, b) => a.ordem - b.ordem);
+      const ordered = listas.filter(l => l.frente_id === activeFrenteId).sort((a, b) => a.ordem - b.ordem);
       const oldIndex = ordered.findIndex(l => l.id === activeId);
       const newIndex = ordered.findIndex(l => l.id === overId);
       if (oldIndex < 0 || newIndex < 0) return;
@@ -1109,9 +1264,11 @@ function KanbanPage() {
   });
 
   const activeBg = BACKGROUNDS.find(b => b.id === (config?.board_background)) || BACKGROUNDS[0];
-  const boardListas = listas.filter(l => l.board_id === activeBoardId).sort((a, b) => a.ordem - b.ordem);
+  const boardFrentes = frentes.filter(f => f.board_id === activeBoardId).sort((a, b) => a.ordem - b.ordem);
+  const activeFrente = boardFrentes.find(f => f.id === activeFrenteId) || null;
+  const frenteListas = listas.filter(l => l.frente_id === activeFrenteId).sort((a, b) => a.ordem - b.ordem);
   const activeDragCard = activeDrag?.type === "card" ? eventos.find(e => e.id === activeDrag.id) : null;
-  const activeDragList = activeDrag?.type === "list" ? boardListas.find(l => l.id === activeDrag.id) : null;
+  const activeDragList = activeDrag?.type === "list" ? frenteListas.find(l => l.id === activeDrag.id) : null;
 
   return (
     <main className={`min-h-screen ${activeBg.id} pt-20 pb-20 transition-all duration-500`}>
@@ -1365,6 +1522,120 @@ function KanbanPage() {
           </div>
         </div>
 
+        {/* Frentes de Trabalho (abas) */}
+        {!loadingBoard && (
+          <div className="mb-5">
+            <div className="flex items-center gap-1 border-b border-white/20 overflow-x-auto">
+              {boardFrentes.map(f => {
+                const ativa = f.id === activeFrenteId;
+                if (editingFrenteId === f.id) {
+                  return (
+                    <div key={f.id} className="flex items-center gap-1 px-2 py-1.5">
+                      <input
+                        value={editingFrenteName}
+                        onChange={e => setEditingFrenteName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleRenameFrente(f.id)}
+                        autoFocus
+                        className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:outline-none focus:border-cyan-600 bg-white w-32"
+                      />
+                      <button onClick={() => handleRenameFrente(f.id)} className="p-1 bg-cyan-600 text-white rounded hover:bg-cyan-700 cursor-pointer"><Check size={12} /></button>
+                      <button onClick={() => setEditingFrenteId(null)} className="p-1 border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"><X size={12} /></button>
+                    </div>
+                  );
+                }
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => switchFrente(f.id)}
+                    onDoubleClick={() => { if (user) { setEditingFrenteId(f.id); setEditingFrenteName(f.nome); } }}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                      ativa ? "border-cyan-600 text-cyan-700 font-semibold" : "border-transparent text-gray-500 hover:text-gray-800"
+                    }`}
+                  >
+                    <Users size={13} className={ativa ? "text-cyan-600" : "text-gray-400"} />
+                    {f.nome}
+                    {f.membros.length > 0 && <span className="text-[10px] text-gray-400">· {f.membros.length}</span>}
+                    {user && ativa && (
+                      <span className="flex items-center gap-0.5 ml-1">
+                        <span onClick={e => { e.stopPropagation(); setEditingFrenteId(f.id); setEditingFrenteName(f.nome); }} className="p-0.5 rounded hover:bg-gray-200/60 text-gray-400"><Pencil size={11} /></span>
+                        <span onClick={e => { e.stopPropagation(); handleDeleteFrente(f.id, f.nome); }} className="p-0.5 rounded hover:bg-red-50 text-red-400"><Trash2 size={11} /></span>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Nova frente */}
+              {user && (showNewFrenteForm ? (
+                <div className="flex items-center gap-1 px-2 py-1.5">
+                  <input
+                    value={newFrenteName}
+                    onChange={e => setNewFrenteName(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleAddFrente()}
+                    placeholder="Nome da frente..."
+                    autoFocus
+                    className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-800 focus:outline-none focus:border-cyan-600 bg-white w-36"
+                  />
+                  <button onClick={handleAddFrente} className="p-1 bg-[#004a8c] text-white rounded hover:bg-[#003c73] cursor-pointer"><Check size={12} /></button>
+                  <button onClick={() => { setShowNewFrenteForm(false); setNewFrenteName(""); }} className="p-1 border border-gray-200 text-gray-500 rounded hover:bg-gray-50 cursor-pointer"><X size={12} /></button>
+                </div>
+              ) : (
+                <button onClick={() => setShowNewFrenteForm(true)} className="flex items-center gap-1 px-3 py-2.5 text-xs font-semibold text-gray-500 hover:text-cyan-700 whitespace-nowrap cursor-pointer">
+                  <Plus size={13} /> Nova frente
+                </button>
+              ))}
+            </div>
+
+            {/* Membros responsáveis da frente ativa */}
+            {activeFrente && (
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className="text-[11px] text-gray-400 font-medium">Responsáveis:</span>
+                {activeFrente.membros.length === 0 ? (
+                  <span className="text-[11px] text-gray-400 italic">ninguém definido</span>
+                ) : (
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {activeFrente.membros.map(nome => (
+                      <span key={nome} className="flex items-center gap-1 text-[11px] bg-white border border-gray-200 rounded-full pl-1 pr-2 py-0.5 text-gray-700">
+                        <span className={`w-4 h-4 rounded-full ${avatarColor(nome)} text-white text-[7px] font-bold flex items-center justify-center`}>{avatarInitials(nome)}</span>
+                        {nome}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {user && (
+                  <div className="relative">
+                    <button onClick={() => setShowFrenteMembros(v => !v)} className="text-[11px] font-semibold text-cyan-600 hover:text-cyan-700 cursor-pointer flex items-center gap-1">
+                      <Plus size={11} /> Gerenciar
+                    </button>
+                    {showFrenteMembros && (
+                      <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-2 max-h-60 overflow-y-auto">
+                        <div className="flex items-center justify-between px-1 pb-1 mb-1 border-b border-gray-100">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Responsáveis da frente</span>
+                          <button onClick={() => setShowFrenteMembros(false)} className="text-gray-400 hover:text-gray-600"><X size={12} /></button>
+                        </div>
+                        {membrosCasa.length === 0 ? (
+                          <p className="text-[11px] text-gray-400 italic px-1 py-2">Nenhum membro na casa.</p>
+                        ) : membrosCasa.map(m => {
+                          const sel = activeFrente.membros.includes(m.nome);
+                          return (
+                            <button key={m.id} onClick={() => toggleFrenteMembro(activeFrente.id, m.nome)} className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs text-left hover:bg-gray-50 cursor-pointer text-gray-700">
+                              <span className="flex items-center gap-1.5">
+                                <span className={`w-4 h-4 rounded-full ${avatarColor(m.nome)} text-white text-[7px] font-bold flex items-center justify-center`}>{avatarInitials(m.nome)}</span>
+                                {m.nome}
+                              </span>
+                              {sel && <Check size={12} className="text-cyan-600" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Board lists layout */}
         {loadingBoard ? (
           <div className="py-20 text-center text-sm text-gray-500 font-light">Carregando quadro de projetos...</div>
@@ -1379,8 +1650,8 @@ function KanbanPage() {
             <div className="flex gap-4 overflow-x-auto pb-4 items-start select-none">
 
               {/* Render Lists (sortable horizontalmente) */}
-              <SortableContext items={boardListas.map(l => l.id)} strategy={horizontalListSortingStrategy}>
-                {boardListas.map(lista => (
+              <SortableContext items={frenteListas.map(l => l.id)} strategy={horizontalListSortingStrategy}>
+                {frenteListas.map(lista => (
                   <KanbanColumnWrapper
                     key={lista.id}
                     list={lista}
@@ -2043,7 +2314,7 @@ function KanbanPage() {
                   
                   {showMoveCardMenu && (
                     <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl p-2 shadow-lg z-10 space-y-0.5">
-                      {boardListas.map(l => {
+                      {frenteListas.map(l => {
                         const active = selectedCard.lista_id === l.id;
                         return (
                           <button
