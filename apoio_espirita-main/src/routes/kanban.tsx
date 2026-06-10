@@ -2526,8 +2526,8 @@ function KanbanColumnWrapper({
         )}
       </div>
 
-      {/* Cards List container (droppable + sortable) */}
-      <div ref={setCardDropRef} className="space-y-3 max-h-[55vh] overflow-y-auto pr-1 min-h-[12px]">
+      {/* Cards List container (droppable + sortable) — cresce com o conteúdo, sem rolagem interna */}
+      <div ref={setCardDropRef} className="space-y-3 pr-1 min-h-[12px]">
         <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
           {cards.map(card => (
             <KanbanCardWrapper
