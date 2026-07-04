@@ -402,6 +402,7 @@ function PaginaCasa() {
 
   /* Mural de Escalas UI */
   const [escalaDiaAtivo, setEscalaDiaAtivo] = useState<string>("");
+  const [mostrarMuralArquivado, setMostrarMuralArquivado] = useState(false);
   const [showNovoMural, setShowNovoMural] = useState(false);
   const [editandoMuralId, setEditandoMuralId] = useState<string | null>(null);
   const [formMural, setFormMural] = useState({
@@ -506,6 +507,36 @@ function PaginaCasa() {
   useEffect(() => {
     if (!loading && user) carregar();
   }, [loading, user, carregar]);
+
+  // Auto-archive expired mural scales in the database
+  useEffect(() => {
+    if (modoAdmin && pagina?.horarios && sigla) {
+      const currentList = ((pagina.horarios ?? []) as any[]);
+      let changed = false;
+      const updated = currentList.map(item => {
+        if (item.tipo === "escala" && !item.arquivado && isEscalaVencida(item.dia, item.mes_ano)) {
+          changed = true;
+          return { ...item, arquivado: true };
+        }
+        return item;
+      });
+
+      if (changed) {
+        const updateDb = async () => {
+          const { error } = await supabase
+            .from("paginas_casas")
+            .update({ horarios: updated })
+            .eq("sigla_casa", sigla);
+          
+          if (!error) {
+            setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+            toast.info("Programações públicas vencidas foram arquivadas automaticamente.");
+          }
+        };
+        updateDb();
+      }
+    }
+  }, [modoAdmin, pagina?.horarios, sigla]);
 
   const fetchAgenda = useCallback(async () => {
     if (!user || !profile?.sigla_casa) return;
@@ -813,11 +844,49 @@ function PaginaCasa() {
      ACTIONS — MURAL DE ESCALAS (CRUD)
   ═══════════════════════════════════════════════ */
 
+  const parseEscalaDate = (dia: string, mesAno: string): Date | null => {
+    const parts = mesAno.trim().split(/\s+/);
+    if (parts.length < 2) return null;
+    const mesStr = parts[0].toLowerCase();
+    const ano = parseInt(parts[1]);
+    const meses: Record<string, number> = {
+      "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3,
+      "maio": 4, "junho": 5, "julho": 6, "agosto": 7,
+      "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11
+    };
+    const mes = meses[mesStr];
+    if (mes === undefined || isNaN(ano)) return null;
+    const diaNum = parseInt(dia);
+    if (isNaN(diaNum)) return null;
+    return new Date(ano, mes, diaNum, 23, 59, 59);
+  };
+
+  const isEscalaVencida = (dia: string, mesAno: string): boolean => {
+    const dataEvento = parseEscalaDate(dia, mesAno);
+    if (!dataEvento) return false;
+    return dataEvento < new Date();
+  };
+
   const getEscalaItems = () => {
     const list = ((pagina?.horarios as any[]) ?? []);
     const dbItems = list.filter(h => h.tipo === "escala");
-    if (dbItems.length > 0) return dbItems;
-    if (sigla === "GECAL") return DEFAULT_GECAL_ESCALAS;
+    
+    if (dbItems.length > 0) {
+      return dbItems.filter(h => {
+        const vencida = isEscalaVencida(h.dia, h.mes_ano);
+        const arquivada = h.arquivado || vencida;
+        return mostrarMuralArquivado ? arquivada : !arquivada;
+      });
+    }
+
+    if (sigla === "GECAL") {
+      return DEFAULT_GECAL_ESCALAS.filter(h => {
+        const vencida = isEscalaVencida(h.dia, h.mes_ano);
+        const arquivada = h.arquivado || vencida;
+        return mostrarMuralArquivado ? arquivada : !arquivada;
+      });
+    }
+
     return [];
   };
 
@@ -1193,20 +1262,40 @@ function PaginaCasa() {
             </div>
 
             {/* Mural de Palestras Dinâmico */}
-            {(sigla === "GECAL" || getEscalaItems().length > 0) && (
-              <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up" style={{ animationDuration: '500ms' }}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/40 pb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
-                      <Megaphone className="w-5 h-5 text-violet-600" />
+            {(() => {
+              const list = ((pagina?.horarios as any[]) ?? []);
+              const dbItems = list.filter(h => h.tipo === "escala");
+              const totalMuralItemsCount = dbItems.length > 0 ? dbItems.length : (sigla === "GECAL" ? DEFAULT_GECAL_ESCALAS.length : 0);
+
+              if (sigla !== "GECAL" && totalMuralItemsCount === 0) return null;
+
+              return (
+                <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up" style={{ animationDuration: '500ms' }}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/40 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
+                        <Megaphone className="w-5 h-5 text-violet-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 leading-tight">Programação Pública</h3>
+                        <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">Palestras Públicas &amp; Escalas de Trabalho</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 leading-tight">Programação Pública</h3>
-                      <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">Palestras Públicas &amp; Escalas de Trabalho</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {modoAdmin && !showNovoMural && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Toggle para visualizar escalas arquivadas */}
+                      <button
+                        type="button"
+                        onClick={() => setMostrarMuralArquivado(prev => !prev)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                          mostrarMuralArquivado
+                            ? "bg-amber-600 border-amber-600 text-white shadow-sm hover:bg-amber-700"
+                            : "bg-slate-100 border-gray-200 text-gray-500 hover:bg-gray-200"
+                        }`}
+                      >
+                        {mostrarMuralArquivado ? "Ver Ativas" : "Ver Arquivadas"}
+                      </button>
+
+                      {modoAdmin && !showNovoMural && (
                       <button
                         onClick={() => {
                           setEditandoMuralId(null);
@@ -1368,7 +1457,9 @@ function PaginaCasa() {
                   if (escalas.length === 0) {
                     return (
                       <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
-                        Nenhuma palestra ou escala registrada no mural.
+                        {mostrarMuralArquivado
+                          ? "Nenhuma palestra ou escala arquivada no mural."
+                          : "Nenhuma palestra ou escala ativa registrada no mural."}
                       </div>
                     );
                   }
@@ -1521,7 +1612,8 @@ function PaginaCasa() {
                   {sigla === "GECAL" && <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>}
                 </div>
               </section>
-            )}
+            );
+          })()}
 
             {/* Próximos Eventos */}
             {agendaEventos.length > 0 && (

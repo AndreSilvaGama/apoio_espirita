@@ -234,12 +234,23 @@
 .page-light {
   --background:        #f7f8fc;
   --foreground:        #111418;
+  --muted:             #eef1f6;
   --muted-foreground:  #637080;
-  --border:            rgba(0,20,70,.08);
+  --border:            rgba(0, 40, 100, 0.16);
   --card:              #ffffff;
   --card-foreground:   #111418;
-  --glass-bg:          rgba(255,255,255,.92);
-  --glass-border:      rgba(0,20,70,.10);
+  --popover:           #ffffff;
+  --popover-foreground:#111418;
+  --primary:           #004a8c;
+  --primary-foreground:#ffffff;
+  --secondary:         #ebf0f9;
+  --secondary-foreground:#004a8c;
+  --accent:            #ebf0f9;
+  --accent-foreground: #004a8c;
+  --input:             rgba(0, 40, 100, 0.20);
+  --ring:              #004a8c;
+  --glass-bg:          rgba(255,255,255,.94);
+  --glass-border:      rgba(0, 40, 100, 0.16);
 
   /* tokens Serene Wisdom */
   --sw-blue:           #004a8c;
@@ -254,7 +265,7 @@
   --sw-ink-3:          #637080;
   --sw-ink-4:          #a3adb8;
   --sw-surface:        #ffffff;
-  --sw-border-2:       rgba(0,20,70,.15);
+  --sw-border-2:       rgba(0, 40, 100, 0.20);
   --sw-shadow-card:    0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05);
   --sw-shadow-hover:   0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08);
 
@@ -270,29 +281,39 @@
 .page-light input[type="text"],
 .page-light input[type="email"],
 .page-light input[type="password"],
+.page-light input[type="search"],
+.page-light input[type="number"],
+.page-light input[type="date"],
+.page-light input[type="time"],
 .page-light select,
 .page-light textarea {
   background-color: white !important;
-  border-color: rgba(0,20,70,.15) !important;
+  border-color: rgba(0, 40, 100, 0.20) !important;
+  border-width: 1px !important;
+  border-style: solid !important;
   color: #111418 !important;
   transition: all 0.2s ease !important;
 }
 .page-light input[type="text"]:focus,
 .page-light input[type="email"]:focus,
 .page-light input[type="password"]:focus,
+.page-light input[type="search"]:focus,
+.page-light input[type="number"]:focus,
+.page-light input[type="date"]:focus,
+.page-light input[type="time"]:focus,
 .page-light select:focus,
 .page-light textarea:focus {
-  border-color: rgba(0,74,140,.6) !important;
-  box-shadow: 0 0 0 3px rgba(0,74,140,.10) !important;
+  border-color: rgba(0,74,140,.8) !important;
+  box-shadow: 0 0 0 3px rgba(0,74,140,.15) !important;
   outline: none !important;
 }
 .page-light input::placeholder,
 .page-light textarea::placeholder {
-  color: rgba(99,112,128,.55) !important;
+  color: rgba(99,112,128,.65) !important;
 }
 .page-light select {
   background-color: white !important;
-  border-color: rgba(0,20,70,.15) !important;
+  border-color: rgba(0, 40, 100, 0.20) !important;
   color: #111418 !important;
 }
 .page-light select option {
@@ -304,6 +325,18 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Corrigir bordas de cartões translúcidos e containers em tema claro */
+.page-light .glass-premium {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 40, 100, 0.16) !important;
+  box-shadow: 0 4px 16px rgba(0, 20, 70, 0.05), 
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+.page-light .glass {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 40, 100, 0.15) !important;
 }
 
 /* Light, gentle section used below the hero so the page feels welcoming

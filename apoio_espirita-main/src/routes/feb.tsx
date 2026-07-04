@@ -641,13 +641,13 @@ function Feb() {
             <div className="space-y-4 mb-8">
               {/* Busca */}
               <div className="relative">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
+                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Buscar por título ou tema…"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-10 py-3 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                  className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
                 />
                 {busca && (
                   <button
@@ -668,7 +668,7 @@ function Feb() {
                     className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                       categoria === c
                         ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                        : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                        : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                     }`}
                   >
                     {c}
@@ -685,7 +685,7 @@ function Feb() {
                     className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
                       !ano
                         ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                        : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                        : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                     }`}
                   >
                     Todos
@@ -697,7 +697,7 @@ function Feb() {
                       className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
                         ano === a
                           ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                          : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
                       {a}
@@ -714,15 +714,14 @@ function Feb() {
                 : `${filtrados.length} documento${filtrados.length > 1 ? "s" : ""} encontrado${filtrados.length > 1 ? "s" : ""}`}
             </p>
 
-            {/* Lista de documentos */}
             <div className="space-y-3">
               {filtrados.map((doc) => (
                 <div
                   key={doc.arquivo}
                   className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300"
                 >
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mt-0.5">
-                    <FileText size={18} strokeWidth={1.5} className="text-muted-foreground/50" />
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-cyan-50/50 border border-cyan-150 flex items-center justify-center mt-0.5">
+                    <FileText size={18} strokeWidth={1.5} className="text-cyan-700/60" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -806,13 +805,13 @@ function Feb() {
             <div className="space-y-4 mb-8">
               {/* Busca */}
               <div className="relative">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
+                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Buscar por título, autor espiritual ou tema do livro..."
                   value={buscaLivros}
                   onChange={(e) => setBuscaLivros(e.target.value)}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 pl-10 pr-10 py-3 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors"
+                  className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
                 />
                 {buscaLivros && (
                   <button
@@ -835,7 +834,7 @@ function Feb() {
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                         categoriaLivro === c
                           ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
-                          : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
                       {c}
@@ -855,7 +854,7 @@ function Feb() {
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                         autorEspiritual === a
                           ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                          : "bg-white/5 text-muted-foreground border-white/10 hover:border-white/20"
+                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
                       {a}
@@ -879,8 +878,8 @@ function Feb() {
                   key={livro.arquivo}
                   className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300 hover-premium"
                 >
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center mt-0.5 dark:bg-emerald-500/10">
-                    <BookOpen size={18} strokeWidth={1.5} className="text-emerald-600 dark:text-emerald-400" />
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-emerald-50/70 border border-emerald-250 flex items-center justify-center mt-0.5">
+                    <BookOpen size={18} strokeWidth={1.5} className="text-emerald-700" />
                   </div>
 
                   <div className="flex-1 min-w-0">

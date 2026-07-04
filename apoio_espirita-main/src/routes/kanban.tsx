@@ -1436,7 +1436,7 @@ function KanbanPage() {
 
         {/* Background Config Drawer */}
         {showConfig && (
-          <div className="glass rounded-2xl p-5 mb-6 border border-white/20 animate-fade-in-up">
+          <div className="glass rounded-2xl p-5 mb-6 border border-slate-200 animate-fade-in-up">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
                 <Palette size={14} className="text-violet-600" /> Alterar Plano de Fundo
@@ -1464,7 +1464,7 @@ function KanbanPage() {
         )}
 
         {/* Filters Panel */}
-        <div className="glass rounded-2xl p-4 mb-6 border border-white/20 flex flex-col sm:flex-row gap-3">
+        <div className="glass rounded-2xl p-4 mb-6 border border-slate-200 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -1525,7 +1525,7 @@ function KanbanPage() {
         {/* Frentes de Trabalho (abas) */}
         {!loadingBoard && (
           <div className="mb-5">
-            <div className="flex items-center gap-1 border-b border-white/20 overflow-x-auto">
+            <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto">
               {boardFrentes.map(f => {
                 const ativa = f.id === activeFrenteId;
                 if (editingFrenteId === f.id) {
@@ -2455,8 +2455,8 @@ function KanbanColumnWrapper({
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       className={`min-w-[272px] max-w-[272px] flex-shrink-0 rounded-2xl border p-4 transition-colors duration-300 ${
-        isOver ? "bg-white/90 border-cyan-300 shadow-md" : "bg-white/60 border-white/20"
-      } glass shrink-0`}
+        isOver ? "bg-white border-cyan-300 shadow-md" : "bg-slate-100/75 border-slate-200/80"
+      } shrink-0 shadow-sm`}
     >
 
       {/* List Header */}
@@ -2641,7 +2641,7 @@ function CardPresentation({ card, membros }: { card: KanbanEvento; membros: { id
     : (card.responsavel ? [card.responsavel] : []);
 
   return (
-    <div className="bg-white rounded-[14px] border border-[rgba(0,20,70,.07)] shadow-[0_1px_3px_rgba(0,20,70,.015),0_2px_5px_rgba(0,20,70,.02)] hover:shadow-md hover:border-cyan-100 transition-all relative overflow-hidden">
+    <div className="bg-white rounded-[14px] border border-slate-200/90 shadow-[0_1px_3px_rgba(0,20,70,.015),0_2px_5px_rgba(0,20,70,.02)] hover:shadow-md hover:border-cyan-200 transition-all relative overflow-hidden">
 
       {/* Cover color bar */}
       {cover && <div className={`h-2.5 w-full ${cover}`} />}

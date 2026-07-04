@@ -969,25 +969,27 @@ function MusicasCifrasPage() {
         </div>
 
         {/* Abas */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border border-gray-200/80 mb-8 p-1 bg-slate-100 rounded-2xl max-w-md mx-auto shadow-inner">
           <button
             onClick={() => setActiveTab("musicas")}
-            className={`py-3 px-6 text-sm font-semibold tracking-wider uppercase border-b-2 transition-all ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "musicas"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-indigo-500"
+                ? "bg-white text-indigo-600 shadow-sm border border-gray-200/50"
+                : "text-gray-500 hover:text-gray-900"
             }`}
           >
+            <Music size={14} />
             Playlists &amp; Músicas
           </button>
           <button
             onClick={() => setActiveTab("cifras")}
-            className={`py-3 px-6 text-sm font-semibold tracking-wider uppercase border-b-2 transition-all ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "cifras"
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-indigo-500"
+                ? "bg-white text-indigo-600 shadow-sm border border-gray-200/50"
+                : "text-gray-500 hover:text-gray-900"
             }`}
           >
+            <Guitar size={14} />
             Letras &amp; Cifras
           </button>
         </div>

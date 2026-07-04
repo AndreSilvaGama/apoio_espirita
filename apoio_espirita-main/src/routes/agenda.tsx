@@ -470,10 +470,10 @@ function AgendaPage() {
         )}
 
         {/* ── Tabs ── */}
-        <div className="flex gap-1 mb-8 bg-gray-100/80 border border-gray-200/50 rounded-2xl p-1 shadow-inner max-w-md mx-auto">
+        <div className="flex gap-1 mb-8 bg-slate-100 border border-gray-250 rounded-2xl p-1 shadow-inner max-w-md mx-auto">
           {(["proximos", "passados", "presencas"] as const).map((val) => (
             <button key={val} onClick={() => setAba(val)}
-              className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 ${aba === val ? "bg-[#004a8c] text-white shadow-sm" : "text-gray-500 hover:text-gray-900"}`}>
+              className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 cursor-pointer ${aba === val ? "bg-[#004a8c] text-white shadow-md border border-[#004a8c]/10" : "text-gray-500 hover:text-gray-900"}`}>
               {val === "proximos" ? "Próximos" : val === "passados" ? "Passados" : "Presenças"}
             </button>
           ))}
@@ -638,14 +638,14 @@ function EventoCard({ evento, userId, podeGerenciar, expanded, onToggle, onConfi
     <div
       style={{
         background: "#ffffff",
-        border: expanded ? "1px solid rgba(0,20,70,.18)" : "1px solid rgba(0,20,70,.08)",
+        border: expanded ? "1px solid rgba(0, 40, 100, 0.25)" : "1px solid rgba(0, 40, 100, 0.15)",
         borderRadius: 20,
         overflow: "hidden",
         boxShadow: expanded
-          ? "0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08)"
-          : "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+          ? "0 6px 20px rgba(0, 20, 70, 0.08), 0 2px 6px rgba(0, 20, 70, 0.04)"
+          : "0 2px 8px rgba(0, 20, 70, 0.04)",
         transition: "box-shadow .3s, border-color .3s",
-        marginBottom: 4,
+        marginBottom: 12,
       }}
     >
 
