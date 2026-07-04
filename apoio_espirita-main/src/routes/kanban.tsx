@@ -209,9 +209,7 @@ function KanbanPage() {
   const sensors = useSensors(pointerSensor);
 
   const [guestToken, setGuestToken] = useState<string | null>(null);
-  const [guestName, setGuestName] = useState<string | null>(null);
-  const [showGuestPrompt, setShowGuestPrompt] = useState(false);
-  const [tempGuestName, setTempGuestName] = useState("");
+
 
   const [sigla, setSigla] = useState<string | null>(null);
   const [config, setConfig] = useState<{ board_background: string; share_token: string } | null>(null);
@@ -285,18 +283,12 @@ function KanbanPage() {
     const token = params.get("token");
     if (token) {
       setGuestToken(token);
-      const name = sessionStorage.getItem("kanban_guest_name");
-      if (name) {
-        setGuestName(name);
-      } else {
-        setShowGuestPrompt(true);
-      }
     }
   }, []);
 
   // Set sigla based on user or token
   useEffect(() => {
-    if (!loading && !user && !guestToken) {
+    if (!loading && !user) {
       navigate({ to: "/login" });
       return;
     }
@@ -526,17 +518,7 @@ function KanbanPage() {
   // Helper to get active client
   const getClient = () => getSupabaseClient(guestToken);
 
-  // Handle Guest Prompt Submit
-  const handleGuestPromptSubmit = () => {
-    if (!tempGuestName.trim()) {
-      toast.error("Informe seu nome.");
-      return;
-    }
-    sessionStorage.setItem("kanban_guest_name", tempGuestName.trim());
-    setGuestName(tempGuestName.trim());
-    setShowGuestPrompt(false);
-    toast.success(`Acesso concedido como ${tempGuestName.trim()}`);
-  };
+
 
   // Actions for Frentes de Trabalho
   const switchFrente = (frenteId: string) => {
@@ -793,7 +775,7 @@ function KanbanPage() {
     if (!newCardTitle.trim()) return;
     const client = getClient();
     const authorId = user?.id || null;
-    const authorName = user ? (profile?.nome || "Membro") : (guestName || "Visitante");
+    const authorName = profile?.nome || "Membro";
     
     // Calculate new card order
     const listCards = eventos.filter(e => e.lista_id === listId);
@@ -1001,7 +983,7 @@ function KanbanPage() {
   const handleAddComment = async () => {
     if (!newCommentText.trim() || !selectedCard) return;
     const client = getClient();
-    const authorName = user ? (profile?.nome || "Membro") : (guestName || "Visitante");
+    const authorName = profile?.nome || "Membro";
     try {
       const { data, error } = await client
         .from("kanban_comentarios")
@@ -1275,21 +1257,11 @@ function KanbanPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         
         {/* Guest Warning */}
-        {guestToken && guestName && (
+        {guestToken && (
           <div className="mb-4 bg-amber-500/10 border border-amber-500/20 text-amber-800 rounded-xl px-4 py-2 flex items-center justify-between text-xs">
             <p className="font-light">
-              <span className="font-semibold">Modo Visitante:</span> Você está acessando como <strong className="font-medium">{guestName}</strong> via link de convite.
+              <span className="font-semibold">Quadro Compartilhado:</span> Você está acessando este quadro de projetos via link de convite.
             </p>
-            <button 
-              onClick={() => {
-                sessionStorage.removeItem("kanban_guest_name");
-                setGuestName(null);
-                setShowGuestPrompt(true);
-              }}
-              className="text-amber-800 underline font-medium cursor-pointer"
-            >
-              Alterar Nome
-            </button>
           </div>
         )}
 
@@ -1729,38 +1701,7 @@ function KanbanPage() {
 
       </div>
 
-      {/* ── Guest Access Prompt Modal ── */}
-      {showGuestPrompt && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl space-y-4 border border-gray-100 animate-scale-up">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 bg-cyan-50 border border-cyan-100 rounded-full flex items-center justify-center mx-auto text-cyan-600">
-                <Sparkles size={22} />
-              </div>
-              <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.25rem", color: "#111418" }}>
-                Acesso de Convidado
-              </h2>
-              <p className="text-xs text-gray-500 font-light leading-relaxed">
-                Você foi convidado para o quadro. Para colaborar (criar e mover cards, checklists e comentar), informe seu nome abaixo:
-              </p>
-            </div>
-            <input
-              type="text"
-              placeholder="Digite seu nome..."
-              value={tempGuestName}
-              onChange={e => setTempGuestName(e.target.value)}
-              autoFocus
-              className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-cyan-600 transition-colors"
-            />
-            <button
-              onClick={handleGuestPromptSubmit}
-              className="w-full py-3 rounded-xl text-sm font-semibold uppercase tracking-widest text-white bg-[#004a8c] hover:bg-[#00386b] transition-all cursor-pointer shadow-md"
-            >
-              Começar a colaborar
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* ── Card Details Modal (Trello style) ── */}
       {selectedCard && (
@@ -2099,7 +2040,7 @@ function KanbanPage() {
                   {/* Add comment */}
                   <div className="flex items-start gap-3 max-w-xl">
                     <div className="w-8 h-8 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center shrink-0 text-cyan-600 text-xs font-bold uppercase">
-                      {user ? (profile?.nome?.slice(0, 2) || "ME") : (guestName?.slice(0, 2) || "VI")}
+                      {profile?.nome?.slice(0, 2) || "ME"}
                     </div>
                     <div className="flex-1 space-y-2">
                       <textarea
@@ -2125,7 +2066,7 @@ function KanbanPage() {
                   ) : (
                     <div className="space-y-3 pt-2 max-w-xl">
                       {comentariosCard.map(comment => {
-                        const isMyComment = user ? (comment.user_id === user.id) : (comment.autor_nome === guestName);
+                        const isMyComment = user ? (comment.user_id === user.id) : false;
                         
                         return (
                           <div key={comment.id} className="flex items-start gap-3 bg-gray-50/45 border border-gray-100 rounded-2xl p-3 animate-fade-in-up">
