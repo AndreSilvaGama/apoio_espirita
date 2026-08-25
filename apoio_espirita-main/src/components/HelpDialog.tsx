@@ -8,13 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
-type Step =
-  | "initial"
-  | "food"
-  | "food-result"
-  | "emotional"
-  | "find-center"
-  | "find-center-result";
+type Step = "initial" | "food" | "food-result" | "emotional" | "find-center" | "find-center-result";
 
 interface CasaEspirita {
   id: string;
@@ -40,9 +34,7 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -56,9 +48,33 @@ async function coordsFromCep(cep: string) {
 }
 
 const UFS = [
-  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
-  "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
-  "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO",
+  "AC",
+  "AL",
+  "AM",
+  "AP",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MG",
+  "MS",
+  "MT",
+  "PA",
+  "PB",
+  "PE",
+  "PI",
+  "PR",
+  "RJ",
+  "RN",
+  "RO",
+  "RR",
+  "RS",
+  "SC",
+  "SE",
+  "SP",
+  "TO",
 ];
 
 async function fetchCidadesPorUF(uf: string): Promise<string[]> {
@@ -101,7 +117,11 @@ function sortByDistance(casas: CasaEspirita[], lat: number, lon: number): CasaRe
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function InitialStep({ onChoose }: { onChoose: (s: "food" | "emotional" | "find-center") => void }) {
+function InitialStep({
+  onChoose,
+}: {
+  onChoose: (s: "food" | "emotional" | "find-center") => void;
+}) {
   return (
     <div className="space-y-3">
       <p className="text-center text-muted-foreground font-light text-sm pb-1">
@@ -113,7 +133,9 @@ function InitialStep({ onChoose }: { onChoose: (s: "food" | "emotional" | "find-
         className="w-full glass rounded-2xl p-5 text-left hover:border-cyan-glow/40 transition-all duration-500 hover:-translate-y-1"
       >
         <span className="text-2xl">💙</span>
-        <h3 className="mt-2 text-base font-medium text-foreground">Estou com sentimentos difíceis</h3>
+        <h3 className="mt-2 text-base font-medium text-foreground">
+          Estou com sentimentos difíceis
+        </h3>
         <p className="mt-1 text-sm text-muted-foreground font-light">
           Ansiedade, tristeza, solidão — você não precisa carregar isso sozinho.
         </p>
@@ -146,11 +168,7 @@ function InitialStep({ onChoose }: { onChoose: (s: "food" | "emotional" | "find-
 
 // ── Food search ────────────────────────────────────────────────────────────
 
-function FoodStep({
-  onResult,
-}: {
-  onResult: (r: CasaResult | null, err?: string) => void;
-}) {
+function FoodStep({ onResult }: { onResult: (r: CasaResult | null, err?: string) => void }) {
   const [cep, setCep] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -235,11 +253,7 @@ function FoodResult({
 
 // ── Find center ────────────────────────────────────────────────────────────
 
-function FindCenterStep({
-  onResult,
-}: {
-  onResult: (r: CasaResult[], err?: string) => void;
-}) {
+function FindCenterStep({ onResult }: { onResult: (r: CasaResult[], err?: string) => void }) {
   const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
   const [cidades, setCidades] = useState<string[]>([]);
@@ -281,7 +295,9 @@ function FindCenterStep({
       <select value={uf} onChange={(e) => handleUfChange(e.target.value)} className={selectClass}>
         <option value="">Selecione o estado (UF)</option>
         {UFS.map((u) => (
-          <option key={u} value={u}>{u}</option>
+          <option key={u} value={u}>
+            {u}
+          </option>
         ))}
       </select>
 
@@ -295,13 +311,15 @@ function FindCenterStep({
           {loadingCidades
             ? "Carregando cidades…"
             : !uf
-            ? "Selecione o estado primeiro"
-            : cidades.length === 0
-            ? "Nenhuma cidade cadastrada"
-            : "Selecione a cidade"}
+              ? "Selecione o estado primeiro"
+              : cidades.length === 0
+                ? "Nenhuma cidade cadastrada"
+                : "Selecione a cidade"}
         </option>
         {cidades.map((c) => (
-          <option key={c} value={c}>{c}</option>
+          <option key={c} value={c}>
+            {c}
+          </option>
         ))}
       </select>
 
@@ -339,7 +357,8 @@ function FindCenterResult({
   return (
     <div className="space-y-3">
       <p className="text-center text-xs uppercase tracking-widest text-cyan-glow mb-1">
-        {results.length} casa{results.length !== 1 ? "s" : ""} espírita{results.length !== 1 ? "s" : ""} encontrada{results.length !== 1 ? "s" : ""}
+        {results.length} casa{results.length !== 1 ? "s" : ""} espírita
+        {results.length !== 1 ? "s" : ""} encontrada{results.length !== 1 ? "s" : ""}
       </p>
       {results.map((r, i) => (
         <CasaCard key={r.casa.id} result={r} rank={i + 1} showDist={false} />
@@ -360,9 +379,8 @@ function EmotionalStep() {
         <span className="text-gradient-aurora font-medium">valor e significado.</span>
       </p>
       <p className="text-sm text-muted-foreground font-light leading-relaxed">
-        Momentos de dor, angústia ou vazio fazem parte da jornada humana.
-        Você não precisa enfrentar isso sozinho — existe alguém pronto para
-        ouvir, sem julgamentos, com total sigilo e cuidado.
+        Momentos de dor, angústia ou vazio fazem parte da jornada humana. Você não precisa enfrentar
+        isso sozinho — existe alguém pronto para ouvir, sem julgamentos, com total sigilo e cuidado.
       </p>
       <a
         href="https://cvv.org.br/chat/"
@@ -381,7 +399,15 @@ function EmotionalStep() {
 
 // ── Shared UI ──────────────────────────────────────────────────────────────
 
-function CasaCard({ result, rank, showDist = true }: { result: CasaResult; rank?: number; showDist?: boolean }) {
+function CasaCard({
+  result,
+  rank,
+  showDist = true,
+}: {
+  result: CasaResult;
+  rank?: number;
+  showDist?: boolean;
+}) {
   const { casa, distKm } = result;
   return (
     <div className="glass rounded-2xl p-4 space-y-1">
@@ -390,20 +416,28 @@ function CasaCard({ result, rank, showDist = true }: { result: CasaResult; rank?
           {rank && <span className="text-cyan-glow mr-1">{rank}.</span>}
           {casa.nome.toUpperCase()}
         </h3>
-        {showDist && <span className="text-xs text-muted-foreground/60 shrink-0">≈ {distKm} km</span>}
+        {showDist && (
+          <span className="text-xs text-muted-foreground/60 shrink-0">≈ {distKm} km</span>
+        )}
       </div>
       <p className="text-xs text-muted-foreground font-light">{casa.endereco}</p>
       <p className="text-xs text-muted-foreground font-light">
         {casa.cidade} — {casa.estado}
       </p>
-      {casa.telefone && (
-        <p className="text-xs text-cyan-glow">{casa.telefone}</p>
-      )}
+      {casa.telefone && <p className="text-xs text-cyan-glow">{casa.telefone}</p>}
     </div>
   );
 }
 
-function ResultError({ msg, onBack, backLabel }: { msg: string; onBack: () => void; backLabel: string }) {
+function ResultError({
+  msg,
+  onBack,
+  backLabel,
+}: {
+  msg: string;
+  onBack: () => void;
+  backLabel: string;
+}) {
   return (
     <div className="space-y-4 text-center">
       <p className="text-muted-foreground font-light text-sm">{msg}</p>
@@ -426,10 +460,18 @@ function BackLink({ onClick, label }: { onClick: () => void; label: string }) {
 // ── Dialog titles ──────────────────────────────────────────────────────────
 
 const titles: Record<Step, React.ReactNode> = {
-  initial: <>Você não está <span className="text-gradient-aurora font-medium">sozinho(a)</span></>,
+  initial: (
+    <>
+      Você não está <span className="text-gradient-aurora font-medium">sozinho(a)</span>
+    </>
+  ),
   food: "Buscar alimentação",
   "food-result": "Resultado da busca",
-  emotional: <>Um cuidado que <span className="text-gradient-aurora font-medium">acolhe</span></>,
+  emotional: (
+    <>
+      Um cuidado que <span className="text-gradient-aurora font-medium">acolhe</span>
+    </>
+  ),
   "find-center": "Encontrar casa espírita",
   "find-center-result": "Casas espíritas encontradas",
 };
@@ -463,7 +505,13 @@ export function HelpDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) reset();
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="bg-background/95 backdrop-blur-xl border-cyan-glow/20 max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -473,9 +521,7 @@ export function HelpDialog({
         </DialogHeader>
 
         <div className="mt-2">
-          {step === "initial" && (
-            <InitialStep onChoose={(s) => setStep(s)} />
-          )}
+          {step === "initial" && <InitialStep onChoose={(s) => setStep(s)} />}
 
           {step === "food" && (
             <FoodStep
@@ -490,7 +536,11 @@ export function HelpDialog({
             <FoodResult
               result={foodResult}
               error={foodError}
-              onBack={() => { setFoodResult(null); setFoodError(undefined); setStep("food"); }}
+              onBack={() => {
+                setFoodResult(null);
+                setFoodError(undefined);
+                setStep("food");
+              }}
             />
           )}
 
@@ -507,7 +557,11 @@ export function HelpDialog({
             <FindCenterResult
               results={centerResults}
               error={centerError}
-              onBack={() => { setCenterResults([]); setCenterError(undefined); setStep("find-center"); }}
+              onBack={() => {
+                setCenterResults([]);
+                setCenterError(undefined);
+                setStep("find-center");
+              }}
             />
           )}
 

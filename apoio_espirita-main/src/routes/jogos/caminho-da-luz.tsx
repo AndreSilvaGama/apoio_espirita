@@ -20,14 +20,35 @@ import {
   Users,
   User,
 } from "lucide-react";
-import {
-  type FaixaQuiz,
-  type Pergunta,
-  sortearPerguntas,
-  FAIXAS_QUIZ,
-} from "@/data/quiz-espirita";
+import { type FaixaQuiz, type Pergunta, sortearPerguntas, FAIXAS_QUIZ } from "@/data/quiz-espirita";
 
 export const Route = createFileRoute("/jogos/caminho-da-luz")({
+  head: () => ({
+    meta: [
+      { title: "Caminho da Luz — Jogo de Tabuleiro Espírita — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Avance por uma trilha brilhante de virtudes morais e doutrinárias respondendo perguntas. Jogue sozinho ou em dupla com efeitos visuais e sonoros.",
+      },
+      {
+        name: "keywords",
+        content:
+          "caminho da luz jogo, jogo tabuleiro espirita, jogo de perguntas em grupo espiritismo",
+      },
+      {
+        property: "og:title",
+        content: "Caminho da Luz — Jogo de Tabuleiro Espírita — Apoio Espírita",
+      },
+      {
+        property: "og:description",
+        content:
+          "Avance por uma trilha brilhante de virtudes morais e doutrinárias respondendo perguntas. Jogue sozinho ou em dupla.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/caminho-da-luz" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/caminho-da-luz" }],
+  }),
   component: CaminhoDaLuzGame,
 });
 
@@ -122,7 +143,9 @@ const AVATAR_ICONS = {
 const playSoundEffect = (type: "correct" | "wrong" | "victory", muted: boolean) => {
   if (muted) return;
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
 
@@ -361,7 +384,6 @@ function CaminhoDaLuzGame() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20 select-none overflow-x-hidden">
       <div className="mx-auto max-w-4xl space-y-6">
-        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -395,16 +417,17 @@ function CaminhoDaLuzGame() {
           <div className="glass-premium rounded-3xl p-6 md:p-8 space-y-8 animate-fade-in-up">
             <div className="text-center space-y-2 border-b border-gray-100 pb-6">
               <h2 className="text-3xl font-light tracking-tight text-foreground font-serif">
-                Configurar o <span className="font-semibold text-gradient-aurora">Caminho da Luz</span>
+                Configurar o{" "}
+                <span className="font-semibold text-gradient-aurora">Caminho da Luz</span>
               </h2>
               <p className="text-sm text-gray-500 font-light">
-                Escolha o modo de jogo, crie seus personagens e prepare-se para caminhar nas virtudes!
+                Escolha o modo de jogo, crie seus personagens e prepare-se para caminhar nas
+                virtudes!
               </p>
             </div>
 
             {/* Configurações básicas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
               {/* Modo de jogo */}
               <div className="space-y-3">
                 <label className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
@@ -419,8 +442,7 @@ function CaminhoDaLuzGame() {
                         : "bg-white border-gray-200 text-gray-600 hover:border-indigo-300"
                     }`}
                   >
-                    <User size={16} />
-                    1 Jogador
+                    <User size={16} />1 Jogador
                   </button>
                   <button
                     onClick={() => setNumPlayers(2)}
@@ -430,8 +452,7 @@ function CaminhoDaLuzGame() {
                         : "bg-white border-gray-200 text-gray-600 hover:border-indigo-300"
                     }`}
                   >
-                    <Users size={16} />
-                    2 Jogadores
+                    <Users size={16} />2 Jogadores
                   </button>
                 </div>
               </div>
@@ -475,7 +496,6 @@ function CaminhoDaLuzGame() {
                   ))}
                 </select>
               </div>
-
             </div>
 
             {/* Customização de personagens */}
@@ -488,7 +508,10 @@ function CaminhoDaLuzGame() {
                 {Array.from({ length: numPlayers }).map((_, idx) => {
                   const player = players[idx];
                   return (
-                    <div key={idx} className="space-y-4 p-4 rounded-2xl border border-gray-100 bg-gray-50/50">
+                    <div
+                      key={idx}
+                      className="space-y-4 p-4 rounded-2xl border border-gray-100 bg-gray-50/50"
+                    >
                       <div className="flex items-center gap-2">
                         <span className={`w-3 h-3 rounded-full ${COLOR_MAP[player.color].bg}`} />
                         <h4 className="font-semibold text-gray-800">
@@ -506,7 +529,10 @@ function CaminhoDaLuzGame() {
                           onChange={(e) =>
                             setPlayers((prev) => {
                               const next = [...prev];
-                              next[idx] = { ...next[idx], name: e.target.value || `Jogador ${idx + 1}` };
+                              next[idx] = {
+                                ...next[idx],
+                                name: e.target.value || `Jogador ${idx + 1}`,
+                              };
                               return next;
                             })
                           }
@@ -518,28 +544,30 @@ function CaminhoDaLuzGame() {
                       <div className="space-y-1.5">
                         <label className="text-xs text-gray-400 font-light">Avatar</label>
                         <div className="flex gap-2">
-                          {(Object.keys(AVATAR_ICONS) as Array<keyof typeof AVATAR_ICONS>).map((av) => {
-                            const Icon = AVATAR_ICONS[av];
-                            return (
-                              <button
-                                key={av}
-                                onClick={() =>
-                                  setPlayers((prev) => {
-                                    const next = [...prev];
-                                    next[idx] = { ...next[idx], avatar: av };
-                                    return next;
-                                  })
-                                }
-                                className={`p-2.5 rounded-lg border transition-all ${
-                                  player.avatar === av
-                                    ? `bg-white ${COLOR_MAP[player.color].border} ${COLOR_MAP[player.color].text} shadow-sm`
-                                    : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
-                                }`}
-                              >
-                                <Icon size={16} />
-                              </button>
-                            );
-                          })}
+                          {(Object.keys(AVATAR_ICONS) as Array<keyof typeof AVATAR_ICONS>).map(
+                            (av) => {
+                              const Icon = AVATAR_ICONS[av];
+                              return (
+                                <button
+                                  key={av}
+                                  onClick={() =>
+                                    setPlayers((prev) => {
+                                      const next = [...prev];
+                                      next[idx] = { ...next[idx], avatar: av };
+                                      return next;
+                                    })
+                                  }
+                                  className={`p-2.5 rounded-lg border transition-all ${
+                                    player.avatar === av
+                                      ? `bg-white ${COLOR_MAP[player.color].border} ${COLOR_MAP[player.color].text} shadow-sm`
+                                      : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
+                                  }`}
+                                >
+                                  <Icon size={16} />
+                                </button>
+                              );
+                            },
+                          )}
                         </div>
                       </div>
 
@@ -573,7 +601,6 @@ function CaminhoDaLuzGame() {
                           })}
                         </div>
                       </div>
-
                     </div>
                   );
                 })}
@@ -594,13 +621,10 @@ function CaminhoDaLuzGame() {
         {/* 2. TELA DO TABULEIRO ATIVO */}
         {fase === "tabuleiro" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            
             {/* Visualização do Tabuleiro (2 colunas no desktop) */}
             <div className="lg:col-span-2 space-y-4">
-              
               {/* O Tabuleiro Premium com Fundo Cósmico */}
               <div className="relative glass-premium border border-slate-200/60 rounded-3xl p-6 md:p-8 bg-gradient-to-br from-indigo-950 to-slate-900 overflow-hidden shadow-2xl min-h-[380px] md:min-h-[440px] flex items-center justify-center">
-                
                 {/* Estrelas de fundo */}
                 <div className="absolute inset-0 opacity-30 pointer-events-none">
                   <div className="absolute top-10 left-10 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
@@ -671,7 +695,9 @@ function CaminhoDaLuzGame() {
                         style={{
                           gridRowStart: Math.floor(idx / cols) + 1,
                           gridColumnStart:
-                            (Math.floor(idx / cols) % 2 === 0 ? idx % cols : cols - 1 - (idx % cols)) + 1,
+                            (Math.floor(idx / cols) % 2 === 0
+                              ? idx % cols
+                              : cols - 1 - (idx % cols)) + 1,
                         }}
                       >
                         {/* Casa circular brilhante */}
@@ -680,8 +706,8 @@ function CaminhoDaLuzGame() {
                             isVencedorCasa
                               ? "bg-gradient-to-tr from-amber-500 to-rose-500 border-amber-300 text-white shadow-[0_0_20px_rgba(245,158,11,0.5)] animate-pulse"
                               : isStart
-                              ? "bg-slate-800 border-slate-700 text-slate-300"
-                              : "bg-slate-900/90 border-indigo-500/30 text-indigo-200 hover:border-indigo-400/50"
+                                ? "bg-slate-800 border-slate-700 text-slate-300"
+                                : "bg-slate-900/90 border-indigo-500/30 text-indigo-200 hover:border-indigo-400/50"
                           }`}
                         >
                           <span className="text-xs md:text-sm font-bold">{idx + 1}</span>
@@ -717,28 +743,28 @@ function CaminhoDaLuzGame() {
                   })()}
 
                   {/* Peão do Jogador 2 */}
-                  {numPlayers === 2 && (() => {
-                    const coords = getPlayerCoords(1);
-                    const details = COLOR_MAP[players[1].color];
-                    const Icon = AVATAR_ICONS[players[1].avatar];
-                    return (
-                      <div
-                        className={`absolute w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-white border-2 ${details.border} ${details.text} ${details.glow} transition-all duration-700 ease-out z-20`}
-                        style={{
-                          left: `${coords.x}%`,
-                          top: `${coords.y}%`,
-                          transform: "translate(-50%, -50%)",
-                        }}
-                        title={players[1].name}
-                      >
-                        <Icon size={14} className="stroke-[2.5]" />
-                        <span className="absolute -bottom-4 bg-slate-950/80 border border-slate-800 text-[8px] text-white px-1 py-0.5 rounded leading-none whitespace-nowrap shadow-sm">
-                          {players[1].name.slice(0, 7)}
-                        </span>
-                      </div>
-                    );
-                  })()}
-
+                  {numPlayers === 2 &&
+                    (() => {
+                      const coords = getPlayerCoords(1);
+                      const details = COLOR_MAP[players[1].color];
+                      const Icon = AVATAR_ICONS[players[1].avatar];
+                      return (
+                        <div
+                          className={`absolute w-7 h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center bg-white border-2 ${details.border} ${details.text} ${details.glow} transition-all duration-700 ease-out z-20`}
+                          style={{
+                            left: `${coords.x}%`,
+                            top: `${coords.y}%`,
+                            transform: "translate(-50%, -50%)",
+                          }}
+                          title={players[1].name}
+                        >
+                          <Icon size={14} className="stroke-[2.5]" />
+                          <span className="absolute -bottom-4 bg-slate-950/80 border border-slate-800 text-[8px] text-white px-1 py-0.5 rounded leading-none whitespace-nowrap shadow-sm">
+                            {players[1].name.slice(0, 7)}
+                          </span>
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
 
@@ -787,17 +813,13 @@ function CaminhoDaLuzGame() {
                   )}
                 </div>
               </div>
-
             </div>
 
             {/* Painel da Pergunta (1 coluna no desktop) */}
             <div className="space-y-4">
-              
               {perguntaAtual ? (
                 <div className="glass-premium rounded-3xl p-6 border border-indigo-100 flex flex-col justify-between min-h-[380px] bg-white shadow-lg animate-fade-in-up">
-                  
                   <div className="space-y-4">
-                    
                     {/* Cabeçalho do Card */}
                     <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                       <span className="text-xs uppercase tracking-wider font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
@@ -818,11 +840,13 @@ function CaminhoDaLuzGame() {
                     {/* Alternativas */}
                     <div className="space-y-2.5 pt-2">
                       {perguntaAtual.opcoes.map((opcao, idx) => {
-                        let btnStyle = "bg-white border-gray-200 text-gray-700 hover:border-indigo-300";
-                        
+                        let btnStyle =
+                          "bg-white border-gray-200 text-gray-700 hover:border-indigo-300";
+
                         if (revelada) {
                           if (idx === perguntaAtual.correta) {
-                            btnStyle = "bg-emerald-50 border-emerald-400 text-emerald-800 shadow-[0_0_12px_rgba(16,185,129,0.15)]";
+                            btnStyle =
+                              "bg-emerald-50 border-emerald-400 text-emerald-800 shadow-[0_0_12px_rgba(16,185,129,0.15)]";
                           } else if (idx === selecionadaIdx) {
                             btnStyle = "bg-rose-50 border-rose-400 text-rose-800";
                           } else {
@@ -846,14 +870,15 @@ function CaminhoDaLuzGame() {
                             {revelada && idx === perguntaAtual.correta && (
                               <CheckCircle size={15} className="text-emerald-500 shrink-0" />
                             )}
-                            {revelada && idx === selecionadaIdx && idx !== perguntaAtual.correta && (
-                              <XCircle size={15} className="text-rose-500 shrink-0" />
-                            )}
+                            {revelada &&
+                              idx === selecionadaIdx &&
+                              idx !== perguntaAtual.correta && (
+                                <XCircle size={15} className="text-rose-500 shrink-0" />
+                              )}
                           </button>
                         );
                       })}
                     </div>
-
                   </div>
 
                   {/* Feedback inferior */}
@@ -879,23 +904,19 @@ function CaminhoDaLuzGame() {
                       </button>
                     </div>
                   )}
-
                 </div>
               ) : (
                 <div className="glass-premium rounded-3xl p-6 border border-indigo-100 flex items-center justify-center min-h-[380px] text-center text-gray-400">
                   Carregando perguntas...
                 </div>
               )}
-
             </div>
-
           </div>
         )}
 
         {/* 3. TELA DE VITÓRIA / CELEBRAÇÃO */}
         {fase === "vitoria" && vencedorIdx !== null && (
           <div className="glass-premium rounded-3xl p-8 max-w-lg mx-auto text-center space-y-8 animate-fade-in-up border border-amber-200/50 shadow-2xl relative bg-white">
-            
             {/* Efeitos de confete flutuando */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-3xl">
               {Array.from({ length: 20 }).map((_, i) => (
@@ -916,7 +937,11 @@ function CaminhoDaLuzGame() {
             <div className="space-y-4">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-amber-400 rounded-full blur-xl opacity-20 animate-pulse" />
-                <Trophy size={64} strokeWidth={1.5} className="text-amber-500 mx-auto relative z-10 animate-bounce" />
+                <Trophy
+                  size={64}
+                  strokeWidth={1.5}
+                  className="text-amber-500 mx-auto relative z-10 animate-bounce"
+                />
               </div>
               <h2 className="text-3xl font-bold text-gray-800 font-serif">Jornada Concluída!</h2>
               <p className="text-sm text-gray-500 font-light max-w-sm mx-auto">
@@ -957,8 +982,11 @@ function CaminhoDaLuzGame() {
 
             {/* Citação inspiradora de encerramento */}
             <div className="text-xs italic text-indigo-800/80 bg-indigo-50 rounded-xl p-4 leading-relaxed font-light font-serif">
-              "O verdadeiro homem de bem é aquele que pratica a lei de justiça, amor e caridade em sua maior pureza."
-              <span className="block mt-1 font-semibold text-indigo-900">— O Livro dos Espíritos</span>
+              "O verdadeiro homem de bem é aquele que pratica a lei de justiça, amor e caridade em
+              sua maior pureza."
+              <span className="block mt-1 font-semibold text-indigo-900">
+                — O Livro dos Espíritos
+              </span>
             </div>
 
             {/* Botões */}
@@ -977,10 +1005,8 @@ function CaminhoDaLuzGame() {
                 Mudar Configurações
               </button>
             </div>
-
           </div>
         )}
-
       </div>
     </main>
   );

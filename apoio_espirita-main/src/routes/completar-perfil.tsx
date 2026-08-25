@@ -2,15 +2,40 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { mensagemDeErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/completar-perfil")({
   component: CompletarPerfil,
 });
 
 const UFS = [
-  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA",
-  "MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN",
-  "RS","RO","RR","SC","SP","SE","TO",
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
 ];
 
 const CARGOS = [
@@ -69,7 +94,15 @@ function CompletarPerfil() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && profile?.sigla_casa && profile?.nome && profile?.cargo_principal && profile?.uf && profile?.cidade) {
+    if (
+      !loading &&
+      user &&
+      profile?.sigla_casa &&
+      profile?.nome &&
+      profile?.cargo_principal &&
+      profile?.uf &&
+      profile?.cidade
+    ) {
       navigate({ to: "/inicio" });
     }
   }, [user, profile, loading, navigate]);
@@ -80,21 +113,33 @@ function CompletarPerfil() {
       if (profile.uf) setUf(profile.uf);
       if (profile.cidade) setCidade(profile.cidade);
       if (profile.bairro) setBairro(profile.bairro);
-      if (profile.sigla_casa) { setQuery(profile.sigla_casa); setSelected(profile.sigla_casa); }
+      if (profile.sigla_casa) {
+        setQuery(profile.sigla_casa);
+        setSelected(profile.sigla_casa);
+      }
       if (profile.cargo_principal) setCargo(profile.cargo_principal);
     }
   }, [profile]);
 
   useEffect(() => {
-    supabase.from("siglas_casas").select("sigla").order("sigla").then(({ data }) => {
-      if (data) setSiglas(data.map((r) => r.sigla));
-    });
+    supabase
+      .from("siglas_casas")
+      .select("sigla")
+      .order("sigla")
+      .then(({ data }) => {
+        if (data) setSiglas(data.map((r) => r.sigla));
+      });
   }, []);
 
   useEffect(() => {
-    if (!uf) { setCidades([]); return; }
+    if (!uf) {
+      setCidades([]);
+      return;
+    }
     setLoadingCidades(true);
-    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`)
+    fetch(
+      `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`,
+    )
       .then((r) => r.json())
       .then((data: { nome: string }[]) => {
         const nomes = data.map((d) => d.nome);
@@ -106,7 +151,11 @@ function CompletarPerfil() {
   }, [uf]);
 
   useEffect(() => {
-    if (!selected || !uf || !cidade.trim()) { setCasaExiste(null); setNomeCasa(""); return; }
+    if (!selected || !uf || !cidade.trim()) {
+      setCasaExiste(null);
+      setNomeCasa("");
+      return;
+    }
     setCheckingCasa(true);
     supabase
       .from("casas_espirita")
@@ -122,7 +171,10 @@ function CompletarPerfil() {
       });
   }, [selected, uf, cidade]);
 
-  const normalized = query.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
+  const normalized = query
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 5);
   const filtered = siglas.filter((s) => s.includes(normalized));
   const canAdd = normalized.length === 5 && !siglas.includes(normalized);
 
@@ -133,12 +185,30 @@ function CompletarPerfil() {
   };
 
   const handleSave = async () => {
-    if (!nome.trim()) { setError("Informe seu nome completo."); return; }
-    if (!uf) { setError("Selecione seu estado (UF)."); return; }
-    if (!cidade.trim()) { setError("Informe sua cidade."); return; }
-    if (!bairro.trim()) { setError("Informe seu bairro."); return; }
-    if (!selected || selected.length !== 5) { setError("Selecione ou cadastre uma sigla de 5 letras."); return; }
-    if (!cargo) { setError("Selecione sua função na casa espírita."); return; }
+    if (!nome.trim()) {
+      setError("Informe seu nome completo.");
+      return;
+    }
+    if (!uf) {
+      setError("Selecione seu estado (UF).");
+      return;
+    }
+    if (!cidade.trim()) {
+      setError("Informe sua cidade.");
+      return;
+    }
+    if (!bairro.trim()) {
+      setError("Informe seu bairro.");
+      return;
+    }
+    if (!selected || selected.length !== 5) {
+      setError("Selecione ou cadastre uma sigla de 5 letras.");
+      return;
+    }
+    if (!cargo) {
+      setError("Selecione sua função na casa espírita.");
+      return;
+    }
     if (!user) return;
 
     setSaving(true);
@@ -162,7 +232,11 @@ function CompletarPerfil() {
         .eq("id", user.id);
       if (pe) throw pe;
       if (!casaExiste && nomeCasa.trim()) {
-        if (!enderecoCasa.trim()) { setError("Informe o endereço da casa espírita para cadastrá-la no mapa."); setSaving(false); return; }
+        if (!enderecoCasa.trim()) {
+          setError("Informe o endereço da casa espírita para cadastrá-la no mapa.");
+          setSaving(false);
+          return;
+        }
         const { error: ce } = await supabase.from("casas_espirita").insert({
           nome: nomeCasa.trim().toUpperCase(),
           endereco: enderecoCasa.trim(),
@@ -177,7 +251,8 @@ function CompletarPerfil() {
       await refreshProfile();
       navigate({ to: "/inicio" });
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro ao salvar. Tente novamente.");
+      console.error("Erro ao completar perfil:", e);
+      setError(mensagemDeErro(e, "Erro ao salvar. Tente novamente."));
     } finally {
       setSaving(false);
     }
@@ -208,7 +283,10 @@ function CompletarPerfil() {
               type="text"
               placeholder="Seu nome completo"
               value={nome}
-              onChange={(e) => { setNome(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setNome(e.target.value);
+                setError("");
+              }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
           </div>
@@ -221,12 +299,17 @@ function CompletarPerfil() {
               </label>
               <select
                 value={uf}
-                onChange={(e) => { setUf(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  setUf(e.target.value);
+                  setError("");
+                }}
                 className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
               >
                 <option value="">UF</option>
                 {UFS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
                 ))}
               </select>
             </div>
@@ -236,15 +319,18 @@ function CompletarPerfil() {
               </label>
               <select
                 value={cidade}
-                onChange={(e) => { setCidade(e.target.value); setError(""); }}
+                onChange={(e) => {
+                  setCidade(e.target.value);
+                  setError("");
+                }}
                 disabled={!uf || loadingCidades}
                 className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-50"
               >
-                <option value="">
-                  {loadingCidades ? "Carregando…" : "Selecione a cidade"}
-                </option>
+                <option value="">{loadingCidades ? "Carregando…" : "Selecione a cidade"}</option>
                 {cidades.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
@@ -259,7 +345,10 @@ function CompletarPerfil() {
               type="text"
               placeholder="Seu bairro"
               value={bairro}
-              onChange={(e) => { setBairro(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setBairro(e.target.value);
+                setError("");
+              }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
           </div>
@@ -276,7 +365,10 @@ function CompletarPerfil() {
                 placeholder="Digite para buscar ou criar…"
                 value={query}
                 onChange={(e) => {
-                  const v = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 5);
+                  const v = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z]/g, "")
+                    .slice(0, 5);
                   setQuery(v);
                   setSelected(v.length === 5 && (siglas.includes(v) || v === selected) ? v : "");
                   setOpen(true);
@@ -358,18 +450,25 @@ function CompletarPerfil() {
             </label>
             <select
               value={cargo}
-              onChange={(e) => { setCargo(e.target.value); setError(""); }}
+              onChange={(e) => {
+                setCargo(e.target.value);
+                setError("");
+              }}
               disabled={profile?.atividades?.includes("cargo_definido_por_admin")}
               className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <option value="">Selecione sua função…</option>
               {CARGOS.map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
             {profile?.atividades?.includes("cargo_definido_por_admin") && (
               <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
-                Sua função foi definida pela administração da casa espírita e não pode ser alterada por você. Caso precise alterar, entre em contato com o Presidente ou administradores autorizados.
+                Sua função foi definida pela administração da casa espírita e não pode ser alterada
+                por você. Caso precise alterar, entre em contato com o Presidente ou administradores
+                autorizados.
               </p>
             )}
           </div>

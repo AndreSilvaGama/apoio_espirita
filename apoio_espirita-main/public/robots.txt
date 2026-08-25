@@ -1,14 +1,26 @@
 User-agent: *
 Allow: /
+Allow: /feb
+Allow: /musicas-cifras
 Allow: /transparencia
 Allow: /sugestoes
+Allow: /jogos
 
+Disallow: /admin
+Disallow: /agenda
+Disallow: /ajuda
+Disallow: /casa/
+Disallow: /completar-perfil
+Disallow: /configurar-memoria
+Disallow: /evangelizacao
 Disallow: /inicio
+Disallow: /kanban
+Disallow: /login
+Disallow: /mensagem-do-dia
 Disallow: /painel
 Disallow: /perfil
-Disallow: /completar-perfil
-Disallow: /mensagem-do-dia
+Disallow: /permissoes
+Disallow: /radio
 Disallow: /tesouraria
-Disallow: /login
 
 Sitemap: https://apoioespirita.com.br/sitemap.xml

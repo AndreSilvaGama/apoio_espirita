@@ -1,7 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { BookOpen, Brain, FileText, Clock, Users, Printer, ArrowRight, Leaf, Settings, HelpCircle, Sparkles, Search } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  FileText,
+  Clock,
+  Users,
+  Printer,
+  ArrowRight,
+  Leaf,
+  Settings,
+  HelpCircle,
+  Sparkles,
+  Search,
+} from "lucide-react";
 import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/evangelizacao")({
@@ -43,13 +56,24 @@ const FAIXAS: FaixaEtaria[] = [
         id: "amizade",
         tema: "O Dom da Amizade",
         duracao: "45 min",
-        objetivo: "A criança reconhece que a amizade é um dom de Deus e pratica gestos de carinho com os colegas.",
+        objetivo:
+          "A criança reconhece que a amizade é um dom de Deus e pratica gestos de carinho com os colegas.",
         atividades: [
-          { duracao: "5 min",  descricao: "Acolhida: canção ou oração curta em roda" },
-          { duracao: "10 min", descricao: "História contada com fantoches: dois amigos que se ajudam" },
-          { duracao: "15 min", descricao: "Desenho livre: 'meu amigo favorito' — cada criança apresenta o desenho" },
-          { duracao: "10 min", descricao: "Dinâmica: roda de abraços — cada criança abraça o colega ao lado e diz algo gentil" },
-          { duracao: "5 min",  descricao: "Encerramento com oração de agradecimento pela amizade" },
+          { duracao: "5 min", descricao: "Acolhida: canção ou oração curta em roda" },
+          {
+            duracao: "10 min",
+            descricao: "História contada com fantoches: dois amigos que se ajudam",
+          },
+          {
+            duracao: "15 min",
+            descricao: "Desenho livre: 'meu amigo favorito' — cada criança apresenta o desenho",
+          },
+          {
+            duracao: "10 min",
+            descricao:
+              "Dinâmica: roda de abraços — cada criança abraça o colega ao lado e diz algo gentil",
+          },
+          { duracao: "5 min", descricao: "Encerramento com oração de agradecimento pela amizade" },
         ],
         materiais: ["Fantoches", "Papel A4", "Giz de cera", "Música instrumental suave"],
       },
@@ -57,13 +81,26 @@ const FAIXAS: FaixaEtaria[] = [
         id: "natureza",
         tema: "Cuido da Natureza",
         duracao: "45 min",
-        objetivo: "A criança compreende que cuidar da natureza é um gesto de amor a Deus e a todos.",
+        objetivo:
+          "A criança compreende que cuidar da natureza é um gesto de amor a Deus e a todos.",
         atividades: [
-          { duracao: "5 min",  descricao: "Oração de abertura em roda, de mãos dadas" },
-          { duracao: "10 min", descricao: "Conversa ilustrada: mostrar imagens de natureza saudável e descuidada" },
-          { duracao: "15 min", descricao: "Atividade: cada criança planta uma semente em copinho de papel" },
-          { duracao: "10 min", descricao: "Colagem coletiva: 'nossa floresta de amor' — folhas de árvore carimbadas" },
-          { duracao: "5 min",  descricao: "Encerramento: compromisso simbólico de cuidar de uma plantinha em casa" },
+          { duracao: "5 min", descricao: "Oração de abertura em roda, de mãos dadas" },
+          {
+            duracao: "10 min",
+            descricao: "Conversa ilustrada: mostrar imagens de natureza saudável e descuidada",
+          },
+          {
+            duracao: "15 min",
+            descricao: "Atividade: cada criança planta uma semente em copinho de papel",
+          },
+          {
+            duracao: "10 min",
+            descricao: "Colagem coletiva: 'nossa floresta de amor' — folhas de árvore carimbadas",
+          },
+          {
+            duracao: "5 min",
+            descricao: "Encerramento: compromisso simbólico de cuidar de uma plantinha em casa",
+          },
         ],
         materiais: ["Copinhos de papel", "Terra", "Sementes", "Tinta não-tóxica", "Cartolina"],
       },
@@ -71,13 +108,24 @@ const FAIXAS: FaixaEtaria[] = [
         id: "gratidao",
         tema: "Sou Grato",
         duracao: "45 min",
-        objetivo: "A criança identifica motivos de gratidão em sua vida e aprende a expressar o obrigado.",
+        objetivo:
+          "A criança identifica motivos de gratidão em sua vida e aprende a expressar o obrigado.",
         atividades: [
-          { duracao: "5 min",  descricao: "Acolhida: canção sobre gratidão" },
-          { duracao: "10 min", descricao: "Roda de conversa: 'o que você mais gosta na sua vida?'" },
-          { duracao: "15 min", descricao: "Confecção do 'Caderno da Gratidão': cada criança desenha 3 coisas pelas quais é grata" },
-          { duracao: "10 min", descricao: "Partilha: cada criança mostra um desenho e conta por que é grata" },
-          { duracao: "5 min",  descricao: "Oração de gratidão espontânea em roda" },
+          { duracao: "5 min", descricao: "Acolhida: canção sobre gratidão" },
+          {
+            duracao: "10 min",
+            descricao: "Roda de conversa: 'o que você mais gosta na sua vida?'",
+          },
+          {
+            duracao: "15 min",
+            descricao:
+              "Confecção do 'Caderno da Gratidão': cada criança desenha 3 coisas pelas quais é grata",
+          },
+          {
+            duracao: "10 min",
+            descricao: "Partilha: cada criança mostra um desenho e conta por que é grata",
+          },
+          { duracao: "5 min", descricao: "Oração de gratidão espontânea em roda" },
         ],
         materiais: ["Papel dobrado (mini caderno)", "Giz de cera", "Carimbo de estrela"],
       },
@@ -93,12 +141,23 @@ const FAIXAS: FaixaEtaria[] = [
         id: "filho-prodigo",
         tema: "A Parábola do Filho Pródigo",
         duracao: "60 min",
-        objetivo: "A criança compreende o significado do perdão e da misericórdia por meio da parábola.",
+        objetivo:
+          "A criança compreende o significado do perdão e da misericórdia por meio da parábola.",
         atividades: [
-          { duracao: "5 min",  descricao: "Oração de abertura e chamada presencial" },
-          { duracao: "15 min", descricao: "Leitura dramatizada da parábola — crianças interpretam os personagens" },
-          { duracao: "15 min", descricao: "Roda de diálogo: 'Você já precisou pedir perdão? E perdoar alguém?'" },
-          { duracao: "15 min", descricao: "Atividade escrita: carta do filho ao pai — criança escreve em voz do personagem" },
+          { duracao: "5 min", descricao: "Oração de abertura e chamada presencial" },
+          {
+            duracao: "15 min",
+            descricao: "Leitura dramatizada da parábola — crianças interpretam os personagens",
+          },
+          {
+            duracao: "15 min",
+            descricao: "Roda de diálogo: 'Você já precisou pedir perdão? E perdoar alguém?'",
+          },
+          {
+            duracao: "15 min",
+            descricao:
+              "Atividade escrita: carta do filho ao pai — criança escreve em voz do personagem",
+          },
           { duracao: "10 min", descricao: "Partilha das cartas para quem desejar" },
         ],
         materiais: ["Bíblia ou texto impresso (Lucas 15:11-32)", "Papel sulfite", "Lápis"],
@@ -107,13 +166,29 @@ const FAIXAS: FaixaEtaria[] = [
         id: "virtudes-dia-a-dia",
         tema: "Virtudes no Dia a Dia",
         duracao: "60 min",
-        objetivo: "A criança identifica virtudes evangélicas e exemplos concretos de como praticá-las.",
+        objetivo:
+          "A criança identifica virtudes evangélicas e exemplos concretos de como praticá-las.",
         atividades: [
-          { duracao: "5 min",  descricao: "Acolhida com música e oração" },
-          { duracao: "15 min", descricao: "Apresentação das virtudes com cartões ilustrados (amor, paciência, perdão, honestidade)" },
-          { duracao: "15 min", descricao: "Jogo da memória das virtudes — usar o jogo digital ou versão impressa" },
-          { duracao: "15 min", descricao: "Dinâmica: cada criança sorteiauma virtude e conta como a praticou na semana" },
-          { duracao: "10 min", descricao: "Encerramento: compromisso da semana — cada um escolhe uma virtude para exercer" },
+          { duracao: "5 min", descricao: "Acolhida com música e oração" },
+          {
+            duracao: "15 min",
+            descricao:
+              "Apresentação das virtudes com cartões ilustrados (amor, paciência, perdão, honestidade)",
+          },
+          {
+            duracao: "15 min",
+            descricao: "Jogo da memória das virtudes — usar o jogo digital ou versão impressa",
+          },
+          {
+            duracao: "15 min",
+            descricao:
+              "Dinâmica: cada criança sorteiauma virtude e conta como a praticou na semana",
+          },
+          {
+            duracao: "10 min",
+            descricao:
+              "Encerramento: compromisso da semana — cada um escolhe uma virtude para exercer",
+          },
         ],
         materiais: ["Cartões de virtudes impressos", "Computador/tablet com o Jogo da Memória"],
       },
@@ -121,13 +196,24 @@ const FAIXAS: FaixaEtaria[] = [
         id: "oracao",
         tema: "O que é Oração?",
         duracao: "60 min",
-        objetivo: "A criança entende a oração como diálogo com Deus e experimenta diferentes formas de orar.",
+        objetivo:
+          "A criança entende a oração como diálogo com Deus e experimenta diferentes formas de orar.",
         atividades: [
-          { duracao: "5 min",  descricao: "Oração espontânea de abertura" },
-          { duracao: "10 min", descricao: "Conversa: 'Como você conversa com Deus? O que você pede? O que você agradece?'" },
+          { duracao: "5 min", descricao: "Oração espontânea de abertura" },
+          {
+            duracao: "10 min",
+            descricao:
+              "Conversa: 'Como você conversa com Deus? O que você pede? O que você agradece?'",
+          },
           { duracao: "15 min", descricao: "Leitura comentada do Pai Nosso em linguagem acessível" },
-          { duracao: "20 min", descricao: "Escrita da oração pessoal: cada criança escreve/desenha sua própria oração" },
-          { duracao: "10 min", descricao: "Momento de silêncio e oração interior com música suave" },
+          {
+            duracao: "20 min",
+            descricao: "Escrita da oração pessoal: cada criança escreve/desenha sua própria oração",
+          },
+          {
+            duracao: "10 min",
+            descricao: "Momento de silêncio e oração interior com música suave",
+          },
         ],
         materiais: ["Texto do Pai Nosso simplificado", "Papel especial ou cartão", "Lápis de cor"],
       },
@@ -143,26 +229,56 @@ const FAIXAS: FaixaEtaria[] = [
         id: "evangelho-exemplos",
         tema: "O Evangelho e os Bons Exemplos",
         duracao: "75 min",
-        objetivo: "A criança relaciona ensinamentos do Evangelho com exemplos históricos e cotidianos de virtude.",
+        objetivo:
+          "A criança relaciona ensinamentos do Evangelho com exemplos históricos e cotidianos de virtude.",
         atividades: [
-          { duracao: "5 min",  descricao: "Oração de abertura e acolhida" },
-          { duracao: "20 min", descricao: "Estudo de texto: passagem do Sermão da Montanha — beatitudes em linguagem atual" },
-          { duracao: "20 min", descricao: "Pesquisa em grupo: exemplos históricos de pessoas que viveram as beatitudes" },
-          { duracao: "20 min", descricao: "Apresentação dos grupos: cada equipe expõe o personagem escolhido" },
+          { duracao: "5 min", descricao: "Oração de abertura e acolhida" },
+          {
+            duracao: "20 min",
+            descricao:
+              "Estudo de texto: passagem do Sermão da Montanha — beatitudes em linguagem atual",
+          },
+          {
+            duracao: "20 min",
+            descricao:
+              "Pesquisa em grupo: exemplos históricos de pessoas que viveram as beatitudes",
+          },
+          {
+            duracao: "20 min",
+            descricao: "Apresentação dos grupos: cada equipe expõe o personagem escolhido",
+          },
           { duracao: "10 min", descricao: "Síntese coletiva e oração de encerramento" },
         ],
-        materiais: ["Bíblia (Mateus 5:1-12)", "Textos de apoio sobre exemplos históricos", "Cartolina", "Caneta"],
+        materiais: [
+          "Bíblia (Mateus 5:1-12)",
+          "Textos de apoio sobre exemplos históricos",
+          "Cartolina",
+          "Caneta",
+        ],
       },
       {
         id: "caridade-acao",
         tema: "Caridade em Ação",
         duracao: "75 min",
-        objetivo: "A criança compreende a caridade como princípio espiritual e planeja uma ação concreta.",
+        objetivo:
+          "A criança compreende a caridade como princípio espiritual e planeja uma ação concreta.",
         atividades: [
-          { duracao: "5 min",  descricao: "Acolhida e oração de abertura" },
-          { duracao: "15 min", descricao: "Leitura e debate: 'Fora da caridade não há salvação' — contexto e significado" },
-          { duracao: "20 min", descricao: "Roda de diálogo: exemplos de caridade dentro de casa, na escola e na comunidade" },
-          { duracao: "25 min", descricao: "Planejamento em grupo: cada equipe elabora uma ação caritativa para realizar" },
+          { duracao: "5 min", descricao: "Acolhida e oração de abertura" },
+          {
+            duracao: "15 min",
+            descricao:
+              "Leitura e debate: 'Fora da caridade não há salvação' — contexto e significado",
+          },
+          {
+            duracao: "20 min",
+            descricao:
+              "Roda de diálogo: exemplos de caridade dentro de casa, na escola e na comunidade",
+          },
+          {
+            duracao: "25 min",
+            descricao:
+              "Planejamento em grupo: cada equipe elabora uma ação caritativa para realizar",
+          },
           { duracao: "10 min", descricao: "Apresentação dos planos e compromisso coletivo" },
         ],
         materiais: ["Texto de Allan Kardec sobre caridade", "Papel para plano de ação", "Caneta"],
@@ -171,12 +287,25 @@ const FAIXAS: FaixaEtaria[] = [
         id: "causa-efeito",
         tema: "A Lei de Causa e Efeito",
         duracao: "75 min",
-        objetivo: "A criança compreende a lei moral de causa e efeito como incentivo para escolhas éticas.",
+        objetivo:
+          "A criança compreende a lei moral de causa e efeito como incentivo para escolhas éticas.",
         atividades: [
-          { duracao: "5 min",  descricao: "Oração de abertura" },
-          { duracao: "15 min", descricao: "Dinâmica inicial: lançar uma bola e observar que ela sempre volta — analogia com nossas ações" },
-          { duracao: "20 min", descricao: "Estudo: a lei de causa e efeito na natureza, na vida social e na vida espiritual" },
-          { duracao: "25 min", descricao: "Cenas e escolhas: cada grupo recebe uma situação e analisa causas e consequências" },
+          { duracao: "5 min", descricao: "Oração de abertura" },
+          {
+            duracao: "15 min",
+            descricao:
+              "Dinâmica inicial: lançar uma bola e observar que ela sempre volta — analogia com nossas ações",
+          },
+          {
+            duracao: "20 min",
+            descricao:
+              "Estudo: a lei de causa e efeito na natureza, na vida social e na vida espiritual",
+          },
+          {
+            duracao: "25 min",
+            descricao:
+              "Cenas e escolhas: cada grupo recebe uma situação e analisa causas e consequências",
+          },
           { duracao: "10 min", descricao: "Reflexão escrita: 'Que semeadura quero fazer hoje?'" },
         ],
         materiais: ["Bola de borracha", "Fichas com situações", "Papel sulfite", "Caneta"],
@@ -221,11 +350,15 @@ function CardPlano({ plano, corBadge }: { plano: PlanoAula; corBadge: string }) 
           </div>
 
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Atividades</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Atividades
+            </p>
             <ol className="space-y-2">
               {plano.atividades.map((a, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full h-fit mt-0.5 ${corBadge}`}>
+                  <span
+                    className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full h-fit mt-0.5 ${corBadge}`}
+                  >
                     {a.duracao}
                   </span>
                   <span className="text-sm text-gray-600">{a.descricao}</span>
@@ -235,7 +368,9 @@ function CardPlano({ plano, corBadge }: { plano: PlanoAula; corBadge: string }) 
           </div>
 
           <div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Materiais</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              Materiais
+            </p>
             <ul className="flex flex-wrap gap-2">
               {plano.materiais.map((m, i) => (
                 <li key={i} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
@@ -261,14 +396,19 @@ function CardPlano({ plano, corBadge }: { plano: PlanoAula; corBadge: string }) 
 // ── Componente principal ──────────────────────────────────────────────────────
 
 function Evangelizacao() {
-  const { user, isEvangelizador } = useAuth();
+  const { user, isEvangelizador, loading } = useAuth();
   const [faixaAtiva, setFaixaAtiva] = useState("3-5");
+
+  if (loading) return null;
 
   if (!user) {
     return (
       <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
         <p className="text-sm text-muted-foreground">
-          <Link to="/login" className="text-cyan-600 hover:underline">Faça login</Link> para acessar os recursos.
+          <Link to="/login" className="text-cyan-600 hover:underline">
+            Faça login
+          </Link>{" "}
+          para acessar os recursos.
         </p>
       </main>
     );
@@ -279,11 +419,22 @@ function Evangelizacao() {
   return (
     <main className="page-light min-h-screen pt-20 pb-28">
       <CasaHero />
-      <div style={{ maxWidth: 860, margin: "0 auto" }} className="px-4 md:px-[44px] pt-12 pb-0 space-y-8">
-
+      <div
+        style={{ maxWidth: 860, margin: "0 auto" }}
+        className="px-4 md:px-[44px] pt-12 pb-0 space-y-8"
+      >
         {/* Título da seção */}
         <div style={{ paddingBottom: 24, borderBottom: "1px solid rgba(0,20,70,.08)" }}>
-          <h2 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.5rem", fontWeight: 400, color: "#111418", margin: 0, marginBottom: 6 }}>
+          <h2
+            style={{
+              fontFamily: '"Libre Caslon Text", Georgia, serif',
+              fontSize: "1.5rem",
+              fontWeight: 400,
+              color: "#111418",
+              margin: 0,
+              marginBottom: 6,
+            }}
+          >
             Evangelização Infantil
           </h2>
           <p style={{ fontFamily: "Inter", fontSize: "0.9rem", color: "#637080", margin: 0 }}>
@@ -293,12 +444,18 @@ function Evangelizacao() {
 
         {/* Links rápidos */}
         <section>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3">Ferramentas</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold mb-3">
+            Ferramentas
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Link
               to="/jogos/memoria-evangelizacao"
               className="flex items-center gap-4 p-4 border border-cyan-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Brain size={20} strokeWidth={1.5} className="text-cyan-600" />
@@ -314,7 +471,11 @@ function Evangelizacao() {
             <Link
               to="/jogos/plante-a-semente"
               className="flex items-center gap-4 p-4 border border-emerald-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Leaf size={20} strokeWidth={1.5} className="text-emerald-600" />
@@ -330,7 +491,11 @@ function Evangelizacao() {
             <Link
               to="/jogos/semeador-mensagens"
               className="flex items-center gap-4 p-4 border border-rose-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Sparkles size={20} strokeWidth={1.5} className="text-rose-600" />
@@ -346,7 +511,11 @@ function Evangelizacao() {
             <Link
               to="/jogos/caca-palavras"
               className="flex items-center gap-4 p-4 border border-indigo-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 shadow-sm">
                 <Search size={20} strokeWidth={1.5} className="text-indigo-600" />
@@ -355,14 +524,20 @@ function Evangelizacao() {
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">
                   Caça-Palavras
                 </p>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Grade dinâmica de virtudes</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">
+                  Grade dinâmica de virtudes
+                </p>
               </div>
             </Link>
 
             <Link
               to="/feb"
               className="flex items-center gap-4 p-4 border border-violet-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm">
                 <BookOpen size={20} strokeWidth={1.5} className="text-violet-600" />
@@ -378,7 +553,11 @@ function Evangelizacao() {
             <Link
               to="/jogos/quiz-espirita"
               className="flex items-center gap-4 p-4 border border-amber-200 group"
-              style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+              style={{
+                background: "#ffffff",
+                borderRadius: 20,
+                boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+              }}
             >
               <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 shadow-sm">
                 <HelpCircle size={20} strokeWidth={1.5} className="text-amber-600" />
@@ -387,7 +566,9 @@ function Evangelizacao() {
                 <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
                   Quiz Espírita
                 </p>
-                <p className="text-xs text-gray-500 font-light mt-0.5">Virtudes · Doutrina · 3–11 anos</p>
+                <p className="text-xs text-gray-500 font-light mt-0.5">
+                  Virtudes · Doutrina · 3–11 anos
+                </p>
               </div>
             </Link>
           </div>
@@ -397,7 +578,11 @@ function Evangelizacao() {
               <Link
                 to="/configurar-memoria"
                 className="flex items-center gap-4 p-4 border border-amber-200 group"
-                style={{ background: "#ffffff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
+                style={{
+                  background: "#ffffff",
+                  borderRadius: 20,
+                  boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+                }}
               >
                 <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 shadow-sm">
                   <Settings size={20} strokeWidth={1.5} className="text-amber-600" />
@@ -406,9 +591,15 @@ function Evangelizacao() {
                   <p className="text-sm font-semibold text-gray-800 group-hover:text-amber-700 transition-colors">
                     Configurar Jogo da Memória
                   </p>
-                  <p className="text-xs text-gray-500 font-light mt-0.5">Alterar imagens e nomes das virtudes da sua casa</p>
+                  <p className="text-xs text-gray-500 font-light mt-0.5">
+                    Alterar imagens e nomes das virtudes da sua casa
+                  </p>
                 </div>
-                <ArrowRight size={16} strokeWidth={1.5} className="text-amber-400 group-hover:translate-x-1.5 transition-transform" />
+                <ArrowRight
+                  size={16}
+                  strokeWidth={1.5}
+                  className="text-amber-400 group-hover:translate-x-1.5 transition-transform"
+                />
               </Link>
             </div>
           )}
@@ -418,7 +609,9 @@ function Evangelizacao() {
         <section>
           <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
             <Users size={16} strokeWidth={1.5} className="text-violet-600" />
-            <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold">Planos de Aula</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground/60 font-bold">
+              Planos de Aula
+            </p>
           </div>
 
           {/* Abas de faixa etária */}
@@ -439,7 +632,15 @@ function Evangelizacao() {
           </div>
 
           {/* Lista de planos */}
-          <div className={`border ${faixaAtual.cor} space-y-3`} style={{ background: "#ffffff", borderRadius: 20, padding: "24px 28px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}>
+          <div
+            className={`border ${faixaAtual.cor} space-y-3`}
+            style={{
+              background: "#ffffff",
+              borderRadius: 20,
+              padding: "24px 28px",
+              boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+            }}
+          >
             {faixaAtual.planos.map((plano) => (
               <CardPlano key={plano.id} plano={plano} corBadge={faixaAtual.corBadge} />
             ))}
@@ -449,7 +650,6 @@ function Evangelizacao() {
             Planos baseados nas diretrizes da FEB — AEE Infância
           </p>
         </section>
-
       </div>
     </main>
   );

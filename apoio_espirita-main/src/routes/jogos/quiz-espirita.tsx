@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, ChevronRight, RotateCcw, Trophy, CheckCircle, XCircle, HelpCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  RotateCcw,
+  Trophy,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+} from "lucide-react";
 import {
   type FaixaQuiz,
   type Pergunta,
@@ -12,6 +20,32 @@ import {
 } from "@/data/quiz-espirita";
 
 export const Route = createFileRoute("/jogos/quiz-espirita")({
+  head: () => ({
+    meta: [
+      { title: "Quiz Espírita — Teste Seus Conhecimentos — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Responda perguntas sobre a Doutrina Espírita, a Codificação de Allan Kardec, obras subsidiárias e história do Espiritismo.",
+      },
+      {
+        name: "keywords",
+        content:
+          "quiz espirita, perguntas e respostas espiritismo, perguntas sobre kardec, teste doutrina espirita",
+      },
+      {
+        property: "og:title",
+        content: "Quiz Espírita — Teste Seus Conhecimentos — Apoio Espírita",
+      },
+      {
+        property: "og:description",
+        content:
+          "Responda perguntas sobre a Doutrina Espírita, a Codificação de Allan Kardec e história do Espiritismo.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/quiz-espirita" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/quiz-espirita" }],
+  }),
   component: QuizEspirita,
 });
 
@@ -19,10 +53,10 @@ type Fase = "selecao" | "jogo" | "resultado";
 
 function fraseResultado(acertos: number, total: number): string {
   const pct = acertos / total;
-  if (pct === 1)   return "Perfeito! Você acertou tudo!";
-  if (pct >= 0.8)  return "Muito bem! Você se saiu excelente!";
-  if (pct >= 0.6)  return "Bom resultado! Continue estudando!";
-  if (pct >= 0.4)  return "Continue praticando, você vai melhorar!";
+  if (pct === 1) return "Perfeito! Você acertou tudo!";
+  if (pct >= 0.8) return "Muito bem! Você se saiu excelente!";
+  if (pct >= 0.6) return "Bom resultado! Continue estudando!";
+  if (pct >= 0.4) return "Continue praticando, você vai melhorar!";
   return "Não desanime! Tente novamente e aprenda mais!";
 }
 
@@ -38,7 +72,6 @@ function TelaSelecao({
 
   return (
     <div className="space-y-8">
-
       {/* Faixa etária */}
       <div>
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Faixa etária</p>
@@ -61,7 +94,9 @@ function TelaSelecao({
 
       {/* Número de perguntas */}
       <div>
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Número de perguntas</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+          Número de perguntas
+        </p>
         <div className="flex gap-2">
           {QTDES_PERGUNTAS.map((q) => (
             <button
@@ -108,7 +143,9 @@ function TelaJogo({
   const revelada = selecionada !== null;
 
   useEffect(() => {
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   function selecionar(idx: number) {
@@ -127,7 +164,7 @@ function TelaJogo({
     }, 1400);
   }
 
-  const progresso = ((atual) / perguntas.length) * 100;
+  const progresso = (atual / perguntas.length) * 100;
 
   return (
     <div className="space-y-6">
@@ -275,7 +312,6 @@ function QuizEspirita() {
     );
   }
 
-
   function iniciar(faixa: FaixaQuiz | "todas", qtde: QtdePerguntas) {
     setFaixaAtual(faixa);
     setQtdeAtual(qtde);
@@ -310,14 +346,12 @@ function QuizEspirita() {
           <span className="text-muted-foreground/40">|</span>
           <div className="flex items-center gap-2">
             <HelpCircle className="w-5 h-5 text-cyan-600" />
-            <h1 className="text-lg font-semibold tracking-wide text-foreground">
-              Quiz Espírita
-            </h1>
+            <h1 className="text-lg font-semibold tracking-wide text-foreground">Quiz Espírita</h1>
           </div>
         </div>
 
         {fase === "selecao" && <TelaSelecao onIniciar={iniciar} />}
-        {fase === "jogo"    && <TelaJogo perguntas={perguntas} onConcluir={concluir} />}
+        {fase === "jogo" && <TelaJogo perguntas={perguntas} onConcluir={concluir} />}
         {fase === "resultado" && (
           <TelaResultado
             acertos={acertos}

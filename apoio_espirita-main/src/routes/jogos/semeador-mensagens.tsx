@@ -1,10 +1,43 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, RotateCcw, Sparkles, Heart, Sprout, Droplet, BookOpen, Award, CheckCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  RotateCcw,
+  Sparkles,
+  Heart,
+  Sprout,
+  Droplet,
+  BookOpen,
+  Award,
+  CheckCircle,
+} from "lucide-react";
 import { MENSAGENS_SEMEADOR, type MensagemSemeador } from "@/data/semeador-mensagens";
 
 export const Route = createFileRoute("/jogos/semeador-mensagens")({
+  head: () => ({
+    meta: [
+      { title: "Semeador de Mensagens — Jogo Interativo — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Ordene as palavras para reconstruir mensagens de luz, consolo e sabedoria de grandes mentores e obras da literatura espírita.",
+      },
+      {
+        name: "keywords",
+        content:
+          "semeador de mensagens, frases espiritas, mensagens de luz, jogo frases espiritismo",
+      },
+      { property: "og:title", content: "Semeador de Mensagens — Jogo Interativo — Apoio Espírita" },
+      {
+        property: "og:description",
+        content:
+          "Ordene as palavras para reconstruir mensagens de luz, consolo e sabedoria espírita.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/semeador-mensagens" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/semeador-mensagens" }],
+  }),
   component: SemeadorMensagens,
 });
 
@@ -14,7 +47,7 @@ function normalizar(str: string): string {
   return str
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "")
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
     .trim()
     .toUpperCase();
 }
@@ -30,9 +63,17 @@ function embaralhar<T>(arr: T[]): T[] {
 
 // ── SVG do Jardim Dinâmico (representa as flores crescendo) ─────────────────
 
-function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: number; falhou: boolean }) {
+function JardimSVG({
+  stage,
+  totalWords,
+  falhou,
+}: {
+  stage: number;
+  totalWords: number;
+  falhou: boolean;
+}) {
   const progress = stage / totalWords;
-  
+
   // Níveis de crescimento das flores baseados no progresso
   const stemHeight1 = progress >= 0.2 ? 60 : 0;
   const stemHeight2 = progress >= 0.4 ? 75 : 0;
@@ -41,7 +82,11 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
   const stemHeight5 = progress >= 1.0 ? 55 : 0;
 
   return (
-    <svg viewBox="0 0 400 180" className="w-full h-full rounded-2xl shadow-inner border border-emerald-100" style={{ background: "linear-gradient(to bottom, #f0fdf4, #dcfce7)" }}>
+    <svg
+      viewBox="0 0 400 180"
+      className="w-full h-full rounded-2xl shadow-inner border border-emerald-100"
+      style={{ background: "linear-gradient(to bottom, #f0fdf4, #dcfce7)" }}
+    >
       <defs>
         <linearGradient id="soilGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#78350f" />
@@ -70,9 +115,22 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
       {/* ── Flor 1 (Progresso 20%) ── */}
       {stemHeight1 > 0 && (
         <g className="transition-all duration-700">
-          <path d={`M 70 145 Q 65 ${145 - stemHeight1/2} 75 ${145 - stemHeight1}`} stroke={falhou ? "#b45309" : "#22c55e"} strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path
+            d={`M 70 145 Q 65 ${145 - stemHeight1 / 2} 75 ${145 - stemHeight1}`}
+            stroke={falhou ? "#b45309" : "#22c55e"}
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
           {progress >= 0.3 && (
-            <ellipse cx="66" cy={145 - stemHeight1 + 10} rx="6" ry="3" fill={falhou ? "#d97706" : "#4ade80"} transform={`rotate(-30 66 ${145 - stemHeight1 + 10})`} />
+            <ellipse
+              cx="66"
+              cy={145 - stemHeight1 + 10}
+              rx="6"
+              ry="3"
+              fill={falhou ? "#d97706" : "#4ade80"}
+              transform={`rotate(-30 66 ${145 - stemHeight1 + 10})`}
+            />
           )}
           {progress >= 0.9 && (
             <g transform={`translate(75 ${145 - stemHeight1})`}>
@@ -86,14 +144,34 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
       {/* ── Flor 2 (Progresso 40%) ── */}
       {stemHeight2 > 0 && (
         <g className="transition-all duration-700">
-          <path d={`M 130 145 Q 140 ${145 - stemHeight2/2} 135 ${145 - stemHeight2}`} stroke={falhou ? "#b45309" : "#15803d"} strokeWidth="4.5" fill="none" strokeLinecap="round" />
+          <path
+            d={`M 130 145 Q 140 ${145 - stemHeight2 / 2} 135 ${145 - stemHeight2}`}
+            stroke={falhou ? "#b45309" : "#15803d"}
+            strokeWidth="4.5"
+            fill="none"
+            strokeLinecap="round"
+          />
           {progress >= 0.5 && (
-            <ellipse cx="140" cy={145 - stemHeight2 + 15} rx="8" ry="4" fill={falhou ? "#d97706" : "#22c55e"} transform={`rotate(25 140 ${145 - stemHeight2 + 15})`} />
+            <ellipse
+              cx="140"
+              cy={145 - stemHeight2 + 15}
+              rx="8"
+              ry="4"
+              fill={falhou ? "#d97706" : "#22c55e"}
+              transform={`rotate(25 140 ${145 - stemHeight2 + 15})`}
+            />
           )}
           {progress >= 0.95 && (
             <g transform={`translate(135 ${145 - stemHeight2})`}>
               {[0, 60, 120, 180, 240, 300].map((deg) => (
-                <circle key={deg} cx="0" cy="-8" r="6" fill="#a855f7" transform={`rotate(${deg})`} />
+                <circle
+                  key={deg}
+                  cx="0"
+                  cy="-8"
+                  r="6"
+                  fill="#a855f7"
+                  transform={`rotate(${deg})`}
+                />
               ))}
               <circle cx="0" cy="0" r="6" fill="#facc15" />
             </g>
@@ -104,17 +182,45 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
       {/* ── Flor 3 (Flor Principal - Progresso 60%) ── */}
       {stemHeight3 > 0 && (
         <g className="transition-all duration-700">
-          <path d={`M 200 145 Q 195 ${145 - stemHeight3/2} 200 ${145 - stemHeight3}`} stroke={falhou ? "#b45309" : "#166534"} strokeWidth="5.5" fill="none" strokeLinecap="round" />
+          <path
+            d={`M 200 145 Q 195 ${145 - stemHeight3 / 2} 200 ${145 - stemHeight3}`}
+            stroke={falhou ? "#b45309" : "#166534"}
+            strokeWidth="5.5"
+            fill="none"
+            strokeLinecap="round"
+          />
           {progress >= 0.7 && (
             <>
-              <ellipse cx="188" cy={145 - stemHeight3 + 30} rx="10" ry="4.5" fill={falhou ? "#d97706" : "#22c55e"} transform={`rotate(-20 188 ${145 - stemHeight3 + 30})`} />
-              <ellipse cx="212" cy={145 - stemHeight3 + 15} rx="10" ry="4.5" fill={falhou ? "#d97706" : "#22c55e"} transform={`rotate(30 212 ${145 - stemHeight3 + 15})`} />
+              <ellipse
+                cx="188"
+                cy={145 - stemHeight3 + 30}
+                rx="10"
+                ry="4.5"
+                fill={falhou ? "#d97706" : "#22c55e"}
+                transform={`rotate(-20 188 ${145 - stemHeight3 + 30})`}
+              />
+              <ellipse
+                cx="212"
+                cy={145 - stemHeight3 + 15}
+                rx="10"
+                ry="4.5"
+                fill={falhou ? "#d97706" : "#22c55e"}
+                transform={`rotate(30 212 ${145 - stemHeight3 + 15})`}
+              />
             </>
           )}
           {progress >= 1.0 && (
             <g transform={`translate(200 ${145 - stemHeight3})`} filter="url(#glow)">
               {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
-                <ellipse key={deg} cx="0" cy="-12" rx="7" ry="11" fill="#ec4899" transform={`rotate(${deg})`} />
+                <ellipse
+                  key={deg}
+                  cx="0"
+                  cy="-12"
+                  rx="7"
+                  ry="11"
+                  fill="#ec4899"
+                  transform={`rotate(${deg})`}
+                />
               ))}
               <circle cx="0" cy="0" r="9" fill="#facc15" />
               <circle cx="0" cy="0" r="5" fill="#eab308" />
@@ -126,14 +232,34 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
       {/* ── Flor 4 (Progresso 80%) ── */}
       {stemHeight4 > 0 && (
         <g className="transition-all duration-700">
-          <path d={`M 270 145 Q 265 ${145 - stemHeight4/2} 275 ${145 - stemHeight4}`} stroke={falhou ? "#b45309" : "#15803d"} strokeWidth="4.5" fill="none" strokeLinecap="round" />
+          <path
+            d={`M 270 145 Q 265 ${145 - stemHeight4 / 2} 275 ${145 - stemHeight4}`}
+            stroke={falhou ? "#b45309" : "#15803d"}
+            strokeWidth="4.5"
+            fill="none"
+            strokeLinecap="round"
+          />
           {progress >= 0.85 && (
-            <ellipse cx="280" cy={145 - stemHeight4 + 12} rx="8" ry="3.5" fill={falhou ? "#d97706" : "#22c55e"} transform={`rotate(15 280 ${145 - stemHeight4 + 12})`} />
+            <ellipse
+              cx="280"
+              cy={145 - stemHeight4 + 12}
+              rx="8"
+              ry="3.5"
+              fill={falhou ? "#d97706" : "#22c55e"}
+              transform={`rotate(15 280 ${145 - stemHeight4 + 12})`}
+            />
           )}
           {progress >= 0.95 && (
             <g transform={`translate(275 ${145 - stemHeight4})`}>
               {[0, 60, 120, 180, 240, 300].map((deg) => (
-                <circle key={deg} cx="0" cy="-7" r="5.5" fill="#f97316" transform={`rotate(${deg})`} />
+                <circle
+                  key={deg}
+                  cx="0"
+                  cy="-7"
+                  r="5.5"
+                  fill="#f97316"
+                  transform={`rotate(${deg})`}
+                />
               ))}
               <circle cx="0" cy="0" r="5" fill="#fef08a" />
             </g>
@@ -144,7 +270,13 @@ function JardimSVG({ stage, totalWords, falhou }: { stage: number; totalWords: n
       {/* ── Flor 5 (Progresso 100%) ── */}
       {stemHeight5 > 0 && (
         <g className="transition-all duration-700">
-          <path d={`M 330 145 Q 335 ${145 - stemHeight5/2} 325 ${145 - stemHeight5}`} stroke={falhou ? "#b45309" : "#22c55e"} strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path
+            d={`M 330 145 Q 335 ${145 - stemHeight5 / 2} 325 ${145 - stemHeight5}`}
+            stroke={falhou ? "#b45309" : "#22c55e"}
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+          />
           {progress >= 1.0 && (
             <g transform={`translate(325 ${145 - stemHeight5})`}>
               <circle cx="0" cy="0" r="9" fill="#06b6d4" filter="url(#glow)" />
@@ -186,8 +318,10 @@ function SemeadorMensagens() {
   // Estados de dados
   const [mensagem, setMensagem] = useState<MensagemSemeador>(() => MENSAGENS_SEMEADOR[0]);
   const [palavrasCorretas, setPalavrasCorretas] = useState<string[]>([]);
-  const [bolhasDisponiveis, setBolhasDisponiveis] = useState<{ id: string; texto: string; indexOriginal: number }[]>([]);
-  
+  const [bolhasDisponiveis, setBolhasDisponiveis] = useState<
+    { id: string; texto: string; indexOriginal: number }[]
+  >([]);
+
   // Estados de jogo
   const [indexPalavraEsperada, setIndexPalavraEsperada] = useState(0);
   const [vidas, setVidas] = useState(5);
@@ -215,7 +349,7 @@ function SemeadorMensagens() {
       texto: palavra,
       indexOriginal: index,
     }));
-    
+
     setBolhasDisponiveis(embaralhar(bolhas));
   }, []);
 
@@ -268,7 +402,6 @@ function SemeadorMensagens() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-2xl space-y-6">
-
         {/* ── Header do Jogo ── */}
         <div className="flex items-center gap-3">
           <Link
@@ -294,13 +427,17 @@ function SemeadorMensagens() {
         {/* ── Painel de Status (Gotas de Regador de Vidas) ── */}
         <div className="flex justify-between items-center bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mr-1">Água no Regador:</span>
+            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mr-1">
+              Água no Regador:
+            </span>
             {[1, 2, 3, 4, 5].map((drop) => (
               <Droplet
                 key={drop}
                 size={18}
                 className={`transition-all duration-300 ${
-                  drop <= vidas ? "text-cyan-500 fill-cyan-500 scale-100" : "text-gray-200 fill-none scale-90"
+                  drop <= vidas
+                    ? "text-cyan-500 fill-cyan-500 scale-100"
+                    : "text-gray-200 fill-none scale-90"
                 }`}
               />
             ))}
@@ -312,7 +449,11 @@ function SemeadorMensagens() {
 
         {/* ── Ilustração do Canteiro do Jardim ── */}
         <div className="w-full aspect-[400/180] rounded-2xl overflow-hidden relative">
-          <JardimSVG stage={palavrasCorretas.length} totalWords={palavrasDaFrase.length} falhou={falhou} />
+          <JardimSVG
+            stage={palavrasCorretas.length}
+            totalWords={palavrasDaFrase.length}
+            falhou={falhou}
+          />
           {completo && (
             <div className="absolute inset-0 bg-emerald-500/10 backdrop-blur-[0.5px] pointer-events-none flex items-center justify-center">
               <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest bg-white/90 border border-emerald-300 px-4 py-1.5 rounded-full shadow-md animate-bounce">
@@ -365,7 +506,9 @@ function SemeadorMensagens() {
               return (
                 <button
                   key={bolha.id}
-                  onClick={() => handleSelecionarPalavra(bolha.id, bolha.texto, bolha.indexOriginal)}
+                  onClick={() =>
+                    handleSelecionarPalavra(bolha.id, bolha.texto, bolha.indexOriginal)
+                  }
                   className={`
                     px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 active:scale-95 shadow-sm
                     ${
@@ -390,8 +533,12 @@ function SemeadorMensagens() {
                 <Award className="text-emerald-700 w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-emerald-800 leading-snug">Sementeira Realizada!</h3>
-                <p className="text-xs text-emerald-600/80">Você completou a mensagem espírita perfeitamente.</p>
+                <h3 className="text-lg font-bold text-emerald-800 leading-snug">
+                  Sementeira Realizada!
+                </h3>
+                <p className="text-xs text-emerald-600/80">
+                  Você completou a mensagem espírita perfeitamente.
+                </p>
               </div>
             </div>
 
@@ -441,7 +588,8 @@ function SemeadorMensagens() {
             <div>
               <h3 className="text-lg font-bold text-gray-800">Canteiro Desidratado!</h3>
               <p className="text-sm text-gray-500 mt-1 font-light leading-relaxed">
-                O regador ficou sem água! Mas não desanime, o aprendizado é constante na seara espiritual.
+                O regador ficou sem água! Mas não desanime, o aprendizado é constante na seara
+                espiritual.
               </p>
             </div>
 
@@ -481,7 +629,6 @@ function SemeadorMensagens() {
             </button>
           )}
         </div>
-
       </div>
     </main>
   );

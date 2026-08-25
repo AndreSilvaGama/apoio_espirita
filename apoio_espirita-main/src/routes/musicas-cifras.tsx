@@ -25,12 +25,48 @@ import {
   Globe,
   Loader2,
 } from "lucide-react";
+import { mensagemDeErro } from "@/lib/erros";
+import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/musicas-cifras")({
+  head: () => ({
+    meta: [
+      { title: "Músicas e Cifras Espíritas — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Explore cifras, partituras e músicas espíritas para reuniões, passes, evangelização e harmonização. Transposição de tom e playlists completas.",
+      },
+      {
+        name: "keywords",
+        content:
+          "musicas espiritas, cifras espiritas, partituras espiritismo, musicas para passe, harmonizacao espirita, cifras catolicas e espiritas",
+      },
+      { property: "og:title", content: "Músicas e Cifras Espíritas — Apoio Espírita" },
+      {
+        property: "og:description",
+        content:
+          "Explore cifras, partituras e músicas espíritas para reuniões, passes, evangelização e harmonização.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/musicas-cifras" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/musicas-cifras" }],
+  }),
   component: MusicasCifrasPage,
 });
 
 type Tab = "musicas" | "cifras";
+
+/** Linha da tabela `musicas` no Supabase. */
+type MusicaRow = Tables<"musicas">;
+
+/** Faixa guardada no IndexedDB do navegador (áudio enviado pelo usuário). */
+interface FaixaLocal {
+  id: string;
+  title: string;
+  artist: string;
+  file?: File;
+}
 
 interface Track {
   id: string;
@@ -200,8 +236,22 @@ function MusicasCifrasPage() {
 
   // Estados de Áudio e Playlists
   const [tracks, setTracks] = useState<Track[]>([
-    { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao", durationLabel: "Gerado ao vivo" },
-    { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe", durationLabel: "Gerado ao vivo" },
+    {
+      id: "t01",
+      title: "Harmonia das Virtudes",
+      artist: "Sintetizador Meditativo",
+      synthesized: true,
+      synthType: "harmonizacao",
+      durationLabel: "Gerado ao vivo",
+    },
+    {
+      id: "t02",
+      title: "Prece de Luz (Passe)",
+      artist: "Sintetizador de Passe",
+      synthesized: true,
+      synthType: "passe",
+      durationLabel: "Gerado ao vivo",
+    },
   ]);
   const [playlists, setPlaylists] = useState<Playlist[]>([
     { id: "p01", name: "Todas as Músicas", trackIds: ["t01", "t02"] },
@@ -267,7 +317,7 @@ function MusicasCifrasPage() {
 
       if (dbError) throw dbError;
 
-      const supabaseTracks: Track[] = (dbMusicas ?? []).map((m: any) => ({
+      const supabaseTracks: Track[] = (dbMusicas ?? []).map((m: MusicaRow) => ({
         id: m.id,
         title: m.title,
         artist: m.artist,
@@ -275,11 +325,11 @@ function MusicasCifrasPage() {
         is_exclusive: m.is_exclusive,
         sigla_casa: m.sigla_casa,
         user_id: m.user_id,
-        durationLabel: m.is_exclusive ? "Exclusiva" : "Pública"
+        durationLabel: m.is_exclusive ? "Exclusiva" : "Pública",
       }));
 
       // 2. Carrega faixas locais do IndexedDB
-      let localFaixas: any[] = [];
+      let localFaixas: FaixaLocal[] = [];
       if (database) {
         const tx = database.transaction(["faixas"], "readonly");
         const store = tx.objectStore("faixas");
@@ -309,7 +359,7 @@ function MusicasCifrasPage() {
                 .from("musicas")
                 .upload(path, localTrack.file, {
                   contentType: localTrack.file.type || "audio/mpeg",
-                  upsert: false
+                  upsert: false,
                 });
 
               if (uploadError) throw uploadError;
@@ -323,7 +373,7 @@ function MusicasCifrasPage() {
                 audio_url: audioUrl,
                 is_exclusive: false,
                 sigla_casa: profile?.sigla_casa || null,
-                user_id: user.id
+                user_id: user.id,
               });
 
               if (insertError) throw insertError;
@@ -337,9 +387,11 @@ function MusicasCifrasPage() {
               });
               migratedTracksCount++;
             }
-          } catch (migrationErr: any) {
+          } catch (migrationErr: unknown) {
             console.error(`Erro ao migrar faixa ${localTrack.title}:`, migrationErr);
-            toast.error(`Erro ao migrar música "${localTrack.title}": ${migrationErr.message || "Erro desconhecido"}`);
+            toast.error(
+              `Erro ao migrar música "${localTrack.title}": ${mensagemDeErro(migrationErr)}`,
+            );
           }
         }
         setIsMigrating(false);
@@ -352,20 +404,34 @@ function MusicasCifrasPage() {
       }
 
       // 4. Mapear faixas locais restantes (que ainda não foram migradas)
-      const remainingLocalTracks: Track[] = localFaixas.map((item: any) => ({
+      const remainingLocalTracks: Track[] = localFaixas.map((item: FaixaLocal) => ({
         id: item.id,
         title: item.title,
         artist: item.artist,
         file: item.file,
-        durationLabel: "Áudio local"
+        durationLabel: "Áudio local",
       }));
 
       // 5. Montar lista de músicas final (inclui locais que ainda não foram migradas)
       const allTracks = [
-        { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao" as const, durationLabel: "Gerado ao vivo" },
-        { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe" as const, durationLabel: "Gerado ao vivo" },
+        {
+          id: "t01",
+          title: "Harmonia das Virtudes",
+          artist: "Sintetizador Meditativo",
+          synthesized: true,
+          synthType: "harmonizacao" as const,
+          durationLabel: "Gerado ao vivo",
+        },
+        {
+          id: "t02",
+          title: "Prece de Luz (Passe)",
+          artist: "Sintetizador de Passe",
+          synthesized: true,
+          synthType: "passe" as const,
+          durationLabel: "Gerado ao vivo",
+        },
         ...supabaseTracks,
-        ...remainingLocalTracks
+        ...remainingLocalTracks,
       ];
       setTracks(allTracks);
 
@@ -392,32 +458,46 @@ function MusicasCifrasPage() {
         };
         setPlaylists([defaultPlaylist]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao carregar dados:", err);
-      toast.error(`Erro ao carregar dados da nuvem: ${err.message || "Erro desconhecido"}`);
+      toast.error(`Erro ao carregar dados da nuvem: ${mensagemDeErro(err)}`);
       // Fallback em caso de erro na consulta ao Supabase: carrega apenas locais do IndexedDB + sintetizadas
       if (database) {
         try {
           const tx = database.transaction(["faixas"], "readonly");
           const store = tx.objectStore("faixas");
-          const localFaixas = await new Promise<any[]>((resolve) => {
+          const localFaixas = await new Promise<FaixaLocal[]>((resolve) => {
             const req = store.getAll();
             req.onsuccess = () => resolve(req.result || []);
             req.onerror = () => resolve([]);
           });
 
-          const localTracksMapped = localFaixas.map((item: any) => ({
+          const localTracksMapped = localFaixas.map((item: FaixaLocal) => ({
             id: item.id,
             title: item.title,
             artist: item.artist,
             file: item.file,
-            durationLabel: "Áudio local"
+            durationLabel: "Áudio local",
           }));
 
           const fallbackTracks = [
-            { id: "t01", title: "Harmonia das Virtudes", artist: "Sintetizador Meditativo", synthesized: true, synthType: "harmonizacao" as const, durationLabel: "Gerado ao vivo" },
-            { id: "t02", title: "Prece de Luz (Passe)", artist: "Sintetizador de Passe", synthesized: true, synthType: "passe" as const, durationLabel: "Gerado ao vivo" },
-            ...localTracksMapped
+            {
+              id: "t01",
+              title: "Harmonia das Virtudes",
+              artist: "Sintetizador Meditativo",
+              synthesized: true,
+              synthType: "harmonizacao" as const,
+              durationLabel: "Gerado ao vivo",
+            },
+            {
+              id: "t02",
+              title: "Prece de Luz (Passe)",
+              artist: "Sintetizador de Passe",
+              synthesized: true,
+              synthType: "passe" as const,
+              durationLabel: "Gerado ao vivo",
+            },
+            ...localTracksMapped,
           ];
           setTracks(fallbackTracks);
 
@@ -455,12 +535,10 @@ function MusicasCifrasPage() {
       const path = `${profile.sigla_casa}/${filename}`;
 
       // Upload do arquivo
-      const { error: uploadError } = await supabase.storage
-        .from("musicas")
-        .upload(path, newFile, {
-          contentType: newFile.type,
-          upsert: false
-        });
+      const { error: uploadError } = await supabase.storage.from("musicas").upload(path, newFile, {
+        contentType: newFile.type,
+        upsert: false,
+      });
 
       if (uploadError) throw uploadError;
 
@@ -473,7 +551,7 @@ function MusicasCifrasPage() {
         audio_url: audioUrl,
         is_exclusive: newIsExclusive,
         sigla_casa: profile.sigla_casa,
-        user_id: user.id
+        user_id: user.id,
       });
 
       if (insertError) throw insertError;
@@ -487,9 +565,9 @@ function MusicasCifrasPage() {
       setShowUploadForm(false);
 
       await loadIndexedDBAndSupabaseData(db);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro no upload:", err);
-      toast.error(`Erro ao publicar música: ${err.message || "Erro desconhecido"}`);
+      toast.error(`Erro ao publicar música: ${mensagemDeErro(err)}`);
     } finally {
       setIsUploading(false);
     }
@@ -508,19 +586,21 @@ function MusicasCifrasPage() {
 
     setPublishingTrackId(track.id);
     try {
-      const file = track.file as any;
+      const file = track.file as File | undefined;
+      if (!file) {
+        toast.error("Esta faixa não tem arquivo de áudio para publicar.");
+        return;
+      }
       const ext = file.name ? file.name.split(".").pop() : "mp3";
       const filename = `track_${Date.now()}_${crypto.randomUUID()}.${ext}`;
       const folder = profile?.sigla_casa || "geral";
       const path = `${folder}/${filename}`;
 
       // Upload para o storage
-      const { error: uploadError } = await supabase.storage
-        .from("musicas")
-        .upload(path, file, {
-          contentType: file.type || "audio/mpeg",
-          upsert: false
-        });
+      const { error: uploadError } = await supabase.storage.from("musicas").upload(path, file, {
+        contentType: file.type || "audio/mpeg",
+        upsert: false,
+      });
 
       if (uploadError) throw uploadError;
 
@@ -533,7 +613,7 @@ function MusicasCifrasPage() {
         audio_url: audioUrl,
         is_exclusive: false,
         sigla_casa: profile?.sigla_casa || null,
-        user_id: user.id
+        user_id: user.id,
       });
 
       if (insertError) throw insertError;
@@ -550,9 +630,9 @@ function MusicasCifrasPage() {
 
       toast.success(`Música "${track.title}" disponibilizada online com sucesso!`);
       await loadIndexedDBAndSupabaseData(db);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`Erro ao publicar faixa ${track.title}:`, err);
-      toast.error(`Erro ao publicar música: ${err.message || "Erro desconhecido"}`);
+      toast.error(`Erro ao publicar música: ${mensagemDeErro(err)}`);
     } finally {
       setPublishingTrackId(null);
     }
@@ -568,10 +648,7 @@ function MusicasCifrasPage() {
     try {
       if (track.user_id) {
         // Exclui do banco
-        const { error: deleteDbError } = await supabase
-          .from("musicas")
-          .delete()
-          .eq("id", trackId);
+        const { error: deleteDbError } = await supabase.from("musicas").delete().eq("id", trackId);
 
         if (deleteDbError) throw deleteDbError;
 
@@ -579,7 +656,7 @@ function MusicasCifrasPage() {
         if (track.audio_url) {
           const path = track.audio_url.replace(
             "https://kitmwxfwwujygcmdjngm.supabase.co/storage/v1/object/public/musicas/",
-            ""
+            "",
           );
           await supabase.storage.from("musicas").remove([path]);
         }
@@ -599,9 +676,9 @@ function MusicasCifrasPage() {
       }
 
       await loadIndexedDBAndSupabaseData(db);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao deletar:", err);
-      toast.error(`Erro ao excluir música: ${err.message}`);
+      toast.error(`Erro ao excluir música: ${mensagemDeErro(err)}`);
     }
   };
 
@@ -629,13 +706,13 @@ function MusicasCifrasPage() {
       toast.success(
         nextExclusiveStatus
           ? "Música marcada como exclusiva da sua Casa Espírita!"
-          : "Música definida como pública para todas as pessoas."
+          : "Música definida como pública para todas as pessoas.",
       );
 
       await loadIndexedDBAndSupabaseData(db);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao alternar exclusividade:", err);
-      toast.error(`Erro ao atualizar exclusividade: ${err.message}`);
+      toast.error(`Erro ao atualizar exclusividade: ${mensagemDeErro(err)}`);
     }
   };
 
@@ -692,7 +769,9 @@ function MusicasCifrasPage() {
   // ── SÍNTESE DE ÁUDIO AMBIENTE (WEB AUDIO API) ───────────────────────────────
   const startAmbientSynth = (type: "passe" | "harmonizacao") => {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return null;
       const ctx = new AudioContextClass();
 
@@ -785,11 +864,15 @@ function MusicasCifrasPage() {
           oscs.forEach((osc) => {
             try {
               osc.stop();
-            } catch (e) {}
+            } catch {
+              // oscilador ja parado: nada a fazer
+            }
           });
           try {
             ctx.close();
-          } catch (e) {}
+          } catch {
+            // contexto de audio ja encerrado: nada a fazer
+          }
         },
       };
     } catch (err) {
@@ -932,24 +1015,24 @@ function MusicasCifrasPage() {
   // Filtrar faixas da playlist ativa
   const activePlaylist = playlists.find((p) => p.id === activePlaylistId);
   const playlistTracks = activePlaylist
-    ? activePlaylist.trackIds.map((tid) => tracks.find((t) => t.id === tid)).filter(Boolean) as Track[]
+    ? (activePlaylist.trackIds
+        .map((tid) => tracks.find((t) => t.id === tid))
+        .filter(Boolean) as Track[])
     : [];
 
   // Filtrar cifras
   const filteredCifras = CIFRAS_SONGS.filter(
     (song) =>
       song.title.toLowerCase().includes(cifrasSearch.toLowerCase()) ||
-      song.artist.toLowerCase().includes(cifrasSearch.toLowerCase())
+      song.artist.toLowerCase().includes(cifrasSearch.toLowerCase()),
   );
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-36">
-      
       {/* Elemento oculto de áudio */}
       <audio ref={audioElRef} onEnded={handleAudioEnded} className="hidden" />
 
       <div className="mx-auto max-w-5xl space-y-6">
-        
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
@@ -997,10 +1080,8 @@ function MusicasCifrasPage() {
         {/* ── ABA 1: PLAYLISTS E MÚSICAS ───────────────────────────────────────── */}
         {activeTab === "musicas" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start animate-fade-in-up">
-            
             {/* Playlists e Músicas (Esquerda, 2 colunas) */}
             <div className="lg:col-span-2 space-y-4">
-              
               {/* Seleção de Playlists */}
               <div className="glass-premium rounded-2xl p-5 border border-gray-100 bg-white">
                 <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
@@ -1017,7 +1098,10 @@ function MusicasCifrasPage() {
                 </div>
 
                 {showPlaylistForm && (
-                  <form onSubmit={handleCreatePlaylist} className="flex gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <form
+                    onSubmit={handleCreatePlaylist}
+                    className="flex gap-2 mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100"
+                  >
                     <input
                       type="text"
                       placeholder="Nome da nova playlist"
@@ -1078,27 +1162,35 @@ function MusicasCifrasPage() {
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <button
-                              onClick={() => isCurrent ? togglePlayPause() : playTrack(track)}
+                              onClick={() => (isCurrent ? togglePlayPause() : playTrack(track))}
                               className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border transition-all ${
                                 isCurrent && playing
                                   ? "bg-indigo-600 border-indigo-600 text-white animate-pulse"
                                   : "bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                               }`}
                             >
-                              {isCurrent && playing ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
+                              {isCurrent && playing ? (
+                                <Pause size={14} />
+                              ) : (
+                                <Play size={14} className="ml-0.5" />
+                              )}
                             </button>
                             <div className="truncate">
-                              <p className={`text-xs font-semibold truncate ${isCurrent ? "text-indigo-800" : "text-gray-800"}`}>
+                              <p
+                                className={`text-xs font-semibold truncate ${isCurrent ? "text-indigo-800" : "text-gray-800"}`}
+                              >
                                 {track.title}
                               </p>
-                              <p className="text-[10px] text-gray-400 font-light truncate">{track.artist}</p>
+                              <p className="text-[10px] text-gray-400 font-light truncate">
+                                {track.artist}
+                              </p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2">
                             {/* Marcação Exclusiva / Pública */}
                             {track.user_id ? (
-                              (isDev || isPresident || user?.id === track.user_id) ? (
+                              isDev || isPresident || user?.id === track.user_id ? (
                                 <button
                                   onClick={() => handleToggleExclusive(track)}
                                   className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all duration-300 shadow-sm cursor-pointer uppercase tracking-wider ${
@@ -1108,7 +1200,11 @@ function MusicasCifrasPage() {
                                   }`}
                                   title="Clique para alternar privacidade da música"
                                 >
-                                  {track.is_exclusive ? <Lock size={11} strokeWidth={2.5} /> : <Globe size={11} strokeWidth={2.5} />}
+                                  {track.is_exclusive ? (
+                                    <Lock size={11} strokeWidth={2.5} />
+                                  ) : (
+                                    <Globe size={11} strokeWidth={2.5} />
+                                  )}
                                   {track.is_exclusive ? "Exclusiva" : "Pública"}
                                 </button>
                               ) : (
@@ -1119,7 +1215,11 @@ function MusicasCifrasPage() {
                                       : "bg-gray-50/50 border-gray-100 text-gray-400"
                                   }`}
                                 >
-                                  {track.is_exclusive ? <Lock size={11} strokeWidth={2.5} /> : <Globe size={11} strokeWidth={2.5} />}
+                                  {track.is_exclusive ? (
+                                    <Lock size={11} strokeWidth={2.5} />
+                                  ) : (
+                                    <Globe size={11} strokeWidth={2.5} />
+                                  )}
                                   {track.is_exclusive ? "Exclusiva" : "Pública"}
                                 </span>
                               )
@@ -1150,7 +1250,7 @@ function MusicasCifrasPage() {
                                 </span>
                               </div>
                             )}
-                            
+
                             {/* Botão de adicionar à playlist */}
                             <button
                               onClick={() => setAddingToPlaylistTrack(track)}
@@ -1161,15 +1261,19 @@ function MusicasCifrasPage() {
                             </button>
 
                             {/* Botão de deletar (se for do usuário logado ou admin) */}
-                            {!track.synthesized && (!track.user_id || isDev || isPresident || user?.id === track.user_id) && (
-                              <button
-                                onClick={() => handleDeleteTrack(track.id)}
-                                className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                title="Excluir música"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
+                            {!track.synthesized &&
+                              (!track.user_id ||
+                                isDev ||
+                                isPresident ||
+                                user?.id === track.user_id) && (
+                                <button
+                                  onClick={() => handleDeleteTrack(track.id)}
+                                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                  title="Excluir música"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
                           </div>
                         </div>
                       );
@@ -1198,7 +1302,9 @@ function MusicasCifrasPage() {
                           </button>
                         ))}
                       {playlists.filter((p) => p.id !== "p01").length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-4">Nenhuma playlist personalizada criada.</p>
+                        <p className="text-xs text-gray-400 text-center py-4">
+                          Nenhuma playlist personalizada criada.
+                        </p>
                       )}
                     </div>
                     <button
@@ -1210,14 +1316,11 @@ function MusicasCifrasPage() {
                   </div>
                 </div>
               )}
-
             </div>
 
             {/* Envio de Áudio e Termo (Direita, 1 coluna) */}
             <div className="space-y-4">
-              
               <div className="glass-premium rounded-3xl p-6 border border-amber-100 bg-white shadow-md space-y-6">
-                
                 <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
                   <h3 className="text-xs uppercase tracking-widest text-muted-foreground font-bold flex items-center gap-1.5">
                     <Shield size={14} className="text-amber-500" />
@@ -1235,7 +1338,8 @@ function MusicasCifrasPage() {
                   <div className="text-center py-4 space-y-3">
                     <FileMusic size={40} className="text-gray-300 mx-auto stroke-[1.2]" />
                     <p className="text-xs text-gray-500 leading-relaxed font-light">
-                      Músicos da casa espírita podem adicionar suas próprias músicas e preces em áudio de forma 100% local e ouvi-las a qualquer momento.
+                      Músicos da casa espírita podem adicionar suas próprias músicas e preces em
+                      áudio de forma 100% local e ouvi-las a qualquer momento.
                     </p>
                     <button
                       onClick={() => setShowUploadForm(true)}
@@ -1246,9 +1350,10 @@ function MusicasCifrasPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleUploadAudio} className="space-y-4 animate-fade-in-up">
-                    
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-gray-400">Nome da Música *</label>
+                      <label className="text-[10px] uppercase font-bold text-gray-400">
+                        Nome da Música *
+                      </label>
                       <input
                         type="text"
                         required
@@ -1260,7 +1365,9 @@ function MusicasCifrasPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-gray-400">Cantor / Intérprete *</label>
+                      <label className="text-[10px] uppercase font-bold text-gray-400">
+                        Cantor / Intérprete *
+                      </label>
                       <input
                         type="text"
                         required
@@ -1272,7 +1379,9 @@ function MusicasCifrasPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-gray-400">Arquivo de Áudio (.mp3, .wav, .m4a) *</label>
+                      <label className="text-[10px] uppercase font-bold text-gray-400">
+                        Arquivo de Áudio (.mp3, .wav, .m4a) *
+                      </label>
                       <input
                         type="file"
                         required
@@ -1298,7 +1407,11 @@ function MusicasCifrasPage() {
                               Música exclusiva da minha Casa Espírita
                             </span>
                             <p className="text-[9.5px] text-gray-500 font-light leading-relaxed">
-                              Se marcado, este áudio ficará visível apenas para os membros da casa <strong className="font-semibold text-indigo-600">{profile.sigla_casa}</strong>. Caso contrário, estará disponível para todas as pessoas.
+                              Se marcado, este áudio ficará visível apenas para os membros da casa{" "}
+                              <strong className="font-semibold text-indigo-600">
+                                {profile.sigla_casa}
+                              </strong>
+                              . Caso contrário, estará disponível para todas as pessoas.
                             </p>
                           </div>
                         </label>
@@ -1312,12 +1425,17 @@ function MusicasCifrasPage() {
                         Autorização e Direitos Fraternos
                       </h4>
                       <p className="text-[9px] text-amber-900 leading-relaxed font-light">
-                        Eu, na qualidade de autor(a) e/ou intérprete legítimo(a), declaro e autorizo a veiculação, reprodução e propagação gratuita da obra musical enviada na plataforma Apoio Espírita.
+                        Eu, na qualidade de autor(a) e/ou intérprete legítimo(a), declaro e autorizo
+                        a veiculação, reprodução e propagação gratuita da obra musical enviada na
+                        plataforma Apoio Espírita.
                         <br />
                         <br />
-                        Concordo que esta veiculação é de caráter puramente fraterno, educativo e espiritual, sendo realizada sem qualquer ônus financeiro ou cobrança de direitos autorais, taxas ou compensações de qualquer natureza, tanto no presente quanto no futuro.
+                        Concordo que esta veiculação é de caráter puramente fraterno, educativo e
+                        espiritual, sendo realizada sem qualquer ônus financeiro ou cobrança de
+                        direitos autorais, taxas ou compensações de qualquer natureza, tanto no
+                        presente quanto no futuro.
                       </p>
-                      
+
                       <label className="flex items-start gap-2 pt-1 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1327,14 +1445,21 @@ function MusicasCifrasPage() {
                           className="mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                         />
                         <span className="text-[10px] text-amber-950 font-bold leading-normal">
-                          Declaro ser o autor ou possuir os direitos desta gravação e aceito os termos de autorização fraterna.
+                          Declaro ser o autor ou possuir os direitos desta gravação e aceito os
+                          termos de autorização fraterna.
                         </span>
                       </label>
                     </div>
 
                     <button
                       type="submit"
-                      disabled={isUploading || !acceptTerms || !newFile || !newTitle.trim() || !newArtist.trim()}
+                      disabled={
+                        isUploading ||
+                        !acceptTerms ||
+                        !newFile ||
+                        !newTitle.trim() ||
+                        !newArtist.trim()
+                      }
                       className="w-full py-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:hover:bg-indigo-600 transition-all shadow-sm cursor-pointer uppercase tracking-wider flex items-center justify-center gap-2"
                     >
                       {isUploading ? (
@@ -1348,21 +1473,20 @@ function MusicasCifrasPage() {
                     </button>
                   </form>
                 )}
-
               </div>
-
             </div>
-
           </div>
         )}
 
         {/* ── ABA 2: CIFRAS E LETRAS ───────────────────────────────────────────── */}
         {activeTab === "cifras" && (
           <div className="space-y-6 animate-fade-in-up">
-            
             {/* Buscador de cifras */}
             <div className="relative">
-              <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <Search
+                size={15}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              />
               <input
                 type="text"
                 placeholder="Buscar cifras por título de música ou cantor..."
@@ -1375,21 +1499,25 @@ function MusicasCifrasPage() {
             {/* Visualização Principal da Cifra Selecionada */}
             {selectedCifra ? (
               <div className="glass-premium rounded-3xl p-6 border border-indigo-100 bg-white shadow-md space-y-5 animate-fade-in-up">
-                
                 {/* Cabeçalho da Cifra */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
                       {selectedCifra.category}
                     </span>
-                    <h2 className="text-xl font-bold text-gray-800 font-serif mt-2">{selectedCifra.title}</h2>
+                    <h2 className="text-xl font-bold text-gray-800 font-serif mt-2">
+                      {selectedCifra.title}
+                    </h2>
                     <p className="text-xs text-gray-400 font-light">{selectedCifra.artist}</p>
                   </div>
 
                   {/* Controle de Transposição de Tom */}
                   <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1.5">
                     <span className="text-[10px] uppercase font-bold text-slate-500 px-2 font-mono">
-                      Tom: {transposeSteps === 0 ? "Original" : `${transposeSteps > 0 ? "+" : ""}${transposeSteps}`}
+                      Tom:{" "}
+                      {transposeSteps === 0
+                        ? "Original"
+                        : `${transposeSteps > 0 ? "+" : ""}${transposeSteps}`}
                     </span>
                     <button
                       onClick={() => setTransposeSteps((s) => s - 1)}
@@ -1435,7 +1563,6 @@ function MusicasCifrasPage() {
                     ← Voltar para lista de cifras
                   </button>
                 </div>
-
               </div>
             ) : (
               /* Grid de seleção de cifras */
@@ -1461,7 +1588,9 @@ function MusicasCifrasPage() {
                       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
                         {song.category}
                       </span>
-                      <span className="text-[10px] font-bold text-indigo-600 hover:underline">Ver Cifra →</span>
+                      <span className="text-[10px] font-bold text-indigo-600 hover:underline">
+                        Ver Cifra →
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -1473,16 +1602,13 @@ function MusicasCifrasPage() {
                 )}
               </div>
             )}
-
           </div>
         )}
-
       </div>
 
       {/* ── PLAYER DE ÁUDIO STICKY (SÓ SE EXIBE SE HOUVER FAIXA ATIVA) ─────────────────── */}
       {currentTrack && (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-950 text-white z-40 px-6 py-4 md:py-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">
-          
           {/* Metadata da faixa tocando */}
           <div className="flex items-center gap-3 w-full md:w-64">
             <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
@@ -1499,7 +1625,11 @@ function MusicasCifrasPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={skipPrev}
-                disabled={playlists.find((p) => p.id === activePlaylistId)?.trackIds.indexOf(currentTrack.id) === 0}
+                disabled={
+                  playlists
+                    .find((p) => p.id === activePlaylistId)
+                    ?.trackIds.indexOf(currentTrack.id) === 0
+                }
                 className="text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Música anterior"
               >
@@ -1510,13 +1640,19 @@ function MusicasCifrasPage() {
                 onClick={togglePlayPause}
                 className="w-10 h-10 rounded-full bg-white text-slate-900 flex items-center justify-center hover:scale-105 transition-transform font-bold"
               >
-                {playing ? <Pause size={18} strokeWidth={2.5} /> : <Play size={18} strokeWidth={2.5} className="ml-0.5" />}
+                {playing ? (
+                  <Pause size={18} strokeWidth={2.5} />
+                ) : (
+                  <Play size={18} strokeWidth={2.5} className="ml-0.5" />
+                )}
               </button>
 
               <button
                 onClick={skipNext}
                 disabled={
-                  playlists.find((p) => p.id === activePlaylistId)?.trackIds.indexOf(currentTrack.id) ===
+                  playlists
+                    .find((p) => p.id === activePlaylistId)
+                    ?.trackIds.indexOf(currentTrack.id) ===
                   (playlists.find((p) => p.id === activePlaylistId)?.trackIds.length ?? 0) - 1
                 }
                 className="text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
@@ -1557,10 +1693,8 @@ function MusicasCifrasPage() {
               className="w-20 accent-indigo-500 h-1 rounded-full cursor-pointer bg-slate-800"
             />
           </div>
-
         </div>
       )}
-
     </main>
   );
 }

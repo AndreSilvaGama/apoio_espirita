@@ -13,16 +13,30 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Apoio Espírita — Fora da caridade não há salvação" },
-      { name: "description", content: "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais. Fora da caridade não há salvação." },
+      {
+        name: "description",
+        content:
+          "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais. Fora da caridade não há salvação.",
+      },
+      {
+        name: "keywords",
+        content:
+          "espiritismo, centro espírita, casa espírita, Allan Kardec, doutrina espírita, caridade, evangelho, mensagens espíritas, estudos espíritas, apoio espírita",
+      },
       { property: "og:title", content: "Apoio Espírita — Fora da caridade não há salvação" },
-      { property: "og:description", content: "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais." },
+      {
+        property: "og:description",
+        content:
+          "Plataforma espírita gratuita para membros de casas espíritas. Bazar solidário, mensagem do dia, agenda de eventos e muito mais.",
+      },
       { property: "og:url", content: "https://apoioespirita.com.br/" },
       { name: "twitter:title", content: "Apoio Espírita — Fora da caridade não há salvação" },
-      { name: "twitter:description", content: "Plataforma espírita gratuita para membros de casas espíritas." },
+      {
+        name: "twitter:description",
+        content: "Plataforma espírita gratuita para membros de casas espíritas.",
+      },
     ],
-    links: [
-      { rel: "canonical", href: "https://apoioespirita.com.br/" },
-    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/" }],
   }),
   component: Index,
 });
@@ -46,7 +60,7 @@ const points = [
   {
     Icon: Heart,
     title: "Caridade como prática",
-    body: "\"Fora da caridade não há salvação\" — não como dogma, mas como convite concreto à ação no mundo.",
+    body: '"Fora da caridade não há salvação" — não como dogma, mas como convite concreto à ação no mundo.',
   },
 ];
 
@@ -58,14 +72,16 @@ function Index() {
     <main className="relative min-h-screen overflow-x-hidden">
       <AmbientAudio src="/audio/ambient-piano.mp3" />
 
-      <header 
+      <header
         className="absolute top-0 left-0 right-0 z-30 h-16 flex items-center justify-between w-full px-6 !rounded-none glass !border-t-0 !border-x-0 !border-b border-white/10 animate-fade-in-up lg:top-6 lg:left-4 lg:right-4 lg:w-auto lg:max-w-7xl lg:mx-auto lg:!rounded-full lg:!border lg:border-white/10"
         style={{ animationDelay: "0.1s" }}
       >
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
           <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto animate-pulse" />
-          <span className="text-sm font-semibold text-foreground tracking-tight hidden sm:inline">Apoio Espírita</span>
+          <span className="text-sm font-semibold text-foreground tracking-tight hidden sm:inline">
+            Apoio Espírita
+          </span>
         </Link>
 
         {/* Links (Desktop) */}
@@ -112,9 +128,9 @@ function Index() {
 
       {/* Mobile Drawer Overlay */}
       {menuOpen && (
-        <div 
-          className="md:hidden fixed inset-x-0 top-16 bg-background/95 backdrop-blur-md border-b border-white/10 shadow-lg z-20 py-6 animate-fade-in-up" 
-          style={{ animationDuration: '200ms' }}
+        <div
+          className="md:hidden fixed inset-x-0 top-16 bg-background/95 backdrop-blur-md border-b border-white/10 shadow-lg z-20 py-6 animate-fade-in-up"
+          style={{ animationDuration: "200ms" }}
         >
           <nav className="flex flex-col items-center gap-5 px-6">
             <Link
@@ -185,8 +201,8 @@ function Index() {
             className="mt-6 max-w-lg mx-auto text-base md:text-lg text-muted-foreground font-light leading-loose animate-fade-in-up"
             style={{ animationDelay: "0.6s" }}
           >
-            Amarás o Senhor teu Deus de todo o teu coração, de toda a tua alma
-            e de todo o teu entendimento. E amarás o teu próximo como a ti mesmo.
+            Amarás o Senhor teu Deus de todo o teu coração, de toda a tua alma e de todo o teu
+            entendimento. E amarás o teu próximo como a ti mesmo.
           </p>
           <p
             className="mt-3 max-w-lg mx-auto text-right text-[11px] uppercase tracking-[0.4em] text-cyan-glow/60 animate-fade-in-up"
@@ -225,7 +241,6 @@ function Index() {
       />
 
       <div className="light-section">
-
         {/* ── LOGIN INLINE ── */}
         <InlineLogin user={user} />
 
@@ -251,9 +266,7 @@ function Index() {
                   style={{ animationDelay: `${0.1 + i * 0.12}s` }}
                 >
                   <p.Icon size={22} className="text-cyan-glow/60 shrink-0" />
-                  <h3 className="text-xl font-medium text-foreground leading-snug">
-                    {p.title}
-                  </h3>
+                  <h3 className="text-xl font-medium text-foreground leading-snug">{p.title}</h3>
                   <p className="text-base text-muted-foreground font-light leading-relaxed flex-1">
                     {p.body}
                   </p>
@@ -267,7 +280,9 @@ function Index() {
         <section className="relative py-24 px-6">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,oklch(0.75_0.18_295/0.07),transparent_65%)]" />
           <div className="relative z-10 mx-auto max-w-2xl">
-            <p className="text-[80px] leading-none text-cyan-glow/15 font-serif select-none -mb-6">"</p>
+            <p className="text-[80px] leading-none text-cyan-glow/15 font-serif select-none -mb-6">
+              "
+            </p>
             <blockquote className="text-2xl md:text-3xl font-light text-foreground leading-relaxed italic">
               Fora da caridade não há salvação.
             </blockquote>
@@ -288,12 +303,11 @@ function Index() {
                 Encontre sua casa espírita
               </p>
               <h2 className="text-3xl md:text-5xl font-light text-foreground mb-5 leading-snug">
-                A porta está{" "}
-                <span className="text-gradient-aurora font-medium italic">aberta</span>
+                A porta está <span className="text-gradient-aurora font-medium italic">aberta</span>
               </h2>
               <p className="text-muted-foreground font-light max-w-md mx-auto mb-10 leading-relaxed text-base">
-                Não é preciso saber nada de antemão. Qualquer pessoa que busque
-                com sinceridade é bem-vinda.
+                Não é preciso saber nada de antemão. Qualquer pessoa que busque com sinceridade é
+                bem-vinda.
               </p>
               <HelpDialog initialStep="find-center">
                 <button className="inline-flex items-center gap-3 px-10 py-5 rounded-full text-base uppercase tracking-widest text-foreground border border-border hover:border-cyan-glow/40 hover:bg-white/5 transition-all duration-300">
@@ -318,7 +332,6 @@ function Index() {
             </div>
           </footer>
         </section>
-
       </div>
     </main>
   );
@@ -336,7 +349,10 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const resetState = () => { setError(""); setInfo(""); };
+  const resetState = () => {
+    setError("");
+    setInfo("");
+  };
 
   if (user) {
     return (
@@ -345,9 +361,7 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
           <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">
             Plataforma para trabalhadores e casas espíritas
           </p>
-          <p className="text-muted-foreground font-light mb-6">
-            Você já está conectado.
-          </p>
+          <p className="text-muted-foreground font-light mb-6">Você já está conectado.</p>
           <Link
             to="/inicio"
             className="inline-flex items-center justify-center px-10 py-4 rounded-full text-sm uppercase tracking-widest bg-cyan-glow text-background font-medium hover:opacity-90 transition-opacity duration-300"
@@ -370,7 +384,9 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.");
+        throw new Error(
+          "Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.",
+        );
       }
     } catch (e: any) {
       console.error("Google OAuth error:", e);
@@ -434,9 +450,13 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
           )}
           <h2 className="text-3xl md:text-4xl font-light text-foreground mb-3 leading-snug">
             {forgot ? (
-              <>Redefinir <span className="text-gradient-aurora font-medium italic">senha</span></>
+              <>
+                Redefinir <span className="text-gradient-aurora font-medium italic">senha</span>
+              </>
             ) : (
-              <>Acesse sua <span className="text-gradient-aurora font-medium italic">conta</span></>
+              <>
+                Acesse sua <span className="text-gradient-aurora font-medium italic">conta</span>
+              </>
             )}
           </h2>
           <p className="text-muted-foreground font-light text-base leading-relaxed">
@@ -447,7 +467,6 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
         </div>
 
         <div className="glass rounded-3xl p-8 space-y-5">
-
           {/* ── ESQUECI A SENHA ── */}
           {forgot ? (
             <form onSubmit={handleForgot} className="space-y-5">
@@ -462,7 +481,7 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
               />
 
               {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-              {info  && <p className="text-sm text-cyan-glow text-center">{info}</p>}
+              {info && <p className="text-sm text-cyan-glow text-center">{info}</p>}
 
               <button
                 type="submit"
@@ -474,7 +493,10 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
 
               <button
                 type="button"
-                onClick={() => { setForgot(false); resetState(); }}
+                onClick={() => {
+                  setForgot(false);
+                  resetState();
+                }}
                 className="w-full text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors text-center pt-1"
               >
                 ← Voltar ao login
@@ -488,10 +510,22 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
                 className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-base text-foreground"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
                 </svg>
                 Continuar com Google
               </button>
@@ -507,7 +541,10 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
                 {(["entrar", "cadastrar"] as Mode[]).map((m) => (
                   <button
                     key={m}
-                    onClick={() => { setMode(m); resetState(); }}
+                    onClick={() => {
+                      setMode(m);
+                      resetState();
+                    }}
                     className={`flex-1 py-3 text-sm uppercase tracking-widest transition-colors ${
                       mode === m
                         ? "bg-cyan-glow/10 text-cyan-glow"
@@ -542,7 +579,10 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
                     <div className="text-right">
                       <button
                         type="button"
-                        onClick={() => { setForgot(true); resetState(); }}
+                        onClick={() => {
+                          setForgot(true);
+                          resetState();
+                        }}
                         className="text-sm text-muted-foreground/60 hover:text-cyan-glow transition-colors py-1"
                       >
                         Esqueci minha senha
@@ -552,7 +592,7 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
                 </div>
 
                 {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-                {info  && <p className="text-sm text-cyan-glow text-center">{info}</p>}
+                {info && <p className="text-sm text-cyan-glow text-center">{info}</p>}
 
                 <button
                   type="submit"
@@ -569,7 +609,6 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
     </section>
   );
 }
-
 
 function translateAuthError(msg: string) {
   if (msg.includes("Invalid login credentials")) return "E-mail ou senha incorretos.";

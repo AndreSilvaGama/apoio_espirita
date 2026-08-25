@@ -5,16 +5,39 @@ import { ArrowLeft, RotateCcw, BookOpen, Leaf } from "lucide-react";
 import { PALAVRAS, type Palavra } from "@/data/palavras-semente";
 
 export const Route = createFileRoute("/jogos/plante-a-semente")({
+  head: () => ({
+    meta: [
+      { title: "Plante a Semente — Jogo de Letras Espírita — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Um jogo fraterno de adivinhar palavras sobre ensinamentos do Evangelho e do Espiritismo. Descubra a palavra secreta semeando boas vibrações.",
+      },
+      {
+        name: "keywords",
+        content:
+          "plante a semente jogo, adivinhar palavra espirita, jogo da forca espirita, evangelho jogo",
+      },
+      {
+        property: "og:title",
+        content: "Plante a Semente — Jogo de Letras Espírita — Apoio Espírita",
+      },
+      {
+        property: "og:description",
+        content:
+          "Adivinhe palavras sobre ensinamentos do Evangelho e do Espiritismo semeando boas vibrações.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/plante-a-semente" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/plante-a-semente" }],
+  }),
   component: PlanteSemente,
 });
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
 function normalizar(str: string): string {
-  return str
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toUpperCase();
+  return str.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
 }
 
 function letrasUnicas(palavra: string): Set<string> {
@@ -27,9 +50,7 @@ function letrasUnicas(palavra: string): Set<string> {
 }
 
 function palavraAleatoria(excluir?: string): Palavra {
-  const pool = excluir
-    ? PALAVRAS.filter((p) => p.palavra !== excluir)
-    : PALAVRAS;
+  const pool = excluir ? PALAVRAS.filter((p) => p.palavra !== excluir) : PALAVRAS;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -38,9 +59,7 @@ function palavraAleatoria(excluir?: string): Palavra {
 function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
   const gy = 192; // ground y-coordinate
 
-  const stemTopY = [gy, gy - 22, gy - 45, gy - 72, gy - 98, gy - 116, gy - 126][
-    Math.min(stage, 6)
-  ];
+  const stemTopY = [gy, gy - 22, gy - 45, gy - 72, gy - 98, gy - 116, gy - 126][Math.min(stage, 6)];
 
   return (
     <svg
@@ -79,11 +98,16 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
       {stage === 0 && (
         <>
           <ellipse cx="100" cy={gy + 22} rx="14" ry="9" fill="#C8963E" />
-          <line
-            x1="91" y1={gy + 22} x2="109" y2={gy + 22}
-            stroke="#8B6520" strokeWidth="1.5"
+          <line x1="91" y1={gy + 22} x2="109" y2={gy + 22} stroke="#8B6520" strokeWidth="1.5" />
+          <ellipse
+            cx="100"
+            cy={gy + 22}
+            rx="14"
+            ry="9"
+            fill="none"
+            stroke="#8B6520"
+            strokeWidth="1"
           />
-          <ellipse cx="100" cy={gy + 22} rx="14" ry="9" fill="none" stroke="#8B6520" strokeWidth="1" />
         </>
       )}
 
@@ -92,14 +116,31 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
         <>
           <ellipse cx="100" cy={gy + 7} rx="11" ry="7" fill="#C8963E" />
           <line
-            x1="100" y1={gy} x2="100" y2={stemTopY}
-            stroke="#66BB6A" strokeWidth="3.5" strokeLinecap="round"
+            x1="100"
+            y1={gy}
+            x2="100"
+            y2={stemTopY}
+            stroke="#66BB6A"
+            strokeWidth="3.5"
+            strokeLinecap="round"
           />
           {/* cotilédones */}
-          <ellipse cx="90"  cy={gy - 16} rx="9" ry="4.5" fill="#A5D6A7"
-            transform={`rotate(-40, 90, ${gy - 16})`} />
-          <ellipse cx="110" cy={gy - 16} rx="9" ry="4.5" fill="#A5D6A7"
-            transform={`rotate(40, 110, ${gy - 16})`} />
+          <ellipse
+            cx="90"
+            cy={gy - 16}
+            rx="9"
+            ry="4.5"
+            fill="#A5D6A7"
+            transform={`rotate(-40, 90, ${gy - 16})`}
+          />
+          <ellipse
+            cx="110"
+            cy={gy - 16}
+            rx="9"
+            ry="4.5"
+            fill="#A5D6A7"
+            transform={`rotate(40, 110, ${gy - 16})`}
+          />
         </>
       )}
 
@@ -108,7 +149,10 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
         <>
           {/* Caule */}
           <line
-            x1="100" y1={gy} x2="100" y2={stemTopY}
+            x1="100"
+            y1={gy}
+            x2="100"
+            y2={stemTopY}
             stroke={completo ? "#2E7D32" : "#43A047"}
             strokeWidth={3 + stage * 0.35}
             strokeLinecap="round"
@@ -117,38 +161,74 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
           {/* 1° par de folhas (aparece no stage 2) */}
           {stage >= 2 && (
             <>
-              <ellipse cx="83"  cy={gy - 35} rx="17" ry="7" fill="#66BB6A"
-                transform={`rotate(-28, 83, ${gy - 35})`} />
-              <ellipse cx="117" cy={gy - 35} rx="17" ry="7" fill="#66BB6A"
-                transform={`rotate(28, 117, ${gy - 35})`} />
+              <ellipse
+                cx="83"
+                cy={gy - 35}
+                rx="17"
+                ry="7"
+                fill="#66BB6A"
+                transform={`rotate(-28, 83, ${gy - 35})`}
+              />
+              <ellipse
+                cx="117"
+                cy={gy - 35}
+                rx="17"
+                ry="7"
+                fill="#66BB6A"
+                transform={`rotate(28, 117, ${gy - 35})`}
+              />
             </>
           )}
 
           {/* 2° par de folhas (stage 3) */}
           {stage >= 3 && (
             <>
-              <ellipse cx="82"  cy={gy - 60} rx="16" ry="6.5" fill="#4CAF50"
-                transform={`rotate(-25, 82, ${gy - 60})`} />
-              <ellipse cx="118" cy={gy - 60} rx="16" ry="6.5" fill="#4CAF50"
-                transform={`rotate(25, 118, ${gy - 60})`} />
+              <ellipse
+                cx="82"
+                cy={gy - 60}
+                rx="16"
+                ry="6.5"
+                fill="#4CAF50"
+                transform={`rotate(-25, 82, ${gy - 60})`}
+              />
+              <ellipse
+                cx="118"
+                cy={gy - 60}
+                rx="16"
+                ry="6.5"
+                fill="#4CAF50"
+                transform={`rotate(25, 118, ${gy - 60})`}
+              />
             </>
           )}
 
           {/* 3° par de folhas (stage 4) */}
           {stage >= 4 && (
             <>
-              <ellipse cx="83"  cy={gy - 84} rx="15" ry="6" fill="#388E3C"
-                transform={`rotate(-30, 83, ${gy - 84})`} />
-              <ellipse cx="117" cy={gy - 84} rx="15" ry="6" fill="#388E3C"
-                transform={`rotate(30, 117, ${gy - 84})`} />
+              <ellipse
+                cx="83"
+                cy={gy - 84}
+                rx="15"
+                ry="6"
+                fill="#388E3C"
+                transform={`rotate(-30, 83, ${gy - 84})`}
+              />
+              <ellipse
+                cx="117"
+                cy={gy - 84}
+                rx="15"
+                ry="6"
+                fill="#388E3C"
+                transform={`rotate(30, 117, ${gy - 84})`}
+              />
             </>
           )}
 
           {/* Botão floral (stage 5) */}
           {stage === 5 && (
             <>
-              <ellipse cx="100" cy={gy - 120} rx="9"  ry="13" fill="#A5D6A7" />
-              <ellipse cx="100" cy={gy - 125} rx="6.5" ry="8"  fill="#C8E6C9" />
+              <ellipse cx="100" cy={gy - 120} rx="9" ry="13" fill="#A5D6A7" />
+              <ellipse cx="100" cy={gy - 125} rx="6.5" ry="8" fill="#C8E6C9" />
             </>
           )}
 
@@ -170,7 +250,9 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
               ))}
               {/* Centro da flor */}
               <circle
-                cx="100" cy={gy - 129} r="12"
+                cx="100"
+                cy={gy - 129}
+                r="12"
                 fill="#FF8F00"
                 filter={completo ? "url(#ps-glow)" : undefined}
               />
@@ -178,12 +260,12 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
               {/* Brilhos decorativos ao completar */}
               {completo && (
                 <>
-                  <circle cx="68"  cy={gy - 152} r="3"   fill="#FDD835" opacity="0.85" />
+                  <circle cx="68" cy={gy - 152} r="3" fill="#FDD835" opacity="0.85" />
                   <circle cx="132" cy={gy - 149} r="2.5" fill="#FDD835" opacity="0.75" />
-                  <circle cx="78"  cy={gy - 160} r="2"   fill="#A5D6A7" opacity="0.9"  />
-                  <circle cx="122" cy={gy - 156} r="2"   fill="#A5D6A7" opacity="0.7"  />
-                  <circle cx="90"  cy={gy - 165} r="1.5" fill="#FFFFFF"  opacity="0.8"  />
-                  <circle cx="110" cy={gy - 163} r="1.5" fill="#FFFFFF"  opacity="0.7"  />
+                  <circle cx="78" cy={gy - 160} r="2" fill="#A5D6A7" opacity="0.9" />
+                  <circle cx="122" cy={gy - 156} r="2" fill="#A5D6A7" opacity="0.7" />
+                  <circle cx="90" cy={gy - 165} r="1.5" fill="#FFFFFF" opacity="0.8" />
+                  <circle cx="110" cy={gy - 163} r="1.5" fill="#FFFFFF" opacity="0.7" />
                 </>
               )}
             </>
@@ -196,15 +278,7 @@ function PlantaSVG({ stage, completo }: { stage: number; completo: boolean }) {
 
 // ── Stage label ───────────────────────────────────────────────────────────────
 
-const STAGE_LABELS = [
-  "Semente",
-  "Germinando",
-  "Broto",
-  "Folhas",
-  "Crescendo",
-  "Botão",
-  "Flor",
-];
+const STAGE_LABELS = ["Semente", "Germinando", "Broto", "Folhas", "Crescendo", "Botão", "Flor"];
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -215,22 +289,19 @@ function PlanteSemente() {
   const [palavra, setPalavra] = useState<Palavra>(() => palavraAleatoria());
   const [usadas, setUsadas] = useState<Set<string>>(new Set());
 
-
   // Derived
   const unicas = letrasUnicas(palavra.palavra);
   const corretas = new Set([...usadas].filter((l) => unicas.has(l)));
   const erradas = new Set([...usadas].filter((l) => !unicas.has(l)));
   const completo = corretas.size === unicas.size;
-  const stage = completo
-    ? 6
-    : Math.min(5, Math.round((corretas.size / unicas.size) * 6));
+  const stage = completo ? 6 : Math.min(5, Math.round((corretas.size / unicas.size) * 6));
 
   const adivinhar = useCallback(
     (letra: string) => {
       if (usadas.has(letra) || completo) return;
       setUsadas((prev) => new Set([...prev, letra]));
     },
-    [usadas, completo]
+    [usadas, completo],
   );
 
   // Keyboard support
@@ -253,7 +324,6 @@ function PlanteSemente() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-3xl space-y-6">
-
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
@@ -278,7 +348,6 @@ function PlanteSemente() {
 
         {/* Game area */}
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 items-start">
-
           {/* Plant */}
           <div className="flex flex-col items-center gap-2">
             <div className="w-full max-w-[200px] mx-auto aspect-[200/240]">
@@ -291,7 +360,6 @@ function PlanteSemente() {
 
           {/* Right panel */}
           <div className="space-y-5">
-
             {/* Hint */}
             <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
               <span className="text-xs uppercase tracking-widest text-emerald-700 font-medium">
@@ -357,15 +425,10 @@ function PlanteSemente() {
                     {palavra.palavra}
                   </span>
                 </div>
-                <p className="text-sm text-emerald-900 leading-relaxed">
-                  {palavra.significado}
-                </p>
-                <p className="text-xs text-emerald-700 italic">
-                  {palavra.referencia}
-                </p>
+                <p className="text-sm text-emerald-900 leading-relaxed">{palavra.significado}</p>
+                <p className="text-xs text-emerald-700 italic">{palavra.referencia}</p>
               </div>
             )}
-
           </div>
         </div>
 
@@ -381,13 +444,14 @@ function PlanteSemente() {
                 disabled={certa || errada || completo}
                 className={`
                   h-10 rounded-lg text-sm font-bold transition-all duration-200 border
-                  ${certa
-                    ? "bg-emerald-500 text-white border-emerald-600 cursor-default"
-                    : errada
-                    ? "bg-rose-100 text-rose-400 border-rose-200 cursor-default"
-                    : completo
-                    ? "opacity-40 cursor-default bg-white border-border text-foreground"
-                    : "bg-white border-border text-foreground hover:bg-emerald-50 hover:border-emerald-300 active:scale-95 cursor-pointer"
+                  ${
+                    certa
+                      ? "bg-emerald-500 text-white border-emerald-600 cursor-default"
+                      : errada
+                        ? "bg-rose-100 text-rose-400 border-rose-200 cursor-default"
+                        : completo
+                          ? "opacity-40 cursor-default bg-white border-border text-foreground"
+                          : "bg-white border-border text-foreground hover:bg-emerald-50 hover:border-emerald-300 active:scale-95 cursor-pointer"
                   }
                 `}
               >
@@ -407,7 +471,6 @@ function PlanteSemente() {
             {completo ? "Nova Palavra" : "Pular"}
           </button>
         </div>
-
       </div>
     </main>
   );

@@ -1,18 +1,74 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import type { Json, TablesUpdate } from "@/integrations/supabase/types";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Building2, MapPin, Phone, Mail, Globe, Clock,
-  QrCode, Copy, Check, Plus, Trash2, Pin, PinOff,
-  Edit3, Save, X, Users, Shield, Calendar,
-  MessageSquare, Info, Heart, UserPlus, UserMinus,
-  Image, Video, CalendarDays, Lock, Unlock,
-  ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-  PenLine, Music, Guitar, Sprout, Sparkles, Gamepad2,
-  MessageCircle, HeartHandshake, ShoppingBag, Car, Truck,
-  Cast, Film, MonitorPlay, CircleHelp, BarChart3, ClipboardList,
-  Wallet, BookOpen, BookMarked, Shirt, Footprints, Star,
-  LayoutDashboard, Flame, UsersRound, CalendarCheck, Wrench,
-  Megaphone, ClipboardCheck, CalendarRange, FileHeart, Cake, ThumbsUp,
+  Building2,
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Clock,
+  QrCode,
+  Copy,
+  Check,
+  Plus,
+  Trash2,
+  Pin,
+  PinOff,
+  Edit3,
+  Save,
+  X,
+  Users,
+  Shield,
+  Calendar,
+  MessageSquare,
+  Info,
+  Heart,
+  UserPlus,
+  UserMinus,
+  Image,
+  Video,
+  CalendarDays,
+  Lock,
+  Unlock,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  PenLine,
+  Music,
+  Guitar,
+  Sprout,
+  Sparkles,
+  Gamepad2,
+  MessageCircle,
+  HeartHandshake,
+  ShoppingBag,
+  Car,
+  Truck,
+  Cast,
+  Film,
+  MonitorPlay,
+  CircleHelp,
+  BarChart3,
+  ClipboardList,
+  Wallet,
+  BookOpen,
+  BookMarked,
+  Shirt,
+  Footprints,
+  Star,
+  LayoutDashboard,
+  Flame,
+  UsersRound,
+  CalendarCheck,
+  Wrench,
+  Megaphone,
+  ClipboardCheck,
+  CalendarRange,
+  FileHeart,
+  Cake,
+  ThumbsUp,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,15 +79,21 @@ import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
 import { TesourariaTab } from "@/components/TesourariaTab";
 
-
-
 export const Route = createFileRoute("/casa/$sigla")({
   component: PaginaCasa,
 });
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba = "painel" | "mural" | "sobre" | "programacao" | "tesouraria" | "doacoes" | "configuracoes" | "tarefeiros";
+type Aba =
+  | "painel"
+  | "mural"
+  | "sobre"
+  | "programacao"
+  | "tesouraria"
+  | "doacoes"
+  | "configuracoes"
+  | "tarefeiros";
 
 interface PaginaData {
   sigla_casa: string;
@@ -47,13 +109,37 @@ interface PaginaData {
   telefone: string;
   email_contato: string;
   site: string;
-  horarios: HorarioItem[];
+  horarios: (HorarioItem | MuralItem)[];
   chave_pix: string;
   texto_doacao: string;
   publicada: boolean;
 }
 
-interface HorarioItem { dia: string; hora: string; atividade: string; }
+/**
+ * A coluna `horarios` guarda dois tipos de item: os horários fixos da casa e os
+ * itens do mural (escalas). Estes últimos trazem `tipo` e `id`.
+ */
+interface MuralItem {
+  id: string;
+  tipo: string;
+  dia: string;
+  mes_ano: string;
+  dia_semana: string;
+  tema: string;
+  facilitador: string;
+  casa: string;
+  coordenador: string;
+  passe: string;
+  streamyard: string;
+  recepcao: string;
+  arquivado?: boolean;
+}
+
+interface HorarioItem {
+  dia: string;
+  hora: string;
+  atividade: string;
+}
 
 interface Post {
   id: string;
@@ -97,7 +183,15 @@ interface Membro {
   atividades?: string[] | null;
 }
 
-const DIAS = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
+const DIAS = [
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado",
+  "Domingo",
+];
 
 const CARGOS = [
   "Presidente",
@@ -123,11 +217,19 @@ const CARGOS = [
   "Sócio",
   "Tarefeiro",
   "Trabalhador",
-  "Visitante"
+  "Visitante",
 ];
 
 const FORM_POST_INICIAL = { conteudo: "", imagem_url: "", video_url: "" };
-const FORM_EVENTO_INICIAL = { titulo: "", descricao: "", data_evento: "", hora_inicio: "", hora_fim: "", local_evento: "", publica: true };
+const FORM_EVENTO_INICIAL = {
+  titulo: "",
+  descricao: "",
+  data_evento: "",
+  hora_inicio: "",
+  hora_fim: "",
+  local_evento: "",
+  publica: true,
+};
 
 interface DashTodayMsg {
   texto: string;
@@ -148,24 +250,98 @@ interface DashAgendaEvento {
 
 const DAILY_MESSAGES = [
   { text: "Fora da caridade não há salvação.", author: "Allan Kardec" },
-  { text: "Não façais aos outros o que não quiserdes que vos façam; fazei-lhes todo o bem que quiserdes que vos façam.", author: "O Evangelho segundo o Espiritismo" },
-  { text: "A caridade bem compreendida consiste em fazer o bem a todos os homens sem distinção.", author: "O Livro dos Espíritos" },
-  { text: "Amai-vos uns aos outros: eis toda a lei; lei divina, pela qual Deus governa os mundos.", author: "O Evangelho segundo o Espiritismo" },
-  { text: "A humildade é o adorno da alma, assim como a modéstia é o adorno do mérito.", author: "O Livro dos Espíritos" },
-  { text: "Quem semeia o bem colhe bons frutos; quem semeia o mal colhe maus frutos.", author: "A Gênese · Cap. VII" },
-  { text: "O verdadeiro espiritismo é aquele que tem por divisa: fora da caridade não há salvação.", author: "Allan Kardec · A Gênese" },
+  {
+    text: "Não façais aos outros o que não quiserdes que vos façam; fazei-lhes todo o bem que quiserdes que vos façam.",
+    author: "O Evangelho segundo o Espiritismo",
+  },
+  {
+    text: "A caridade bem compreendida consiste em fazer o bem a todos os homens sem distinção.",
+    author: "O Livro dos Espíritos",
+  },
+  {
+    text: "Amai-vos uns aos outros: eis toda a lei; lei divina, pela qual Deus governa os mundos.",
+    author: "O Evangelho segundo o Espiritismo",
+  },
+  {
+    text: "A humildade é o adorno da alma, assim como a modéstia é o adorno do mérito.",
+    author: "O Livro dos Espíritos",
+  },
+  {
+    text: "Quem semeia o bem colhe bons frutos; quem semeia o mal colhe maus frutos.",
+    author: "A Gênese · Cap. VII",
+  },
+  {
+    text: "O verdadeiro espiritismo é aquele que tem por divisa: fora da caridade não há salvação.",
+    author: "Allan Kardec · A Gênese",
+  },
 ];
 
-const DASH_BAZAR: { Icon: LucideIcon; name: string; category: string; price: string; desc: string }[] = [
-  { Icon: BookOpen,  name: "O Livro dos Espíritos",              category: "Livro",     price: "R$ 35,00", desc: "Allan Kardec · Edição FEB" },
-  { Icon: BookMarked, name: "O Evangelho segundo o Espiritismo", category: "Livro",     price: "R$ 30,00", desc: "Allan Kardec · Edição FEB" },
-  { Icon: Shirt,     name: "Calça",                              category: "Vestuário", price: "R$ 45,00", desc: "Tamanho M · boa conservação" },
-  { Icon: Shirt,     name: "Camisa",                             category: "Vestuário", price: "R$ 20,00", desc: "Tamanho G · algodão" },
-  { Icon: Shirt,     name: "Blusa",                              category: "Vestuário", price: "R$ 25,00", desc: "Tamanho P · malha" },
-  { Icon: Footprints, name: "Sapato",                            category: "Calçado",   price: "R$ 30,00", desc: "Nº 38 · couro sintético" },
+const DASH_BAZAR: {
+  Icon: LucideIcon;
+  name: string;
+  category: string;
+  price: string;
+  desc: string;
+}[] = [
+  {
+    Icon: BookOpen,
+    name: "O Livro dos Espíritos",
+    category: "Livro",
+    price: "R$ 35,00",
+    desc: "Allan Kardec · Edição FEB",
+  },
+  {
+    Icon: BookMarked,
+    name: "O Evangelho segundo o Espiritismo",
+    category: "Livro",
+    price: "R$ 30,00",
+    desc: "Allan Kardec · Edição FEB",
+  },
+  {
+    Icon: Shirt,
+    name: "Calça",
+    category: "Vestuário",
+    price: "R$ 45,00",
+    desc: "Tamanho M · boa conservação",
+  },
+  {
+    Icon: Shirt,
+    name: "Camisa",
+    category: "Vestuário",
+    price: "R$ 20,00",
+    desc: "Tamanho G · algodão",
+  },
+  {
+    Icon: Shirt,
+    name: "Blusa",
+    category: "Vestuário",
+    price: "R$ 25,00",
+    desc: "Tamanho P · malha",
+  },
+  {
+    Icon: Footprints,
+    name: "Sapato",
+    category: "Calçado",
+    price: "R$ 30,00",
+    desc: "Nº 38 · couro sintético",
+  },
 ];
 
-const DEFAULT_GECAL_ESCALAS = [
+const DEFAULT_GECAL_ESCALAS: {
+  id: string;
+  tipo: string;
+  dia: string;
+  mes_ano: string;
+  dia_semana: string;
+  tema: string;
+  facilitador: string;
+  casa: string;
+  coordenador: string;
+  passe: string;
+  streamyard: string;
+  recepcao: string;
+  arquivado?: boolean;
+}[] = [
   {
     id: "gecal-1",
     tipo: "escala",
@@ -256,13 +432,50 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-violet-200",
     borderB: "border-violet-200",
     items: [
-      { Icon: PenLine,   title: "Artigos e Colunistas",    desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.", status: "breve" },
-      { Icon: Music,     title: "Músicas e Cifras",        desc: "Playlists espíritas para passes, estudos, envio de áudios e cifras/partituras com transposição de tom.", status: "disponivel", href: "/musicas-cifras" },
-      { Icon: Sprout,    title: "Evangelização Infantil",  desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.", status: "breve" },
-      { Icon: Sparkles,  title: "Área de Jovens Espíritas", desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.", status: "breve" },
-      { Icon: Gamepad2,  title: "Jogos Educativos",        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.", status: "disponivel", href: "/jogos" },
-      { Icon: Cake,      title: "Aniversariantes do Mês",  desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.", status: "breve" },
-      { Icon: Clock,     title: "Plantão de Orações",      desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.", status: "breve" },
+      {
+        Icon: PenLine,
+        title: "Artigos e Colunistas",
+        desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.",
+        status: "breve",
+      },
+      {
+        Icon: Music,
+        title: "Músicas e Cifras",
+        desc: "Playlists espíritas para passes, estudos, envio de áudios e cifras/partituras com transposição de tom.",
+        status: "disponivel",
+        href: "/musicas-cifras",
+      },
+      {
+        Icon: Sprout,
+        title: "Evangelização Infantil",
+        desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.",
+        status: "breve",
+      },
+      {
+        Icon: Sparkles,
+        title: "Área de Jovens Espíritas",
+        desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.",
+        status: "breve",
+      },
+      {
+        Icon: Gamepad2,
+        title: "Jogos Educativos",
+        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.",
+        status: "disponivel",
+        href: "/jogos",
+      },
+      {
+        Icon: Cake,
+        title: "Aniversariantes do Mês",
+        desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.",
+        status: "breve",
+      },
+      {
+        Icon: Clock,
+        title: "Plantão de Orações",
+        desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.",
+        status: "breve",
+      },
     ],
   },
   {
@@ -274,14 +487,54 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-cyan-200",
     borderB: "border-cyan-200",
     items: [
-      { Icon: MessageCircle,  title: "Fórum de Apoio",                desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.", status: "breve" },
-      { Icon: Users,          title: "Comunicação em Grupos",         desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.", status: "breve" },
-      { Icon: HeartHandshake, title: "Localização de Voluntariado",   desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.", status: "breve" },
-      { Icon: ShoppingBag,    title: "Bazar On-line",                 desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.", status: "breve" },
-      { Icon: Car,            title: "Carona Solidária",              desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.", status: "breve" },
-      { Icon: Truck,          title: "Entrega Solidária",             desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.", status: "breve" },
-      { Icon: Megaphone,      title: "Mural de Avisos",               desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.", status: "breve" },
-      { Icon: FileHeart,      title: "Ficha de Atendimento Fraterno", desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.", status: "breve" },
+      {
+        Icon: MessageCircle,
+        title: "Fórum de Apoio",
+        desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.",
+        status: "breve",
+      },
+      {
+        Icon: Users,
+        title: "Comunicação em Grupos",
+        desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.",
+        status: "breve",
+      },
+      {
+        Icon: HeartHandshake,
+        title: "Localização de Voluntariado",
+        desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.",
+        status: "breve",
+      },
+      {
+        Icon: ShoppingBag,
+        title: "Bazar On-line",
+        desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.",
+        status: "breve",
+      },
+      {
+        Icon: Car,
+        title: "Carona Solidária",
+        desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.",
+        status: "breve",
+      },
+      {
+        Icon: Truck,
+        title: "Entrega Solidária",
+        desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.",
+        status: "breve",
+      },
+      {
+        Icon: Megaphone,
+        title: "Mural de Avisos",
+        desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.",
+        status: "breve",
+      },
+      {
+        Icon: FileHeart,
+        title: "Ficha de Atendimento Fraterno",
+        desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.",
+        status: "breve",
+      },
     ],
   },
   {
@@ -293,12 +546,44 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-amber-200",
     borderB: "border-amber-200",
     items: [
-      { Icon: CalendarDays, title: "Agenda de Eventos e Reuniões", desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.", status: "disponivel", href: "/agenda" },
-      { Icon: Cast,         title: "Live Streaming",               desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.", status: "breve" },
-      { Icon: Video,        title: "Google Meet",                  desc: "Videoconferências integradas à plataforma para reuniões remotas.", status: "breve" },
-      { Icon: Film,          title: "Integração de Vídeos",          desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.", status: "breve" },
-      { Icon: ClipboardCheck, title: "Caderno de Presença Digital",  desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.", status: "disponivel", href: "/agenda" },
-      { Icon: CalendarRange,  title: "Escala de Trabalho",           desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.", status: "breve" },
+      {
+        Icon: CalendarDays,
+        title: "Agenda de Eventos e Reuniões",
+        desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.",
+        status: "disponivel",
+        href: "/agenda",
+      },
+      {
+        Icon: Cast,
+        title: "Live Streaming",
+        desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.",
+        status: "breve",
+      },
+      {
+        Icon: Video,
+        title: "Google Meet",
+        desc: "Videoconferências integradas à plataforma para reuniões remotas.",
+        status: "breve",
+      },
+      {
+        Icon: Film,
+        title: "Integração de Vídeos",
+        desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.",
+        status: "breve",
+      },
+      {
+        Icon: ClipboardCheck,
+        title: "Caderno de Presença Digital",
+        desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.",
+        status: "disponivel",
+        href: "/agenda",
+      },
+      {
+        Icon: CalendarRange,
+        title: "Escala de Trabalho",
+        desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.",
+        status: "breve",
+      },
     ],
   },
   {
@@ -310,8 +595,19 @@ const DASH_FEATURES: DashFeatureCategory[] = [
     border: "border-emerald-200",
     borderB: "border-emerald-200",
     items: [
-      { Icon: MonitorPlay, title: "Player de PowerPoint",  desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.", status: "breve" },
-      { Icon: CircleHelp,  title: "FAQ",                   desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.", status: "disponivel", href: "/ajuda" },
+      {
+        Icon: MonitorPlay,
+        title: "Player de PowerPoint",
+        desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.",
+        status: "breve",
+      },
+      {
+        Icon: CircleHelp,
+        title: "FAQ",
+        desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.",
+        status: "disponivel",
+        href: "/ajuda",
+      },
     ],
   },
 ];
@@ -433,7 +729,6 @@ function PaginaCasa() {
   const [membrosCount, setMembrosCount] = useState<number | undefined>(undefined);
   const [eventosCount, setEventosCount] = useState<number | undefined>(undefined);
 
-
   /* Sync form states with loaded page data */
   useEffect(() => {
     if (pagina) {
@@ -458,23 +753,31 @@ function PaginaCasa() {
     }
   }, [pagina]);
 
-
   /* ── Admin check ── */
-  const isAdmin = !loading && !!user && !!profile && (
-    profile.cargo_principal === "DEV" ||
-    (profile.sigla_casa === sigla && (
-      profile.cargo_principal === "Presidente" ||
-      profile.cargo_principal === "Vice-presidente"
-    )) ||
-    adminIds.includes(user.id)
-  );
+  const isAdmin =
+    !loading &&
+    !!user &&
+    !!profile &&
+    (profile.cargo_principal === "DEV" ||
+      (profile.sigla_casa === sigla &&
+        (profile.cargo_principal === "Presidente" ||
+          profile.cargo_principal === "Vice-presidente")) ||
+      adminIds.includes(user.id));
 
   const isSameCasa = profile?.sigla_casa === sigla;
 
   /* ── Auth guard ── */
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) {
+    if (
+      !loading &&
+      user &&
+      (!profile?.sigla_casa ||
+        !profile?.nome ||
+        !profile?.cargo_principal ||
+        !profile?.uf ||
+        !profile?.cidade)
+    ) {
       navigate({ to: "/completar-perfil" });
     }
   }, [user, profile, loading, navigate]);
@@ -484,17 +787,30 @@ function PaginaCasa() {
     setCarregando(true);
     const [pRes, posRes, aRes, evRes, mCountRes, eCountRes] = await Promise.all([
       supabase.from("paginas_casas").select("*").eq("sigla_casa", sigla).maybeSingle(),
-      supabase.from("publicacoes_casa").select("*").eq("sigla_casa", sigla)
-        .order("fixado", { ascending: false }).order("created_at", { ascending: false }),
+      supabase
+        .from("publicacoes_casa")
+        .select("*")
+        .eq("sigla_casa", sigla)
+        .order("fixado", { ascending: false })
+        .order("created_at", { ascending: false }),
       supabase.from("administradores_pagina").select("user_id").eq("sigla_casa", sigla),
-      supabase.from("programacao_eventos").select("*").eq("sigla_casa", sigla)
-        .order("data_evento", { ascending: true }).order("hora_inicio", { ascending: true }),
-      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("sigla_casa", sigla),
-      supabase.from("programacao_eventos").select("id", { count: "exact", head: true })
+      supabase
+        .from("programacao_eventos")
+        .select("*")
+        .eq("sigla_casa", sigla)
+        .order("data_evento", { ascending: true })
+        .order("hora_inicio", { ascending: true }),
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("sigla_casa", sigla),
+      supabase
+        .from("programacao_eventos")
+        .select("id", { count: "exact", head: true })
         .eq("sigla_casa", sigla)
         .gte("data_evento", new Date().toISOString().slice(0, 10)),
     ]);
-    if (pRes.data) setPagina(pRes.data as PaginaData);
+    if (pRes.data) setPagina(pRes.data as unknown as PaginaData);
     if (posRes.data) setPosts(posRes.data as Post[]);
     if (aRes.data) setAdminIds(aRes.data.map((a: { user_id: string }) => a.user_id));
     if (evRes.data) setEventos(evRes.data as Evento[]);
@@ -503,7 +819,6 @@ function PaginaCasa() {
     setCarregando(false);
   }, [sigla]);
 
-
   useEffect(() => {
     if (!loading && user) carregar();
   }, [loading, user, carregar]);
@@ -511,9 +826,9 @@ function PaginaCasa() {
   // Auto-archive expired mural scales in the database
   useEffect(() => {
     if (modoAdmin && pagina?.horarios && sigla) {
-      const currentList = ((pagina.horarios ?? []) as any[]);
+      const currentList = (pagina.horarios ?? []) as unknown as MuralItem[];
       let changed = false;
-      const updated = currentList.map(item => {
+      const updated = currentList.map((item) => {
         if (item.tipo === "escala" && !item.arquivado && isEscalaVencida(item.dia, item.mes_ano)) {
           changed = true;
           return { ...item, arquivado: true };
@@ -525,11 +840,11 @@ function PaginaCasa() {
         const updateDb = async () => {
           const { error } = await supabase
             .from("paginas_casas")
-            .update({ horarios: updated })
+            .update({ horarios: updated as unknown as Json })
             .eq("sigla_casa", sigla);
-          
+
           if (!error) {
-            setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+            setPagina((prev) => (prev ? { ...prev, horarios: updated } : prev));
             toast.info("Programações públicas vencidas foram arquivadas automaticamente.");
           }
         };
@@ -543,7 +858,9 @@ function PaginaCasa() {
     const hojeStr = new Date().toISOString().slice(0, 10);
     const { data } = await supabase
       .from("agenda_eventos")
-      .select("id, titulo, data_inicio, data_fim, tipo, aceita_confirmacao, agenda_participantes(id, user_id, confirmado)")
+      .select(
+        "id, titulo, data_inicio, data_fim, tipo, aceita_confirmacao, agenda_participantes(id, user_id, confirmado)",
+      )
       .eq("sigla_casa", profile.sigla_casa)
       .gte("data_inicio", hojeStr)
       .order("data_inicio", { ascending: true })
@@ -551,19 +868,27 @@ function PaginaCasa() {
     setAgendaEventos((data as DashAgendaEvento[]) ?? []);
   }, [user, profile?.sigla_casa]);
 
-  const handleConfirmarEvento = useCallback(async (eventoId: string) => {
-    if (!user) return;
-    await supabase.from("agenda_participantes").upsert(
-      { evento_id: eventoId, user_id: user.id, confirmado: true },
-      { onConflict: "evento_id,user_id" }
-    );
-    fetchAgenda();
-  }, [user, fetchAgenda]);
+  const handleConfirmarEvento = useCallback(
+    async (eventoId: string) => {
+      if (!user) return;
+      await supabase
+        .from("agenda_participantes")
+        .upsert(
+          { evento_id: eventoId, user_id: user.id, confirmado: true },
+          { onConflict: "evento_id,user_id" },
+        );
+      fetchAgenda();
+    },
+    [user, fetchAgenda],
+  );
 
-  const handleResponderConvite = useCallback(async (participanteId: string, confirmado: boolean) => {
-    await supabase.from("agenda_participantes").update({ confirmado }).eq("id", participanteId);
-    fetchAgenda();
-  }, [fetchAgenda]);
+  const handleResponderConvite = useCallback(
+    async (participanteId: string, confirmado: boolean) => {
+      await supabase.from("agenda_participantes").update({ confirmado }).eq("id", participanteId);
+      fetchAgenda();
+    },
+    [fetchAgenda],
+  );
 
   const fetchVotes = useCallback(async () => {
     if (!user) return;
@@ -578,44 +903,58 @@ function PaginaCasa() {
     setVotes(map);
   }, [user]);
 
-  const handleCardVote = useCallback(async (title: string) => {
-    if (!user) return;
-    const key = title.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
-    if (votingKey === key || votes[key]?.votedByMe) return;
-    setVotingKey(key);
-    try {
-      await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
-      setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
-    } finally {
-      setVotingKey(null);
-    }
-  }, [user, votes, votingKey]);
+  const handleCardVote = useCallback(
+    async (title: string) => {
+      if (!user) return;
+      const key = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .slice(0, 80);
+      if (votingKey === key || votes[key]?.votedByMe) return;
+      setVotingKey(key);
+      try {
+        await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
+        setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
+      } finally {
+        setVotingKey(null);
+      }
+    },
+    [user, votes, votingKey],
+  );
 
   useEffect(() => {
     if (user && profile?.sigla_casa && sigla === profile.sigla_casa) {
       fetchAgenda();
       fetchVotes();
-      
+
       const todayStr = new Date().toISOString().slice(0, 10);
       supabase
         .from("mensagens_do_dia")
         .select("texto, referencia, autor_nome, sigla_casa")
-        .eq("sigla_casa", sigla)   // ← isolamento: cada casa vê apenas sua mensagem
+        .eq("sigla_casa", sigla) // ← isolamento: cada casa vê apenas sua mensagem
         .eq("data_exibicao", todayStr)
         .eq("aprovada", true)
         .single()
-        .then(({ data }) => { if (data) setTodayMsg(data); });
+        .then(({ data }) => {
+          if (data) setTodayMsg(data);
+        });
     }
   }, [user, profile?.sigla_casa, sigla, fetchAgenda, fetchVotes]);
 
   /* ── Load membros (lazy) ── */
-  const garantirMembros = useCallback(async (force = false) => {
-    if (membrosCarregados.current && !force) return;
-    const { data } = await supabase.from("profiles").select("id, nome, cargo_principal, atividades")
-      .eq("sigla_casa", sigla).order("nome");
-    if (data) setMembros((data as Membro[]).filter(m => m.cargo_principal !== "DEV"));
-    membrosCarregados.current = true;
-  }, [sigla]);
+  const garantirMembros = useCallback(
+    async (force = false) => {
+      if (membrosCarregados.current && !force) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, nome, cargo_principal, atividades")
+        .eq("sigla_casa", sigla)
+        .order("nome");
+      if (data) setMembros((data as Membro[]).filter((m) => m.cargo_principal !== "DEV"));
+      membrosCarregados.current = true;
+    },
+    [sigla],
+  );
 
   useEffect(() => {
     if (aba === "tarefeiros") {
@@ -624,22 +963,32 @@ function PaginaCasa() {
   }, [aba, garantirMembros]);
 
   /* ── Load participants for an event ── */
-  const carregarParticipantes = useCallback(async (eventoId: string) => {
-    if (evParts[eventoId]) return;
-    const { data: parts } = await supabase.from("programacao_participantes")
-      .select("evento_id, user_id, status").eq("evento_id", eventoId);
-    if (!parts) return;
-    const ids = parts.map(p => p.user_id);
-    let nomes: Record<string, string> = {};
-    if (ids.length > 0) {
-      const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
-      profs?.forEach((p: { id: string; nome: string }) => { nomes[p.id] = p.nome; });
-    }
-    setEvParts(prev => ({
-      ...prev,
-      [eventoId]: parts.map(p => ({ ...p, nome: nomes[p.user_id] || "Membro" })) as EvParticipante[],
-    }));
-  }, [evParts]);
+  const carregarParticipantes = useCallback(
+    async (eventoId: string) => {
+      if (evParts[eventoId]) return;
+      const { data: parts } = await supabase
+        .from("programacao_participantes")
+        .select("evento_id, user_id, status")
+        .eq("evento_id", eventoId);
+      if (!parts) return;
+      const ids = parts.map((p) => p.user_id);
+      const nomes: Record<string, string> = {};
+      if (ids.length > 0) {
+        const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
+        profs?.forEach((p: { id: string; nome: string | null }) => {
+          nomes[p.id] = p.nome ?? "";
+        });
+      }
+      setEvParts((prev) => ({
+        ...prev,
+        [eventoId]: parts.map((p) => ({
+          ...p,
+          nome: nomes[p.user_id] || "Membro",
+        })) as EvParticipante[],
+      }));
+    },
+    [evParts],
+  );
 
   /* ═══════════════════════════════════════════════
      ACTIONS — MURAL
@@ -647,22 +996,34 @@ function PaginaCasa() {
 
   const publicarPost = async () => {
     if (!formNovoPost.conteudo.trim()) return;
-    const { data, error } = await supabase.from("publicacoes_casa").insert({
-      sigla_casa: sigla,
-      autor_id: user!.id,
-      autor_nome: profile?.nome || "Membro",
-      conteudo: formNovoPost.conteudo.trim(),
-      imagem_url: formNovoPost.imagem_url.trim() || null,
-      video_url: formNovoPost.video_url.trim() || null,
-      fixado: false,
-    }).select().single();
-    if (error || !data) { toast.error("Erro ao publicar."); return; }
-    setPosts(prev => [data as Post, ...prev.filter(p => !p.fixado)].concat(prev.filter(p => p.fixado)));
-    setPosts(prev => { const n = data as Post; return [n, ...prev.filter(p => p.fixado)].concat(prev.filter(p => !p.fixado)); });
-    setPosts(prev => {
+    const { data, error } = await supabase
+      .from("publicacoes_casa")
+      .insert({
+        sigla_casa: sigla,
+        autor_id: user!.id,
+        autor_nome: profile?.nome || "Membro",
+        conteudo: formNovoPost.conteudo.trim(),
+        imagem_url: formNovoPost.imagem_url.trim() || null,
+        video_url: formNovoPost.video_url.trim() || null,
+        fixado: false,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erro ao publicar.");
+      return;
+    }
+    setPosts((prev) =>
+      [data as Post, ...prev.filter((p) => !p.fixado)].concat(prev.filter((p) => p.fixado)),
+    );
+    setPosts((prev) => {
+      const n = data as Post;
+      return [n, ...prev.filter((p) => p.fixado)].concat(prev.filter((p) => !p.fixado));
+    });
+    setPosts((prev) => {
       const novo = data as Post;
-      const fixados = prev.filter(p => p.fixado);
-      const normais = prev.filter(p => !p.fixado);
+      const fixados = prev.filter((p) => p.fixado);
+      const normais = prev.filter((p) => !p.fixado);
       return [...fixados, novo, ...normais];
     });
     setFormNovoPost(FORM_POST_INICIAL);
@@ -672,29 +1033,47 @@ function PaginaCasa() {
 
   const iniciarEdicaoPost = (post: Post) => {
     setEditandoPostId(post.id);
-    setFormEditPost({ conteudo: post.conteudo, imagem_url: post.imagem_url || "", video_url: post.video_url || "" });
+    setFormEditPost({
+      conteudo: post.conteudo,
+      imagem_url: post.imagem_url || "",
+      video_url: post.video_url || "",
+    });
   };
 
   const salvarEdicaoPost = async (id: string) => {
-    const { data, error } = await supabase.from("publicacoes_casa").update({
-      conteudo: formEditPost.conteudo.trim(),
-      imagem_url: formEditPost.imagem_url.trim() || null,
-      video_url: formEditPost.video_url.trim() || null,
-      editado_em: new Date().toISOString(),
-    }).eq("id", id).select();
-    
-    if (error) { toast.error(`Erro ao salvar: ${error.message}`); return; }
+    const { data, error } = await supabase
+      .from("publicacoes_casa")
+      .update({
+        conteudo: formEditPost.conteudo.trim(),
+        imagem_url: formEditPost.imagem_url.trim() || null,
+        video_url: formEditPost.video_url.trim() || null,
+        editado_em: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      toast.error(`Erro ao salvar: ${error.message}`);
+      return;
+    }
     if (!data || data.length === 0) {
       toast.error("Erro: Sem permissão para editar esta publicação.");
       return;
     }
-    
-    setPosts(prev => prev.map(p => p.id === id ? {
-      ...p, conteudo: formEditPost.conteudo.trim(),
-      imagem_url: formEditPost.imagem_url.trim() || null,
-      video_url: formEditPost.video_url.trim() || null,
-      editado_em: new Date().toISOString(),
-    } : p));
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              conteudo: formEditPost.conteudo.trim(),
+              imagem_url: formEditPost.imagem_url.trim() || null,
+              video_url: formEditPost.video_url.trim() || null,
+              editado_em: new Date().toISOString(),
+            }
+          : p,
+      ),
+    );
     setEditandoPostId(null);
     toast.success("Publicação atualizada.");
   };
@@ -702,24 +1081,29 @@ function PaginaCasa() {
   const excluirPost = async (id: string) => {
     if (!window.confirm("Deseja realmente excluir esta publicação do mural?")) return;
     const { data, error } = await supabase.from("publicacoes_casa").delete().eq("id", id).select();
-    
-    if (error) { toast.error(`Erro ao excluir: ${error.message}`); return; }
+
+    if (error) {
+      toast.error(`Erro ao excluir: ${error.message}`);
+      return;
+    }
     if (!data || data.length === 0) {
       toast.error("Erro: Sem permissão no banco de dados para excluir esta publicação.");
       return;
     }
-    
-    setPosts(prev => prev.filter(p => p.id !== id));
+
+    setPosts((prev) => prev.filter((p) => p.id !== id));
     toast.success("Publicação removida.");
   };
 
   const toggleFixar = async (post: Post) => {
-    const { error } = await supabase.from("publicacoes_casa")
-      .update({ fixado: !post.fixado }).eq("id", post.id);
+    const { error } = await supabase
+      .from("publicacoes_casa")
+      .update({ fixado: !post.fixado })
+      .eq("id", post.id);
     if (error) return;
-    setPosts(prev => {
-      const list = prev.map(p => p.id === post.id ? { ...p, fixado: !p.fixado } : p);
-      return [...list.filter(p => p.fixado), ...list.filter(p => !p.fixado)];
+    setPosts((prev) => {
+      const list = prev.map((p) => (p.id === post.id ? { ...p, fixado: !p.fixado } : p));
+      return [...list.filter((p) => p.fixado), ...list.filter((p) => !p.fixado)];
     });
   };
 
@@ -729,10 +1113,16 @@ function PaginaCasa() {
 
   const salvarSobre = async () => {
     setSalvando(true);
-    const { error } = await supabase.from("paginas_casas").update({ ...formSobre }).eq("sigla_casa", sigla);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ ...formSobre } as unknown as TablesUpdate<"paginas_casas">)
+      .eq("sigla_casa", sigla);
     setSalvando(false);
-    if (error) { toast.error("Erro ao salvar."); return; }
-    setPagina(prev => prev ? { ...prev, ...formSobre } : prev);
+    if (error) {
+      toast.error("Erro ao salvar.");
+      return;
+    }
+    setPagina((prev) => (prev ? { ...prev, ...formSobre } : prev));
     setEditSobre(false);
     toast.success("Página atualizada.");
   };
@@ -742,20 +1132,35 @@ function PaginaCasa() {
   ═══════════════════════════════════════════════ */
 
   const adicionarHorario = async () => {
-    if (!novoHorario.hora || !novoHorario.atividade.trim()) { toast.error("Preencha horário e atividade."); return; }
+    if (!novoHorario.hora || !novoHorario.atividade.trim()) {
+      toast.error("Preencha horário e atividade.");
+      return;
+    }
     const updated = [...(pagina!.horarios ?? []), { ...novoHorario }];
-    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
-    if (error) { toast.error("Erro ao salvar."); return; }
-    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ horarios: updated as unknown as Json })
+      .eq("sigla_casa", sigla);
+    if (error) {
+      toast.error("Erro ao salvar.");
+      return;
+    }
+    setPagina((prev) => (prev ? { ...prev, horarios: updated } : prev));
     setNovoHorario({ dia: DIAS[0], hora: "", atividade: "" });
     setShowNovoHorario(false);
   };
 
-  const removerHorario = async (item: any) => {
-    const updated = (pagina!.horarios ?? []).filter(h => h !== item);
-    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
-    if (error) { toast.error("Erro ao remover."); return; }
-    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+  const removerHorario = async (item: HorarioItem | MuralItem) => {
+    const updated = (pagina!.horarios ?? []).filter((h) => h !== item);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ horarios: updated as unknown as Json })
+      .eq("sigla_casa", sigla);
+    if (error) {
+      toast.error("Erro ao remover.");
+      return;
+    }
+    setPagina((prev) => (prev ? { ...prev, horarios: updated } : prev));
   };
 
   /* ═══════════════════════════════════════════════
@@ -763,80 +1168,142 @@ function PaginaCasa() {
   ═══════════════════════════════════════════════ */
 
   const criarEvento = async () => {
-    if (!formNovoEvento.titulo.trim() || !formNovoEvento.data_evento) { toast.error("Título e data são obrigatórios."); return; }
-    const { data, error } = await supabase.from("programacao_eventos").insert({
-      sigla_casa: sigla,
-      titulo: formNovoEvento.titulo.trim(),
-      descricao: formNovoEvento.descricao.trim() || null,
-      data_evento: formNovoEvento.data_evento,
-      hora_inicio: formNovoEvento.hora_inicio || null,
-      hora_fim: formNovoEvento.hora_fim || null,
-      local_evento: formNovoEvento.local_evento.trim() || null,
-      publica: formNovoEvento.publica,
-      criado_por: user!.id,
-      criado_por_nome: profile?.nome || "Admin",
-    }).select().single();
-    if (error || !data) { toast.error("Erro ao criar evento."); return; }
-    setEventos(prev => [...prev, data as Evento].sort((a, b) => a.data_evento.localeCompare(b.data_evento)));
+    if (!formNovoEvento.titulo.trim() || !formNovoEvento.data_evento) {
+      toast.error("Título e data são obrigatórios.");
+      return;
+    }
+    const { data, error } = await supabase
+      .from("programacao_eventos")
+      .insert({
+        sigla_casa: sigla,
+        titulo: formNovoEvento.titulo.trim(),
+        descricao: formNovoEvento.descricao.trim() || null,
+        data_evento: formNovoEvento.data_evento,
+        hora_inicio: formNovoEvento.hora_inicio || null,
+        hora_fim: formNovoEvento.hora_fim || null,
+        local_evento: formNovoEvento.local_evento.trim() || null,
+        publica: formNovoEvento.publica,
+        criado_por: user!.id,
+        criado_por_nome: profile?.nome || "Admin",
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erro ao criar evento.");
+      return;
+    }
+    setEventos((prev) =>
+      [...prev, data as Evento].sort((a, b) => a.data_evento.localeCompare(b.data_evento)),
+    );
     setFormNovoEvento(FORM_EVENTO_INICIAL);
     setShowNovoEvento(false);
     toast.success("Evento criado.");
   };
 
   const salvarEdicaoEvento = async (id: string) => {
-    if (!formEditEvento.titulo.trim() || !formEditEvento.data_evento) { toast.error("Título e data obrigatórios."); return; }
-    const { error } = await supabase.from("programacao_eventos").update({
-      titulo: formEditEvento.titulo.trim(),
-      descricao: formEditEvento.descricao.trim() || null,
-      data_evento: formEditEvento.data_evento,
-      hora_inicio: formEditEvento.hora_inicio || null,
-      hora_fim: formEditEvento.hora_fim || null,
-      local_evento: formEditEvento.local_evento.trim() || null,
-      publica: formEditEvento.publica,
-    }).eq("id", id);
-    if (error) { toast.error("Erro ao salvar."); return; }
-    setEventos(prev => prev.map(e => e.id === id ? { ...e,
-      titulo: formEditEvento.titulo.trim(),
-      descricao: formEditEvento.descricao.trim() || null,
-      data_evento: formEditEvento.data_evento,
-      hora_inicio: formEditEvento.hora_inicio || null,
-      hora_fim: formEditEvento.hora_fim || null,
-      local_evento: formEditEvento.local_evento.trim() || null,
-      publica: formEditEvento.publica,
-    } : e).sort((a, b) => a.data_evento.localeCompare(b.data_evento)));
+    if (!formEditEvento.titulo.trim() || !formEditEvento.data_evento) {
+      toast.error("Título e data obrigatórios.");
+      return;
+    }
+    const { error } = await supabase
+      .from("programacao_eventos")
+      .update({
+        titulo: formEditEvento.titulo.trim(),
+        descricao: formEditEvento.descricao.trim() || null,
+        data_evento: formEditEvento.data_evento,
+        hora_inicio: formEditEvento.hora_inicio || null,
+        hora_fim: formEditEvento.hora_fim || null,
+        local_evento: formEditEvento.local_evento.trim() || null,
+        publica: formEditEvento.publica,
+      })
+      .eq("id", id);
+    if (error) {
+      toast.error("Erro ao salvar.");
+      return;
+    }
+    setEventos((prev) =>
+      prev
+        .map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                titulo: formEditEvento.titulo.trim(),
+                descricao: formEditEvento.descricao.trim() || null,
+                data_evento: formEditEvento.data_evento,
+                hora_inicio: formEditEvento.hora_inicio || null,
+                hora_fim: formEditEvento.hora_fim || null,
+                local_evento: formEditEvento.local_evento.trim() || null,
+                publica: formEditEvento.publica,
+              }
+            : e,
+        )
+        .sort((a, b) => a.data_evento.localeCompare(b.data_evento)),
+    );
     setEditandoEventoId(null);
     toast.success("Evento atualizado.");
   };
 
   const excluirEvento = async (id: string) => {
     await supabase.from("programacao_eventos").delete().eq("id", id);
-    setEventos(prev => prev.filter(e => e.id !== id));
-    setEvParts(prev => { const n = { ...prev }; delete n[id]; return n; });
+    setEventos((prev) => prev.filter((e) => e.id !== id));
+    setEvParts((prev) => {
+      const n = { ...prev };
+      delete n[id];
+      return n;
+    });
     if (eventoExpandido === id) setEventoExpandido(null);
     toast.success("Evento removido.");
   };
 
   const adicionarParticipante = async (eventoId: string, membroId: string) => {
-    if (evParts[eventoId]?.find(p => p.user_id === membroId)) return;
+    if (evParts[eventoId]?.find((p) => p.user_id === membroId)) return;
     const { error } = await supabase.from("programacao_participantes").insert({
-      evento_id: eventoId, user_id: membroId, status: "convidado", adicionado_por: user!.id,
+      evento_id: eventoId,
+      user_id: membroId,
+      status: "convidado",
+      adicionado_por: user!.id,
     });
-    if (error) { toast.error("Erro."); return; }
-    const m = membros.find(m => m.id === membroId);
-    setEvParts(prev => ({ ...prev, [eventoId]: [...(prev[eventoId] || []), { evento_id: eventoId, user_id: membroId, status: "convidado", nome: m?.nome }] }));
+    if (error) {
+      toast.error("Erro.");
+      return;
+    }
+    const m = membros.find((m) => m.id === membroId);
+    setEvParts((prev) => ({
+      ...prev,
+      [eventoId]: [
+        ...(prev[eventoId] || []),
+        { evento_id: eventoId, user_id: membroId, status: "convidado", nome: m?.nome },
+      ],
+    }));
     toast.success("Participante adicionado.");
   };
 
   const removerParticipante = async (eventoId: string, userId: string) => {
-    await supabase.from("programacao_participantes").delete().eq("evento_id", eventoId).eq("user_id", userId);
-    setEvParts(prev => ({ ...prev, [eventoId]: prev[eventoId]?.filter(p => p.user_id !== userId) || [] }));
+    await supabase
+      .from("programacao_participantes")
+      .delete()
+      .eq("evento_id", eventoId)
+      .eq("user_id", userId);
+    setEvParts((prev) => ({
+      ...prev,
+      [eventoId]: prev[eventoId]?.filter((p) => p.user_id !== userId) || [],
+    }));
   };
 
   const confirmarPresenca = async (eventoId: string, status: "confirmado" | "recusou") => {
-    const { error } = await supabase.from("programacao_participantes")
-      .update({ status }).eq("evento_id", eventoId).eq("user_id", user!.id);
-    if (error) { toast.error("Erro."); return; }
-    setEvParts(prev => ({ ...prev, [eventoId]: prev[eventoId]?.map(p => p.user_id === user!.id ? { ...p, status } : p) || [] }));
+    const { error } = await supabase
+      .from("programacao_participantes")
+      .update({ status })
+      .eq("evento_id", eventoId)
+      .eq("user_id", user!.id);
+    if (error) {
+      toast.error("Erro.");
+      return;
+    }
+    setEvParts((prev) => ({
+      ...prev,
+      [eventoId]: prev[eventoId]?.map((p) => (p.user_id === user!.id ? { ...p, status } : p)) || [],
+    }));
     toast.success(status === "confirmado" ? "Presenca confirmada!" : "Participacao recusada.");
   };
 
@@ -850,9 +1317,18 @@ function PaginaCasa() {
     const mesStr = parts[0].toLowerCase();
     const ano = parseInt(parts[1]);
     const meses: Record<string, number> = {
-      "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3,
-      "maio": 4, "junho": 5, "julho": 6, "agosto": 7,
-      "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11
+      janeiro: 0,
+      fevereiro: 1,
+      março: 2,
+      abril: 3,
+      maio: 4,
+      junho: 5,
+      julho: 6,
+      agosto: 7,
+      setembro: 8,
+      outubro: 9,
+      novembro: 10,
+      dezembro: 11,
     };
     const mes = meses[mesStr];
     if (mes === undefined || isNaN(ano)) return null;
@@ -868,11 +1344,11 @@ function PaginaCasa() {
   };
 
   const getEscalaItems = () => {
-    const list = ((pagina?.horarios as any[]) ?? []);
-    const dbItems = list.filter(h => h.tipo === "escala");
-    
+    const list = (pagina?.horarios ?? []) as unknown as MuralItem[];
+    const dbItems = list.filter((h) => h.tipo === "escala");
+
     if (dbItems.length > 0) {
-      return dbItems.filter(h => {
+      return dbItems.filter((h) => {
         const vencida = isEscalaVencida(h.dia, h.mes_ano);
         const arquivada = h.arquivado || vencida;
         return mostrarMuralArquivado ? arquivada : !arquivada;
@@ -880,7 +1356,7 @@ function PaginaCasa() {
     }
 
     if (sigla === "GECAL") {
-      return DEFAULT_GECAL_ESCALAS.filter(h => {
+      return DEFAULT_GECAL_ESCALAS.filter((h) => {
         const vencida = isEscalaVencida(h.dia, h.mes_ano);
         const arquivada = h.arquivado || vencida;
         return mostrarMuralArquivado ? arquivada : !arquivada;
@@ -897,35 +1373,39 @@ function PaginaCasa() {
       return;
     }
 
-    const currentList = ((pagina!.horarios ?? []) as any[]);
-    let updated: any[];
+    const currentList = (pagina!.horarios ?? []) as unknown as MuralItem[];
+    let updated: MuralItem[];
 
     if (editandoMuralId) {
-      updated = currentList.map(item =>
-        item.id === editandoMuralId
-          ? { ...item, ...formMural }
-          : item
+      updated = currentList.map((item) =>
+        item.id === editandoMuralId ? { ...item, ...formMural } : item,
       );
     } else {
       const newItem = {
         id: "escala-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
         tipo: "escala",
-        ...formMural
+        ...formMural,
       };
-      
-      const dbEscalas = currentList.filter(h => h.tipo === "escala");
+
+      const dbEscalas = currentList.filter((h) => h.tipo === "escala");
       if (dbEscalas.length === 0 && sigla === "GECAL") {
-        const nonEscalas = currentList.filter(h => h.tipo !== "escala");
+        const nonEscalas = currentList.filter((h) => h.tipo !== "escala");
         updated = [...nonEscalas, ...DEFAULT_GECAL_ESCALAS, newItem];
       } else {
         updated = [...currentList, newItem];
       }
     }
 
-    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
-    if (error) { toast.error("Erro ao salvar escala."); return; }
-    
-    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ horarios: updated as unknown as Json })
+      .eq("sigla_casa", sigla);
+    if (error) {
+      toast.error("Erro ao salvar escala.");
+      return;
+    }
+
+    setPagina((prev) => (prev ? { ...prev, horarios: updated } : prev));
     setFormMural({
       dia: "",
       mes_ano: "Junho 2026",
@@ -962,7 +1442,7 @@ function PaginaCasa() {
         .update({
           cargo_principal: novoCargo,
           atividades: novasAtividades,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("id", membroId);
 
@@ -970,7 +1450,7 @@ function PaginaCasa() {
 
       toast.success("Função do tarefeiro atualizada com sucesso!");
       await garantirMembros(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao alterar função:", err);
       toast.error("Não foi possível atualizar a função do tarefeiro.");
     }
@@ -978,26 +1458,32 @@ function PaginaCasa() {
 
   const removerMuralItem = async (itemId: string) => {
     if (!window.confirm("Deseja realmente remover este item do mural?")) return;
-    
-    const currentList = ((pagina!.horarios ?? []) as any[]);
-    let updated: any[];
 
-    const dbEscalas = currentList.filter(h => h.tipo === "escala");
+    const currentList = (pagina!.horarios ?? []) as unknown as MuralItem[];
+    let updated: MuralItem[];
+
+    const dbEscalas = currentList.filter((h) => h.tipo === "escala");
     if (dbEscalas.length === 0 && sigla === "GECAL") {
-      const nonEscalas = currentList.filter(h => h.tipo !== "escala");
-      updated = [...nonEscalas, ...DEFAULT_GECAL_ESCALAS.filter(item => item.id !== itemId)];
+      const nonEscalas = currentList.filter((h) => h.tipo !== "escala");
+      updated = [...nonEscalas, ...DEFAULT_GECAL_ESCALAS.filter((item) => item.id !== itemId)];
     } else {
-      updated = currentList.filter(item => item.id !== itemId);
+      updated = currentList.filter((item) => item.id !== itemId);
     }
 
-    const { error } = await supabase.from("paginas_casas").update({ horarios: updated }).eq("sigla_casa", sigla);
-    if (error) { toast.error("Erro ao excluir."); return; }
-    
-    setPagina(prev => prev ? { ...prev, horarios: updated } : prev);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ horarios: updated as unknown as Json })
+      .eq("sigla_casa", sigla);
+    if (error) {
+      toast.error("Erro ao excluir.");
+      return;
+    }
+
+    setPagina((prev) => (prev ? { ...prev, horarios: updated } : prev));
     toast.success("Escala removida.");
   };
 
-  const iniciarEdicaoMuralItem = (item: any) => {
+  const iniciarEdicaoMuralItem = (item: MuralItem) => {
     setEditandoMuralId(item.id);
     setFormMural({
       dia: item.dia,
@@ -1027,10 +1513,16 @@ function PaginaCasa() {
 
   const salvarDoacoes = async () => {
     setSalvando(true);
-    const { error } = await supabase.from("paginas_casas").update({ ...formDoacoes }).eq("sigla_casa", sigla);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ ...formDoacoes })
+      .eq("sigla_casa", sigla);
     setSalvando(false);
-    if (error) { toast.error("Erro ao salvar."); return; }
-    setPagina(prev => prev ? { ...prev, ...formDoacoes } : prev);
+    if (error) {
+      toast.error("Erro ao salvar.");
+      return;
+    }
+    setPagina((prev) => (prev ? { ...prev, ...formDoacoes } : prev));
     setEditDoacoes(false);
     toast.success("Doações atualizadas.");
   };
@@ -1041,16 +1533,24 @@ function PaginaCasa() {
 
   const adicionarAdmin = async (membroId: string) => {
     if (adminIds.includes(membroId)) return;
-    const { error } = await supabase.from("administradores_pagina")
+    const { error } = await supabase
+      .from("administradores_pagina")
       .insert({ sigla_casa: sigla, user_id: membroId, adicionado_por: user!.id });
-    if (error) { toast.error("Erro."); return; }
-    setAdminIds(prev => [...prev, membroId]);
+    if (error) {
+      toast.error("Erro.");
+      return;
+    }
+    setAdminIds((prev) => [...prev, membroId]);
     toast.success("Administrador adicionado.");
   };
 
   const removerAdmin = async (membroId: string) => {
-    await supabase.from("administradores_pagina").delete().eq("sigla_casa", sigla).eq("user_id", membroId);
-    setAdminIds(prev => prev.filter(id => id !== membroId));
+    await supabase
+      .from("administradores_pagina")
+      .delete()
+      .eq("sigla_casa", sigla)
+      .eq("user_id", membroId);
+    setAdminIds((prev) => prev.filter((id) => id !== membroId));
     toast.success("Administrador removido.");
   };
 
@@ -1062,44 +1562,68 @@ function PaginaCasa() {
 
   /* ── Early returns ── */
   if (loading || !user) return null;
-  if (carregando) return (
-    <main className="page-light min-h-screen pt-20 pb-20 flex items-center justify-center">
-      <p className="text-sm text-muted-foreground">Carregando...</p>
-    </main>
-  );
+  if (carregando)
+    return (
+      <main className="page-light min-h-screen pt-20 pb-20 flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      </main>
+    );
 
   /* ── Page not created ── */
   if (!pagina) {
-    const podeInicializar = profile?.cargo_principal === "DEV" ||
-      (profile?.sigla_casa === sigla && (
-        profile.cargo_principal === "Presidente" || profile.cargo_principal === "Vice-presidente"
-      ));
+    const podeInicializar =
+      profile?.cargo_principal === "DEV" ||
+      (profile?.sigla_casa === sigla &&
+        (profile.cargo_principal === "Presidente" ||
+          profile.cargo_principal === "Vice-presidente"));
     return (
       <main className="page-light min-h-screen pt-20 pb-20 flex items-center justify-center px-4">
         <div className="glass rounded-3xl p-10 max-w-md text-center space-y-5">
           <Building2 size={40} strokeWidth={1} className="text-muted-foreground/30 mx-auto" />
           <div>
             <h1 className="text-lg font-medium text-foreground">{sigla}</h1>
-            <p className="text-sm text-muted-foreground/70 font-light mt-1">Esta casa espírita ainda não tem uma página criada.</p>
+            <p className="text-sm text-muted-foreground/70 font-light mt-1">
+              Esta casa espírita ainda não tem uma página criada.
+            </p>
           </div>
           {podeInicializar ? (
-            <button onClick={async () => {
-              const { error } = await supabase.from("paginas_casas").insert({
-                sigla_casa: sigla, nome_completo: "", descricao: "", missao: "",
-                endereco: "", bairro: profile?.bairro ?? "", cidade: profile?.cidade ?? "",
-                uf: profile?.uf ?? "", cep: "", telefone: "", email_contato: "", site: "",
-                horarios: [], chave_pix: "",
-                texto_doacao: "Sua contribuição ajuda a manter os trabalhos espíritas. Qualquer valor é bem-vindo. Gratidão.",
-                publicada: true,
-              });
-              if (!error) carregar(); else toast.error("Erro ao criar página.");
-            }} className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">
+            <button
+              onClick={async () => {
+                const { error } = await supabase.from("paginas_casas").insert({
+                  sigla_casa: sigla,
+                  nome_completo: "",
+                  descricao: "",
+                  missao: "",
+                  endereco: "",
+                  bairro: profile?.bairro ?? "",
+                  cidade: profile?.cidade ?? "",
+                  uf: profile?.uf ?? "",
+                  cep: "",
+                  telefone: "",
+                  email_contato: "",
+                  site: "",
+                  horarios: [],
+                  chave_pix: "",
+                  texto_doacao:
+                    "Sua contribuição ajuda a manter os trabalhos espíritas. Qualquer valor é bem-vindo. Gratidão.",
+                  publicada: true,
+                });
+                if (!error) carregar();
+                else toast.error("Erro ao criar página.");
+              }}
+              className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors"
+            >
               Criar página desta casa
             </button>
           ) : (
-            <p className="text-xs text-muted-foreground/50">Somente o Presidente pode criar a página.</p>
+            <p className="text-xs text-muted-foreground/50">
+              Somente o Presidente pode criar a página.
+            </p>
           )}
-          <Link to="/inicio" className="block text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <Link
+            to="/inicio"
+            className="block text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+          >
             ← Voltar ao início
           </Link>
         </div>
@@ -1109,25 +1633,24 @@ function PaginaCasa() {
 
   /* ── Filter visible events ── */
   const hoje = startOfDay(new Date());
-  const eventosVisiveis = eventos.filter(e =>
-    e.publica || isSameCasa || isAdmin ||
-    evParts[e.id]?.some(p => p.user_id === user.id)
+  const eventosVisiveis = eventos.filter(
+    (e) => e.publica || isSameCasa || isAdmin || evParts[e.id]?.some((p) => p.user_id === user.id),
   );
-  const eventosProximos = eventosVisiveis.filter(e => !isAfter(hoje, parseISO(e.data_evento)));
-  const eventosPassados = eventosVisiveis.filter(e => isAfter(hoje, parseISO(e.data_evento)));
+  const eventosProximos = eventosVisiveis.filter((e) => !isAfter(hoje, parseISO(e.data_evento)));
+  const eventosPassados = eventosVisiveis.filter((e) => isAfter(hoje, parseISO(e.data_evento)));
 
-  const totalEventosCount = (eventosCount || 0) + (agendaEventos?.length || 0) + (getEscalaItems()?.length || 0);
+  const totalEventosCount =
+    (eventosCount || 0) + (agendaEventos?.length || 0) + (getEscalaItems()?.length || 0);
 
   /* ══════════════════════════════════════════════════════════════
      RENDER
   ══════════════════════════════════════════════════════════════ */
   return (
     <main className="page-light min-h-screen pt-14 pb-20">
-
       {/* Premium Hero with espectacular destaque for the name */}
-      <CasaHero 
-        membros={membrosCount} 
-        eventos={totalEventosCount} 
+      <CasaHero
+        membros={membrosCount}
+        eventos={totalEventosCount}
         sigla={sigla}
         nome={pagina.nome_completo || sigla}
         cidade={pagina.cidade}
@@ -1136,14 +1659,15 @@ function PaginaCasa() {
       />
 
       <div className="mx-auto max-w-4xl px-4">
-
         {/* Option to toggle administration mode */}
         {isAdmin && (
           <div className="flex justify-end mb-4 pt-4">
             <button
-              onClick={() => setModoAdmin(m => !m)}
+              onClick={() => setModoAdmin((m) => !m)}
               className={`flex items-center gap-2 text-xs uppercase tracking-widest px-4 py-2 rounded-xl border transition-colors ${
-                modoAdmin ? "border-amber-400/60 text-amber-600 bg-amber-50" : "border-white/20 text-muted-foreground/60 hover:border-cyan-glow/40 hover:text-cyan-glow"
+                modoAdmin
+                  ? "border-amber-400/60 text-amber-600 bg-amber-50"
+                  : "border-white/20 text-muted-foreground/60 hover:border-cyan-glow/40 hover:text-cyan-glow"
               }`}
             >
               <Shield size={13} />
@@ -1152,40 +1676,53 @@ function PaginaCasa() {
           </div>
         )}
 
-
         {/* ── Tabs ── */}
         <div className="flex gap-0.5 border-b border-white/10 mb-6 overflow-x-auto">
-          {([
-            ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
-            { id: "mural",       label: "Mural",       Icon: MessageSquare },
-            { id: "sobre",       label: "Atividades",   Icon: Info },
-            { id: "tesouraria",  label: "Tesouraria",   Icon: Wallet },
-            { id: "doacoes",     label: "Doações",      Icon: Heart },
-            { id: "tarefeiros",  label: "Tarefeiros",   Icon: Users },
-            ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
-          ] as { id: Aba; label: string; Icon: LucideIcon }[]).map(t => (
-            <button key={t.id} onClick={() => setAba(t.id)}
+          {(
+            [
+              ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
+              { id: "mural", label: "Mural", Icon: MessageSquare },
+              { id: "sobre", label: "Atividades", Icon: Info },
+              { id: "tesouraria", label: "Tesouraria", Icon: Wallet },
+              { id: "doacoes", label: "Doações", Icon: Heart },
+              { id: "tarefeiros", label: "Tarefeiros", Icon: Users },
+              ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
+            ] as { id: Aba; label: string; Icon: LucideIcon }[]
+          ).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setAba(t.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-light whitespace-nowrap border-b-2 transition-colors ${
-                aba === t.id ? "border-cyan-glow text-cyan-glow" : "border-transparent text-muted-foreground hover:text-foreground"
+                aba === t.id
+                  ? "border-cyan-glow text-cyan-glow"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              <t.Icon size={13} strokeWidth={1.8} />{t.label}
+              <t.Icon size={13} strokeWidth={1.8} />
+              {t.label}
             </button>
           ))}
         </div>
 
         {/* ══════════════ PAINEL ══════════════ */}
         {aba === "painel" && isSameCasa && (
-          <div className="space-y-8 animate-fade-in-up" style={{ animationDuration: '400ms' }}>
-            
+          <div className="space-y-8 animate-fade-in-up" style={{ animationDuration: "400ms" }}>
             {/* Boas-vindas */}
             <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-violet-600 mb-1 font-semibold">
-                  {new Date().getHours() < 12 ? "Bom dia" : new Date().getHours() < 18 ? "Boa tarde" : "Boa noite"}, irmão
+                  {new Date().getHours() < 12
+                    ? "Bom dia"
+                    : new Date().getHours() < 18
+                      ? "Boa tarde"
+                      : "Boa noite"}
+                  , irmão
                 </p>
                 <h2 className="text-3xl font-light tracking-tight text-foreground">
-                  Olá, <span className="font-medium text-gradient-aurora">{profile?.nome?.split(" ")[0]}</span>
+                  Olá,{" "}
+                  <span className="font-medium text-gradient-aurora">
+                    {profile?.nome?.split(" ")[0]}
+                  </span>
                 </h2>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -1203,7 +1740,10 @@ function PaginaCasa() {
             {/* Mensagem do Dia (Compacta) */}
             <div
               className="relative rounded-2xl overflow-hidden border border-violet-200/50 shadow-sm"
-              style={{ background: "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.97 0.01 260) 100%)" }}
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.97 0.01 260) 100%)",
+              }}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-300/5 to-cyan-300/5 blur-2xl pointer-events-none" />
 
@@ -1213,7 +1753,9 @@ function PaginaCasa() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-violet-600 font-semibold">Mensagem do Dia</p>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-violet-600 font-semibold">
+                      Mensagem do Dia
+                    </p>
                     {todayMsg?.sigla_casa && (
                       <span className="text-[9px] font-bold uppercase tracking-widest text-violet-500/80 bg-violet-50 border border-violet-100/30 px-2 py-0.5 rounded-full">
                         {todayMsg.sigla_casa}
@@ -1226,19 +1768,40 @@ function PaginaCasa() {
                         "{todayMsg.texto}"
                       </blockquote>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-semibold text-violet-700">{todayMsg.autor_nome}</span>
+                        <span className="text-xs font-semibold text-violet-700">
+                          {todayMsg.autor_nome}
+                        </span>
                         {todayMsg.referencia && (
-                          <span className="text-xs text-gray-400 font-light italic">— {todayMsg.referencia}</span>
+                          <span className="text-xs text-gray-400 font-light italic">
+                            — {todayMsg.referencia}
+                          </span>
                         )}
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <blockquote className="text-sm md:text-base font-serif font-light text-gray-800 leading-relaxed italic pr-4">
-                        "{DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].text}"
+                        "
+                        {
+                          DAILY_MESSAGES[
+                            Math.floor(
+                              (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) /
+                                86400000,
+                            ) % DAILY_MESSAGES.length
+                          ].text
+                        }
+                        "
                       </blockquote>
                       <p className="text-xs text-gray-400 font-light italic">
-                        — {DAILY_MESSAGES[Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000) % DAILY_MESSAGES.length].author}
+                        —{" "}
+                        {
+                          DAILY_MESSAGES[
+                            Math.floor(
+                              (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) /
+                                86400000,
+                            ) % DAILY_MESSAGES.length
+                          ].author
+                        }
                       </p>
                     </div>
                   )}
@@ -1247,6 +1810,7 @@ function PaginaCasa() {
               <div className="px-5 py-2.5 md:px-7 flex items-center gap-4 border-t border-violet-100/30 bg-white/10">
                 <Link
                   to="/mensagem-do-dia"
+                  search={{ tab: "enviar" }}
                   className="text-[10px] font-bold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
                 >
                   Enviar mensagem
@@ -1263,29 +1827,41 @@ function PaginaCasa() {
 
             {/* Mural de Palestras Dinâmico */}
             {(() => {
-              const list = ((pagina?.horarios as any[]) ?? []);
-              const dbItems = list.filter(h => h.tipo === "escala");
-              const totalMuralItemsCount = dbItems.length > 0 ? dbItems.length : (sigla === "GECAL" ? DEFAULT_GECAL_ESCALAS.length : 0);
+              const list = (pagina?.horarios ?? []) as unknown as MuralItem[];
+              const dbItems = list.filter((h) => h.tipo === "escala");
+              const totalMuralItemsCount =
+                dbItems.length > 0
+                  ? dbItems.length
+                  : sigla === "GECAL"
+                    ? DEFAULT_GECAL_ESCALAS.length
+                    : 0;
 
               if (sigla !== "GECAL" && totalMuralItemsCount === 0) return null;
 
               return (
-                <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up" style={{ animationDuration: '500ms' }}>
+                <section
+                  className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 space-y-6 bg-white/80 animate-fade-in-up"
+                  style={{ animationDuration: "500ms" }}
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-violet-100/40 pb-4">
                     <div className="flex items-center gap-2.5">
                       <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
                         <Megaphone className="w-5 h-5 text-violet-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 leading-tight">Programação Pública</h3>
-                        <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">Palestras Públicas &amp; Escalas de Trabalho</p>
+                        <h3 className="text-lg font-semibold text-gray-800 leading-tight">
+                          Programação Pública
+                        </h3>
+                        <p className="text-xs text-gray-500 font-light mt-0.5 font-sans">
+                          Palestras Públicas &amp; Escalas de Trabalho
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       {/* Toggle para visualizar escalas arquivadas */}
                       <button
                         type="button"
-                        onClick={() => setMostrarMuralArquivado(prev => !prev)}
+                        onClick={() => setMostrarMuralArquivado((prev) => !prev)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                           mostrarMuralArquivado
                             ? "bg-amber-600 border-amber-600 text-white shadow-sm hover:bg-amber-700"
@@ -1296,324 +1872,423 @@ function PaginaCasa() {
                       </button>
 
                       {modoAdmin && !showNovoMural && (
-                      <button
-                        onClick={() => {
-                          setEditandoMuralId(null);
-                          setFormMural({
-                            dia: "",
-                            mes_ano: "Junho 2026",
-                            dia_semana: "Sexta-feira",
-                            tema: "",
-                            facilitador: "",
-                            casa: "",
-                            coordenador: "",
-                            passe: "",
-                            streamyard: "",
-                            recepcao: "",
-                          });
-                          setShowNovoMural(true);
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-violet-200 text-violet-600 bg-violet-50 text-[10px] font-bold hover:bg-violet-100 transition-colors uppercase tracking-wider"
-                      >
-                        <Plus size={12} strokeWidth={2.5} /> Adicionar Item
-                      </button>
-                    )}
-                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700">
-                      Palestras &amp; Passes
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
-                      Presencial &amp; Online
-                    </span>
-                  </div>
-                </div>
-
-                {/* Formulário de Escala / Mural */}
-                {modoAdmin && showNovoMural && (
-                  <form onSubmit={salvarMuralItem} id="escala-form-anchor" className="glass rounded-2xl p-5 border border-amber-300 bg-amber-50/10 space-y-4">
-                    <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-amber-500" />
-                      {editandoMuralId ? "Editar Item do Mural" : "Adicionar Item ao Mural"}
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dia (Número)</label>
-                        <input
-                          type="text" placeholder="Ex: 05" value={formMural.dia} required
-                          onChange={e => setFormMural(f => ({ ...f, dia: e.target.value.replace(/\D/g, "") }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dia da Semana</label>
-                        <select
-                          value={formMural.dia_semana}
-                          onChange={e => setFormMural(f => ({ ...f, dia_semana: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                        <button
+                          onClick={() => {
+                            setEditandoMuralId(null);
+                            setFormMural({
+                              dia: "",
+                              mes_ano: "Junho 2026",
+                              dia_semana: "Sexta-feira",
+                              tema: "",
+                              facilitador: "",
+                              casa: "",
+                              coordenador: "",
+                              passe: "",
+                              streamyard: "",
+                              recepcao: "",
+                            });
+                            setShowNovoMural(true);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-violet-200 text-violet-600 bg-violet-50 text-[10px] font-bold hover:bg-violet-100 transition-colors uppercase tracking-wider"
                         >
-                          <option>Sexta-feira</option>
-                          <option>Domingo</option>
-                          <option>Segunda-feira</option>
-                          <option>Terça-feira</option>
-                          <option>Quarta-feira</option>
-                          <option>Quinta-feira</option>
-                          <option>Sábado</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Mês / Ano</label>
-                        <input
-                          type="text" placeholder="Ex: Junho 2026" value={formMural.mes_ano} required
-                          onChange={e => setFormMural(f => ({ ...f, mes_ano: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Coordenador</label>
-                        <input
-                          type="text" placeholder="Ex: BELO" value={formMural.coordenador}
-                          onChange={e => setFormMural(f => ({ ...f, coordenador: e.target.value.toUpperCase() }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Tema da Palestra</label>
-                        <input
-                          type="text" placeholder="Ex: Exemplificar o bem..." value={formMural.tema} required
-                          onChange={e => setFormMural(f => ({ ...f, tema: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Facilitador</label>
-                          <input
-                            type="text" placeholder="Sandra Helena" value={formMural.facilitador}
-                            onChange={e => setFormMural(f => ({ ...f, facilitador: e.target.value }))}
-                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Casa / Origem</label>
-                          <input
-                            type="text" placeholder="GECAL" value={formMural.casa}
-                            onChange={e => setFormMural(f => ({ ...f, casa: e.target.value }))}
-                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Equipe de Passe (separado por · ou /)</label>
-                        <input
-                          type="text" placeholder="Luana · Jacqueline · Bárbara" value={formMural.passe}
-                          onChange={e => setFormMural(f => ({ ...f, passe: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Equipe de Stream (separado por e)</label>
-                        <input
-                          type="text" placeholder="Bárbara e Igor" value={formMural.streamyard}
-                          onChange={e => setFormMural(f => ({ ...f, streamyard: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Recepção</label>
-                        <input
-                          type="text" placeholder="Marion" value={formMural.recepcao}
-                          onChange={e => setFormMural(f => ({ ...f, recepcao: e.target.value }))}
-                          className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => { setShowNovoMural(false); setEditandoMuralId(null); }}
-                        className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors"
-                      >
-                        Salvar Item
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {/* Listagem do Mural */}
-                {(() => {
-                  const escalas = getEscalaItems();
-                  if (escalas.length === 0) {
-                    return (
-                      <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
-                        {mostrarMuralArquivado
-                          ? "Nenhuma palestra ou escala arquivada no mural."
-                          : "Nenhuma palestra ou escala ativa registrada no mural."}
-                      </div>
-                    );
-                  }
-
-                  const diasSemana = Array.from(new Set(escalas.map(e => e.dia_semana)));
-                  const diaAtivo = escalaDiaAtivo || diasSemana[0] || "Sexta-feira";
-                  const items = escalas
-                    .filter(e => e.dia_semana === diaAtivo)
-                    .sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
-
-                  return (
-                    <div className="space-y-6">
-                      {/* Abas dos Dias da Semana */}
-                      {diasSemana.length > 1 && (
-                        <div className="flex gap-2 border-b border-violet-100/40 pb-2 overflow-x-auto">
-                          {diasSemana.map(d => (
-                            <button
-                              key={d}
-                              type="button"
-                              onClick={() => setEscalaDiaAtivo(d)}
-                              className={`px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all ${
-                                diaAtivo === d
-                                  ? "bg-violet-600 text-white shadow-sm"
-                                  : "bg-violet-50 text-violet-600 hover:bg-violet-100"
-                              }`}
-                            >
-                              {d}s
-                            </button>
-                          ))}
-                        </div>
+                          <Plus size={12} strokeWidth={2.5} /> Adicionar Item
+                        </button>
                       )}
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700">
+                        Palestras &amp; Passes
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">
+                        Presencial &amp; Online
+                      </span>
+                    </div>
+                  </div>
 
-                      {/* Lista de Escalas do Dia Ativo */}
-                      {items.length === 0 ? (
-                        <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
-                          Nenhuma escala registrada para este dia.
+                  {/* Formulário de Escala / Mural */}
+                  {modoAdmin && showNovoMural && (
+                    <form
+                      onSubmit={salvarMuralItem}
+                      id="escala-form-anchor"
+                      className="glass rounded-2xl p-5 border border-amber-300 bg-amber-50/10 space-y-4"
+                    >
+                      <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-amber-500" />
+                        {editandoMuralId ? "Editar Item do Mural" : "Adicionar Item ao Mural"}
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Dia (Número)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ex: 05"
+                            value={formMural.dia}
+                            required
+                            onChange={(e) =>
+                              setFormMural((f) => ({
+                                ...f,
+                                dia: e.target.value.replace(/\D/g, ""),
+                              }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
                         </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {items.map((item) => (
-                            <div key={item.id} className="relative bg-white border border-violet-100/50 rounded-2xl p-5 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-5">
-                              {/* Esquerda: Bloco de Data e Coordenador */}
-                              <div className="flex md:flex-col items-center justify-between md:justify-center md:border-r md:border-violet-100/30 pr-0 md:pr-5 md:w-32 shrink-0 gap-3">
-                                <div className="flex items-center md:flex-col gap-3">
-                                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex flex-col items-center justify-center shadow-inner">
-                                    <span className="text-xl font-bold text-amber-700 leading-none">{item.dia}</span>
-                                  </div>
-                                  <div className="text-left md:text-center">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
-                                      {item.mes_ano.split(" ")[0]}
-                                    </span>
-                                    <span className="text-[9px] text-gray-500 font-medium md:block">
-                                      {item.dia_semana}
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                {item.coordenador && (
-                                  <div className="text-right md:text-center mt-1">
-                                    <span className="text-[8px] uppercase tracking-widest font-bold text-gray-400 block">Coordenação</span>
-                                    <span className="text-xs font-semibold text-gray-700 block">{item.coordenador}</span>
-                                  </div>
-                                )}
-                              </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Dia da Semana
+                          </label>
+                          <select
+                            value={formMural.dia_semana}
+                            onChange={(e) =>
+                              setFormMural((f) => ({ ...f, dia_semana: e.target.value }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          >
+                            <option>Sexta-feira</option>
+                            <option>Domingo</option>
+                            <option>Segunda-feira</option>
+                            <option>Terça-feira</option>
+                            <option>Quarta-feira</option>
+                            <option>Quinta-feira</option>
+                            <option>Sábado</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Mês / Ano
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ex: Junho 2026"
+                            value={formMural.mes_ano}
+                            required
+                            onChange={(e) =>
+                              setFormMural((f) => ({ ...f, mes_ano: e.target.value }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Coordenador
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ex: BELO"
+                            value={formMural.coordenador}
+                            onChange={(e) =>
+                              setFormMural((f) => ({
+                                ...f,
+                                coordenador: e.target.value.toUpperCase(),
+                              }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                      </div>
 
-                              {/* Centro: Palestra (Tema & Facilitador) */}
-                              <div className="flex-1 space-y-3">
-                                <div>
-                                  <span className="text-[9px] font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
-                                    Palestra Pública
-                                  </span>
-                                  <h5 className="text-base font-serif italic text-gray-800 font-medium leading-relaxed mt-2.5">
-                                    "{item.tema}"
-                                  </h5>
-                                </div>
-                                
-                                <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                                  <span className="text-sm font-semibold text-gray-700">{item.facilitador || "Facilitador a definir"}</span>
-                                  {item.casa && (
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2 py-0.5 rounded-full">
-                                      {item.casa}
-                                    </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Tema da Palestra
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ex: Exemplificar o bem..."
+                            value={formMural.tema}
+                            required
+                            onChange={(e) => setFormMural((f) => ({ ...f, tema: e.target.value }))}
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                              Facilitador
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Sandra Helena"
+                              value={formMural.facilitador}
+                              onChange={(e) =>
+                                setFormMural((f) => ({ ...f, facilitador: e.target.value }))
+                              }
+                              className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                              Casa / Origem
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="GECAL"
+                              value={formMural.casa}
+                              onChange={(e) =>
+                                setFormMural((f) => ({ ...f, casa: e.target.value }))
+                              }
+                              className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Equipe de Passe (separado por · ou /)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Luana · Jacqueline · Bárbara"
+                            value={formMural.passe}
+                            onChange={(e) => setFormMural((f) => ({ ...f, passe: e.target.value }))}
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Equipe de Stream (separado por e)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Bárbara e Igor"
+                            value={formMural.streamyard}
+                            onChange={(e) =>
+                              setFormMural((f) => ({ ...f, streamyard: e.target.value }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                            Recepção
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Marion"
+                            value={formMural.recepcao}
+                            onChange={(e) =>
+                              setFormMural((f) => ({ ...f, recepcao: e.target.value }))
+                            }
+                            className="w-full rounded-xl bg-white border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-cyan-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowNovoMural(false);
+                            setEditandoMuralId(null);
+                          }}
+                          className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition-colors"
+                        >
+                          Salvar Item
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Listagem do Mural */}
+                  {(() => {
+                    const escalas = getEscalaItems();
+                    if (escalas.length === 0) {
+                      return (
+                        <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
+                          {mostrarMuralArquivado
+                            ? "Nenhuma palestra ou escala arquivada no mural."
+                            : "Nenhuma palestra ou escala ativa registrada no mural."}
+                        </div>
+                      );
+                    }
+
+                    const diasSemana = Array.from(new Set(escalas.map((e) => e.dia_semana)));
+                    const diaAtivo = escalaDiaAtivo || diasSemana[0] || "Sexta-feira";
+                    const items = escalas
+                      .filter((e) => e.dia_semana === diaAtivo)
+                      .sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
+
+                    return (
+                      <div className="space-y-6">
+                        {/* Abas dos Dias da Semana */}
+                        {diasSemana.length > 1 && (
+                          <div className="flex gap-2 border-b border-violet-100/40 pb-2 overflow-x-auto">
+                            {diasSemana.map((d) => (
+                              <button
+                                key={d}
+                                type="button"
+                                onClick={() => setEscalaDiaAtivo(d)}
+                                className={`px-4 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all ${
+                                  diaAtivo === d
+                                    ? "bg-violet-600 text-white shadow-sm"
+                                    : "bg-violet-50 text-violet-600 hover:bg-violet-100"
+                                }`}
+                              >
+                                {d}s
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Lista de Escalas do Dia Ativo */}
+                        {items.length === 0 ? (
+                          <div className="text-center py-6 text-sm text-gray-400 font-light font-sans">
+                            Nenhuma escala registrada para este dia.
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {items.map((item) => (
+                              <div
+                                key={item.id}
+                                className="relative bg-white border border-violet-100/50 rounded-2xl p-5 hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-5"
+                              >
+                                {/* Esquerda: Bloco de Data e Coordenador */}
+                                <div className="flex md:flex-col items-center justify-between md:justify-center md:border-r md:border-violet-100/30 pr-0 md:pr-5 md:w-32 shrink-0 gap-3">
+                                  <div className="flex items-center md:flex-col gap-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/60 flex flex-col items-center justify-center shadow-inner">
+                                      <span className="text-xl font-bold text-amber-700 leading-none">
+                                        {item.dia}
+                                      </span>
+                                    </div>
+                                    <div className="text-left md:text-center">
+                                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">
+                                        {item.mes_ano.split(" ")[0]}
+                                      </span>
+                                      <span className="text-[9px] text-gray-500 font-medium md:block">
+                                        {item.dia_semana}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {item.coordenador && (
+                                    <div className="text-right md:text-center mt-1">
+                                      <span className="text-[8px] uppercase tracking-widest font-bold text-gray-400 block">
+                                        Coordenação
+                                      </span>
+                                      <span className="text-xs font-semibold text-gray-700 block">
+                                        {item.coordenador}
+                                      </span>
+                                    </div>
                                   )}
                                 </div>
-                              </div>
 
-                              {/* Direita: Escala de Equipes */}
-                              <div className="md:w-64 shrink-0 bg-gray-50/50 border border-gray-100 rounded-xl p-3.5 space-y-2.5 text-xs">
-                                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-200/60 pb-1">
-                                  Tarefeiros da Escala
+                                {/* Centro: Palestra (Tema & Facilitador) */}
+                                <div className="flex-1 space-y-3">
+                                  <div>
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full">
+                                      Palestra Pública
+                                    </span>
+                                    <h5 className="text-base font-serif italic text-gray-800 font-medium leading-relaxed mt-2.5">
+                                      "{item.tema}"
+                                    </h5>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                                    <span className="text-sm font-semibold text-gray-700">
+                                      {item.facilitador || "Facilitador a definir"}
+                                    </span>
+                                    {item.casa && (
+                                      <span className="text-[10px] font-bold uppercase tracking-widest text-violet-500 bg-violet-50 border border-violet-100/50 px-2 py-0.5 rounded-full">
+                                        {item.casa}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                
-                                {item.passe && (
-                                  <div className="space-y-0.5">
-                                    <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Passe</span>
-                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.passe}</p>
+
+                                {/* Direita: Escala de Equipes */}
+                                <div className="md:w-64 shrink-0 bg-gray-50/50 border border-gray-100 rounded-xl p-3.5 space-y-2.5 text-xs">
+                                  <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider border-b border-gray-200/60 pb-1">
+                                    Tarefeiros da Escala
                                   </div>
-                                )}
-                                
-                                {item.streamyard && (
-                                  <div className="space-y-0.5">
-                                    <span className="text-[8px] font-bold uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Transmissão</span>
-                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.streamyard}</p>
+
+                                  {item.passe && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">
+                                        Passe
+                                      </span>
+                                      <p className="text-gray-600 font-light leading-relaxed pl-0.5">
+                                        {item.passe}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {item.streamyard && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[8px] font-bold uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">
+                                        Transmissão
+                                      </span>
+                                      <p className="text-gray-600 font-light leading-relaxed pl-0.5">
+                                        {item.streamyard}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {item.recepcao && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">
+                                        Recepção
+                                      </span>
+                                      <p className="text-gray-600 font-light leading-relaxed pl-0.5">
+                                        {item.recepcao}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {!item.passe && !item.streamyard && !item.recepcao && (
+                                    <p className="text-[11px] text-gray-400 italic">
+                                      Nenhum tarefeiro escalado ainda.
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Botões de Ação para Admin */}
+                                {modoAdmin && (
+                                  <div className="absolute right-3 top-3 flex items-center gap-1 bg-white/95 shadow-sm rounded-xl p-0.5 border border-gray-200">
+                                    <button
+                                      type="button"
+                                      onClick={() => iniciarEdicaoMuralItem(item)}
+                                      className="p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 transition-colors"
+                                      title="Editar"
+                                    >
+                                      <Edit3 size={13} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => removerMuralItem(item.id)}
+                                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                      title="Excluir"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
                                   </div>
-                                )}
-                                
-                                {item.recepcao && (
-                                  <div className="space-y-0.5">
-                                    <span className="text-[8px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 border border-indigo-100/60 px-1.5 py-0.5 rounded shrink-0 inline-block">Recepção</span>
-                                    <p className="text-gray-600 font-light leading-relaxed pl-0.5">{item.recepcao}</p>
-                                  </div>
-                                )}
-                                
-                                {!item.passe && !item.streamyard && !item.recepcao && (
-                                  <p className="text-[11px] text-gray-400 italic">Nenhum tarefeiro escalado ainda.</p>
                                 )}
                               </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
-                              {/* Botões de Ação para Admin */}
-                              {modoAdmin && (
-                                <div className="absolute right-3 top-3 flex items-center gap-1 bg-white/95 shadow-sm rounded-xl p-0.5 border border-gray-200">
-                                  <button
-                                    type="button"
-                                    onClick={() => iniciarEdicaoMuralItem(item)}
-                                    className="p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 transition-colors"
-                                    title="Editar"
-                                  >
-                                    <Edit3 size={13} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => removerMuralItem(item.id)}
-                                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
-                                    title="Excluir"
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                <div className="flex justify-between items-center text-[10px] text-gray-400 font-light border-t border-violet-100/30 pt-4">
-                  <p className="font-sans">Escala interna de tarefeiros · {pagina.nome_completo || sigla}</p>
-                  {sigla === "GECAL" && <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>}
-                </div>
-              </section>
-            );
-          })()}
+                  <div className="flex justify-between items-center text-[10px] text-gray-400 font-light border-t border-violet-100/30 pt-4">
+                    <p className="font-sans">
+                      Escala interna de tarefeiros · {pagina.nome_completo || sigla}
+                    </p>
+                    {sigla === "GECAL" && (
+                      <p className="font-semibold text-violet-600">37 Anos a Caminho da Luz</p>
+                    )}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* Próximos Eventos */}
             {agendaEventos.length > 0 && (
@@ -1623,7 +2298,9 @@ function PaginaCasa() {
                     <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
                       <CalendarDays size={18} strokeWidth={1.5} className="text-amber-600" />
                     </div>
-                    <h3 className="text-sm font-semibold text-amber-700 tracking-wide">Próximos Eventos da Casa</h3>
+                    <h3 className="text-sm font-semibold text-amber-700 tracking-wide">
+                      Próximos Eventos da Casa
+                    </h3>
                   </div>
                   <Link
                     to="/agenda"
@@ -1636,7 +2313,10 @@ function PaginaCasa() {
                   {[
                     ...agendaEventos.filter((e) => {
                       const p = e.agenda_participantes.find((p) => p.user_id === user.id);
-                      return p?.confirmado === null || (!p && e.tipo === "aberto" && e.aceita_confirmacao);
+                      return (
+                        p?.confirmado === null ||
+                        (!p && e.tipo === "aberto" && e.aceita_confirmacao)
+                      );
                     }),
                     ...agendaEventos.filter((e) => {
                       const p = e.agenda_participantes.find((p) => p.user_id === user.id);
@@ -1646,7 +2326,8 @@ function PaginaCasa() {
                     const minha = evento.agenda_participantes.find((p) => p.user_id === user.id);
                     const pendente = minha?.confirmado === null;
                     const confirmado = minha?.confirmado === true;
-                    const abertoPendente = evento.tipo === "aberto" && !minha && evento.aceita_confirmacao;
+                    const abertoPendente =
+                      evento.tipo === "aberto" && !minha && evento.aceita_confirmacao;
                     return (
                       <div
                         key={evento.id}
@@ -1657,23 +2338,46 @@ function PaginaCasa() {
                             {String(new Date(evento.data_inicio).getDate()).padStart(2, "0")}
                           </p>
                           <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">
-                            {new Date(evento.data_inicio).toLocaleDateString("pt-BR", { month: "short" })}
+                            {new Date(evento.data_inicio).toLocaleDateString("pt-BR", {
+                              month: "short",
+                            })}
                           </p>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">{evento.titulo}</p>
+                          <p className="text-sm font-semibold text-gray-800 truncate">
+                            {evento.titulo}
+                          </p>
                           <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
                             <Clock size={10} className="text-gray-400" />
-                            <span className="font-light">{new Date(evento.data_inicio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
-                            {pendente && <span className="text-amber-600 font-semibold animate-pulse">· Aguardando resposta</span>}
-                            {confirmado && <span className="text-emerald-600 font-medium">· Confirmado</span>}
-                            {abertoPendente && <span className="text-cyan-600 font-medium">· Confirmar presença</span>}
+                            <span className="font-light">
+                              {new Date(evento.data_inicio).toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                            {pendente && (
+                              <span className="text-amber-600 font-semibold animate-pulse">
+                                · Aguardando resposta
+                              </span>
+                            )}
+                            {confirmado && (
+                              <span className="text-emerald-600 font-medium">· Confirmado</span>
+                            )}
+                            {abertoPendente && (
+                              <span className="text-cyan-600 font-medium">
+                                · Confirmar presença
+                              </span>
+                            )}
                           </p>
                         </div>
                         {(pendente || abertoPendente) && (
                           <div className="flex items-center gap-2 shrink-0">
                             <button
-                              onClick={() => pendente ? handleResponderConvite(minha!.id, true) : handleConfirmarEvento(evento.id)}
+                              onClick={() =>
+                                pendente
+                                  ? handleResponderConvite(minha!.id, true)
+                                  : handleConfirmarEvento(evento.id)
+                              }
                               className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-emerald-300 text-emerald-600 text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm bg-white"
                             >
                               <Check size={12} strokeWidth={2.5} /> Confirmar
@@ -1741,7 +2445,6 @@ function PaginaCasa() {
                   onVote={handleCardVote}
                 />
               </div>
-
             </section>
 
             {/* Grade de Funcionalidades */}
@@ -1795,27 +2498,31 @@ function PaginaCasa() {
                 Itens de exemplo · Cada casa espírita gerenciará seu próprio bazar
               </p>
             </section>
-
           </div>
         )}
 
         {/* ══════════════ MURAL ══════════════ */}
         {aba === "mural" && (
           <div className="space-y-4">
-
             {/* Criar post (admin) */}
             {modoAdmin && (
               <div className="glass rounded-2xl p-5">
                 {!showNovoPost ? (
-                  <button onClick={() => setShowNovoPost(true)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground/60 hover:text-cyan-glow transition-colors">
-                    <Plus size={15} />Nova publicação no mural
+                  <button
+                    onClick={() => setShowNovoPost(true)}
+                    className="flex items-center gap-2 text-sm text-muted-foreground/60 hover:text-cyan-glow transition-colors"
+                  >
+                    <Plus size={15} />
+                    Nova publicação no mural
                   </button>
                 ) : (
                   <PostForm
                     form={formNovoPost}
                     onChange={setFormNovoPost}
-                    onCancel={() => { setShowNovoPost(false); setFormNovoPost(FORM_POST_INICIAL); }}
+                    onCancel={() => {
+                      setShowNovoPost(false);
+                      setFormNovoPost(FORM_POST_INICIAL);
+                    }}
                     onSubmit={publicarPost}
                     submitLabel="Publicar"
                   />
@@ -1826,87 +2533,115 @@ function PaginaCasa() {
             {/* Lista de posts */}
             {posts.length === 0 ? (
               <div className="glass rounded-2xl p-10 text-center">
-                <MessageSquare size={32} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground/50">Nenhuma publicação no mural ainda.</p>
+                <MessageSquare
+                  size={32}
+                  strokeWidth={1}
+                  className="text-muted-foreground/20 mx-auto mb-3"
+                />
+                <p className="text-sm text-muted-foreground/50">
+                  Nenhuma publicação no mural ainda.
+                </p>
               </div>
-            ) : posts.map(post => (
-              <article key={post.id} className={`glass rounded-2xl overflow-hidden ${post.fixado ? "border border-amber-200/50" : ""}`}>
-                {editandoPostId === post.id ? (
-                  /* ── Editar post ── */
-                  <div className="p-5">
-                    <PostForm
-                      form={formEditPost}
-                      onChange={setFormEditPost}
-                      onCancel={() => setEditandoPostId(null)}
-                      onSubmit={() => salvarEdicaoPost(post.id)}
-                      submitLabel="Salvar edição"
-                    />
-                  </div>
-                ) : (
-                  /* ── Exibir post ── */
-                  <div className="p-5 space-y-3">
-                    {post.fixado && (
-                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-amber-500">
-                        <Pin size={11} />Fixado
-                      </div>
-                    )}
-                    <p className="text-sm text-foreground font-light leading-relaxed whitespace-pre-wrap">{post.conteudo}</p>
-
-                    {/* Imagem */}
-                    {post.imagem_url && (
-                      <img
-                        src={post.imagem_url} alt=""
-                        className="w-full rounded-xl max-h-96 object-cover border border-white/10"
-                        onError={e => (e.currentTarget.style.display = "none")}
+            ) : (
+              posts.map((post) => (
+                <article
+                  key={post.id}
+                  className={`glass rounded-2xl overflow-hidden ${post.fixado ? "border border-amber-200/50" : ""}`}
+                >
+                  {editandoPostId === post.id ? (
+                    /* ── Editar post ── */
+                    <div className="p-5">
+                      <PostForm
+                        form={formEditPost}
+                        onChange={setFormEditPost}
+                        onCancel={() => setEditandoPostId(null)}
+                        onSubmit={() => salvarEdicaoPost(post.id)}
+                        submitLabel="Salvar edição"
                       />
-                    )}
+                    </div>
+                  ) : (
+                    /* ── Exibir post ── */
+                    <div className="p-5 space-y-3">
+                      {post.fixado && (
+                        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-amber-500">
+                          <Pin size={11} />
+                          Fixado
+                        </div>
+                      )}
+                      <p className="text-sm text-foreground font-light leading-relaxed whitespace-pre-wrap">
+                        {post.conteudo}
+                      </p>
 
-                    {/* Vídeo embed */}
-                    {post.video_url && videoEmbed(post.video_url) && (
-                      <div className="rounded-xl overflow-hidden aspect-video bg-black/10">
-                        <iframe
-                          src={videoEmbed(post.video_url)!}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
+                      {/* Imagem */}
+                      {post.imagem_url && (
+                        <img
+                          src={post.imagem_url}
+                          alt=""
+                          className="w-full rounded-xl max-h-96 object-cover border border-white/10"
+                          onError={(e) => (e.currentTarget.style.display = "none")}
                         />
-                      </div>
-                    )}
+                      )}
 
-                    {/* Footer */}
-                    <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/5">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground/50 flex-wrap">
-                        <span>{post.autor_nome}</span>
-                        <span>·</span>
-                        <span>{format(new Date(post.created_at), "d 'de' MMM 'de' yyyy", { locale: ptBR })}</span>
-                        {post.editado_em && <span className="italic">· editado</span>}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {/* Editar/Excluir: autor OU admin */}
-                        {(modoAdmin || post.autor_id === user?.id) && (
-                          <>
-                            <button onClick={() => iniciarEdicaoPost(post)} title="Editar"
-                              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-cyan-glow hover:bg-cyan-50 transition-colors">
-                              <Edit3 size={14} />
+                      {/* Vídeo embed */}
+                      {post.video_url && videoEmbed(post.video_url) && (
+                        <div className="rounded-xl overflow-hidden aspect-video bg-black/10">
+                          <iframe
+                            src={videoEmbed(post.video_url)!}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )}
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/5">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/50 flex-wrap">
+                          <span>{post.autor_nome}</span>
+                          <span>·</span>
+                          <span>
+                            {format(new Date(post.created_at), "d 'de' MMM 'de' yyyy", {
+                              locale: ptBR,
+                            })}
+                          </span>
+                          {post.editado_em && <span className="italic">· editado</span>}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {/* Editar/Excluir: autor OU admin */}
+                          {(modoAdmin || post.autor_id === user?.id) && (
+                            <>
+                              <button
+                                onClick={() => iniciarEdicaoPost(post)}
+                                title="Editar"
+                                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-cyan-glow hover:bg-cyan-50 transition-colors"
+                              >
+                                <Edit3 size={14} />
+                              </button>
+                              <button
+                                onClick={() => excluirPost(post.id)}
+                                title="Excluir"
+                                className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </>
+                          )}
+                          {modoAdmin && (
+                            <button
+                              onClick={() => toggleFixar(post)}
+                              title={post.fixado ? "Desafixar" : "Fixar no topo"}
+                              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-amber-500 hover:bg-amber-50 transition-colors"
+                            >
+                              {post.fixado ? <PinOff size={14} /> : <Pin size={14} />}
                             </button>
-                            <button onClick={() => excluirPost(post.id)} title="Excluir"
-                              className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 transition-colors">
-                              <Trash2 size={14} />
-                            </button>
-                          </>
-                        )}
-                        {modoAdmin && (
-                          <button onClick={() => toggleFixar(post)} title={post.fixado ? "Desafixar" : "Fixar no topo"}
-                            className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-amber-500 hover:bg-amber-50 transition-colors">
-                            {post.fixado ? <PinOff size={14} /> : <Pin size={14} />}
-                          </button>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </article>
-            ))}
+                  )}
+                </article>
+              ))
+            )}
           </div>
         )}
 
@@ -1919,12 +2654,17 @@ function PaginaCasa() {
                 <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Clock size={15} strokeWidth={1.5} className="text-cyan-glow" />
-                    <span className="text-sm font-medium text-foreground">Atividades Regulares</span>
+                    <span className="text-sm font-medium text-foreground">
+                      Atividades Regulares
+                    </span>
                   </div>
                   {modoAdmin && (
-                    <button onClick={() => setShowNovoHorario(s => !s)}
-                      className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline">
-                      <Plus size={13} />Adicionar
+                    <button
+                      onClick={() => setShowNovoHorario((s) => !s)}
+                      className="flex items-center gap-1.5 text-xs text-cyan-glow hover:underline"
+                    >
+                      <Plus size={13} />
+                      Adicionar
                     </button>
                   )}
                 </div>
@@ -1932,45 +2672,92 @@ function PaginaCasa() {
                 {modoAdmin && showNovoHorario && (
                   <div className="px-6 py-4 border-b border-white/10 bg-cyan-50/20 space-y-3">
                     <div className="grid grid-cols-3 gap-3">
-                      <div><p className={labelCls}>Dia</p>
-                        <select value={novoHorario.dia} onChange={e => setNovoHorario(h => ({ ...h, dia: e.target.value }))} className={inputCls}>
-                          {DIAS.map(d => <option key={d}>{d}</option>)}
+                      <div>
+                        <p className={labelCls}>Dia</p>
+                        <select
+                          value={novoHorario.dia}
+                          onChange={(e) => setNovoHorario((h) => ({ ...h, dia: e.target.value }))}
+                          className={inputCls}
+                        >
+                          {DIAS.map((d) => (
+                            <option key={d}>{d}</option>
+                          ))}
                         </select>
                       </div>
-                      <div><p className={labelCls}>Horário</p>
-                        <input type="time" value={novoHorario.hora} onChange={e => setNovoHorario(h => ({ ...h, hora: e.target.value }))} className={inputCls} />
+                      <div>
+                        <p className={labelCls}>Horário</p>
+                        <input
+                          type="time"
+                          value={novoHorario.hora}
+                          onChange={(e) => setNovoHorario((h) => ({ ...h, hora: e.target.value }))}
+                          className={inputCls}
+                        />
                       </div>
-                      <div><p className={labelCls}>Atividade</p>
-                        <input value={novoHorario.atividade} onChange={e => setNovoHorario(h => ({ ...h, atividade: e.target.value }))} placeholder="Ex.: Evangelização" className={inputCls} />
+                      <div>
+                        <p className={labelCls}>Atividade</p>
+                        <input
+                          value={novoHorario.atividade}
+                          onChange={(e) =>
+                            setNovoHorario((h) => ({ ...h, atividade: e.target.value }))
+                          }
+                          placeholder="Ex.: Evangelização"
+                          className={inputCls}
+                        />
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => setShowNovoHorario(false)} className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-                      <button onClick={adicionarHorario} className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors">Adicionar</button>
+                      <button
+                        onClick={() => setShowNovoHorario(false)}
+                        className="flex-1 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={adicionarHorario}
+                        className="flex-1 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors"
+                      >
+                        Adicionar
+                      </button>
                     </div>
                   </div>
                 )}
 
                 {(() => {
-                  const horariosRegulares = ((pagina.horarios ?? []) as any[]).filter(h => h.tipo !== "escala");
+                  const horariosRegulares = (pagina.horarios ?? []).filter(
+                    (h): h is HorarioItem => !("tipo" in h) || h.tipo !== "escala",
+                  );
                   if (horariosRegulares.length === 0) {
                     return (
                       <div className="px-6 py-8 text-center">
-                        <p className="text-sm text-muted-foreground/50">Nenhuma atividade regular cadastrada.</p>
+                        <p className="text-sm text-muted-foreground/50">
+                          Nenhuma atividade regular cadastrada.
+                        </p>
                       </div>
                     );
                   }
                   return (
                     <div className="divide-y divide-white/5">
                       {horariosRegulares.map((h, i) => (
-                        <div key={i} className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors"
+                        >
                           <div className="flex items-center gap-4">
-                            <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">{h.dia.slice(0, 3)}.</span>
-                            <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">{h.hora}</span>
-                            <span className="text-sm text-foreground/80 font-light">{h.atividade}</span>
+                            <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">
+                              {h.dia.slice(0, 3)}.
+                            </span>
+                            <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">
+                              {h.hora}
+                            </span>
+                            <span className="text-sm text-foreground/80 font-light">
+                              {h.atividade}
+                            </span>
                           </div>
                           {modoAdmin && (
-                            <button onClick={() => removerHorario(h)} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors">
+                            <button
+                              onClick={() => removerHorario(h)}
+                              className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            >
                               <X size={13} />
                             </button>
                           )}
@@ -1984,14 +2771,8 @@ function PaginaCasa() {
           </div>
         )}
 
-
-
-
-
         {/* ══════════════ TESOURARIA ══════════════ */}
-        {aba === "tesouraria" && (
-          <TesourariaTab sigla={sigla} />
-        )}
+        {aba === "tesouraria" && <TesourariaTab sigla={sigla} />}
 
         {/* ══════════════ DOAÇÕES ══════════════ */}
         {aba === "doacoes" && (
@@ -1999,7 +2780,9 @@ function PaginaCasa() {
             <div className="glass rounded-2xl p-8 space-y-6">
               <div className="text-center space-y-2">
                 <Heart size={22} strokeWidth={1.5} className="text-rose-400 mx-auto" />
-                <h2 className="text-base font-medium text-foreground">Contribua com nossa missão</h2>
+                <h2 className="text-base font-medium text-foreground">
+                  Contribua com nossa missão
+                </h2>
                 <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-sm mx-auto">
                   {pagina.texto_doacao || "Sua contribuição ajuda a manter os trabalhos espíritas."}
                 </p>
@@ -2008,24 +2791,44 @@ function PaginaCasa() {
                 <>
                   <div className="flex justify-center">
                     <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100">
-                      <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pagina.chave_pix)}&bgcolor=ffffff&color=1e3a5f&margin=4`}
-                        alt="QR Code PIX" width={200} height={200} className="rounded-xl" />
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pagina.chave_pix)}&bgcolor=ffffff&color=1e3a5f&margin=4`}
+                        alt="QR Code PIX"
+                        width={200}
+                        height={200}
+                        className="rounded-xl"
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <p className={labelCls}>Chave PIX</p>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground/80 font-mono truncate">{pagina.chave_pix}</div>
-                      <button onClick={copiarPix} className="shrink-0 p-2.5 rounded-xl border border-white/10 hover:border-cyan-glow/40 hover:text-cyan-glow text-muted-foreground/60 transition-colors">
-                        {copiado ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
+                      <div className="flex-1 rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground/80 font-mono truncate">
+                        {pagina.chave_pix}
+                      </div>
+                      <button
+                        onClick={copiarPix}
+                        className="shrink-0 p-2.5 rounded-xl border border-white/10 hover:border-cyan-glow/40 hover:text-cyan-glow text-muted-foreground/60 transition-colors"
+                      >
+                        {copiado ? (
+                          <Check size={15} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={15} />
+                        )}
                       </button>
                     </div>
                   </div>
-                  <p className="text-center text-xs text-muted-foreground/40">Aponte a câmera para o QR code ou copie a chave PIX.</p>
+                  <p className="text-center text-xs text-muted-foreground/40">
+                    Aponte a câmera para o QR code ou copie a chave PIX.
+                  </p>
                 </>
               ) : (
                 <div className="text-center py-6">
-                  <QrCode size={32} strokeWidth={1} className="text-muted-foreground/20 mx-auto mb-2" />
+                  <QrCode
+                    size={32}
+                    strokeWidth={1}
+                    className="text-muted-foreground/20 mx-auto mb-2"
+                  />
                   <p className="text-sm text-muted-foreground/50">
                     Informações de doação ainda não configuradas.
                   </p>
@@ -2038,7 +2841,6 @@ function PaginaCasa() {
         {/* ══════════════ TAREFEIROS ══════════════ */}
         {aba === "tarefeiros" && (
           <div className="space-y-8 animate-fade-in-up">
-            
             {/* Bloco relocated: Gerenciar Administradores da Página (Apenas para admin) */}
             {modoAdmin && (
               <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
@@ -2046,28 +2848,47 @@ function PaginaCasa() {
                   <Shield className="w-5 h-5 text-cyan-600" />
                   Gerenciar Administradores da Página
                 </h3>
-                
+
                 <div className="space-y-4">
                   <p className="text-xs text-muted-foreground/50 font-light leading-relaxed">
-                    Administradores autorizados podem editar a página, publicar no mural e gerenciar eventos. O Presidente sempre tem acesso de administração automático.
+                    Administradores autorizados podem editar a página, publicar no mural e gerenciar
+                    eventos. O Presidente sempre tem acesso de administração automático.
                   </p>
-                  
+
                   <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
-                    {membros.map(m => {
+                    {membros.map((m) => {
                       const jaAdmin = adminIds.includes(m.id);
                       return (
-                        <div key={m.id} className="flex items-center justify-between py-3 px-4 hover:bg-gray-50/50 transition-colors">
+                        <div
+                          key={m.id}
+                          className="flex items-center justify-between py-3 px-4 hover:bg-gray-50/50 transition-colors"
+                        >
                           <span className="text-sm font-medium text-gray-700">{m.nome}</span>
-                          <button onClick={() => jaAdmin ? removerAdmin(m.id) : adicionarAdmin(m.id)}
-                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-600/30 text-cyan-600 hover:bg-cyan-50"}`}>
-                            {jaAdmin ? <><UserMinus size={12} />Remover</> : <><UserPlus size={12} />Autorizar</>}
+                          <button
+                            onClick={() => (jaAdmin ? removerAdmin(m.id) : adicionarAdmin(m.id))}
+                            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${jaAdmin ? "border-red-200 text-red-500 hover:bg-red-50" : "border-cyan-600/30 text-cyan-600 hover:bg-cyan-50"}`}
+                          >
+                            {jaAdmin ? (
+                              <>
+                                <UserMinus size={12} />
+                                Remover
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus size={12} />
+                                Autorizar
+                              </>
+                            )}
                           </button>
                         </div>
                       );
                     })}
                     {membros.length === 0 && (
                       <div className="text-center py-6">
-                        <button onClick={() => garantirMembros()} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
+                        <button
+                          onClick={() => garantirMembros()}
+                          className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors"
+                        >
                           Carregar Lista de Membros da Casa
                         </button>
                       </div>
@@ -2083,21 +2904,29 @@ function PaginaCasa() {
                 <Users className="w-5 h-5 text-violet-600" />
                 Tarefeiros e Membros da Casa
               </h3>
-              
+
               <div className="space-y-4">
                 {modoAdmin && (
                   <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
-                    <strong>Painel Administrativo Ativo:</strong> Você pode atribuir funções oficiais aos membros. Ao definir a função de um membro, a edição do próprio cargo será bloqueada na tela dele para garantir a segurança organizacional.
+                    <strong>Painel Administrativo Ativo:</strong> Você pode atribuir funções
+                    oficiais aos membros. Ao definir a função de um membro, a edição do próprio
+                    cargo será bloqueada na tela dele para garantir a segurança organizacional.
                   </p>
                 )}
 
                 <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white/50">
-                  {membros.map(m => {
-                    const cargoDefinidoPorAdmin = m.atividades?.includes("cargo_definido_por_admin") ?? false;
+                  {membros.map((m) => {
+                    const cargoDefinidoPorAdmin =
+                      m.atividades?.includes("cargo_definido_por_admin") ?? false;
                     return (
-                      <div key={m.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-4 px-4 hover:bg-gray-50/50 transition-colors gap-3">
+                      <div
+                        key={m.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between py-4 px-4 hover:bg-gray-50/50 transition-colors gap-3"
+                      >
                         <div className="min-w-0">
-                          <span className="text-sm font-semibold text-gray-800 block truncate">{m.nome}</span>
+                          <span className="text-sm font-semibold text-gray-800 block truncate">
+                            {m.nome}
+                          </span>
                           <span className="text-xs text-muted-foreground/60 block mt-0.5">
                             {m.cargo_principal || "Voluntário / Colaborador"}
                             {cargoDefinidoPorAdmin && (
@@ -2107,7 +2936,7 @@ function PaginaCasa() {
                             )}
                           </span>
                         </div>
-                        
+
                         <div className="shrink-0 flex items-center gap-2">
                           {modoAdmin ? (
                             <select
@@ -2116,8 +2945,10 @@ function PaginaCasa() {
                               className="rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white text-gray-700 focus:outline-none focus:border-cyan-500 w-full sm:w-auto"
                             >
                               <option value="">(Sem função / Colaborador)</option>
-                              {CARGOS.map(cargo => (
-                                <option key={cargo} value={cargo}>{cargo}</option>
+                              {CARGOS.map((cargo) => (
+                                <option key={cargo} value={cargo}>
+                                  {cargo}
+                                </option>
                               ))}
                             </select>
                           ) : (
@@ -2129,11 +2960,16 @@ function PaginaCasa() {
                       </div>
                     );
                   })}
-                  
+
                   {membros.length === 0 && (
                     <div className="text-center py-8">
-                      <p className="text-xs text-muted-foreground/50 mb-3">Nenhum tarefeiro carregado.</p>
-                      <button onClick={() => garantirMembros()} className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors">
+                      <p className="text-xs text-muted-foreground/50 mb-3">
+                        Nenhum tarefeiro carregado.
+                      </p>
+                      <button
+                        onClick={() => garantirMembros()}
+                        className="px-4 py-2 text-xs font-semibold text-violet-600 bg-violet-50 rounded-xl hover:bg-violet-100 transition-colors"
+                      >
                         Carregar Lista de Membros da Casa
                       </button>
                     </div>
@@ -2147,49 +2983,139 @@ function PaginaCasa() {
         {/* ══════════════ CONFIGURAÇÕES (ADMIN ONLY) ══════════════ */}
         {aba === "configuracoes" && modoAdmin && (
           <div className="space-y-8 animate-fade-in-up">
-            
             {/* Bloco 1: Editar Informações da Casa */}
             <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
               <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-violet-600" />
                 Informações da Casa Espírita
               </h3>
-              
+
               <div className="space-y-5">
                 <Field label="Nome completo da casa">
-                  <input value={formSobre.nome_completo ?? ""} onChange={e => setFormSobre(s => ({ ...s, nome_completo: e.target.value }))} placeholder="Ex.: Centro Espírita Paz e Amor" className={inputCls} />
+                  <input
+                    value={formSobre.nome_completo ?? ""}
+                    onChange={(e) => setFormSobre((s) => ({ ...s, nome_completo: e.target.value }))}
+                    placeholder="Ex.: Centro Espírita Paz e Amor"
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Descrição">
-                  <textarea value={formSobre.descricao ?? ""} onChange={e => setFormSobre(s => ({ ...s, descricao: e.target.value }))} rows={3} placeholder="Apresentação da casa…" className={`${inputCls} resize-none`} />
+                  <textarea
+                    value={formSobre.descricao ?? ""}
+                    onChange={(e) => setFormSobre((s) => ({ ...s, descricao: e.target.value }))}
+                    rows={3}
+                    placeholder="Apresentação da casa…"
+                    className={`${inputCls} resize-none`}
+                  />
                 </Field>
                 <Field label="Missão">
-                  <textarea value={formSobre.missao ?? ""} onChange={e => setFormSobre(s => ({ ...s, missao: e.target.value }))} rows={2} placeholder="Missão e valores…" className={`${inputCls} resize-none`} />
+                  <textarea
+                    value={formSobre.missao ?? ""}
+                    onChange={(e) => setFormSobre((s) => ({ ...s, missao: e.target.value }))}
+                    rows={2}
+                    placeholder="Missão e valores…"
+                    className={`${inputCls} resize-none`}
+                  />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Ano de fundação">
-                    <input type="number" value={formSobre.ano_fundacao ?? ""} onChange={e => setFormSobre(s => ({ ...s, ano_fundacao: e.target.value ? +e.target.value : null }))} placeholder="Ex.: 1985" className={inputCls} />
+                    <input
+                      type="number"
+                      value={formSobre.ano_fundacao ?? ""}
+                      onChange={(e) =>
+                        setFormSobre((s) => ({
+                          ...s,
+                          ano_fundacao: e.target.value ? +e.target.value : null,
+                        }))
+                      }
+                      placeholder="Ex.: 1985"
+                      className={inputCls}
+                    />
                   </Field>
                   <Field label="CEP">
-                    <input value={formSobre.cep ?? ""} onChange={e => setFormSobre(s => ({ ...s, cep: e.target.value }))} placeholder="00000-000" className={inputCls} />
+                    <input
+                      value={formSobre.cep ?? ""}
+                      onChange={(e) => setFormSobre((s) => ({ ...s, cep: e.target.value }))}
+                      placeholder="00000-000"
+                      className={inputCls}
+                    />
                   </Field>
                 </div>
                 <Field label="Endereço">
-                  <input value={formSobre.endereco ?? ""} onChange={e => setFormSobre(s => ({ ...s, endereco: e.target.value }))} placeholder="Rua, número…" className={inputCls} />
+                  <input
+                    value={formSobre.endereco ?? ""}
+                    onChange={(e) => setFormSobre((s) => ({ ...s, endereco: e.target.value }))}
+                    placeholder="Rua, número…"
+                    className={inputCls}
+                  />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Bairro"><input value={formSobre.bairro ?? ""} onChange={e => setFormSobre(s => ({ ...s, bairro: e.target.value }))} placeholder="Bairro" className={inputCls} /></Field>
-                  <Field label="Cidade"><input value={formSobre.cidade ?? ""} onChange={e => setFormSobre(s => ({ ...s, cidade: e.target.value }))} placeholder="Cidade" className={inputCls} /></Field>
+                  <Field label="Bairro">
+                    <input
+                      value={formSobre.bairro ?? ""}
+                      onChange={(e) => setFormSobre((s) => ({ ...s, bairro: e.target.value }))}
+                      placeholder="Bairro"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Cidade">
+                    <input
+                      value={formSobre.cidade ?? ""}
+                      onChange={(e) => setFormSobre((s) => ({ ...s, cidade: e.target.value }))}
+                      placeholder="Cidade"
+                      className={inputCls}
+                    />
+                  </Field>
                 </div>
                 <div className="grid grid-cols-3 gap-4">
-                  <Field label="UF"><input value={formSobre.uf ?? ""} maxLength={2} onChange={e => setFormSobre(s => ({ ...s, uf: e.target.value.toUpperCase() }))} placeholder="SP" className={inputCls} /></Field>
-                  <Field label="Telefone"><input value={formSobre.telefone ?? ""} onChange={e => setFormSobre(s => ({ ...s, telefone: e.target.value }))} placeholder="(11) 99999-9999" className={inputCls} /></Field>
-                  <Field label="E-mail de contato"><input type="email" value={formSobre.email_contato ?? ""} onChange={e => setFormSobre(s => ({ ...s, email_contato: e.target.value }))} placeholder="contato@…" className={inputCls} /></Field>
+                  <Field label="UF">
+                    <input
+                      value={formSobre.uf ?? ""}
+                      maxLength={2}
+                      onChange={(e) =>
+                        setFormSobre((s) => ({ ...s, uf: e.target.value.toUpperCase() }))
+                      }
+                      placeholder="SP"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Telefone">
+                    <input
+                      value={formSobre.telefone ?? ""}
+                      onChange={(e) => setFormSobre((s) => ({ ...s, telefone: e.target.value }))}
+                      placeholder="(11) 99999-9999"
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="E-mail de contato">
+                    <input
+                      type="email"
+                      value={formSobre.email_contato ?? ""}
+                      onChange={(e) =>
+                        setFormSobre((s) => ({ ...s, email_contato: e.target.value }))
+                      }
+                      placeholder="contato@…"
+                      className={inputCls}
+                    />
+                  </Field>
                 </div>
-                <Field label="Site (opcional)"><input value={formSobre.site ?? ""} onChange={e => setFormSobre(s => ({ ...s, site: e.target.value }))} placeholder="https://…" className={inputCls} /></Field>
-                
+                <Field label="Site (opcional)">
+                  <input
+                    value={formSobre.site ?? ""}
+                    onChange={(e) => setFormSobre((s) => ({ ...s, site: e.target.value }))}
+                    placeholder="https://…"
+                    className={inputCls}
+                  />
+                </Field>
+
                 <div className="pt-2">
-                  <button onClick={salvarSobre} disabled={salvando} className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm">
-                    <Save size={13} />{salvando ? "Salvando…" : "Salvar Alterações da Casa"}
+                  <button
+                    onClick={salvarSobre}
+                    disabled={salvando}
+                    className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-violet-600 hover:bg-violet-700 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm"
+                  >
+                    <Save size={13} />
+                    {salvando ? "Salvando…" : "Salvar Alterações da Casa"}
                   </button>
                 </div>
               </div>
@@ -2201,30 +3127,51 @@ function PaginaCasa() {
                 <Heart className="w-5 h-5 text-rose-500" />
                 Configurar Doações &amp; PIX
               </h3>
-              
+
               <div className="space-y-5">
                 <Field label="Chave PIX">
-                  <input value={formDoacoes.chave_pix} onChange={e => setFormDoacoes(f => ({ ...f, chave_pix: e.target.value }))} placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" className={inputCls} />
-                  <p className="text-[10px] text-muted-foreground/50 mt-1">O QR code é gerado automaticamente para os visitantes a partir da chave inserida.</p>
+                  <input
+                    value={formDoacoes.chave_pix}
+                    onChange={(e) => setFormDoacoes((f) => ({ ...f, chave_pix: e.target.value }))}
+                    placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"
+                    className={inputCls}
+                  />
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">
+                    O QR code é gerado automaticamente para os visitantes a partir da chave
+                    inserida.
+                  </p>
                 </Field>
                 <Field label="Texto de apresentação">
-                  <textarea value={formDoacoes.texto_doacao} onChange={e => setFormDoacoes(f => ({ ...f, texto_doacao: e.target.value }))} rows={3} className={`${inputCls} resize-none`} />
+                  <textarea
+                    value={formDoacoes.texto_doacao}
+                    onChange={(e) =>
+                      setFormDoacoes((f) => ({ ...f, texto_doacao: e.target.value }))
+                    }
+                    rows={3}
+                    className={`${inputCls} resize-none`}
+                  />
                 </Field>
-                
+
                 <div className="pt-2">
-                  <button onClick={salvarDoacoes} disabled={salvando} className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm">
-                    <Save size={13} />{salvando ? "Salvando…" : "Salvar Chave PIX"}
+                  <button
+                    onClick={salvarDoacoes}
+                    disabled={salvando}
+                    className="w-full md:w-auto px-6 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 transition-colors flex items-center justify-center gap-2 ml-auto shadow-sm"
+                  >
+                    <Save size={13} />
+                    {salvando ? "Salvando…" : "Salvar Chave PIX"}
                   </button>
                 </div>
               </div>
             </section>
-
-
           </div>
         )}
 
         <div className="mt-12 text-center">
-          <Link to="/inicio" className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors uppercase tracking-widest">
+          <Link
+            to="/inicio"
+            className="text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors uppercase tracking-widest"
+          >
             ← Início
           </Link>
         </div>
@@ -2237,24 +3184,51 @@ function PaginaCasa() {
    SUB-COMPONENTS
 ══════════════════════════════════════════════════════════════ */
 
-const inputCls = "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors";
+const inputCls =
+  "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors";
 const labelCls = "text-xs uppercase tracking-widest text-muted-foreground/60 mb-1.5 block";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><label className={labelCls}>{label}</label>{children}</div>;
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      {children}
+    </div>
+  );
 }
 
-function InfoRow({ Icon, label, value, link }: { Icon: LucideIcon; label: string; value: string; link?: boolean }) {
+function InfoRow({
+  Icon,
+  label,
+  value,
+  link,
+}: {
+  Icon: LucideIcon;
+  label: string;
+  value: string;
+  link?: boolean;
+}) {
   return (
     <div className="flex items-start gap-3">
       <div className="w-8 h-8 rounded-lg bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0 mt-0.5">
         <Icon size={14} strokeWidth={1.5} className="text-cyan-700" />
       </div>
       <div>
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-0.5">{label}</p>
-        {link
-          ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-cyan-glow hover:underline break-all">{value}</a>
-          : <p className="text-sm text-foreground/80 font-light">{value}</p>}
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mb-0.5">
+          {label}
+        </p>
+        {link ? (
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-cyan-glow hover:underline break-all"
+          >
+            {value}
+          </a>
+        ) : (
+          <p className="text-sm text-foreground/80 font-light">{value}</p>
+        )}
       </div>
     </div>
   );
@@ -2263,7 +3237,11 @@ function InfoRow({ Icon, label, value, link }: { Icon: LucideIcon; label: string
 /* ── PostForm ─────────────────────────────────────────────── */
 
 function PostForm({
-  form, onChange, onCancel, onSubmit, submitLabel,
+  form,
+  onChange,
+  onCancel,
+  onSubmit,
+  submitLabel,
 }: {
   form: { conteudo: string; imagem_url: string; video_url: string };
   onChange: (v: typeof form) => void;
@@ -2276,8 +3254,10 @@ function PostForm({
   return (
     <div className="space-y-4">
       <textarea
-        value={form.conteudo} onChange={e => onChange({ ...form, conteudo: e.target.value })}
-        maxLength={2000} rows={4}
+        value={form.conteudo}
+        onChange={(e) => onChange({ ...form, conteudo: e.target.value })}
+        maxLength={2000}
+        rows={4}
         placeholder="Escreva o comunicado ou aviso para a comunidade…"
         className={`${inputCls} resize-none`}
       />
@@ -2286,21 +3266,28 @@ function PostForm({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
           <Image size={13} className="text-muted-foreground/50" />
-          <p className="text-xs uppercase tracking-widest text-muted-foreground/60">URL da imagem (opcional)</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground/60">
+            URL da imagem (opcional)
+          </p>
         </div>
         <input
-          type="url" value={form.imagem_url}
-          onChange={e => onChange({ ...form, imagem_url: e.target.value })}
+          type="url"
+          value={form.imagem_url}
+          onChange={(e) => onChange({ ...form, imagem_url: e.target.value })}
           placeholder="https://…"
           className={inputCls}
         />
         <p className="text-[10px] text-muted-foreground/40 leading-relaxed">
-          Dimensões recomendadas: <strong>1200 × 630 px</strong> (paisagem) ou <strong>1080 × 1080 px</strong> (quadrado). Mínimo: 600 px de largura. Formatos: JPG, PNG, WebP.
+          Dimensões recomendadas: <strong>1200 × 630 px</strong> (paisagem) ou{" "}
+          <strong>1080 × 1080 px</strong> (quadrado). Mínimo: 600 px de largura. Formatos: JPG, PNG,
+          WebP.
         </p>
         {form.imagem_url && (
-          <img src={form.imagem_url} alt="Prévia"
+          <img
+            src={form.imagem_url}
+            alt="Prévia"
             className="w-full max-h-48 object-cover rounded-xl border border-white/10 mt-1"
-            onError={e => (e.currentTarget.style.display = "none")}
+            onError={(e) => (e.currentTarget.style.display = "none")}
           />
         )}
       </div>
@@ -2309,11 +3296,14 @@ function PostForm({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
           <Video size={13} className="text-muted-foreground/50" />
-          <p className="text-xs uppercase tracking-widest text-muted-foreground/60">URL do vídeo (opcional)</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground/60">
+            URL do vídeo (opcional)
+          </p>
         </div>
         <input
-          type="url" value={form.video_url}
-          onChange={e => onChange({ ...form, video_url: e.target.value })}
+          type="url"
+          value={form.video_url}
+          onChange={(e) => onChange({ ...form, video_url: e.target.value })}
           placeholder="youtube.com/watch?v=… ou vimeo.com/…"
           className={inputCls}
         />
@@ -2322,9 +3312,12 @@ function PostForm({
         </p>
         {embedUrl && (
           <div className="rounded-xl overflow-hidden aspect-video bg-black/10 mt-1">
-            <iframe src={embedUrl} className="w-full h-full"
+            <iframe
+              src={embedUrl}
+              className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen />
+              allowFullScreen
+            />
           </div>
         )}
       </div>
@@ -2332,11 +3325,17 @@ function PostForm({
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground/40">{form.conteudo.length}/2000</span>
         <div className="flex gap-2">
-          <button onClick={onCancel} className="px-4 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+          >
             Cancelar
           </button>
-          <button onClick={onSubmit} disabled={!form.conteudo.trim()}
-            className="px-5 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors">
+          <button
+            onClick={onSubmit}
+            disabled={!form.conteudo.trim()}
+            className="px-5 py-2 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+          >
             {submitLabel}
           </button>
         </div>
@@ -2347,10 +3346,22 @@ function PostForm({
 
 /* ── EventoForm ───────────────────────────────────────────── */
 
-type FormEvento = { titulo: string; descricao: string; data_evento: string; hora_inicio: string; hora_fim: string; local_evento: string; publica: boolean };
+type FormEvento = {
+  titulo: string;
+  descricao: string;
+  data_evento: string;
+  hora_inicio: string;
+  hora_fim: string;
+  local_evento: string;
+  publica: boolean;
+};
 
 function EventoForm({
-  form, onChange, onCancel, onSubmit, submitLabel,
+  form,
+  onChange,
+  onCancel,
+  onSubmit,
+  submitLabel,
 }: {
   form: FormEvento;
   onChange: (v: FormEvento) => void;
@@ -2361,48 +3372,95 @@ function EventoForm({
   return (
     <div className="space-y-4">
       <Field label="Título do evento *">
-        <input value={form.titulo} onChange={e => onChange({ ...form, titulo: e.target.value })} placeholder="Ex.: Palestra Pública" className={inputCls} />
+        <input
+          value={form.titulo}
+          onChange={(e) => onChange({ ...form, titulo: e.target.value })}
+          placeholder="Ex.: Palestra Pública"
+          className={inputCls}
+        />
       </Field>
       <Field label="Descrição">
-        <textarea value={form.descricao} onChange={e => onChange({ ...form, descricao: e.target.value })} rows={2} placeholder="Detalhes do evento…" className={`${inputCls} resize-none`} />
+        <textarea
+          value={form.descricao}
+          onChange={(e) => onChange({ ...form, descricao: e.target.value })}
+          rows={2}
+          placeholder="Detalhes do evento…"
+          className={`${inputCls} resize-none`}
+        />
       </Field>
       <div className="grid grid-cols-3 gap-3">
         <Field label="Data *">
-          <input type="date" value={form.data_evento} onChange={e => onChange({ ...form, data_evento: e.target.value })} className={inputCls} />
+          <input
+            type="date"
+            value={form.data_evento}
+            onChange={(e) => onChange({ ...form, data_evento: e.target.value })}
+            className={inputCls}
+          />
         </Field>
         <Field label="Início">
-          <input type="time" value={form.hora_inicio} onChange={e => onChange({ ...form, hora_inicio: e.target.value })} className={inputCls} />
+          <input
+            type="time"
+            value={form.hora_inicio}
+            onChange={(e) => onChange({ ...form, hora_inicio: e.target.value })}
+            className={inputCls}
+          />
         </Field>
         <Field label="Término">
-          <input type="time" value={form.hora_fim} onChange={e => onChange({ ...form, hora_fim: e.target.value })} className={inputCls} />
+          <input
+            type="time"
+            value={form.hora_fim}
+            onChange={(e) => onChange({ ...form, hora_fim: e.target.value })}
+            className={inputCls}
+          />
         </Field>
       </div>
       <Field label="Local">
-        <input value={form.local_evento} onChange={e => onChange({ ...form, local_evento: e.target.value })} placeholder="Ex.: Salão Principal" className={inputCls} />
+        <input
+          value={form.local_evento}
+          onChange={(e) => onChange({ ...form, local_evento: e.target.value })}
+          placeholder="Ex.: Salão Principal"
+          className={inputCls}
+        />
       </Field>
       {/* Visibilidade */}
       <div>
         <p className={labelCls}>Visibilidade</p>
         <div className="flex gap-3">
-          <button type="button"
+          <button
+            type="button"
             onClick={() => onChange({ ...form, publica: true })}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs border transition-colors ${form.publica ? "border-cyan-glow/60 text-cyan-glow bg-cyan-50" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>
-            <Unlock size={13} />Público
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs border transition-colors ${form.publica ? "border-cyan-glow/60 text-cyan-glow bg-cyan-50" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}
+          >
+            <Unlock size={13} />
+            Público
           </button>
-          <button type="button"
+          <button
+            type="button"
             onClick={() => onChange({ ...form, publica: false })}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs border transition-colors ${!form.publica ? "border-amber-400/60 text-amber-600 bg-amber-50" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}>
-            <Lock size={13} />Privado
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs border transition-colors ${!form.publica ? "border-amber-400/60 text-amber-600 bg-amber-50" : "border-white/10 text-muted-foreground hover:bg-white/5"}`}
+          >
+            <Lock size={13} />
+            Privado
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground/40 mt-1.5">
-          {form.publica ? "Visível para todos que visitarem a página." : "Visível apenas para membros desta casa e participantes convidados."}
+          {form.publica
+            ? "Visível para todos que visitarem a página."
+            : "Visível apenas para membros desta casa e participantes convidados."}
         </p>
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors">Cancelar</button>
-        <button onClick={onSubmit} disabled={!form.titulo.trim() || !form.data_evento}
-          className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors">
+        <button
+          onClick={onCancel}
+          className="flex-1 py-2.5 rounded-xl text-xs text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={onSubmit}
+          disabled={!form.titulo.trim() || !form.data_evento}
+          className="flex-1 py-2.5 rounded-xl text-xs uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+        >
           {submitLabel}
         </button>
       </div>
@@ -2413,10 +3471,27 @@ function EventoForm({
 /* ── EventoCard ───────────────────────────────────────────── */
 
 function EventoCard({
-  ev, user, profile, isAdmin, isSameCasa, participantes, expandido, editando,
-  formEdit, membros, addPartOpen,
-  onToggleExpand, onEdit, onCancelEdit, onSaveEdit, onChangeFormEdit,
-  onDelete, onAddPart, onRemovePart, onToggleAddPart, onConfirmar,
+  ev,
+  user,
+  profile,
+  isAdmin,
+  isSameCasa,
+  participantes,
+  expandido,
+  editando,
+  formEdit,
+  membros,
+  addPartOpen,
+  onToggleExpand,
+  onEdit,
+  onCancelEdit,
+  onSaveEdit,
+  onChangeFormEdit,
+  onDelete,
+  onAddPart,
+  onRemovePart,
+  onToggleAddPart,
+  onConfirmar,
 }: {
   ev: Evento;
   user: { id: string } | null;
@@ -2449,11 +3524,15 @@ function EventoCard({
   const horaFim = fmtHora(ev.hora_fim);
   const horaStr = horaInicio ? (horaFim ? `${horaInicio} – ${horaFim}` : horaInicio) : null;
 
-  const minhaParticipacao = participantes?.find(p => p.user_id === user?.id);
-  const confirmados = participantes?.filter(p => p.status === "confirmado").length ?? 0;
+  const minhaParticipacao = participantes?.find((p) => p.user_id === user?.id);
+  const confirmados = participantes?.filter((p) => p.status === "confirmado").length ?? 0;
   const total = participantes?.length ?? 0;
 
-  const statusLabel: Record<string, string> = { convidado: "Convidado", confirmado: "Confirmado", recusou: "Não vai" };
+  const statusLabel: Record<string, string> = {
+    convidado: "Convidado",
+    confirmado: "Confirmado",
+    recusou: "Não vai",
+  };
   const statusColor: Record<string, string> = {
     convidado: "text-amber-500 bg-amber-50 border-amber-200",
     confirmado: "text-emerald-600 bg-emerald-50 border-emerald-200",
@@ -2475,29 +3554,48 @@ function EventoCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <h3 className="text-sm font-medium text-foreground leading-snug">{ev.titulo}</h3>
-            <span className={`shrink-0 text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full border flex items-center gap-1 ${ev.publica ? "text-cyan-600 bg-cyan-50 border-cyan-200" : "text-amber-600 bg-amber-50 border-amber-200"}`}>
-              {ev.publica ? <><Unlock size={9} />Público</> : <><Lock size={9} />Privado</>}
+            <span
+              className={`shrink-0 text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full border flex items-center gap-1 ${ev.publica ? "text-cyan-600 bg-cyan-50 border-cyan-200" : "text-amber-600 bg-amber-50 border-amber-200"}`}
+            >
+              {ev.publica ? (
+                <>
+                  <Unlock size={9} />
+                  Público
+                </>
+              ) : (
+                <>
+                  <Lock size={9} />
+                  Privado
+                </>
+              )}
             </span>
           </div>
           {horaStr && <p className="text-xs text-muted-foreground/70 mb-0.5">{horaStr}</p>}
           {ev.local_evento && (
             <p className="text-xs text-muted-foreground/60 flex items-center gap-1">
-              <MapPin size={10} />{ev.local_evento}
+              <MapPin size={10} />
+              {ev.local_evento}
             </p>
           )}
-          {ev.descricao && <p className="text-xs text-foreground/60 mt-1.5 leading-relaxed">{ev.descricao}</p>}
+          {ev.descricao && (
+            <p className="text-xs text-foreground/60 mt-1.5 leading-relaxed">{ev.descricao}</p>
+          )}
 
           {/* Participação do usuário atual */}
           {minhaParticipacao && !expandido && (
-            <span className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border mt-2 ${statusColor[minhaParticipacao.status]}`}>
+            <span
+              className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border mt-2 ${statusColor[minhaParticipacao.status]}`}
+            >
               {statusLabel[minhaParticipacao.status]}
             </span>
           )}
         </div>
 
         {/* Expand button */}
-        <button onClick={onToggleExpand}
-          className="shrink-0 p-1.5 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors mt-0.5">
+        <button
+          onClick={onToggleExpand}
+          className="shrink-0 p-1.5 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors mt-0.5"
+        >
           {expandido ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
         </button>
       </div>
@@ -2505,22 +3603,32 @@ function EventoCard({
       {/* ── Painel expandido ── */}
       {expandido && (
         <div className="px-5 pb-5 space-y-4 border-t border-white/5 pt-4">
-
           {/* Editar evento */}
           {editando ? (
-            <EventoForm form={formEdit} onChange={onChangeFormEdit} onCancel={onCancelEdit} onSubmit={onSaveEdit} submitLabel="Salvar" />
+            <EventoForm
+              form={formEdit}
+              onChange={onChangeFormEdit}
+              onCancel={onCancelEdit}
+              onSubmit={onSaveEdit}
+              submitLabel="Salvar"
+            />
           ) : (
             <>
               {/* Participantes */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs uppercase tracking-widest text-muted-foreground/50">
-                    Participantes {total > 0 && `(${confirmados} confirmado${confirmados !== 1 ? "s" : ""} / ${total})`}
+                    Participantes{" "}
+                    {total > 0 &&
+                      `(${confirmados} confirmado${confirmados !== 1 ? "s" : ""} / ${total})`}
                   </p>
                   {isAdmin && (
-                    <button onClick={onToggleAddPart}
-                      className="flex items-center gap-1 text-xs text-cyan-glow hover:underline">
-                      <UserPlus size={12} />Adicionar
+                    <button
+                      onClick={onToggleAddPart}
+                      className="flex items-center gap-1 text-xs text-cyan-glow hover:underline"
+                    >
+                      <UserPlus size={12} />
+                      Adicionar
                     </button>
                   )}
                 </div>
@@ -2531,33 +3639,52 @@ function EventoCard({
                     <select
                       className={`${inputCls} mb-1`}
                       defaultValue=""
-                      onChange={e => { if (e.target.value) { onAddPart(e.target.value); e.target.value = ""; } }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          onAddPart(e.target.value);
+                          e.target.value = "";
+                        }
+                      }}
                     >
-                      <option value="" disabled>Selecione um membro…</option>
+                      <option value="" disabled>
+                        Selecione um membro…
+                      </option>
                       {membros
-                        .filter(m => !participantes?.find(p => p.user_id === m.id))
-                        .map(m => <option key={m.id} value={m.id}>{m.nome}</option>)
-                      }
+                        .filter((m) => !participantes?.find((p) => p.user_id === m.id))
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.nome}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 )}
 
                 {/* Lista de participantes */}
-                {(!participantes || participantes.length === 0) ? (
-                  <p className="text-xs text-muted-foreground/40 py-2">Nenhum participante adicionado.</p>
+                {!participantes || participantes.length === 0 ? (
+                  <p className="text-xs text-muted-foreground/40 py-2">
+                    Nenhum participante adicionado.
+                  </p>
                 ) : (
                   <div className="space-y-1.5">
-                    {participantes.map(p => (
-                      <div key={p.user_id} className="flex items-center justify-between py-1.5 px-3 rounded-xl hover:bg-white/5 transition-colors">
+                    {participantes.map((p) => (
+                      <div
+                        key={p.user_id}
+                        className="flex items-center justify-between py-1.5 px-3 rounded-xl hover:bg-white/5 transition-colors"
+                      >
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-foreground/80">{p.nome || "Membro"}</span>
-                          <span className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full border ${statusColor[p.status]}`}>
+                          <span
+                            className={`text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full border ${statusColor[p.status]}`}
+                          >
                             {statusLabel[p.status]}
                           </span>
                         </div>
                         {isAdmin && (
-                          <button onClick={() => onRemovePart(p.user_id)}
-                            className="p-1 rounded-lg text-muted-foreground/30 hover:text-red-500 transition-colors">
+                          <button
+                            onClick={() => onRemovePart(p.user_id)}
+                            className="p-1 rounded-lg text-muted-foreground/30 hover:text-red-500 transition-colors"
+                          >
                             <X size={12} />
                           </button>
                         )}
@@ -2590,11 +3717,19 @@ function EventoCard({
               {/* Ações de admin */}
               {isAdmin && (
                 <div className="flex gap-2 pt-2 border-t border-white/5">
-                  <button onClick={onEdit} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/10 text-muted-foreground hover:border-cyan-glow/40 hover:text-cyan-glow transition-colors">
-                    <Edit3 size={12} />Editar
+                  <button
+                    onClick={onEdit}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/10 text-muted-foreground hover:border-cyan-glow/40 hover:text-cyan-glow transition-colors"
+                  >
+                    <Edit3 size={12} />
+                    Editar
                   </button>
-                  <button onClick={onDelete} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/10 text-muted-foreground hover:border-red-300 hover:text-red-500 transition-colors">
-                    <Trash2 size={12} />Excluir
+                  <button
+                    onClick={onDelete}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border border-white/10 text-muted-foreground hover:border-red-300 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={12} />
+                    Excluir
                   </button>
                 </div>
               )}
@@ -2608,13 +3743,30 @@ function EventoCard({
 
 /* ── Dashboard Helper Components ───────────────────────────────── */
 
-function DashSectionHeader({ Icon, label, color, iconColor, bg, border, borderB, children }: {
-  Icon: LucideIcon; label: string; color: string; iconColor: string;
-  bg: string; border: string; borderB: string; children?: React.ReactNode;
+function DashSectionHeader({
+  Icon,
+  label,
+  color,
+  iconColor,
+  bg,
+  border,
+  borderB,
+  children,
+}: {
+  Icon: LucideIcon;
+  label: string;
+  color: string;
+  iconColor: string;
+  bg: string;
+  border: string;
+  borderB: string;
+  children?: React.ReactNode;
 }) {
   return (
     <div className={`flex items-center gap-4 mb-5 pb-3 border-b-2 ${borderB}`}>
-      <div className={`w-9 h-9 rounded-xl ${bg} border ${border} flex items-center justify-center shrink-0`}>
+      <div
+        className={`w-9 h-9 rounded-xl ${bg} border ${border} flex items-center justify-center shrink-0`}
+      >
         <Icon size={18} strokeWidth={1.5} className={iconColor} />
       </div>
       <h3 className={`text-sm font-semibold ${color} tracking-wide`}>{label}</h3>
@@ -2623,10 +3775,19 @@ function DashSectionHeader({ Icon, label, color, iconColor, bg, border, borderB,
   );
 }
 
-function DashVoteBadge({ title, votes, votingKey }: {
-  title: string; votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null;
+function DashVoteBadge({
+  title,
+  votes,
+  votingKey,
+}: {
+  title: string;
+  votes: Record<string, { count: number; votedByMe: boolean }>;
+  votingKey: string | null;
 }) {
-  const key = title.toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 80);
+  const key = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "-")
+    .slice(0, 80);
   const voteData = votes[key];
   const count = voteData?.count ?? 0;
   const voted = voteData?.votedByMe ?? false;
@@ -2646,29 +3807,50 @@ function DashVoteBadge({ title, votes, votingKey }: {
   );
 }
 
-function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, votingKey, onVote, onClick }: {
-  Icon: LucideIcon; title: string; desc: string; status: DashStatus;
-  accent: string; href?: string; casa?: boolean;
-  votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null; onVote: (title: string) => void;
+function DashDashCard({
+  Icon,
+  title,
+  desc,
+  status,
+  accent,
+  href,
+  casa,
+  votes,
+  votingKey,
+  onVote,
+  onClick,
+}: {
+  Icon: LucideIcon;
+  title: string;
+  desc: string;
+  status: DashStatus;
+  accent: string;
+  href?: string;
+  casa?: boolean;
+  votes: Record<string, { count: number; votedByMe: boolean }>;
+  votingKey: string | null;
+  onVote: (title: string) => void;
   onClick?: () => void;
 }) {
   const borderMap: Record<string, string> = {
     slate: "border-t-slate-300/80 focus-within:border-t-slate-400",
     amber: "border-t-amber-300/80 focus-within:border-t-amber-400",
-    cyan:  "border-t-cyan-300/80 focus-within:border-t-cyan-400",
+    cyan: "border-t-cyan-300/80 focus-within:border-t-cyan-400",
   };
   const iconMap: Record<string, string> = {
     slate: "bg-slate-50 border-slate-200 text-slate-600",
-    cyan:  "bg-cyan-50 border-cyan-200 text-cyan-600",
+    cyan: "bg-cyan-50 border-cyan-200 text-cyan-600",
     amber: "bg-amber-50 border-amber-200 text-amber-600",
   };
   const isPending = status === "breve";
   const content = (
     <div
-      className={`glass-premium hover-premium rounded-2xl p-5 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${(isPending || onClick) ? "cursor-pointer" : ""}`}
-      onClick={onClick ? onClick : (isPending ? () => onVote(title) : undefined)}
+      className={`glass-premium hover-premium rounded-2xl p-5 border-t-4 ${borderMap[accent] ?? "border-t-slate-300"} h-full flex flex-col gap-4 ${isPending || onClick ? "cursor-pointer" : ""}`}
+      onClick={onClick ? onClick : isPending ? () => onVote(title) : undefined}
     >
-      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}>
+      <div
+        className={`w-9 h-9 rounded-xl border flex items-center justify-center ${iconMap[accent] ?? iconMap.slate}`}
+      >
         <Icon size={18} strokeWidth={1.5} />
       </div>
       <div className="flex-1">
@@ -2676,22 +3858,36 @@ function DashDashCard({ Icon, title, desc, status, accent, href, casa, votes, vo
         <p className="text-[11px] text-gray-500 leading-relaxed font-light">{desc}</p>
       </div>
       <div className="flex items-center gap-2 flex-wrap mt-1">
-        <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}>
+        <span
+          className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}
+        >
           {STATUS_LABEL[status]}
         </span>
-        {isPending && (
-          <DashVoteBadge title={title} votes={votes} votingKey={votingKey} />
-        )}
+        {isPending && <DashVoteBadge title={title} votes={votes} votingKey={votingKey} />}
       </div>
     </div>
   );
-  if (href) return <Link to={href} className="block h-full">{content}</Link>;
+  if (href)
+    return (
+      <Link to={href} className="block h-full">
+        {content}
+      </Link>
+    );
   return content;
 }
 
-function DashFeatureCard({ item, cat, votes, votingKey, onVote }: {
-  item: DashFeatureItem; cat: DashFeatureCategory;
-  votes: Record<string, { count: number; votedByMe: boolean }>; votingKey: string | null; onVote: (title: string) => void;
+function DashFeatureCard({
+  item,
+  cat,
+  votes,
+  votingKey,
+  onVote,
+}: {
+  item: DashFeatureItem;
+  cat: DashFeatureCategory;
+  votes: Record<string, { count: number; votedByMe: boolean }>;
+  votingKey: string | null;
+  onVote: (title: string) => void;
 }) {
   const isAvailable = item.status === "disponivel";
   const isPending = item.status === "breve";
@@ -2701,7 +3897,9 @@ function DashFeatureCard({ item, cat, votes, votingKey, onVote }: {
       className={`group glass-premium hover-premium rounded-2xl p-5 flex flex-col gap-4 h-full ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
       onClick={isPending ? () => onVote(item.title) : undefined}
     >
-      <div className={`w-9 h-9 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}>
+      <div
+        className={`w-9 h-9 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}
+      >
         <item.Icon size={18} strokeWidth={1.5} className={cat.iconColor} />
       </div>
       <div className="flex-1">
@@ -2709,27 +3907,34 @@ function DashFeatureCard({ item, cat, votes, votingKey, onVote }: {
         <p className="text-[11px] text-gray-500 leading-relaxed font-light">{item.desc}</p>
       </div>
       <div className="flex items-center gap-2 flex-wrap mt-1">
-        <span className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}>
+        <span
+          className={`text-[9px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${STATUS_STYLE[item.status]}`}
+        >
           {STATUS_LABEL[item.status]}
         </span>
-        {isPending && (
-          <DashVoteBadge title={item.title} votes={votes} votingKey={votingKey} />
-        )}
+        {isPending && <DashVoteBadge title={item.title} votes={votes} votingKey={votingKey} />}
       </div>
     </div>
   );
-  if (item.href) return <a href={item.href} className="block h-full">{inner}</a>;
+  if (item.href)
+    return (
+      <a href={item.href} className="block h-full">
+        {inner}
+      </a>
+    );
   return inner;
 }
 
-function DashBazarCard({ item }: { item: typeof DASH_BAZAR[0] }) {
+function DashBazarCard({ item }: { item: (typeof DASH_BAZAR)[0] }) {
   return (
     <div className="glass-premium hover-premium rounded-2xl p-4 flex flex-col gap-3">
       <div className="w-11 h-11 rounded-xl bg-cyan-50/70 border border-cyan-100 flex items-center justify-center mx-auto shadow-sm">
         <item.Icon size={20} strokeWidth={1.5} className="text-cyan-600" />
       </div>
       <div className="text-center flex-1">
-        <p className="text-[9px] font-bold text-cyan-600/70 uppercase tracking-widest mb-0.5">{item.category}</p>
+        <p className="text-[9px] font-bold text-cyan-600/70 uppercase tracking-widest mb-0.5">
+          {item.category}
+        </p>
         <h4 className="text-xs font-semibold text-gray-800 leading-snug mb-1">{item.name}</h4>
         <p className="text-[9px] text-gray-400 font-light">{item.desc}</p>
       </div>

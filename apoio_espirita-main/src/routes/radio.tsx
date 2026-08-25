@@ -11,7 +11,18 @@ export const Route = createFileRoute("/radio")({
 function RadioPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { active, playing, buffering, error, volume, muted, activate, togglePlay, setVolume, toggleMute } = useRadio();
+  const {
+    active,
+    playing,
+    buffering,
+    error,
+    volume,
+    muted,
+    activate,
+    togglePlay,
+    setVolume,
+    toggleMute,
+  } = useRadio();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -22,7 +33,6 @@ function RadioPage() {
   return (
     <main className="page-light min-h-screen px-6 py-24">
       <div className="mx-auto max-w-2xl">
-
         <Link
           to="/inicio"
           className="text-xs uppercase tracking-[0.3em] text-cyan-glow hover:text-foreground transition-colors"
@@ -44,11 +54,16 @@ function RadioPage() {
 
         {/* Player principal */}
         <div className="glass rounded-3xl p-10 flex flex-col items-center gap-8">
-
           {/* Ícone animado */}
           <div className="relative">
-            <div className={`w-28 h-28 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center ${playing ? "shadow-lg shadow-emerald-100" : ""}`}>
-              <Radio size={44} strokeWidth={1.5} className={`transition-colors duration-500 ${playing ? "text-emerald-600" : "text-muted-foreground/40"}`} />
+            <div
+              className={`w-28 h-28 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center ${playing ? "shadow-lg shadow-emerald-100" : ""}`}
+            >
+              <Radio
+                size={44}
+                strokeWidth={1.5}
+                className={`transition-colors duration-500 ${playing ? "text-emerald-600" : "text-muted-foreground/40"}`}
+              />
             </div>
             {playing && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4">
@@ -74,14 +89,18 @@ function RadioPage() {
                     />
                   ))}
                 </span>
-                <span className="text-sm text-emerald-600 font-medium uppercase tracking-widest">Ao vivo</span>
+                <span className="text-sm text-emerald-600 font-medium uppercase tracking-widest">
+                  Ao vivo
+                </span>
               </div>
             )}
             {!buffering && !playing && !error && (
               <p className="text-sm text-muted-foreground/50">Clique para ouvir ao vivo</p>
             )}
             {error && (
-              <p className="text-sm text-red-500/70">Não foi possível conectar. Verifique sua conexão.</p>
+              <p className="text-sm text-red-500/70">
+                Não foi possível conectar. Verifique sua conexão.
+              </p>
             )}
           </div>
 
@@ -95,10 +114,11 @@ function RadioPage() {
                 : "bg-white border-emerald-300 hover:border-emerald-500 hover:bg-emerald-50 text-emerald-600"
             } disabled:opacity-40 disabled:cursor-not-allowed`}
           >
-            {playing
-              ? <Pause size={24} strokeWidth={2} />
-              : <Play size={24} strokeWidth={2} className="ml-1" />
-            }
+            {playing ? (
+              <Pause size={24} strokeWidth={2} />
+            ) : (
+              <Play size={24} strokeWidth={2} className="ml-1" />
+            )}
           </button>
 
           {/* Volume */}
@@ -107,10 +127,11 @@ function RadioPage() {
               onClick={toggleMute}
               className="text-muted-foreground/50 hover:text-foreground transition-colors shrink-0"
             >
-              {muted || volume === 0
-                ? <VolumeX size={18} strokeWidth={1.5} />
-                : <Volume2 size={18} strokeWidth={1.5} />
-              }
+              {muted || volume === 0 ? (
+                <VolumeX size={18} strokeWidth={1.5} />
+              ) : (
+                <Volume2 size={18} strokeWidth={1.5} />
+              )}
             </button>
             <input
               type="range"
@@ -145,7 +166,6 @@ function RadioPage() {
             radioriodejaneiro.digital
           </a>
         </div>
-
       </div>
     </main>
   );

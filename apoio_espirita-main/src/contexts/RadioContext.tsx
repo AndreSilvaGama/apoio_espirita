@@ -45,9 +45,17 @@ export function RadioProvider({ children }: { children: React.ReactNode }) {
     audio.volume = 0.8;
     audioRef.current = audio;
 
-    audio.addEventListener("playing", () => { setPlaying(true); setBuffering(false); setError(false); });
+    audio.addEventListener("playing", () => {
+      setPlaying(true);
+      setBuffering(false);
+      setError(false);
+    });
     audio.addEventListener("waiting", () => setBuffering(true));
-    audio.addEventListener("error", () => { setError(true); setBuffering(false); setPlaying(false); });
+    audio.addEventListener("error", () => {
+      setError(true);
+      setBuffering(false);
+      setPlaying(false);
+    });
     audio.addEventListener("pause", () => setPlaying(false));
 
     return () => {
@@ -63,7 +71,10 @@ export function RadioProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
     setBuffering(true);
     audio.load();
-    audio.play().catch(() => { setError(true); setBuffering(false); });
+    audio.play().catch(() => {
+      setError(true);
+      setBuffering(false);
+    });
   }
 
   function togglePlay() {
@@ -75,7 +86,10 @@ export function RadioProvider({ children }: { children: React.ReactNode }) {
     } else {
       setBuffering(true);
       audio.load();
-      audio.play().catch(() => { setError(true); setBuffering(false); });
+      audio.play().catch(() => {
+        setError(true);
+        setBuffering(false);
+      });
     }
   }
 
@@ -100,7 +114,21 @@ export function RadioProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <RadioContext.Provider value={{ active, playing, buffering, error, volume, muted, activate, togglePlay, setVolume, toggleMute, dismiss }}>
+    <RadioContext.Provider
+      value={{
+        active,
+        playing,
+        buffering,
+        error,
+        volume,
+        muted,
+        activate,
+        togglePlay,
+        setVolume,
+        toggleMute,
+        dismiss,
+      }}
+    >
       {children}
     </RadioContext.Provider>
   );

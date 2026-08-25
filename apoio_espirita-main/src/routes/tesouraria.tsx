@@ -1,8 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  Wallet, Plus, TrendingUp, TrendingDown,
-  Trash2, ChevronLeft, ChevronRight, Calendar, Download, Printer,
+  Wallet,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Download,
+  Printer,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +21,27 @@ export const Route = createFileRoute("/tesouraria")({
 
 const CATEGORIAS_RECEITA = ["Doações", "Bazar", "Mensalidade", "Eventos", "Outros"];
 const CATEGORIAS_DESPESA = [
-  "Água/Luz/Gás", "Aluguel", "Material de escritório",
-  "Material de limpeza", "Manutenção", "Alimentação", "Outros",
+  "Água/Luz/Gás",
+  "Aluguel",
+  "Material de escritório",
+  "Material de limpeza",
+  "Manutenção",
+  "Alimentação",
+  "Outros",
 ];
 const MESES = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+  "Janeiro",
+  "Fevereiro",
+  "Março",
+  "Abril",
+  "Maio",
+  "Junho",
+  "Julho",
+  "Agosto",
+  "Setembro",
+  "Outubro",
+  "Novembro",
+  "Dezembro",
 ];
 
 type Tipo = "receita" | "despesa";
@@ -41,7 +64,9 @@ function fmtBRL(v: number) {
 
 function fmtData(iso: string) {
   return new Date(iso + "T12:00:00").toLocaleDateString("pt-BR", {
-    day: "2-digit", month: "2-digit", year: "numeric",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
@@ -69,7 +94,16 @@ function Tesouraria() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) navigate({ to: "/completar-perfil" });
+    if (
+      !loading &&
+      user &&
+      (!profile?.sigla_casa ||
+        !profile?.nome ||
+        !profile?.cargo_principal ||
+        !profile?.uf ||
+        !profile?.cidade)
+    )
+      navigate({ to: "/completar-perfil" });
   }, [user, profile, loading, navigate]);
 
   const fetchTransacoes = async () => {
@@ -102,7 +136,8 @@ function Tesouraria() {
         <div className="text-center max-w-md">
           <Wallet size={32} strokeWidth={1.5} className="text-muted-foreground/40 mx-auto mb-4" />
           <p className="text-muted-foreground font-light leading-relaxed">
-            Somente o(a) Presidente e pessoas autorizadas pelo(a) Presidente podem acessar a Tesouraria.
+            Somente o(a) Presidente e pessoas autorizadas pelo(a) Presidente podem acessar a
+            Tesouraria.
           </p>
           <button
             onClick={() => navigate({ to: "/inicio" })}
@@ -116,15 +151,25 @@ function Tesouraria() {
   }
 
   // Totais do mês
-  const receitas = transacoes.filter((t) => t.tipo === "receita").reduce((s, t) => s + Number(t.valor), 0);
-  const despesas = transacoes.filter((t) => t.tipo === "despesa").reduce((s, t) => s + Number(t.valor), 0);
+  const receitas = transacoes
+    .filter((t) => t.tipo === "receita")
+    .reduce((s, t) => s + Number(t.valor), 0);
+  const despesas = transacoes
+    .filter((t) => t.tipo === "despesa")
+    .reduce((s, t) => s + Number(t.valor), 0);
   const saldo = receitas - despesas;
 
   const navegarMes = (dir: 1 | -1) => {
     let novoMes = mes + dir;
     let novoAno = ano;
-    if (novoMes < 0) { novoMes = 11; novoAno--; }
-    if (novoMes > 11) { novoMes = 0; novoAno++; }
+    if (novoMes < 0) {
+      novoMes = 11;
+      novoAno--;
+    }
+    if (novoMes > 11) {
+      novoMes = 0;
+      novoAno++;
+    }
     setMes(novoMes);
     setAno(novoAno);
   };
@@ -132,11 +177,23 @@ function Tesouraria() {
   const categorias = fTipo === "receita" ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA;
 
   const handleSalvar = async () => {
-    if (!fCategoria) { setFormError("Selecione a categoria."); return; }
-    if (!fDescricao.trim()) { setFormError("Informe a descrição."); return; }
+    if (!fCategoria) {
+      setFormError("Selecione a categoria.");
+      return;
+    }
+    if (!fDescricao.trim()) {
+      setFormError("Informe a descrição.");
+      return;
+    }
     const valor = parseFloat(fValor.replace(",", "."));
-    if (!fValor || isNaN(valor) || valor <= 0) { setFormError("Informe um valor válido (ex: 150,00)."); return; }
-    if (!fData) { setFormError("Informe a data."); return; }
+    if (!fValor || isNaN(valor) || valor <= 0) {
+      setFormError("Informe um valor válido (ex: 150,00).");
+      return;
+    }
+    if (!fData) {
+      setFormError("Informe a data.");
+      return;
+    }
     if (!profile?.sigla_casa || !user) return;
 
     setSaving(true);
@@ -154,7 +211,10 @@ function Tesouraria() {
         criador_nome: profile.nome ?? "",
       });
       if (error) throw error;
-      setFDescricao(""); setFCategoria(""); setFValor(""); setFObs("");
+      setFDescricao("");
+      setFCategoria("");
+      setFValor("");
+      setFObs("");
       setFData(hoje.toISOString().split("T")[0]);
       setFTipo("receita");
       setShowForm(false);
@@ -175,8 +235,11 @@ function Tesouraria() {
   const handleExportarXLS = async () => {
     const XLSX = await import("xlsx");
     const geradoEm = new Date().toLocaleDateString("pt-BR", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
     const rows: (string | number)[][] = [
       [`Tesouraria — Casa Espírita ${profile?.sigla_casa}`],
@@ -209,10 +272,15 @@ function Tesouraria() {
 
   const handleImprimir = () => {
     const dataAtual = new Date().toLocaleDateString("pt-BR", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-    const linhas = transacoes.map((tx) => `
+    const linhas = transacoes
+      .map(
+        (tx) => `
       <tr>
         <td>${fmtData(tx.data)}</td>
         <td class="${tx.tipo}">${tx.tipo === "receita" ? "Receita" : "Despesa"}</td>
@@ -223,7 +291,9 @@ function Tesouraria() {
         </td>
         <td>${tx.criador_nome ?? "—"}</td>
         <td>${tx.observacao ?? "—"}</td>
-      </tr>`).join("");
+      </tr>`,
+      )
+      .join("");
 
     const html = `<!DOCTYPE html><html lang="pt-BR"><head>
 <meta charset="UTF-8">
@@ -267,13 +337,15 @@ function Tesouraria() {
 </body></html>`;
 
     const w = window.open("", "_blank", "width=960,height=680");
-    if (w) { w.document.write(html); w.document.close(); }
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+    }
   };
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-3xl">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
@@ -281,7 +353,10 @@ function Tesouraria() {
             <h1 className="text-3xl font-light text-foreground">Casa {profile?.sigla_casa}</h1>
           </div>
           <button
-            onClick={() => { setShowForm((v) => !v); setFormError(""); }}
+            onClick={() => {
+              setShowForm((v) => !v);
+              setFormError("");
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-glow/40 text-cyan-glow text-xs uppercase tracking-widest hover:bg-cyan-glow/10 transition-colors"
           >
             <Plus size={14} />
@@ -331,12 +406,20 @@ function Tesouraria() {
 
         {/* Cards de resumo */}
         <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className={`rounded-2xl p-4 border ${saldo >= 0 ? "bg-cyan-50 border-cyan-100" : "bg-rose-50 border-rose-100"}`}>
+          <div
+            className={`rounded-2xl p-4 border ${saldo >= 0 ? "bg-cyan-50 border-cyan-100" : "bg-rose-50 border-rose-100"}`}
+          >
             <div className="flex items-center gap-1.5 mb-2">
-              <Wallet size={13} strokeWidth={1.5} className={saldo >= 0 ? "text-cyan-500" : "text-rose-400"} />
+              <Wallet
+                size={13}
+                strokeWidth={1.5}
+                className={saldo >= 0 ? "text-cyan-500" : "text-rose-400"}
+              />
               <p className="text-xs uppercase tracking-wider text-gray-400">Saldo</p>
             </div>
-            <p className={`text-base font-semibold ${saldo >= 0 ? "text-cyan-700" : "text-rose-600"}`}>
+            <p
+              className={`text-base font-semibold ${saldo >= 0 ? "text-cyan-700" : "text-rose-600"}`}
+            >
               {fmtBRL(saldo)}
             </p>
           </div>
@@ -359,18 +442,26 @@ function Tesouraria() {
         {/* Formulário de nova transação */}
         {showForm && (
           <div className="glass rounded-3xl p-6 mb-8 space-y-4">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">Novo Lançamento</h2>
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground/60">
+              Novo Lançamento
+            </h2>
 
             {/* Tipo */}
             <div className="flex gap-3">
               <button
-                onClick={() => { setFTipo("receita"); setFCategoria(""); }}
+                onClick={() => {
+                  setFTipo("receita");
+                  setFCategoria("");
+                }}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-colors ${fTipo === "receita" ? "border-emerald-400/60 text-emerald-600 bg-emerald-400/5" : "border-white/10 text-muted-foreground hover:border-white/20"}`}
               >
                 <TrendingUp size={14} /> Receita
               </button>
               <button
-                onClick={() => { setFTipo("despesa"); setFCategoria(""); }}
+                onClick={() => {
+                  setFTipo("despesa");
+                  setFCategoria("");
+                }}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm transition-colors ${fTipo === "despesa" ? "border-rose-400/60 text-rose-500 bg-rose-400/5" : "border-white/10 text-muted-foreground hover:border-white/20"}`}
               >
                 <TrendingDown size={14} /> Despesa
@@ -380,11 +471,18 @@ function Tesouraria() {
             {/* Categoria */}
             <select
               value={fCategoria}
-              onChange={(e) => { setFCategoria(e.target.value); setFormError(""); }}
+              onChange={(e) => {
+                setFCategoria(e.target.value);
+                setFormError("");
+              }}
               className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
             >
               <option value="">Selecione a categoria</option>
-              {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
+              {categorias.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
 
             {/* Descrição */}
@@ -392,26 +490,36 @@ function Tesouraria() {
               type="text"
               placeholder="Descrição *"
               value={fDescricao}
-              onChange={(e) => { setFDescricao(e.target.value); setFormError(""); }}
+              onChange={(e) => {
+                setFDescricao(e.target.value);
+                setFormError("");
+              }}
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
             />
 
             <div className="grid grid-cols-2 gap-3">
               {/* Valor */}
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Valor (R$) *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">
+                  Valor (R$) *
+                </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   placeholder="Ex: 150,00"
                   value={fValor}
-                  onChange={(e) => { setFValor(e.target.value); setFormError(""); }}
+                  onChange={(e) => {
+                    setFValor(e.target.value);
+                    setFormError("");
+                  }}
                   className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
                 />
               </div>
               {/* Data */}
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">Data *</label>
+                <label className="block text-xs uppercase tracking-widest text-muted-foreground/60 mb-1">
+                  Data *
+                </label>
                 <input
                   type="date"
                   value={fData}
@@ -461,9 +569,14 @@ function Tesouraria() {
         ) : (
           <div className="space-y-2">
             {transacoes.map((tx) => (
-              <div key={tx.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
+              <div
+                key={tx.id}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4"
+              >
                 {/* Indicador de tipo */}
-                <div className={`shrink-0 w-1.5 h-10 rounded-full ${tx.tipo === "receita" ? "bg-emerald-400" : "bg-rose-400"}`} />
+                <div
+                  className={`shrink-0 w-1.5 h-10 rounded-full ${tx.tipo === "receita" ? "bg-emerald-400" : "bg-rose-400"}`}
+                />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -479,8 +592,11 @@ function Tesouraria() {
 
                 {/* Valor e ações */}
                 <div className="shrink-0 text-right">
-                  <p className={`text-sm font-semibold ${tx.tipo === "receita" ? "text-emerald-600" : "text-rose-500"}`}>
-                    {tx.tipo === "receita" ? "+" : "−"}{fmtBRL(Number(tx.valor))}
+                  <p
+                    className={`text-sm font-semibold ${tx.tipo === "receita" ? "text-emerald-600" : "text-rose-500"}`}
+                  >
+                    {tx.tipo === "receita" ? "+" : "−"}
+                    {fmtBRL(Number(tx.valor))}
                   </p>
                   {tx.criador_id === user?.id && (
                     <button
@@ -496,7 +612,9 @@ function Tesouraria() {
 
             {/* Rodapé do mês */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-400">
-              <span>{transacoes.length} lançamento{transacoes.length !== 1 ? "s" : ""}</span>
+              <span>
+                {transacoes.length} lançamento{transacoes.length !== 1 ? "s" : ""}
+              </span>
               <span className={`font-medium ${saldo >= 0 ? "text-cyan-600" : "text-rose-500"}`}>
                 Saldo: {fmtBRL(saldo)}
               </span>

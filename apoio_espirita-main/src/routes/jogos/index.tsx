@@ -1,8 +1,39 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Gamepad2, Sprout, Brain, HelpCircle, Sparkles, Search, Compass } from "lucide-react";
+import {
+  ArrowLeft,
+  Gamepad2,
+  Sprout,
+  Brain,
+  HelpCircle,
+  Sparkles,
+  Search,
+  Compass,
+} from "lucide-react";
 
 export const Route = createFileRoute("/jogos/")({
+  head: () => ({
+    meta: [
+      { title: "Portal de Jogos Espíritas — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Divirta-se e aprenda com nossa coleção de jogos educativos espíritas: Caça-Palavras, Jogo da Memória, Quiz, Plante a Semente, Caminho da Luz e mais.",
+      },
+      {
+        name: "keywords",
+        content:
+          "jogos espiritas, jogos educativos espiritismo, caca palavras espirita, quiz espirita, jogo da memoria espirita, recreacao evangelizacao",
+      },
+      { property: "og:title", content: "Portal de Jogos Espíritas — Apoio Espírita" },
+      {
+        property: "og:description",
+        content: "Divirta-se e aprenda com nossa coleção de jogos educativos espíritas.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos" }],
+  }),
   component: PortalJogos,
 });
 
@@ -85,7 +116,6 @@ function PortalJogos() {
   return (
     <main className="page-light min-h-screen pt-20 pb-20 px-4 md:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link
@@ -110,7 +140,8 @@ function PortalJogos() {
             Aprender e <span className="font-semibold text-gradient-aurora">Crescer</span>
           </h2>
           <p className="mt-1.5 text-sm text-gray-500 font-light">
-            Divirta-se com atividades lúdicas e interativas criadas para a formação moral e doutrinária de todas as idades.
+            Divirta-se com atividades lúdicas e interativas criadas para a formação moral e
+            doutrinária de todas as idades.
           </p>
         </div>
 
@@ -127,9 +158,11 @@ function PortalJogos() {
                   Novo
                 </span>
               )}
-              
+
               <div className="space-y-4">
-                <div className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 shadow-sm ${jogo.color}`}>
+                <div
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 shadow-sm ${jogo.color}`}
+                >
                   <jogo.icon size={22} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -156,9 +189,9 @@ function PortalJogos() {
 
         {/* Rodapé informativo */}
         <p className="text-xs text-center text-muted-foreground/50 font-light pt-4">
-          Todos os jogos operam de forma 100% local e segura, respeitando o ritmo e aprendizado de cada irmão.
+          Todos os jogos operam de forma 100% local e segura, respeitando o ritmo e aprendizado de
+          cada irmão.
         </p>
-
       </div>
     </main>
   );

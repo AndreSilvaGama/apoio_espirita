@@ -18,7 +18,7 @@ interface Permissao {
   descricao: string;
   presidente: Acesso;
   vice: Acesso;
-  decisao: Acesso;   // Coordenador, Diretoria, Dirigente, Dirigente de reunião mediúnica
+  decisao: Acesso; // Coordenador, Diretoria, Dirigente, Dirigente de reunião mediúnica
   tesoureiro: Acesso;
   membros: Acesso;
   nota?: string;
@@ -173,7 +173,8 @@ const PERMISSOES: Permissao[] = [
 // ── Ícone de acesso ───────────────────────────────────────────────────────────
 
 function IconeAcesso({ acesso }: { acesso: Acesso }) {
-  if (acesso === "sim") return <Check size={16} strokeWidth={2.5} className="text-emerald-500 mx-auto" />;
+  if (acesso === "sim")
+    return <Check size={16} strokeWidth={2.5} className="text-emerald-500 mx-auto" />;
   if (acesso === "nao") return <X size={16} strokeWidth={2.5} className="text-red-400 mx-auto" />;
   return <Minus size={16} strokeWidth={2.5} className="text-amber-400 mx-auto" />;
 }
@@ -213,10 +214,7 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
         .select("id, nome, cargo_principal")
         .eq("sigla_casa", sigla)
         .order("nome"),
-      supabase
-        .from("tesouraria_autorizacoes")
-        .select("user_id")
-        .eq("sigla_casa", sigla),
+      supabase.from("tesouraria_autorizacoes").select("user_id").eq("sigla_casa", sigla),
     ]);
     setMembros((membrosData as Membro[]) ?? []);
     setAutorizados(new Set((autorizData ?? []).map((a: { user_id: string }) => a.user_id)));
@@ -238,7 +236,7 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
           .eq("sigla_casa", sigla)
           .eq("user_id", membroId);
         if (error) throw error;
-        setAutorizados(prev => {
+        setAutorizados((prev) => {
           const next = new Set(prev);
           next.delete(membroId);
           return next;
@@ -249,7 +247,7 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
           .from("tesouraria_autorizacoes")
           .insert({ sigla_casa: sigla, user_id: membroId, autorizado_por: user?.id ?? null });
         if (error) throw error;
-        setAutorizados(prev => new Set(prev).add(membroId));
+        setAutorizados((prev) => new Set(prev).add(membroId));
         toast.success("Acesso concedido.");
       }
     } catch (e) {
@@ -266,7 +264,8 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
         <div>
           <h2 className="text-sm font-bold text-gray-800">Gerenciar acesso à Tesouraria</h2>
           <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-            Conceda ou revogue o acesso de cada membro. Presidente, Vice-presidente e Tesoureiro têm acesso automático.
+            Conceda ou revogue o acesso de cada membro. Presidente, Vice-presidente e Tesoureiro têm
+            acesso automático.
           </p>
         </div>
       </div>
@@ -276,17 +275,21 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
           <Loader2 size={20} className="text-emerald-500 animate-spin" />
         </div>
       ) : membros.length === 0 ? (
-        <p className="text-xs text-gray-400 text-center py-8 italic">Nenhum membro encontrado nesta casa.</p>
+        <p className="text-xs text-gray-400 text-center py-8 italic">
+          Nenhum membro encontrado nesta casa.
+        </p>
       ) : (
         <ul className="divide-y divide-gray-100">
-          {membros.map(m => {
+          {membros.map((m) => {
             const automatico = CARGOS_ACESSO_AUTOMATICO.includes(m.cargo_principal ?? "");
             const autorizado = autorizados.has(m.id);
             const temAcesso = automatico || autorizado;
             return (
               <li key={m.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{m.nome || "Sem nome"}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">
+                    {m.nome || "Sem nome"}
+                  </p>
                   <p className="text-xs text-gray-400">{m.cargo_principal || "—"}</p>
                 </div>
                 {automatico ? (
@@ -313,7 +316,9 @@ function GerenciarAcessoTesouraria({ sigla }: { sigla: string }) {
                     {autorizado ? "Autorizado" : "Sem acesso"}
                   </button>
                 )}
-                {!automatico && <span className="sr-only">{temAcesso ? "com acesso" : "sem acesso"}</span>}
+                {!automatico && (
+                  <span className="sr-only">{temAcesso ? "com acesso" : "sem acesso"}</span>
+                )}
               </li>
             );
           })}
@@ -357,14 +362,14 @@ function Permissoes() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-5xl space-y-6">
-
         {/* Cabeçalho */}
         <div className="flex items-start gap-3">
           <ShieldAlert size={24} strokeWidth={1.5} className="text-gray-400 mt-0.5 shrink-0" />
           <div>
             <h1 className="text-xl font-bold text-gray-800">Painel de Permissões</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Visível apenas para cargos de decisão · Seu cargo: <strong className="text-gray-700">{cargo}</strong>
+              Visível apenas para cargos de decisão · Seu cargo:{" "}
+              <strong className="text-gray-700">{cargo}</strong>
             </p>
           </div>
         </div>
@@ -373,9 +378,9 @@ function Permissoes() {
         <div className="flex gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
           <Info size={16} strokeWidth={1.5} className="text-amber-600 mt-0.5 shrink-0" />
           <p className="text-sm text-amber-800 leading-relaxed">
-            <strong>Somente o Presidente</strong>, ou pessoa por ele expressamente autorizada, pode conceder,
-            revogar ou alterar as permissões de qualquer membro ou cargo neste sistema. Qualquer solicitação
-            de alteração deve ser feita diretamente ao Presidente da casa.
+            <strong>Somente o Presidente</strong>, ou pessoa por ele expressamente autorizada, pode
+            conceder, revogar ou alterar as permissões de qualquer membro ou cargo neste sistema.
+            Qualquer solicitação de alteração deve ser feita diretamente ao Presidente da casa.
           </p>
         </div>
 
@@ -391,7 +396,8 @@ function Permissoes() {
             <Check size={13} strokeWidth={2.5} className="text-emerald-500" /> Acesso total
           </span>
           <span className="flex items-center gap-1.5">
-            <Minus size={13} strokeWidth={2.5} className="text-amber-400" /> Acesso parcial / condicional
+            <Minus size={13} strokeWidth={2.5} className="text-amber-400" /> Acesso parcial /
+            condicional
           </span>
           <span className="flex items-center gap-1.5">
             <X size={13} strokeWidth={2.5} className="text-red-400" /> Sem acesso
@@ -403,7 +409,9 @@ function Permissoes() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-5 py-3 font-semibold text-gray-700 w-1/4">Área / Recurso</th>
+                <th className="text-left px-5 py-3 font-semibold text-gray-700 w-1/4">
+                  Área / Recurso
+                </th>
                 <th className="text-center px-3 py-3 font-semibold text-gray-700 whitespace-nowrap">
                   <Badge label="Presidente" cor="bg-violet-100 text-violet-700" />
                 </th>
@@ -440,11 +448,21 @@ function Permissoes() {
                       </p>
                     )}
                   </td>
-                  <td className="px-3 py-3 text-center"><IconeAcesso acesso={p.presidente} /></td>
-                  <td className="px-3 py-3 text-center"><IconeAcesso acesso={p.vice} /></td>
-                  <td className="px-3 py-3 text-center"><IconeAcesso acesso={p.decisao} /></td>
-                  <td className="px-3 py-3 text-center"><IconeAcesso acesso={p.tesoureiro} /></td>
-                  <td className="px-3 py-3 text-center"><IconeAcesso acesso={p.membros} /></td>
+                  <td className="px-3 py-3 text-center">
+                    <IconeAcesso acesso={p.presidente} />
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <IconeAcesso acesso={p.vice} />
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <IconeAcesso acesso={p.decisao} />
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <IconeAcesso acesso={p.tesoureiro} />
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <IconeAcesso acesso={p.membros} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -467,11 +485,11 @@ function Permissoes() {
               </div>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
                 {[
-                  { label: "Presidente",     acesso: p.presidente, cor: "text-violet-700" },
-                  { label: "Vice-presidente",acesso: p.vice,       cor: "text-indigo-700" },
+                  { label: "Presidente", acesso: p.presidente, cor: "text-violet-700" },
+                  { label: "Vice-presidente", acesso: p.vice, cor: "text-indigo-700" },
                   { label: "Coordenador/Dirigente", acesso: p.decisao, cor: "text-cyan-700" },
-                  { label: "Tesoureiro",     acesso: p.tesoureiro, cor: "text-emerald-700" },
-                  { label: "Demais membros", acesso: p.membros,    cor: "text-gray-600"   },
+                  { label: "Tesoureiro", acesso: p.tesoureiro, cor: "text-emerald-700" },
+                  { label: "Demais membros", acesso: p.membros, cor: "text-gray-600" },
                 ].map(({ label, acesso, cor }) => (
                   <div key={label} className="flex items-center gap-2">
                     <IconeAcesso acesso={acesso} />

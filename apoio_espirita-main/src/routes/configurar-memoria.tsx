@@ -3,7 +3,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Plus, Trash2, Upload, Check, X, ImageOff, Loader, AlertCircle, GripVertical,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Upload,
+  Check,
+  X,
+  ImageOff,
+  Loader,
+  AlertCircle,
+  GripVertical,
 } from "lucide-react";
 import { VIRTUDES } from "@/data/memoria-evangelizacao";
 
@@ -29,9 +38,18 @@ export interface VirtudeCasa {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const CORES = [
-  "bg-rose-100", "bg-pink-100", "bg-violet-100", "bg-blue-100",
-  "bg-teal-100", "bg-yellow-100", "bg-indigo-100", "bg-green-100",
-  "bg-orange-100", "bg-cyan-100", "bg-amber-100", "bg-purple-100",
+  "bg-rose-100",
+  "bg-pink-100",
+  "bg-violet-100",
+  "bg-blue-100",
+  "bg-teal-100",
+  "bg-yellow-100",
+  "bg-indigo-100",
+  "bg-green-100",
+  "bg-orange-100",
+  "bg-cyan-100",
+  "bg-amber-100",
+  "bg-purple-100",
 ];
 
 async function uploadImagem(file: File, sigla: string): Promise<string | null> {
@@ -41,7 +59,10 @@ async function uploadImagem(file: File, sigla: string): Promise<string | null> {
     upsert: false,
     contentType: file.type,
   });
-  if (error) { console.error(error); return null; }
+  if (error) {
+    console.error(error);
+    return null;
+  }
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
@@ -101,7 +122,9 @@ function CardVirtude({
   };
 
   return (
-    <div className={`border border-gray-200 rounded-xl overflow-hidden bg-white ${deleting ? "opacity-40" : ""}`}>
+    <div
+      className={`border border-gray-200 rounded-xl overflow-hidden bg-white ${deleting ? "opacity-40" : ""}`}
+    >
       {/* Preview da carta */}
       <div className={`h-28 flex items-center justify-center ${cor} relative`}>
         {uploading ? (
@@ -121,7 +144,13 @@ function CardVirtude({
             {imagemUrl ? "Trocar imagem" : "Adicionar imagem"}
           </button>
         )}
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleUpload}
+        />
       </div>
 
       {/* Nome e ações */}
@@ -150,7 +179,11 @@ function CardVirtude({
                 disabled={saving || !nome.trim()}
                 className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 disabled:opacity-40 transition-colors"
               >
-                {saving ? <Loader size={12} className="animate-spin" /> : <Check size={12} strokeWidth={2.5} />}
+                {saving ? (
+                  <Loader size={12} className="animate-spin" />
+                ) : (
+                  <Check size={12} strokeWidth={2.5} />
+                )}
                 Salvar
               </button>
               <button
@@ -223,7 +256,13 @@ function FormNovaVirtude({
     setSaving(true);
     const { data, error } = await supabase
       .from("memoria_virtudes_custom")
-      .insert({ sigla_casa: sigla, nome: nome.trim(), imagem_url: imagemUrl, cor, ordem: proximaOrdem })
+      .insert({
+        sigla_casa: sigla,
+        nome: nome.trim(),
+        imagem_url: imagemUrl,
+        cor,
+        ordem: proximaOrdem,
+      })
       .select()
       .single();
     setSaving(false);
@@ -250,7 +289,13 @@ function FormNovaVirtude({
           </>
         )}
       </button>
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleUpload}
+      />
 
       <input
         value={nome}
@@ -275,7 +320,11 @@ function FormNovaVirtude({
           disabled={saving || !nome.trim()}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-600 disabled:opacity-40 transition-colors"
         >
-          {saving ? <Loader size={14} className="animate-spin" /> : <Plus size={14} strokeWidth={2.5} />}
+          {saving ? (
+            <Loader size={14} className="animate-spin" />
+          ) : (
+            <Plus size={14} strokeWidth={2.5} />
+          )}
           Adicionar
         </button>
         <button
@@ -314,7 +363,9 @@ function ConfigurarMemoria() {
     setCarregando(false);
   }, [sigla]);
 
-  useEffect(() => { carregar(); }, [carregar]);
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
 
   const inicializarComPadroes = async () => {
     if (!sigla) return;
@@ -337,7 +388,8 @@ function ConfigurarMemoria() {
       .from("memoria_virtudes_custom")
       .update({ nome, imagem_url, cor, updated_at: new Date().toISOString() })
       .eq("id", id);
-    if (!error) setVirtudes((prev) => prev.map((v) => v.id === id ? { ...v, nome, imagem_url, cor } : v));
+    if (!error)
+      setVirtudes((prev) => prev.map((v) => (v.id === id ? { ...v, nome, imagem_url, cor } : v)));
   };
 
   const handleDelete = async (id: string, imagem_url: string | null) => {
@@ -368,8 +420,12 @@ function ConfigurarMemoria() {
     return (
       <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-sm text-muted-foreground">Acesso restrito a Evangelizadores e cargos de decisão.</p>
-          <Link to="/evangelizacao" className="text-xs text-cyan-600 hover:underline">Voltar</Link>
+          <p className="text-sm text-muted-foreground">
+            Acesso restrito a Evangelizadores e cargos de decisão.
+          </p>
+          <Link to="/evangelizacao" className="text-xs text-cyan-600 hover:underline">
+            Voltar
+          </Link>
         </div>
       </main>
     );
@@ -380,7 +436,9 @@ function ConfigurarMemoria() {
       <main className="page-light min-h-screen px-4 pt-20 pb-20 flex items-center justify-center">
         <div className="text-center space-y-3">
           <AlertCircle size={28} strokeWidth={1.5} className="text-amber-400 mx-auto" />
-          <p className="text-sm text-muted-foreground">Complete seu perfil com a sigla da casa para continuar.</p>
+          <p className="text-sm text-muted-foreground">
+            Complete seu perfil com a sigla da casa para continuar.
+          </p>
         </div>
       </main>
     );
@@ -389,10 +447,12 @@ function ConfigurarMemoria() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-3xl space-y-6">
-
         {/* Cabeçalho */}
         <div className="flex items-center gap-3">
-          <Link to="/evangelizacao" className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          <Link
+            to="/evangelizacao"
+            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          >
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div>
@@ -407,15 +467,17 @@ function ConfigurarMemoria() {
         <div className="flex gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
           <AlertCircle size={16} strokeWidth={1.5} className="shrink-0 mt-0.5" />
           <div>
-            Cada virtude aparece como <strong>dois cartões no jogo</strong>: um com o nome e outro com a imagem.
-            Sem imagem, o cartão fica com um fundo colorido.
-            Adicione imagens simples e coloridas, fáceis de reconhecer por crianças.
+            Cada virtude aparece como <strong>dois cartões no jogo</strong>: um com o nome e outro
+            com a imagem. Sem imagem, o cartão fica com um fundo colorido. Adicione imagens simples
+            e coloridas, fáceis de reconhecer por crianças.
           </div>
         </div>
 
         {/* Erro */}
         {erro && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{erro}</div>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            {erro}
+          </div>
         )}
 
         {/* Estado vazio — oferece carregar padrões */}
@@ -423,8 +485,12 @@ function ConfigurarMemoria() {
           <div className="text-center py-10 space-y-4 border-2 border-dashed border-gray-200 rounded-2xl">
             <ImageOff size={32} strokeWidth={1} className="text-gray-300 mx-auto" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Nenhuma virtude configurada para {sigla}</p>
-              <p className="text-xs text-gray-400 mt-1">Comece pelos padrões ou adicione uma por uma.</p>
+              <p className="text-sm font-medium text-gray-700">
+                Nenhuma virtude configurada para {sigla}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Comece pelos padrões ou adicione uma por uma.
+              </p>
             </div>
             <div className="flex justify-center gap-3 flex-wrap">
               <button
@@ -432,7 +498,11 @@ function ConfigurarMemoria() {
                 disabled={saving}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500 text-white text-sm font-medium hover:bg-cyan-600 disabled:opacity-40 transition-colors"
               >
-                {saving ? <Loader size={14} className="animate-spin" /> : <GripVertical size={14} />}
+                {saving ? (
+                  <Loader size={14} className="animate-spin" />
+                ) : (
+                  <GripVertical size={14} />
+                )}
                 Carregar 10 virtudes padrão
               </button>
               <button
@@ -458,12 +528,7 @@ function ConfigurarMemoria() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {virtudes.map((v) => (
-                <CardVirtude
-                  key={v.id}
-                  v={v}
-                  onSave={handleSave}
-                  onDelete={handleDelete}
-                />
+                <CardVirtude key={v.id} v={v} onSave={handleSave} onDelete={handleDelete} />
               ))}
             </div>
 

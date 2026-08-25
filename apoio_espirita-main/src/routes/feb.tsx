@@ -1,10 +1,44 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { Search, X, Download, ExternalLink, FileText, BookOpen, ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
+import {
+  Search,
+  X,
+  Download,
+  ExternalLink,
+  FileText,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BIBLIOTECA_LIVROS from "@/data/biblioteca-books.json";
 
 export const Route = createFileRoute("/feb")({
+  head: () => ({
+    meta: [
+      { title: "Biblioteca Espírita — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Acesse gratuitamente documentos, orientações, cartilhas e livros da Federação Espírita Brasileira (FEB) e outras publicações para estudo e evangelização.",
+      },
+      {
+        name: "keywords",
+        content:
+          "biblioteca espirita, livros espiritas pdf, livros feb, estudo espirita, evangelizacao infantil, apostilas espiritismo",
+      },
+      { property: "og:title", content: "Biblioteca Espírita — Apoio Espírita" },
+      {
+        property: "og:description",
+        content:
+          "Acesse gratuitamente documentos, orientações e livros da FEB e outras publicações espíritas.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/feb" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/feb" }],
+  }),
   component: Feb,
 });
 
@@ -31,19 +65,22 @@ const DOCUMENTOS: Documento[] = [
     arquivo: "WEB-Orientacao-ao-Centro-Espirita.pdf",
     titulo: "Orientação ao Centro Espírita",
     categoria: "Organização",
-    descricao: "Diretrizes para o funcionamento, a organização e a vida interna dos centros espíritas brasileiros.",
+    descricao:
+      "Diretrizes para o funcionamento, a organização e a vida interna dos centros espíritas brasileiros.",
   },
   {
     arquivo: "WEBPlanodeTrabalho.pdf",
     titulo: "Plano de Trabalho",
     categoria: "Organização",
-    descricao: "Modelo e orientações para a elaboração do plano de trabalho anual do centro espírita.",
+    descricao:
+      "Modelo e orientações para a elaboração do plano de trabalho anual do centro espírita.",
   },
   {
     arquivo: "WEB_Orientacao-para-o-AECE-2.-ed.-05-11-25.pdf",
     titulo: "Orientação para o AECE — 2ª Edição",
     categoria: "Organização",
-    descricao: "Orientações para o Atendimento Espírita de Comunidade e Evangelização — segunda edição revisada.",
+    descricao:
+      "Orientações para o Atendimento Espírita de Comunidade e Evangelização — segunda edição revisada.",
     ano: 2025,
   },
   {
@@ -62,7 +99,8 @@ const DOCUMENTOS: Documento[] = [
     arquivo: "WEB-Orientação-AEE-Infância-1.pdf",
     titulo: "Orientação à AEE — Infância (1ª Edição)",
     categoria: "Evangelização",
-    descricao: "Primeira edição das orientações para a evangelização espírita infantil nos centros.",
+    descricao:
+      "Primeira edição das orientações para a evangelização espírita infantil nos centros.",
   },
   {
     arquivo: "WEB-Orientação-à-Ação-Evangelizadora-Espírita-da-Juventude.pdf",
@@ -74,77 +112,101 @@ const DOCUMENTOS: Documento[] = [
     arquivo: "Introdução-ao-Estudo-do-Espiritismo-Estudo-da-Obra-Básica-22-02-19.pdf",
     titulo: "Introdução ao Estudo do Espiritismo — Obra Básica",
     categoria: "Estudo",
-    descricao: "Material introdutório ao estudo sistematizado da obra básica da codificação espírita.",
+    descricao:
+      "Material introdutório ao estudo sistematizado da obra básica da codificação espírita.",
     ano: 2019,
   },
   {
     arquivo: "WEB-Orientacao-a-Pratica-Mediunica-no-Centro-espirita.pdf",
     titulo: "Orientação à Prática Mediúnica no Centro Espírita",
     categoria: "Mediunidade",
-    descricao: "Diretrizes para a prática e o exercício responsável da mediunidade nos centros espíritas.",
+    descricao:
+      "Diretrizes para a prática e o exercício responsável da mediunidade nos centros espíritas.",
   },
   {
     arquivo: "WEBOrientacaoparaassistenciaespiritanossistemaspenais-2.pdf",
     titulo: "Orientação para a Assistência Espírita nos Sistemas Penais",
     categoria: "Assistência",
-    descricao: "Diretrizes para o trabalho fraterno de assistência espírita junto às pessoas privadas de liberdade.",
+    descricao:
+      "Diretrizes para o trabalho fraterno de assistência espírita junto às pessoas privadas de liberdade.",
   },
   {
     arquivo: "WEB-Familia-vida-e-paz.pdf",
     titulo: "Família, Vida e Paz",
     categoria: "Assistência",
-    descricao: "Orientações para o atendimento fraterno e espírita às famílias em situação de vulnerabilidade.",
+    descricao:
+      "Orientações para o atendimento fraterno e espírita às famílias em situação de vulnerabilidade.",
   },
   {
     arquivo: "2013-Orientação-à-Comunicação-Social-Espírita.pdf",
     titulo: "Orientação à Comunicação Social Espírita",
     categoria: "Comunicação",
-    descricao: "Diretrizes para a comunicação espírita nas mídias sociais, sites e demais canais de divulgação.",
+    descricao:
+      "Diretrizes para a comunicação espírita nas mídias sociais, sites e demais canais de divulgação.",
     ano: 2013,
   },
   {
     arquivo: "WEB-conscienciaecologica-26-06-23.pdf",
     titulo: "Consciência Ecológica",
     categoria: "Sustentabilidade",
-    descricao: "Reflexões e orientações sobre responsabilidade ambiental e cuidado com a criação sob a ótica espírita.",
+    descricao:
+      "Reflexões e orientações sobre responsabilidade ambiental e cuidado com a criação sob a ótica espírita.",
     ano: 2023,
   },
   {
     arquivo: "WEB-O-livro-espirita-e-a-sustentabilidade-do-movimento-espirita-2.pdf",
     titulo: "O Livro Espírita e a Sustentabilidade do Movimento Espírita",
     categoria: "Sustentabilidade",
-    descricao: "Análise sobre o papel do livro espírita como sustentáculo e instrumento de propagação da doutrina.",
+    descricao:
+      "Análise sobre o papel do livro espírita como sustentáculo e instrumento de propagação da doutrina.",
   },
 ];
 
 const CATEGORIAS: Categoria[] = [
-  "Todos", "Organização", "Evangelização", "Estudo",
-  "Mediunidade", "Assistência", "Comunicação", "Sustentabilidade",
+  "Todos",
+  "Organização",
+  "Evangelização",
+  "Estudo",
+  "Mediunidade",
+  "Assistência",
+  "Comunicação",
+  "Sustentabilidade",
 ];
 
-const ANOS = [...new Set(DOCUMENTOS.map((d) => d.ano).filter(Boolean) as number[])].sort((a, b) => b - a);
+const ANOS = [...new Set(DOCUMENTOS.map((d) => d.ano).filter(Boolean) as number[])].sort(
+  (a, b) => b - a,
+);
 
 const COR: Record<Exclude<Categoria, "Todos">, string> = {
-  Organização:     "bg-slate-100 text-slate-600 border-slate-200",
-  Evangelização:   "bg-violet-50 text-violet-600 border-violet-200",
-  Estudo:          "bg-cyan-50 text-cyan-700 border-cyan-200",
-  Mediunidade:     "bg-indigo-50 text-indigo-600 border-indigo-200",
-  Assistência:     "bg-emerald-50 text-emerald-600 border-emerald-200",
-  Comunicação:     "bg-amber-50 text-amber-600 border-amber-200",
-  Sustentabilidade:"bg-green-50 text-green-600 border-green-200",
+  Organização: "bg-slate-100 text-slate-600 border-slate-200",
+  Evangelização: "bg-violet-50 text-violet-600 border-violet-200",
+  Estudo: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  Mediunidade: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  Assistência: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  Comunicação: "bg-amber-50 text-amber-600 border-amber-200",
+  Sustentabilidade: "bg-green-50 text-green-600 border-green-200",
 };
 
 const COR_LIVROS: Record<string, string> = {
-  "Poesia / Crônica": "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-850",
-  "Mensagens / Diversos": "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-850",
-  "Estudos / Dissertações": "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-850",
-  "Romance Histórico": "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-850",
-  "Vida no Mundo Espiritual": "bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-850",
-  "Estudo do Evangelho": "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-850",
+  "Poesia / Crônica":
+    "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-850",
+  "Mensagens / Diversos":
+    "bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-850",
+  "Estudos / Dissertações":
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-850",
+  "Romance Histórico":
+    "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-850",
+  "Vida no Mundo Espiritual":
+    "bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-850",
+  "Estudo do Evangelho":
+    "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-850",
 };
 
 const getCorLivro = (cat: string) => {
-  return COR_LIVROS[cat] || "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-850";
+  return (
+    COR_LIVROS[cat] ||
+    "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/20 dark:text-slate-400 dark:border-slate-850"
+  );
 };
 
 const fileUrl = (arquivo: string, tipo?: string) =>
@@ -153,19 +215,27 @@ const fileUrl = (arquivo: string, tipo?: string) =>
     : `/feb/${encodeURIComponent(arquivo)}`;
 
 /* Componente de página individual — renderiza sob demanda via IntersectionObserver */
+type PDFDocumentProxy = Awaited<ReturnType<typeof import("pdfjs-dist").getDocument>["promise"]>;
+type PdfTextItem = { str: string; transform: number[]; width?: number; height?: number };
+type LivroBiblioteca = (typeof BIBLIOTECA_LIVROS)[number];
+type DocumentoBiblioteca = Documento | LivroBiblioteca;
+
 const PdfPage = forwardRef<
   HTMLDivElement,
   {
-    pdf: any;
+    pdf: PDFDocumentProxy;
     pageNum: number;
     baseWidth: number;
     baseHeight: number;
-    textItems: any[];
+    textItems: PdfTextItem[];
     escala: number;
     highlight: string | null;
     scrollRoot: React.RefObject<HTMLDivElement | null>;
   }
->(function PdfPage({ pdf, pageNum, baseWidth, baseHeight, textItems, escala, highlight, scrollRoot }, ref) {
+>(function PdfPage(
+  { pdf, pageNum, baseWidth, baseHeight, textItems, escala, highlight, scrollRoot },
+  ref,
+) {
   const divRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
@@ -180,8 +250,10 @@ const PdfPage = forwardRef<
     const el = divRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { root: scrollRoot.current ?? undefined, rootMargin: "400px" }
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { root: scrollRoot.current ?? undefined, rootMargin: "400px" },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -202,7 +274,7 @@ const PdfPage = forwardRef<
         canvas.height = viewport.height;
         const ctx = canvas.getContext("2d");
         if (!ctx || !active) return;
-        await pg.render({ canvasContext: ctx, viewport }).promise;
+        await pg.render({ canvas, canvasContext: ctx, viewport }).promise;
         if (!active || !highlight) return;
 
         // Destaca ocorrências da palavra pesquisada
@@ -218,10 +290,14 @@ const PdfPage = forwardRef<
           const h = ((item.height ?? 0) || Math.abs(item.transform[3] ?? 0)) * escala;
           if (w > 0 && h > 0) ctx.fillRect(cx, cy - h, w, h * 1.15);
         }
-      } catch { /* ignorar cancelamentos */ }
+      } catch {
+        /* ignorar cancelamentos */
+      }
     })();
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [pdf, pageNum, escala, visible, highlight, textItems, baseHeight]);
 
   return (
@@ -236,9 +312,11 @@ const PdfPage = forwardRef<
   );
 });
 
-function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
-  const [pdf, setPdf] = useState<any>(null);
-  const [pageData, setPageData] = useState<Array<{ width: number; height: number; items: any[] }>>([]);
+function VisualizadorPDF({ doc, onClose }: { doc: DocumentoBiblioteca; onClose: () => void }) {
+  const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
+  const [pageData, setPageData] = useState<
+    Array<{ width: number; height: number; items: PdfTextItem[] }>
+  >([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
   const [escala, setEscala] = useState(1.3);
@@ -254,33 +332,49 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
-    setCarregando(true); setErro(false); setPdf(null); setPageData([]);
-    setResultados([]); setBusca(""); setHighlight(null);
-    setPaginaAtual(1); setInputPagina("1");
+    setCarregando(true);
+    setErro(false);
+    setPdf(null);
+    setPageData([]);
+    setResultados([]);
+    setBusca("");
+    setHighlight(null);
+    setPaginaAtual(1);
+    setInputPagina("1");
 
     (async () => {
       try {
         const lib = await import("pdfjs-dist");
-        lib.GlobalWorkerOptions.workerSrc =
-          `https://unpkg.com/pdfjs-dist@${lib.version}/build/pdf.worker.min.mjs`;
+        lib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${lib.version}/build/pdf.worker.min.mjs`;
         const pdfDoc = await lib.getDocument(fileUrl(doc.arquivo, tipo)).promise;
         if (cancelled) return;
         setPdf(pdfDoc);
-        const data: Array<{ width: number; height: number; items: any[] }> = [];
+        const data: Array<{ width: number; height: number; items: PdfTextItem[] }> = [];
         for (let i = 1; i <= pdfDoc.numPages; i++) {
           if (cancelled) return;
           const pg = await pdfDoc.getPage(i);
           const vp = pg.getViewport({ scale: 1 });
           const tc = await pg.getTextContent();
-          data.push({ width: vp.width, height: vp.height, items: tc.items });
+          const itensDeTexto = (tc.items as unknown as PdfTextItem[]).filter(
+            (it) => typeof it.str === "string" && Array.isArray(it.transform),
+          );
+          data.push({ width: vp.width, height: vp.height, items: itensDeTexto });
         }
-        if (!cancelled) { setPageData(data); setCarregando(false); }
+        if (!cancelled) {
+          setPageData(data);
+          setCarregando(false);
+        }
       } catch {
-        if (!cancelled) { setErro(true); setCarregando(false); }
+        if (!cancelled) {
+          setErro(true);
+          setCarregando(false);
+        }
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [doc.arquivo, tipo]);
 
   // Atualiza contador de página com base no scroll
@@ -299,17 +393,24 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
           setInputPagina(String(pg));
         }
       },
-      { root, threshold: [0, 0.25, 0.5, 0.75, 1.0] }
+      { root, threshold: [0, 0.25, 0.5, 0.75, 1.0] },
     );
-    pageRefs.current.forEach((el) => { if (el) obs.observe(el); });
+    pageRefs.current.forEach((el) => {
+      if (el) obs.observe(el);
+    });
     return () => obs.disconnect();
   }, [pageData]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
   }, [onClose]);
 
   const goToPagina = (n: number) => {
@@ -320,15 +421,21 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
   const handleBuscar = () => {
     const termo = busca.trim().toLowerCase();
     setHighlight(null);
-    if (!termo) { setResultados([]); return; }
+    if (!termo) {
+      setResultados([]);
+      return;
+    }
     const found = pageData
       .map((p, i) => {
-        const texto = p.items.map((it: any) => it.str ?? "").join(" ");
+        const texto = p.items.map((it) => it.str ?? "").join(" ");
         if (!texto.toLowerCase().includes(termo)) return null;
         const idx = texto.toLowerCase().indexOf(termo);
         const s = Math.max(0, idx - 50);
         const e = Math.min(texto.length, idx + termo.length + 50);
-        return { pagina: i + 1, trecho: (s > 0 ? "…" : "") + texto.slice(s, e) + (e < texto.length ? "…" : "") };
+        return {
+          pagina: i + 1,
+          trecho: (s > 0 ? "…" : "") + texto.slice(s, e) + (e < texto.length ? "…" : ""),
+        };
       })
       .filter(Boolean) as Array<{ pagina: number; trecho: string }>;
     setResultados(found);
@@ -340,22 +447,29 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
   };
 
   const totalPaginas = pageData.length;
-  const btnCls = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0 disabled:opacity-30";
+  const btnCls =
+    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-gray-700 transition-colors shrink-0 disabled:opacity-30";
 
   return (
     <div className="fixed inset-0 z-200 flex flex-col bg-gray-900">
-
       {/* Barra 1 — título, navegação, zoom, ações */}
       <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 border-b border-gray-700 shrink-0 flex-wrap">
         <FileText size={15} strokeWidth={1.5} className="text-gray-400 shrink-0" />
         <p className="text-sm font-medium text-white truncate flex-1 min-w-0">{doc.titulo}</p>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" onClick={() => goToPagina(paginaAtual - 1)} disabled={paginaAtual <= 1 || carregando} className={btnCls}>
+          <button
+            type="button"
+            onClick={() => goToPagina(paginaAtual - 1)}
+            disabled={paginaAtual <= 1 || carregando}
+            className={btnCls}
+          >
             <ChevronLeft size={14} strokeWidth={2} />
           </button>
           <input
-            type="number" min={1} max={totalPaginas || 1}
+            type="number"
+            min={1}
+            max={totalPaginas || 1}
             value={inputPagina}
             onChange={(e) => setInputPagina(e.target.value)}
             onBlur={() => goToPagina(Number(inputPagina))}
@@ -364,17 +478,34 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
             className="w-11 text-center bg-gray-700 rounded px-1 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500"
           />
           <span className="text-xs text-gray-500 mr-1">/ {totalPaginas || "—"}</span>
-          <button type="button" onClick={() => goToPagina(paginaAtual + 1)} disabled={paginaAtual >= totalPaginas || carregando} className={btnCls}>
+          <button
+            type="button"
+            onClick={() => goToPagina(paginaAtual + 1)}
+            disabled={paginaAtual >= totalPaginas || carregando}
+            className={btnCls}
+          >
             <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))} className={btnCls} title="Diminuir zoom">
+          <button
+            type="button"
+            onClick={() => setEscala((s) => Math.max(0.5, Math.round((s - 0.2) * 10) / 10))}
+            className={btnCls}
+            title="Diminuir zoom"
+          >
             <Minus size={14} strokeWidth={2} />
           </button>
-          <span className="text-xs text-gray-400 w-12 text-center select-none">{Math.round(escala * 100)}%</span>
-          <button type="button" onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))} className={btnCls} title="Aumentar zoom">
+          <span className="text-xs text-gray-400 w-12 text-center select-none">
+            {Math.round(escala * 100)}%
+          </span>
+          <button
+            type="button"
+            onClick={() => setEscala((s) => Math.min(3, Math.round((s + 0.2) * 10) / 10))}
+            className={btnCls}
+            title="Aumentar zoom"
+          >
             <Plus size={14} strokeWidth={2} />
           </button>
         </div>
@@ -382,7 +513,12 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
         <a href={fileUrl(doc.arquivo, tipo)} download={doc.arquivo} className={btnCls}>
           <Download size={13} strokeWidth={1.5} /> Baixar
         </a>
-        <a href={fileUrl(doc.arquivo, tipo)} target="_blank" rel="noopener noreferrer" className={btnCls}>
+        <a
+          href={fileUrl(doc.arquivo, tipo)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={btnCls}
+        >
           <ExternalLink size={13} strokeWidth={1.5} /> Nova aba
         </a>
         <button type="button" onClick={onClose} className={`${btnCls} hover:bg-red-900/40`}>
@@ -394,13 +530,19 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
       <div className="shrink-0 bg-gray-800 border-b border-gray-600 px-4 py-3">
         <div className="flex items-center gap-2 max-w-2xl">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
             <input
               autoFocus
               type="text"
               placeholder={
-                pageData.length > 0 ? "Buscar palavras no documento… (Enter)" :
-                carregando ? "Aguardando carregamento…" : "Indexando páginas…"
+                pageData.length > 0
+                  ? "Buscar palavras no documento… (Enter)"
+                  : carregando
+                    ? "Aguardando carregamento…"
+                    : "Indexando páginas…"
               }
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
@@ -408,12 +550,18 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
               className="w-full bg-gray-700 border border-gray-500 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
-          <button type="button" onClick={handleBuscar} disabled={!busca.trim() || pageData.length === 0}
-            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-30 transition-colors shrink-0">
+          <button
+            type="button"
+            onClick={handleBuscar}
+            disabled={!busca.trim() || pageData.length === 0}
+            className="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-500 disabled:opacity-30 transition-colors shrink-0"
+          >
             Buscar
           </button>
           {pageData.length > 0 && !busca.trim() && (
-            <span className="text-xs text-gray-600 shrink-0 hidden sm:inline">{pageData.length} págs. indexadas</span>
+            <span className="text-xs text-gray-600 shrink-0 hidden sm:inline">
+              {pageData.length} págs. indexadas
+            </span>
           )}
           {busca.trim() && resultados.length === 0 && pageData.length > 0 && (
             <span className="text-xs text-gray-500 shrink-0">Sem resultados</span>
@@ -426,14 +574,29 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
               <span className="text-[11px] text-gray-300 font-medium">
                 {resultados.length} página{resultados.length > 1 ? "s" : ""} com "{busca}"
               </span>
-              <button type="button" onClick={() => { setResultados([]); setBusca(""); setHighlight(null); }}
-                className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">Limpar</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setResultados([]);
+                  setBusca("");
+                  setHighlight(null);
+                }}
+                className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Limpar
+              </button>
             </div>
             <div className="max-h-40 overflow-y-auto divide-y divide-gray-700 bg-gray-800">
               {resultados.map(({ pagina: p, trecho }) => (
-                <button key={p} type="button" onClick={() => irParaResultado(p)}
-                  className={`w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-baseline gap-2 ${highlight?.pagina === p ? "bg-cyan-900/30" : ""}`}>
-                  <span className={`text-[11px] font-bold shrink-0 ${highlight?.pagina === p ? "text-cyan-400" : "text-gray-300"}`}>
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => irParaResultado(p)}
+                  className={`w-full text-left px-3 py-2 hover:bg-gray-700 transition-colors flex items-baseline gap-2 ${highlight?.pagina === p ? "bg-cyan-900/30" : ""}`}
+                >
+                  <span
+                    className={`text-[11px] font-bold shrink-0 ${highlight?.pagina === p ? "text-cyan-400" : "text-gray-300"}`}
+                  >
                     Pág. {p}
                   </span>
                   <span className="text-[11px] text-gray-500 truncate">{trecho}</span>
@@ -455,7 +618,12 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
         {erro && (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
             <span className="text-sm">Não foi possível carregar este documento.</span>
-            <a href={fileUrl(doc.arquivo, tipo)} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:underline">
+            <a
+              href={fileUrl(doc.arquivo, tipo)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-cyan-400 hover:underline"
+            >
               Abrir em nova aba
             </a>
           </div>
@@ -465,8 +633,10 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
             {pageData.map((p, i) => (
               <PdfPage
                 key={`${doc.arquivo}-${i}`}
-                ref={(el) => { pageRefs.current[i] = el; }}
-                pdf={pdf}
+                ref={(el) => {
+                  pageRefs.current[i] = el;
+                }}
+                pdf={pdf!}
                 pageNum={i + 1}
                 baseWidth={p.width}
                 baseHeight={p.height}
@@ -486,12 +656,12 @@ function VisualizadorPDF({ doc, onClose }: { doc: any; onClose: () => void }) {
 function Feb() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
-  
+
   // Controle de Abas
   const [abaAtiva, setAbaAtiva] = useState<"feb" | "biblioteca">("feb");
-  
+
   // Documento aberto no leitor (Documento FEB ou Livro Chico Xavier)
-  const [docAberto, setDocAberto] = useState<any | null>(null);
+  const [docAberto, setDocAberto] = useState<DocumentoBiblioteca | null>(null);
 
   // Filtros - Aba FEB (originais)
   const [busca, setBusca] = useState("");
@@ -504,11 +674,22 @@ function Feb() {
   const [autorEspiritual, setAutorEspiritual] = useState<string>("Todos");
 
   // Autores e Categorias dinâmicas extraídas dos livros de Chico Xavier
-  const AUTORES_ESPIRITUAIS = ["Todos", ...new Set(BIBLIOTECA_LIVROS.map((l) => l.autorEspiritual))].sort();
+  const AUTORES_ESPIRITUAIS = [
+    "Todos",
+    ...new Set(BIBLIOTECA_LIVROS.map((l) => l.autorEspiritual)),
+  ].sort();
   const CATEGORIAS_LIVROS = ["Todos", ...new Set(BIBLIOTECA_LIVROS.map((l) => l.categoria))].sort();
 
   useEffect(() => {
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade)) {
+    if (
+      !loading &&
+      user &&
+      (!profile?.sigla_casa ||
+        !profile?.nome ||
+        !profile?.cargo_principal ||
+        !profile?.uf ||
+        !profile?.cidade)
+    ) {
       navigate({ to: "/completar-perfil" });
     }
   }, [user, profile, loading, navigate]);
@@ -518,7 +699,8 @@ function Feb() {
   // Filtragem - Aba FEB
   const termo = busca.trim().toLowerCase();
   const filtrados = DOCUMENTOS.filter((d) => {
-    const matchBusca = !termo || d.titulo.toLowerCase().includes(termo) || d.descricao.toLowerCase().includes(termo);
+    const matchBusca =
+      !termo || d.titulo.toLowerCase().includes(termo) || d.descricao.toLowerCase().includes(termo);
     const matchCategoria = categoria === "Todos" || d.categoria === categoria;
     const matchAno = !ano || d.ano === ano;
     return matchBusca && matchCategoria && matchAno;
@@ -539,301 +721,145 @@ function Feb() {
 
   return (
     <>
-    {docAberto && <VisualizadorPDF doc={docAberto} onClose={() => setDocAberto(null)} />}
-    <main className="page-light min-h-screen px-6 pt-20 pb-20">
-      <div className="mx-auto max-w-4xl">
-
-        {/* Header */}
-        <div className="flex items-start justify-between mb-10 flex-wrap gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">
-              {abaAtiva === "feb" ? "Federação Espírita Brasileira" : "Obras Clássicas e Livros"}
-            </p>
-            <h1 className="text-3xl font-light text-foreground">Biblioteca</h1>
-            <p className="mt-2 text-sm text-muted-foreground font-light">
-              {abaAtiva === "feb"
-                ? "Documentos e orientações oficiais da FEB disponíveis para consulta e download."
-                : "Acervo de obras psicografadas por Chico Xavier de livre distribuição para estudos fraternos."}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate({ to: user ? "/inicio" : "/" })}
-            className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          >
-            ← Voltar
-          </button>
-        </div>
-
-        {/* Seletor de Abas Premium */}
-        <div className="flex border border-gray-200/80 dark:border-white/10 mb-10 p-1 bg-gray-100/50 dark:bg-white/5 rounded-2xl max-w-md mx-auto shadow-sm">
-          <button
-            onClick={() => setAbaAtiva("feb")}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
-              abaAtiva === "feb"
-                ? "bg-white dark:bg-gray-800 text-[#004a8c] dark:text-cyan-glow shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <FileText size={14} />
-            Orientações FEB
-          </button>
-          <button
-            onClick={() => setAbaAtiva("biblioteca")}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
-              abaAtiva === "biblioteca"
-                ? "bg-white dark:bg-gray-800 text-[#004a8c] dark:text-cyan-glow shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <BookOpen size={14} />
-            Obras & Livros
-          </button>
-        </div>
-
-        {/* --- CONTEÚDO DA ABA 1: FEB --- */}
-        {abaAtiva === "feb" && (
-          <div className="sw-rise sw-rise-2">
-            {/* Nota fraternal */}
-            <div className="glass rounded-3xl p-8 mb-10 border-l-4 border-l-cyan-glow/40">
-              <p className="text-xs uppercase tracking-[0.3em] text-cyan-glow mb-4">Uma palavra com o coração</p>
-              <div className="space-y-4 text-sm text-muted-foreground font-light leading-relaxed">
-                <p>
-                  Com amor e reverência, disponibilizamos aqui documentos publicados pela{" "}
-                  <strong className="text-foreground font-medium">Federação Espírita Brasileira — FEB</strong>.
-                </p>
-                <p>
-                  O Apoio Espírita é uma plataforma independente, sem qualquer vínculo institucional, financeiro
-                  ou hierárquico com a FEB. Não somos representantes, porta-vozes nem filiados da Federação,
-                  e não temos autoridade para falar em seu nome.
-                </p>
-                <p>
-                  No entanto, reconhecemos com gratidão e humildade que a FEB é a instituição que, há mais de
-                  um século, dedica-se com amor e perseverança a orientar, unir e fortalecer o movimento espírita
-                  no Brasil. Suas diretrizes norteiam a vida dos centros espíritas de todo o país — inclusive,
-                  em espírito, as práticas que buscamos cultivar nesta plataforma. Somos, em toda a extensão da
-                  palavra, subordinados à sua orientação.
-                </p>
-                <p>
-                  Disponibilizamos estes documentos não como concorrentes ou substitutos do site oficial da Federação
-                  — que pode e deve ser acessado em{" "}
-                  <a
-                    href="https://www.febnet.org.br"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-glow hover:underline"
-                  >
-                    febnet.org.br
-                  </a>{" "}
-                  —, mas como um serviço fraterno para facilitar o acesso da comunidade espírita a orientações
-                  já publicadas e de acesso público.
-                </p>
-                <p className="italic text-muted-foreground/70">
-                  Caso a Federação Espírita Brasileira, seus dirigentes ou representantes autorizados entendam que
-                  esta página não deve existir ou que algum documento não deve ser aqui disponibilizado, atenderemos
-                  prontamente e com alegria — pois reconhecemos nessa posição a mesma vontade que nos move: servir
-                  ao Espiritismo com amor, ética e verdade. Para isso, basta entrar em contato pelo formulário de
-                  sugestões no rodapé desta página.
-                </p>
-              </div>
-            </div>
-
-            {/* Filtros */}
-            <div className="space-y-4 mb-8">
-              {/* Busca */}
-              <div className="relative">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Buscar por título ou tema…"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
-                />
-                {busca && (
-                  <button
-                    onClick={() => setBusca("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                  >
-                    <X size={15} />
-                  </button>
-                )}
-              </div>
-
-              {/* Categorias */}
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIAS.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCategoria(c)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                      categoria === c
-                        ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                        : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-
-              {/* Filtro de ano */}
-              {ANOS.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-muted-foreground/50 uppercase tracking-widest">Ano:</span>
-                  <button
-                    onClick={() => setAno(null)}
-                    className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
-                      !ano
-                        ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                        : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                    }`}
-                  >
-                    Todos
-                  </button>
-                  {ANOS.map((a) => (
-                    <button
-                      key={a}
-                      onClick={() => setAno(a === ano ? null : a)}
-                      className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
-                        ano === a
-                          ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
-                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                      }`}
-                    >
-                      {a}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Contador */}
-            <p className="text-xs text-muted-foreground/50 mb-5">
-              {filtrados.length === 0
-                ? "Nenhum documento encontrado."
-                : `${filtrados.length} documento${filtrados.length > 1 ? "s" : ""} encontrado${filtrados.length > 1 ? "s" : ""}`}
-            </p>
-
-            <div className="space-y-3">
-              {filtrados.map((doc) => (
-                <div
-                  key={doc.arquivo}
-                  className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300"
-                >
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-cyan-50/50 border border-cyan-150 flex items-center justify-center mt-0.5">
-                    <FileText size={18} strokeWidth={1.5} className="text-cyan-700/60" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        <h3 className="text-sm font-medium text-foreground leading-snug">{doc.titulo}</h3>
-                        <p className="text-xs text-muted-foreground/60 mt-1 font-light leading-relaxed">{doc.descricao}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                        {doc.ano && (
-                          <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">{doc.ano}</span>
-                        )}
-                        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${COR[doc.categoria]}`}>
-                          {doc.categoria}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-4">
-                      <button
-                        onClick={() => setDocAberto(doc)}
-                        className="flex items-center gap-1.5 text-xs text-cyan-glow hover:text-cyan-glow/70 transition-colors cursor-pointer"
-                      >
-                        <BookOpen size={13} strokeWidth={1.5} />
-                        Ler aqui
-                      </button>
-                      <a
-                        href={fileUrl(doc.arquivo, "feb")}
-                        download={doc.arquivo}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
-                      >
-                        <Download size={13} strokeWidth={1.5} />
-                        Baixar PDF
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Rodapé FEB */}
-            <div className="mt-12 pt-8 border-t border-white/5 text-center space-y-2">
-              <p className="text-xs text-muted-foreground/40 font-light">
-                Todos os documentos pertencem à Federação Espírita Brasileira e são reproduzidos aqui com fins exclusivamente fraternos e educativos.
+      {docAberto && <VisualizadorPDF doc={docAberto} onClose={() => setDocAberto(null)} />}
+      <main className="page-light min-h-screen px-6 pt-20 pb-20">
+        <div className="mx-auto max-w-4xl">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-10 flex-wrap gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-2">
+                {abaAtiva === "feb" ? "Federação Espírita Brasileira" : "Obras Clássicas e Livros"}
               </p>
-              <a
-                href="https://www.febnet.org.br"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-cyan-glow/60 hover:text-cyan-glow transition-colors font-medium"
-              >
-                <ExternalLink size={12} />
-                Acessar o site oficial da FEB — febnet.org.br
-              </a>
+              <h1 className="text-3xl font-light text-foreground">Biblioteca</h1>
+              <p className="mt-2 text-sm text-muted-foreground font-light">
+                {abaAtiva === "feb"
+                  ? "Documentos e orientações oficiais da FEB disponíveis para consulta e download."
+                  : "Acervo de obras psicografadas por Chico Xavier de livre distribuição para estudos fraternos."}
+              </p>
             </div>
+            <button
+              onClick={() => navigate({ to: user ? "/inicio" : "/" })}
+              className="text-xs uppercase tracking-widest text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            >
+              ← Voltar
+            </button>
           </div>
-        )}
 
-        {/* --- CONTEÚDO DA ABA 2: OBRAS & LIVROS (CHICO XAVIER) --- */}
-        {abaAtiva === "biblioteca" && (
-          <div className="sw-rise sw-rise-2">
-            {/* Nota fraternal dos livros */}
-            <div className="glass rounded-3xl p-8 mb-10 border-l-4 border-l-emerald-500/40 bg-emerald-50/5 dark:bg-emerald-950/10">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400 mb-4 font-semibold">Mensagem Fraterna</p>
-              <div className="space-y-4 text-sm text-muted-foreground font-light leading-relaxed">
-                <p>
-                  "O livro espírita é um companheiro silencioso que esclarece sem ferir, orienta sem impor e consola sem cobrar."
+          {/* Seletor de Abas Premium */}
+          <div className="flex border border-gray-200/80 dark:border-white/10 mb-10 p-1 bg-gray-100/50 dark:bg-white/5 rounded-2xl max-w-md mx-auto shadow-sm">
+            <button
+              onClick={() => setAbaAtiva("feb")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                abaAtiva === "feb"
+                  ? "bg-white dark:bg-gray-800 text-[#004a8c] dark:text-cyan-glow shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <FileText size={14} />
+              Orientações FEB
+            </button>
+            <button
+              onClick={() => setAbaAtiva("biblioteca")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                abaAtiva === "biblioteca"
+                  ? "bg-white dark:bg-gray-800 text-[#004a8c] dark:text-cyan-glow shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BookOpen size={14} />
+              Obras & Livros
+            </button>
+          </div>
+
+          {/* --- CONTEÚDO DA ABA 1: FEB --- */}
+          {abaAtiva === "feb" && (
+            <div className="sw-rise sw-rise-2">
+              {/* Nota fraternal */}
+              <div className="glass rounded-3xl p-8 mb-10 border-l-4 border-l-cyan-glow/40">
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-glow mb-4">
+                  Uma palavra com o coração
                 </p>
-                <p>
-                  Disponibilizamos aqui, de forma totalmente gratuita e para fins de estudo, obras psicografadas pelo saudoso médium{" "}
-                  <strong className="text-foreground font-medium">Francisco Cândido Xavier (Chico Xavier)</strong>. 
-                  São páginas luminosas ditadas por benfeitores espirituais como Emmanuel, André Luiz, Humberto de Campos, Casimiro Cunha e outros.
-                </p>
-                <p className="italic text-muted-foreground/70">
-                  A leitura dignificadora é luz para o caminho da alma. Sinta-se convidado a realizar a leitura diretamente na plataforma ou a baixar as obras.
-                </p>
+                <div className="space-y-4 text-sm text-muted-foreground font-light leading-relaxed">
+                  <p>
+                    Com amor e reverência, disponibilizamos aqui documentos publicados pela{" "}
+                    <strong className="text-foreground font-medium">
+                      Federação Espírita Brasileira — FEB
+                    </strong>
+                    .
+                  </p>
+                  <p>
+                    O Apoio Espírita é uma plataforma independente, sem qualquer vínculo
+                    institucional, financeiro ou hierárquico com a FEB. Não somos representantes,
+                    porta-vozes nem filiados da Federação, e não temos autoridade para falar em seu
+                    nome.
+                  </p>
+                  <p>
+                    No entanto, reconhecemos com gratidão e humildade que a FEB é a instituição que,
+                    há mais de um século, dedica-se com amor e perseverança a orientar, unir e
+                    fortalecer o movimento espírita no Brasil. Suas diretrizes norteiam a vida dos
+                    centros espíritas de todo o país — inclusive, em espírito, as práticas que
+                    buscamos cultivar nesta plataforma. Somos, em toda a extensão da palavra,
+                    subordinados à sua orientação.
+                  </p>
+                  <p>
+                    Disponibilizamos estes documentos não como concorrentes ou substitutos do site
+                    oficial da Federação — que pode e deve ser acessado em{" "}
+                    <a
+                      href="https://www.febnet.org.br"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-glow hover:underline"
+                    >
+                      febnet.org.br
+                    </a>{" "}
+                    —, mas como um serviço fraterno para facilitar o acesso da comunidade espírita a
+                    orientações já publicadas e de acesso público.
+                  </p>
+                  <p className="italic text-muted-foreground/70">
+                    Caso a Federação Espírita Brasileira, seus dirigentes ou representantes
+                    autorizados entendam que esta página não deve existir ou que algum documento não
+                    deve ser aqui disponibilizado, atenderemos prontamente e com alegria — pois
+                    reconhecemos nessa posição a mesma vontade que nos move: servir ao Espiritismo
+                    com amor, ética e verdade. Para isso, basta entrar em contato pelo formulário de
+                    sugestões no rodapé desta página.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Filtros Livros */}
-            <div className="space-y-4 mb-8">
-              {/* Busca */}
-              <div className="relative">
-                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Buscar por título, autor espiritual ou tema do livro..."
-                  value={buscaLivros}
-                  onChange={(e) => setBuscaLivros(e.target.value)}
-                  className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
-                />
-                {buscaLivros && (
-                  <button
-                    onClick={() => setBuscaLivros("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                  >
-                    <X size={15} />
-                  </button>
-                )}
-              </div>
+              {/* Filtros */}
+              <div className="space-y-4 mb-8">
+                {/* Busca */}
+                <div className="relative">
+                  <Search
+                    size={15}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Buscar por título ou tema…"
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
+                  />
+                  {busca && (
+                    <button
+                      onClick={() => setBusca("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
 
-              {/* Categorias / Séries */}
-              <div className="space-y-2">
-                <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest block font-medium">Série / Coleção:</span>
+                {/* Categorias */}
                 <div className="flex flex-wrap gap-2">
-                  {CATEGORIAS_LIVROS.map((c) => (
+                  {CATEGORIAS.map((c) => (
                     <button
                       key={c}
-                      onClick={() => setCategoriaLivro(c)}
+                      onClick={() => setCategoria(c)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                        categoriaLivro === c
-                          ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
+                        categoria === c
+                          ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
                           : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
@@ -841,101 +867,299 @@ function Feb() {
                     </button>
                   ))}
                 </div>
-              </div>
 
-              {/* Autor Espiritual */}
-              <div className="space-y-2">
-                <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest block font-medium">Autor Espiritual:</span>
-                <div className="flex flex-wrap gap-2">
-                  {AUTORES_ESPIRITUAIS.map((a) => (
+                {/* Filtro de ano */}
+                {ANOS.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground/50 uppercase tracking-widest">
+                      Ano:
+                    </span>
                     <button
-                      key={a}
-                      onClick={() => setAutorEspiritual(a)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                        autorEspiritual === a
+                      onClick={() => setAno(null)}
+                      className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
+                        !ano
                           ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
                           : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
-                      {a}
+                      Todos
                     </button>
-                  ))}
-                </div>
+                    {ANOS.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => setAno(a === ano ? null : a)}
+                        className={`px-3 py-1 rounded-full text-xs border transition-colors cursor-pointer ${
+                          ano === a
+                            ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
+                            : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Contador */}
+              <p className="text-xs text-muted-foreground/50 mb-5">
+                {filtrados.length === 0
+                  ? "Nenhum documento encontrado."
+                  : `${filtrados.length} documento${filtrados.length > 1 ? "s" : ""} encontrado${filtrados.length > 1 ? "s" : ""}`}
+              </p>
+
+              <div className="space-y-3">
+                {filtrados.map((doc) => (
+                  <div
+                    key={doc.arquivo}
+                    className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-cyan-50/50 border border-cyan-150 flex items-center justify-center mt-0.5">
+                      <FileText size={18} strokeWidth={1.5} className="text-cyan-700/60" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          <h3 className="text-sm font-medium text-foreground leading-snug">
+                            {doc.titulo}
+                          </h3>
+                          <p className="text-xs text-muted-foreground/60 mt-1 font-light leading-relaxed">
+                            {doc.descricao}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                          {doc.ano && (
+                            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">
+                              {doc.ano}
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${COR[doc.categoria]}`}
+                          >
+                            {doc.categoria}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={() => setDocAberto(doc)}
+                          className="flex items-center gap-1.5 text-xs text-cyan-glow hover:text-cyan-glow/70 transition-colors cursor-pointer"
+                        >
+                          <BookOpen size={13} strokeWidth={1.5} />
+                          Ler aqui
+                        </button>
+                        <a
+                          href={fileUrl(doc.arquivo, "feb")}
+                          download={doc.arquivo}
+                          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+                        >
+                          <Download size={13} strokeWidth={1.5} />
+                          Baixar PDF
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Rodapé FEB */}
+              <div className="mt-12 pt-8 border-t border-white/5 text-center space-y-2">
+                <p className="text-xs text-muted-foreground/40 font-light">
+                  Todos os documentos pertencem à Federação Espírita Brasileira e são reproduzidos
+                  aqui com fins exclusivamente fraternos e educativos.
+                </p>
+                <a
+                  href="https://www.febnet.org.br"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-cyan-glow/60 hover:text-cyan-glow transition-colors font-medium"
+                >
+                  <ExternalLink size={12} />
+                  Acessar o site oficial da FEB — febnet.org.br
+                </a>
               </div>
             </div>
+          )}
 
-            {/* Contador de Livros */}
-            <p className="text-xs text-muted-foreground/50 mb-5">
-              {filtradosLivros.length === 0
-                ? "Nenhum livro encontrado."
-                : `${filtradosLivros.length} livro${filtradosLivros.length > 1 ? "s" : ""} encontrado${filtradosLivros.length > 1 ? "s" : ""}`}
-            </p>
+          {/* --- CONTEÚDO DA ABA 2: OBRAS & LIVROS (CHICO XAVIER) --- */}
+          {abaAtiva === "biblioteca" && (
+            <div className="sw-rise sw-rise-2">
+              {/* Nota fraternal dos livros */}
+              <div className="glass rounded-3xl p-8 mb-10 border-l-4 border-l-emerald-500/40 bg-emerald-50/5 dark:bg-emerald-950/10">
+                <p className="text-xs uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400 mb-4 font-semibold">
+                  Mensagem Fraterna
+                </p>
+                <div className="space-y-4 text-sm text-muted-foreground font-light leading-relaxed">
+                  <p>
+                    "O livro espírita é um companheiro silencioso que esclarece sem ferir, orienta
+                    sem impor e consola sem cobrar."
+                  </p>
+                  <p>
+                    Disponibilizamos aqui, de forma totalmente gratuita e para fins de estudo, obras
+                    psicografadas pelo saudoso médium{" "}
+                    <strong className="text-foreground font-medium">
+                      Francisco Cândido Xavier (Chico Xavier)
+                    </strong>
+                    . São páginas luminosas ditadas por benfeitores espirituais como Emmanuel, André
+                    Luiz, Humberto de Campos, Casimiro Cunha e outros.
+                  </p>
+                  <p className="italic text-muted-foreground/70">
+                    A leitura dignificadora é luz para o caminho da alma. Sinta-se convidado a
+                    realizar a leitura diretamente na plataforma ou a baixar as obras.
+                  </p>
+                </div>
+              </div>
 
-            {/* Lista de Livros */}
-            <div className="space-y-3">
-              {filtradosLivros.map((livro) => (
-                <div
-                  key={livro.arquivo}
-                  className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300 hover-premium"
-                >
-                  <div className="shrink-0 w-10 h-10 rounded-xl bg-emerald-50/70 border border-emerald-250 flex items-center justify-center mt-0.5">
-                    <BookOpen size={18} strokeWidth={1.5} className="text-emerald-700" />
-                  </div>
+              {/* Filtros Livros */}
+              <div className="space-y-4 mb-8">
+                {/* Busca */}
+                <div className="relative">
+                  <Search
+                    size={15}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/45 pointer-events-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Buscar por título, autor espiritual ou tema do livro..."
+                    value={buscaLivros}
+                    onChange={(e) => setBuscaLivros(e.target.value)}
+                    className="w-full rounded-xl bg-white border border-gray-250 pl-10 pr-10 py-3 text-sm text-foreground placeholder-gray-400 focus:outline-none focus:border-cyan-glow/60 transition-colors"
+                  />
+                  {buscaLivros && (
+                    <button
+                      onClick={() => setBuscaLivros("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        <h3 className="text-sm font-medium text-foreground leading-snug flex items-center gap-2">
-                          {livro.titulo}
-                        </h3>
-                        <p className="text-xs text-muted-foreground/60 mt-1 font-light leading-relaxed">{livro.descricao}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                        {livro.ano && (
-                          <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">{livro.ano}</span>
-                        )}
-                        <span className="text-[10px] text-cyan-glow font-medium uppercase tracking-wider bg-cyan-glow/5 border border-cyan-glow/10 px-2 py-0.5 rounded-full">
-                          {livro.autorEspiritual}
-                        </span>
-                        <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${getCorLivro(livro.categoria)}`}>
-                          {livro.categoria}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-4">
+                {/* Categorias / Séries */}
+                <div className="space-y-2">
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest block font-medium">
+                    Série / Coleção:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORIAS_LIVROS.map((c) => (
                       <button
-                        onClick={() => setDocAberto(livro)}
-                        className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-600/70 dark:text-emerald-400 dark:hover:text-emerald-400/70 transition-colors font-semibold cursor-pointer"
+                        key={c}
+                        onClick={() => setCategoriaLivro(c)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
+                          categoriaLivro === c
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
+                            : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                        }`}
                       >
-                        <BookOpen size={13} strokeWidth={1.5} />
-                        Ler aqui
+                        {c}
                       </button>
-                      <a
-                        href={fileUrl(livro.arquivo, "biblioteca")}
-                        download={livro.arquivo}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-foreground transition-colors font-medium"
-                      >
-                        <Download size={13} strokeWidth={1.5} />
-                        Baixar PDF
-                      </a>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Rodapé Livros */}
-            <div className="mt-12 pt-8 border-t border-white/5 text-center space-y-2">
-              <p className="text-xs text-muted-foreground/40 font-light">
-                Obras psicografadas pelo médium Francisco Cândido Xavier. Direitos autorais cedidos a instituições filantrópicas conforme orientação do próprio médium.
+                {/* Autor Espiritual */}
+                <div className="space-y-2">
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-widest block font-medium">
+                    Autor Espiritual:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {AUTORES_ESPIRITUAIS.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => setAutorEspiritual(a)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
+                          autorEspiritual === a
+                            ? "bg-cyan-glow/10 text-cyan-glow border-cyan-glow/40"
+                            : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contador de Livros */}
+              <p className="text-xs text-muted-foreground/50 mb-5">
+                {filtradosLivros.length === 0
+                  ? "Nenhum livro encontrado."
+                  : `${filtradosLivros.length} livro${filtradosLivros.length > 1 ? "s" : ""} encontrado${filtradosLivros.length > 1 ? "s" : ""}`}
               </p>
-            </div>
-          </div>
-        )}
 
-      </div>
-    </main>
+              {/* Lista de Livros */}
+              <div className="space-y-3">
+                {filtradosLivros.map((livro) => (
+                  <div
+                    key={livro.arquivo}
+                    className="glass rounded-2xl p-5 flex items-start gap-4 hover:shadow-md transition-all duration-300 hover-premium"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-emerald-50/70 border border-emerald-250 flex items-center justify-center mt-0.5">
+                      <BookOpen size={18} strokeWidth={1.5} className="text-emerald-700" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          <h3 className="text-sm font-medium text-foreground leading-snug flex items-center gap-2">
+                            {livro.titulo}
+                          </h3>
+                          <p className="text-xs text-muted-foreground/60 mt-1 font-light leading-relaxed">
+                            {livro.descricao}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                          {livro.ano && (
+                            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">
+                              {livro.ano}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-cyan-glow font-medium uppercase tracking-wider bg-cyan-glow/5 border border-cyan-glow/10 px-2 py-0.5 rounded-full">
+                            {livro.autorEspiritual}
+                          </span>
+                          <span
+                            className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border ${getCorLivro(livro.categoria)}`}
+                          >
+                            {livro.categoria}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 mt-4">
+                        <button
+                          onClick={() => setDocAberto(livro)}
+                          className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-600/70 dark:text-emerald-400 dark:hover:text-emerald-400/70 transition-colors font-semibold cursor-pointer"
+                        >
+                          <BookOpen size={13} strokeWidth={1.5} />
+                          Ler aqui
+                        </button>
+                        <a
+                          href={fileUrl(livro.arquivo, "biblioteca")}
+                          download={livro.arquivo}
+                          className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-foreground transition-colors font-medium"
+                        >
+                          <Download size={13} strokeWidth={1.5} />
+                          Baixar PDF
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Rodapé Livros */}
+              <div className="mt-12 pt-8 border-t border-white/5 text-center space-y-2">
+                <p className="text-xs text-muted-foreground/40 font-light">
+                  Obras psicografadas pelo médium Francisco Cândido Xavier. Direitos autorais
+                  cedidos a instituições filantrópicas conforme orientação do próprio médium.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
     </>
   );
 }

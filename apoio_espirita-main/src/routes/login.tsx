@@ -3,8 +3,31 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { mensagemDeErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Entrar — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Faça login ou crie sua conta gratuita no Apoio Espírita para gerenciar as atividades, escalas, agenda e murais da sua casa espírita.",
+      },
+      {
+        name: "keywords",
+        content:
+          "entrar apoio espirita, login apoio espirita, centro espirita area restrita, cadastro apoio espirita",
+      },
+      { property: "og:title", content: "Entrar — Apoio Espírita" },
+      {
+        property: "og:description",
+        content: "Faça login ou crie sua conta gratuita no Apoio Espírita.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/login" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/login" }],
+  }),
   component: Login,
 });
 
@@ -22,7 +45,13 @@ function Login() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade) {
+      if (
+        !profile?.sigla_casa ||
+        !profile?.nome ||
+        !profile?.cargo_principal ||
+        !profile?.uf ||
+        !profile?.cidade
+      ) {
         navigate({ to: "/completar-perfil" });
       } else {
         navigate({ to: "/inicio" });
@@ -41,14 +70,15 @@ function Login() {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.");
+        throw new Error(
+          "Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.",
+        );
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Google OAuth error:", e);
-      const msg = e.message || "Erro ao conectar com o Google.";
+      const msg = mensagemDeErro(e, "Erro ao conectar com o Google.");
       setError(msg);
       toast.error(msg);
-      alert("Erro ao conectar com o Google: " + msg);
     }
   };
 
@@ -71,7 +101,7 @@ function Login() {
         setInfo("Verifique seu e-mail para confirmar o cadastro.");
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? translateError(e.message) : "Erro inesperado.");
+      setError(mensagemDeErro(e, "Erro inesperado."));
     } finally {
       setSubmitting(false);
     }
@@ -107,10 +137,22 @@ function Login() {
             className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-sm sm:text-base text-foreground font-medium"
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
             </svg>
             Continuar com Google
           </button>
@@ -126,7 +168,11 @@ function Login() {
             {(["entrar", "cadastrar"] as Mode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(""); setInfo(""); }}
+                onClick={() => {
+                  setMode(m);
+                  setError("");
+                  setInfo("");
+                }}
                 className={`flex-1 py-2 text-xs uppercase tracking-widest transition-colors ${
                   mode === m
                     ? "bg-cyan-glow/10 text-cyan-glow font-medium"
@@ -164,12 +210,8 @@ function Login() {
               )}
             </div>
 
-            {error && (
-              <p className="text-xs text-red-400 text-center">{error}</p>
-            )}
-            {info && (
-              <p className="text-xs text-cyan-glow text-center">{info}</p>
-            )}
+            {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+            {info && <p className="text-xs text-cyan-glow text-center">{info}</p>}
 
             <button
               type="submit"
@@ -182,7 +224,9 @@ function Login() {
         </div>
 
         <div className="mt-3 text-center space-y-1.5">
-          <p className="text-[11px] text-muted-foreground/50">Um espaço de serviço e fraternidade.</p>
+          <p className="text-[11px] text-muted-foreground/50">
+            Um espaço de serviço e fraternidade.
+          </p>
           <Link
             to="/"
             className="inline-block text-xs text-cyan-glow/60 hover:text-cyan-glow transition-colors"
@@ -221,7 +265,7 @@ function ForgotPasswordLink({ email }: { email: string }) {
       if (error) throw error;
       setInfo("Link enviado! Verifique seu e-mail.");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro inesperado.");
+      setError(mensagemDeErro(e, "Erro inesperado."));
     } finally {
       setSubmitting(false);
     }
@@ -241,7 +285,9 @@ function ForgotPasswordLink({ email }: { email: string }) {
 
   return (
     <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
-      <p className="text-sm text-muted-foreground text-center">Informe seu e-mail para receber o link de redefinição:</p>
+      <p className="text-sm text-muted-foreground text-center">
+        Informe seu e-mail para receber o link de redefinição:
+      </p>
       <form onSubmit={handleReset} className="space-y-3">
         <input
           type="email"
@@ -253,7 +299,7 @@ function ForgotPasswordLink({ email }: { email: string }) {
           className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
         />
         {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-        {info  && <p className="text-sm text-cyan-glow text-center">{info}</p>}
+        {info && <p className="text-sm text-cyan-glow text-center">{info}</p>}
         <div className="flex gap-2">
           <button
             type="button"
@@ -273,12 +319,4 @@ function ForgotPasswordLink({ email }: { email: string }) {
       </form>
     </div>
   );
-}
-
-function translateError(msg: string) {
-  if (msg.includes("Invalid login credentials")) return "E-mail ou senha incorretos.";
-  if (msg.includes("Email not confirmed")) return "Confirme seu e-mail antes de entrar.";
-  if (msg.includes("User already registered")) return "Este e-mail já está cadastrado.";
-  if (msg.includes("Password should be")) return "A senha deve ter pelo menos 6 caracteres.";
-  return msg;
 }

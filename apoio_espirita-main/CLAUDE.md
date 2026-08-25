@@ -9,7 +9,7 @@
 
 > [!CAUTION]
 > **PÁGINA PRINCIPAL / LANDING PAGE (`src/routes/index.tsx`) ESTÁ PROTEGIDA.**
-> Nenhuma alteração (de design, de rotas, de imports, etc.) deve ser feita na página pública antes do login (`src/routes/index.tsx`) sem autorização formal e explícita do usuário (`gama.andre@gmail.com`). 
+> Nenhuma alteração (de design, de rotas, de imports, etc.) deve ser feita na página pública antes do login (`src/routes/index.tsx`) sem autorização formal e explícita do usuário (`gama.andre@gmail.com`).
 > Isso evita danos ao layout e ao visual homologado (como ocorreu recentemente com a adição de jogos). Qualquer nova feature ou jogo deve ser implementado de forma isolada em rotas dedicadas (`src/routes/jogos/` etc.), sem alterar a página principal.
 
 ---
@@ -35,33 +35,33 @@
 
 ```bash
 # Build
-cd D:\WEB\APOIO_ESPIRITA\apoio_espirita-main
+cd "D:\DEV\Apoio Espírita\apoio_espirita-main"
 npm run build
 
 # Deploy
-cd D:\WEB\APOIO_ESPIRITA\apoio_espirita-main\dist\server
+cd "D:\DEV\Apoio Espírita\apoio_espirita-main\dist\server"
 npx wrangler deploy --config wrangler.json
 
 # Voltar para a raiz do projeto
-cd D:\WEB\APOIO_ESPIRITA\apoio_espirita-main
+cd "D:\DEV\Apoio Espírita\apoio_espirita-main"
 ```
 
 ---
 
 ## Mapa de arquivos-chave
 
-| O que preciso mudar | Arquivo |
-|---|---|
-| Roadmap / status de features | `src/routes/painel.tsx` — array `roadmap[]` |
-| Lista de cargos | `src/routes/completar-perfil.tsx` — `CARGOS[]` e `src/routes/perfil.tsx` — `CARGOS_BASE[]` |
-| Estilos globais / tema | `src/styles/` |
-| Auth context / perfil do usuário | `src/contexts/AuthContext.tsx` |
-| Supabase client | `src/integrations/supabase/client.ts` |
-| Rotas | `src/routes/*.tsx` |
-| Rotas de jogos | `src/routes/jogos/*.tsx` |
-| Root (meta tags, JSON-LD, layout) | `src/routes/__root.tsx` |
-| Config Cloudflare | `wrangler.jsonc` (raiz) e `dist/server/wrangler.json` (deploy) |
-| Banco de palavras — Plante a Semente | `src/data/palavras-semente.ts` |
+| O que preciso mudar                  | Arquivo                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Roadmap / status de features         | `src/routes/painel.tsx` — array `roadmap[]`                                                |
+| Lista de cargos                      | `src/routes/completar-perfil.tsx` — `CARGOS[]` e `src/routes/perfil.tsx` — `CARGOS_BASE[]` |
+| Estilos globais / tema               | `src/styles/`                                                                              |
+| Auth context / perfil do usuário     | `src/contexts/AuthContext.tsx`                                                             |
+| Supabase client                      | `src/integrations/supabase/client.ts`                                                      |
+| Rotas                                | `src/routes/*.tsx`                                                                         |
+| Rotas de jogos                       | `src/routes/jogos/*.tsx`                                                                   |
+| Root (meta tags, JSON-LD, layout)    | `src/routes/__root.tsx`                                                                    |
+| Config Cloudflare                    | `wrangler.jsonc` (raiz) e `dist/server/wrangler.json` (deploy)                             |
+| Banco de palavras — Plante a Semente | `src/data/palavras-semente.ts`                                                             |
 
 ---
 
@@ -85,6 +85,7 @@ cd D:\WEB\APOIO_ESPIRITA\apoio_espirita-main
 ```
 
 Regras de permissão:
+
 - `isPresident` = `cargo_principal === "Presidente" || cargo_principal === "Vice-presidente"`
 - Tesoureiro: **não** tem `isPresident`, mas tem acesso total à `/tesouraria`
 - DEV: mesmo acesso que Presidente para fins de desenvolvimento
@@ -94,16 +95,17 @@ Regras de permissão:
 ## Padrões de código do projeto
 
 ### Página autenticada (tema claro)
+
 ```tsx
 <main className="page-light min-h-screen px-4 pt-20 pb-20">
-  <div className="mx-auto max-w-3xl">
-    {/* conteúdo */}
-  </div>
+  <div className="mx-auto max-w-3xl">{/* conteúdo */}</div>
 </main>
 ```
+
 > `pt-20 pb-20` é obrigatório para respeitar o header fixo (h-14) e o footer fixo.
 
 ### Página pública (tema escuro)
+
 ```tsx
 <main className="min-h-screen flex items-center justify-center px-6 py-16">
   {/* conteúdo com gradiente escuro */}
@@ -111,11 +113,13 @@ Regras de permissão:
 ```
 
 ### Card / painel glass
+
 ```tsx
 <div className="glass rounded-3xl p-8 space-y-5">
 ```
 
 ### Label de campo
+
 ```tsx
 <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
   Campo <span className="text-cyan-glow">*</span>
@@ -123,16 +127,19 @@ Regras de permissão:
 ```
 
 ### Input texto
+
 ```tsx
 <input className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors" />
 ```
 
 ### Select (NUNCA inline style — quebra light theme)
+
 ```tsx
 <select className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors">
 ```
 
 ### Botão primário
+
 ```tsx
 <button className="w-full py-3 rounded-xl text-sm uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors duration-300">
 ```
@@ -142,16 +149,18 @@ Regras de permissão:
 ## Supabase — referência rápida
 
 ### Tabelas principais
-| Tabela | Uso |
-|---|---|
-| `profiles` | Dados do usuário — cargo, sigla_casa, atividades |
-| `siglas_casas` | Siglas registradas (2–6 letras maiúsculas) |
-| `casas_espirita` | Casas com localização (SELECT público, ativa=true) |
-| `mensagens_do_dia` | Fila de mensagens diárias (data_exibicao UNIQUE) |
-| `solicitacoes_dev` | Pedidos de desenvolvimento |
-| `site_suggestions` | Sugestões públicas |
+
+| Tabela             | Uso                                                |
+| ------------------ | -------------------------------------------------- |
+| `profiles`         | Dados do usuário — cargo, sigla_casa, atividades   |
+| `siglas_casas`     | Siglas registradas (exatamente 5 letras maiúsculas) |
+| `casas_espirita`   | Casas com localização (SELECT público, ativa=true) |
+| `mensagens_do_dia` | Fila de mensagens diárias (data_exibicao UNIQUE)   |
+| `solicitacoes_dev` | Pedidos de desenvolvimento                         |
+| `site_suggestions` | Sugestões públicas                                 |
 
 ### View para listagem pública de membros
+
 ```sql
 -- SEMPRE usar em vez de profiles para exibir membros a terceiros
 SELECT * FROM profiles_public;
@@ -159,6 +168,7 @@ SELECT * FROM profiles_public;
 ```
 
 ### Verificar estado do banco antes de qualquer migration
+
 ```
 1. Supabase MCP → list_tables
 2. Supabase MCP → execute_sql "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'profiles'"
@@ -168,17 +178,17 @@ SELECT * FROM profiles_public;
 
 ## Erros comuns — nunca repetir
 
-| Errado | Correto |
-|---|---|
-| `"Coordenadoria"` | `"Coordenador"` |
-| `style={{ backgroundColor }}` em `<select>` | Usar className; CSS cuida via `.page-light select` |
-| Exibir `cargo_principal` para outros membros | Usar `profiles_public` (só nome + sigla_casa) |
-| Fazer push sem deploy | Deploy **antes** do push |
-| Concluir feature sem atualizar `/painel` | Sempre atualizar o roadmap |
-| Emojis em componentes | Lucide React icons |
-| `git add .` ou `git add -A` | `git add <arquivos específicos>` |
-| `py-10` ou `py-16` em páginas autenticadas | `pt-20 pb-20` — respeita header e footer fixos |
-| SVG `filter` em elemento `<line>` | Aplicar filter apenas em `<rect>`, `<ellipse>`, `<circle>` ou `<path>` — `<line>` tem bounding box degenerado e some |
+| Errado                                       | Correto                                                                                                              |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `"Coordenadoria"`                            | `"Coordenador"`                                                                                                      |
+| `style={{ backgroundColor }}` em `<select>`  | Usar className; CSS cuida via `.page-light select`                                                                   |
+| Exibir `cargo_principal` para outros membros | Usar `profiles_public` (só nome + sigla_casa)                                                                        |
+| Fazer push sem deploy                        | Deploy **antes** do push                                                                                             |
+| Concluir feature sem atualizar `/painel`     | Sempre atualizar o roadmap                                                                                           |
+| Emojis em componentes                        | Lucide React icons                                                                                                   |
+| `git add .` ou `git add -A`                  | `git add <arquivos específicos>`                                                                                     |
+| `py-10` ou `py-16` em páginas autenticadas   | `pt-20 pb-20` — respeita header e footer fixos                                                                       |
+| SVG `filter` em elemento `<line>`            | Aplicar filter apenas em `<rect>`, `<ellipse>`, `<circle>` ou `<path>` — `<line>` tem bounding box degenerado e some |
 
 ---
 
@@ -199,12 +209,12 @@ SELECT * FROM profiles_public;
 ```typescript
 // Sugestão recebida
 supabase.functions.invoke("send-notification", {
-  body: { type: "sugestao", data: { name, email, suggestion } }
+  body: { type: "sugestao", data: { name, email, suggestion } },
 });
 
 // Solicitação de desenvolvimento
 supabase.functions.invoke("send-notification", {
-  body: { type: "solicitacao", data: { titulo, descricao, user_email } }
+  body: { type: "solicitacao", data: { titulo, descricao, user_email } },
 });
 ```
 

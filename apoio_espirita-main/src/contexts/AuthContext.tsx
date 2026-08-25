@@ -13,7 +13,7 @@ interface Profile {
   bairro: string | null;
   role: string;
   cargo_principal: string | null;
-  atividades: string[];
+  atividades: string[] | null;
 }
 
 export const CARGOS_DECISAO = [
@@ -94,7 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -120,9 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile?.cargo_principal === "Presidente" ||
     profile?.cargo_principal === "Vice-presidente";
   const isTesoureiro =
-    isDev ||
-    profile?.cargo_principal === "Presidente" ||
-    profile?.cargo_principal === "Tesoureiro";
+    isDev || profile?.cargo_principal === "Presidente" || profile?.cargo_principal === "Tesoureiro";
 
   // Acesso à Tesouraria: Presidente, Vice, Tesoureiro, DEV ou autorizado pelo Presidente
   const canTesouraria =
@@ -140,13 +140,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (profile?.cargo_principal != null &&
       (CARGOS_DECISAO as readonly string[]).includes(profile.cargo_principal));
 
-  const isEvangelizador =
-    isDev ||
-    isDecisao ||
-    profile?.cargo_principal === "Evangelizador";
+  const isEvangelizador = isDev || isDecisao || profile?.cargo_principal === "Evangelizador";
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDev, isPresident, isTesoureiro, isTesourariaAutorizado: tesourariaAutorizado, canTesouraria, isTesourariaAdmin, isDecisao, isEvangelizador, refreshProfile, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isDev,
+        isPresident,
+        isTesoureiro,
+        isTesourariaAutorizado: tesourariaAutorizado,
+        canTesouraria,
+        isTesourariaAdmin,
+        isDecisao,
+        isEvangelizador,
+        refreshProfile,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

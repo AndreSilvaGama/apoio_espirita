@@ -10,13 +10,19 @@ export const Route = createFileRoute("/sugestoes")({
   head: () => ({
     meta: [
       { title: "Sugestões — Apoio Espírita" },
-      { name: "description", content: "Envie sua sugestão para melhorar o Apoio Espírita. Sua contribuição é bem-vinda e fraterna." },
+      {
+        name: "description",
+        content:
+          "Envie sua sugestão para melhorar o Apoio Espírita. Sua contribuição é bem-vinda e fraterna.",
+      },
+      {
+        name: "keywords",
+        content: "sugestoes apoio espirita, feedback apoio espirita, melhorias centro espirita",
+      },
       { property: "og:title", content: "Sugestões — Apoio Espírita" },
       { property: "og:url", content: "https://apoioespirita.com.br/sugestoes" },
     ],
-    links: [
-      { rel: "canonical", href: "https://apoioespirita.com.br/sugestoes" },
-    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/sugestoes" }],
   }),
   component: SuggestionsPage,
 });
@@ -42,9 +48,7 @@ function SuggestionsPage() {
       return;
     }
     setStatus("loading");
-    const { error: dbError } = await supabase
-      .from("site_suggestions")
-      .insert(parsed.data);
+    const { error: dbError } = await supabase.from("site_suggestions").insert(parsed.data);
     if (dbError) {
       setStatus("error");
       setError("Não foi possível enviar. Tente novamente.");
@@ -71,14 +75,13 @@ function SuggestionsPage() {
         </Link>
 
         <div className="mt-8 text-center">
-          <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">
-            Sua voz importa
-          </p>
+          <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">Sua voz importa</p>
           <h1 className="text-4xl md:text-5xl font-light text-foreground mb-6">
             Sugira uma <span className="text-gradient-aurora font-medium">mudança</span>
           </h1>
           <p className="text-muted-foreground font-light max-w-xl mx-auto mb-12">
-            Tem uma ideia para melhorar este espaço? Compartilhe conosco — toda sugestão é lida com cuidado.
+            Tem uma ideia para melhorar este espaço? Compartilhe conosco — toda sugestão é lida com
+            cuidado.
           </p>
         </div>
 
@@ -142,9 +145,7 @@ function SuggestionsPage() {
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-400 font-light">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-400 font-light">{error}</p>}
 
             <button
               type="submit"

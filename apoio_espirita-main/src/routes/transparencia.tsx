@@ -5,14 +5,25 @@ export const Route = createFileRoute("/transparencia")({
   head: () => ({
     meta: [
       { title: "Transparência & Propósito — Apoio Espírita" },
-      { name: "description", content: "Conheça os valores e a missão do Apoio Espírita. Plataforma independente, sem vínculo com a FEB ou qualquer federação espírita. Transparência total." },
+      {
+        name: "description",
+        content:
+          "Conheça os valores e a missão do Apoio Espírita. Plataforma independente, sem vínculo com a FEB ou qualquer federação espírita. Transparência total.",
+      },
+      {
+        name: "keywords",
+        content:
+          "transparencia apoio espirita, proposito apoio espirita, missao apoio espirita, plataforma espirita independente",
+      },
       { property: "og:title", content: "Transparência & Propósito — Apoio Espírita" },
-      { property: "og:description", content: "Plataforma independente, sem vínculo com a FEB ou qualquer federação. Propósito: acolhimento, estudo e serviço." },
+      {
+        property: "og:description",
+        content:
+          "Plataforma independente, sem vínculo com a FEB ou qualquer federação. Propósito: acolhimento, estudo e serviço.",
+      },
       { property: "og:url", content: "https://apoioespirita.com.br/transparencia" },
     ],
-    links: [
-      { rel: "canonical", href: "https://apoioespirita.com.br/transparencia" },
-    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/transparencia" }],
   }),
   component: Transparencia,
 });
@@ -101,7 +112,10 @@ function Transparencia() {
               {s.list && (
                 <ul className="space-y-3 mt-2">
                   {s.list.map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-muted-foreground font-light">
+                    <li
+                      key={item}
+                      className="flex items-start gap-3 text-muted-foreground font-light"
+                    >
                       <span className="text-cyan-glow mt-1 shrink-0">·</span>
                       <span className="leading-relaxed">{item}</span>
                     </li>

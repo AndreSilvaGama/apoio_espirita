@@ -1,16 +1,56 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, RotateCcw, Sparkles, HelpCircle, Check, Droplet, Search, BookOpen } from "lucide-react";
-import { CATEGORIAS_CACA, PALAVRAS_POR_CATEGORIA, type PalavraCaca, type CategoriaCaca } from "@/data/caca-palavras";
+import {
+  ArrowLeft,
+  RotateCcw,
+  Sparkles,
+  HelpCircle,
+  Check,
+  Droplet,
+  Search,
+  BookOpen,
+} from "lucide-react";
+import {
+  CATEGORIAS_CACA,
+  PALAVRAS_POR_CATEGORIA,
+  type PalavraCaca,
+  type CategoriaCaca,
+} from "@/data/caca-palavras";
 
 export const Route = createFileRoute("/jogos/caca-palavras")({
+  head: () => ({
+    meta: [
+      { title: "Caça-Palavras Espírita — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Encontre palavras relacionadas ao Espiritismo, virtudes e à codificação de Allan Kardec neste jogo de caça-palavras dinâmico e educativo.",
+      },
+      {
+        name: "keywords",
+        content:
+          "caca palavras espirita, passatempo espirita, jogos evangelizacao, alianca espirita, virtudes da alma",
+      },
+      { property: "og:title", content: "Caça-Palavras Espírita — Apoio Espírita" },
+      {
+        property: "og:description",
+        content:
+          "Encontre palavras relacionadas ao Espiritismo neste jogo de caça-palavras dinâmico e educativo.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/caca-palavras" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/caca-palavras" }],
+  }),
   component: CacaPalavras,
 });
 
 // ── Types e Interfaces Locais ────────────────────────────────────────────────
 
-interface CelulaPos { r: number; c: number; }
+interface CelulaPos {
+  r: number;
+  c: number;
+}
 interface PlacedWord {
   palavra: PalavraCaca;
   start: CelulaPos;
@@ -32,9 +72,11 @@ const PASTEL_COLORS = [
 
 function gerarGradeCaca(categoria: CategoriaCaca): { grid: string[][]; placedWords: PlacedWord[] } {
   const size = 10;
-  const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(""));
+  const grid: string[][] = Array(size)
+    .fill(null)
+    .map(() => Array(size).fill(""));
   const pool = PALAVRAS_POR_CATEGORIA[categoria];
-  
+
   // Sorteia 5 palavras da categoria
   const palavrasSorteadas = [...pool].sort(() => Math.random() - 0.5).slice(0, 5);
   const placedWords: PlacedWord[] = [];
@@ -134,7 +176,7 @@ function CacaPalavras() {
   const [grade, setGrade] = useState<string[][]>([]);
   const [palavrasOcultas, setPalavrasOcultas] = useState<PlacedWord[]>([]);
   const [palavrasEncontradas, setPalavrasEncontradas] = useState<string[]>([]);
-  
+
   // Estado de cliques de seleção
   const [selecaoIniciada, setSelecaoIniciada] = useState<CelulaPos | null>(null);
   const [hoverPos, setHoverPos] = useState<CelulaPos | null>(null);
@@ -162,7 +204,6 @@ function CacaPalavras() {
     setCategoria(cat);
     setFase("jogo");
   }, []);
-
 
   // Calcula se duas células estão em linha reta (Horizontal ou Vertical)
   const estaoEmLinha = (a: CelulaPos, b: CelulaPos) => {
@@ -289,7 +330,6 @@ function CacaPalavras() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-4xl space-y-6">
-
         {/* Header do Jogo */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -347,7 +387,6 @@ function CacaPalavras() {
         {/* ── FASE 2: GRADE DE JOGO ─────────────────────────────────────────────── */}
         {fase === "jogo" && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-            
             {/* Esquerda: Grade 10x10 */}
             <div className="space-y-4">
               <div className="flex justify-between items-center bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
@@ -381,7 +420,7 @@ function CacaPalavras() {
                     >
                       {letra}
                     </button>
-                  ))
+                  )),
                 )}
               </div>
 
@@ -404,7 +443,6 @@ function CacaPalavras() {
 
             {/* Direita: Lista de Palavras & Explicações */}
             <div className="space-y-4">
-              
               {/* Lista das Palavras */}
               <div className="bg-white border border-gray-150 rounded-2xl p-5 space-y-3 shadow-sm">
                 <h3 className="text-xs uppercase tracking-widest text-muted-foreground font-bold border-b border-gray-100 pb-2">
@@ -414,9 +452,10 @@ function CacaPalavras() {
                   {palavrasOcultas.map((pw) => {
                     const achou = palavrasEncontradas.includes(pw.palavra.palavra);
                     const idxColor = colorIndexMap[pw.palavra.palavra];
-                    const badgeColor = achou && idxColor !== undefined
-                      ? PASTEL_COLORS[idxColor]
-                      : "bg-gray-50 text-gray-500 border-gray-200";
+                    const badgeColor =
+                      achou && idxColor !== undefined
+                        ? PASTEL_COLORS[idxColor]
+                        : "bg-gray-50 text-gray-500 border-gray-200";
 
                     return (
                       <div
@@ -425,10 +464,14 @@ function CacaPalavras() {
                           achou ? "opacity-90 scale-95" : "bg-white"
                         }`}
                       >
-                        <span className={`text-xs font-semibold uppercase tracking-wider ${achou ? "line-through text-gray-400" : "text-gray-700"}`}>
+                        <span
+                          className={`text-xs font-semibold uppercase tracking-wider ${achou ? "line-through text-gray-400" : "text-gray-700"}`}
+                        >
                           {pw.palavra.palavra}
                         </span>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${badgeColor}`}>
+                        <span
+                          className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${badgeColor}`}
+                        >
                           {achou ? "Achou" : "Pista"}
                         </span>
                       </div>
@@ -446,16 +489,13 @@ function CacaPalavras() {
                       {palavraDestaque.palavraExibicao}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-400 italic">
-                    {palavraDestaque.dica}
-                  </p>
+                  <p className="text-[11px] text-gray-400 italic">{palavraDestaque.dica}</p>
                   <p className="text-xs text-gray-600 font-light leading-relaxed">
                     {palavraDestaque.significado}
                   </p>
                 </div>
               )}
             </div>
-
           </div>
         )}
 
@@ -467,9 +507,12 @@ function CacaPalavras() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-bold text-emerald-800 leading-snug">✿ Grade Completa! ✿</h2>
+              <h2 className="text-2xl font-bold text-emerald-800 leading-snug">
+                ✿ Grade Completa! ✿
+              </h2>
               <p className="text-sm text-emerald-600 font-light mt-1.5 leading-relaxed">
-                Parabéns! Todas as sementes foram localizadas no canteiro das virtudes e no estudo espírita.
+                Parabéns! Todas as sementes foram localizadas no canteiro das virtudes e no estudo
+                espírita.
               </p>
             </div>
 
@@ -478,7 +521,9 @@ function CacaPalavras() {
                 Reflexão Final
               </span>
               <p className="text-xs text-gray-600 leading-relaxed font-light">
-                O aprendizado das virtudes morais e dos livros da codificação abre o caminho para o autoconhecimento e para a nossa reforma íntima diária. Continue praticando o bem e cultivando a caridade em sua vida.
+                O aprendizado das virtudes morais e dos livros da codificação abre o caminho para o
+                autoconhecimento e para a nossa reforma íntima diária. Continue praticando o bem e
+                cultivando a caridade em sua vida.
               </p>
             </div>
 
@@ -499,7 +544,6 @@ function CacaPalavras() {
             </div>
           </div>
         )}
-
       </div>
     </main>
   );

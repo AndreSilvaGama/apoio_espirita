@@ -13,6 +13,29 @@ import {
 import type { VirtudeCasa } from "@/routes/configurar-memoria";
 
 export const Route = createFileRoute("/jogos/memoria-evangelizacao")({
+  head: () => ({
+    meta: [
+      { title: "Jogo da Memória da Evangelização — Apoio Espírita" },
+      {
+        name: "description",
+        content:
+          "Exercite sua mente e aprenda virtudes cristãs com o jogo da memória focado na evangelização infantil e juvenil espírita.",
+      },
+      {
+        name: "keywords",
+        content:
+          "jogo da memoria espirita, memoria evangelizacao, atividades evangelizacao infantil",
+      },
+      { property: "og:title", content: "Jogo da Memória da Evangelização — Apoio Espírita" },
+      {
+        property: "og:description",
+        content:
+          "Exercite sua mente e aprenda virtudes cristãs com o jogo da memória focado na evangelização infantil.",
+      },
+      { property: "og:url", content: "https://apoioespirita.com.br/jogos/memoria-evangelizacao" },
+    ],
+    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/jogos/memoria-evangelizacao" }],
+  }),
   component: MemoriaEvangelizacao,
 });
 
@@ -57,20 +80,16 @@ function criarCartas(pool: string[], dificuldade: Dificuldade): Carta[] {
 }
 
 function formatarTempo(seg: number): string {
-  const m = Math.floor(seg / 60).toString().padStart(2, "0");
+  const m = Math.floor(seg / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (seg % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
 
 // ── Card faces ────────────────────────────────────────────────────────────────
 
-function FaceVirtude({
-  carta,
-  virtudes,
-}: {
-  carta: Carta;
-  virtudes: VirtudeDinamica[];
-}) {
+function FaceVirtude({ carta, virtudes }: { carta: Carta; virtudes: VirtudeDinamica[] }) {
   const v = virtudes.find((x) => x.id === carta.grupoId);
   if (!v) return null;
 
@@ -87,7 +106,9 @@ function FaceVirtude({
   // Carta B — imagem ou fallback
   if (v.imagem_url) {
     return (
-      <div className={`w-full h-full rounded-xl flex items-center justify-center overflow-hidden ${v.cor}`}>
+      <div
+        className={`w-full h-full rounded-xl flex items-center justify-center overflow-hidden ${v.cor}`}
+      >
         <img
           src={v.imagem_url}
           alt={v.nome}
@@ -110,7 +131,9 @@ function FaceVirtude({
 
   // Fallback final: texto da inicial grande
   return (
-    <div className={`w-full h-full rounded-xl flex flex-col items-center justify-center gap-1 ${v.cor}`}>
+    <div
+      className={`w-full h-full rounded-xl flex flex-col items-center justify-center gap-1 ${v.cor}`}
+    >
       <ImageOff size={20} strokeWidth={1.5} className="text-gray-400" />
       <span className="text-xs text-gray-500">sem imagem</span>
     </div>
@@ -183,10 +206,11 @@ function CartaComponent({
           className="absolute inset-0 shadow-md"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          {modo === "virtudes"
-            ? <FaceVirtude carta={carta} virtudes={virtudes} />
-            : <FaceEvangelho carta={carta} />
-          }
+          {modo === "virtudes" ? (
+            <FaceVirtude carta={carta} virtudes={virtudes} />
+          ) : (
+            <FaceEvangelho carta={carta} />
+          )}
         </div>
       </div>
     </button>
@@ -225,8 +249,8 @@ function TelaSelecao({
   ];
 
   const dificuldades: { id: Dificuldade; label: string; pares: number }[] = [
-    { id: "facil",   label: "Fácil",   pares: 6  },
-    { id: "medio",   label: "Médio",   pares: 8  },
+    { id: "facil", label: "Fácil", pares: 6 },
+    { id: "medio", label: "Médio", pares: 8 },
     { id: "dificil", label: "Difícil", pares: 10 },
   ];
 
@@ -245,7 +269,9 @@ function TelaSelecao({
       )}
 
       <div>
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Escolha o modo</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+          Escolha o modo
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {modos.map((m) => (
             <button
@@ -371,7 +397,9 @@ function MemoriaEvangelizacao() {
     const sigla = profile?.sigla_casa;
     if (!sigla) {
       // Sem casa: usa estáticas
-      setVirtudes(VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })));
+      setVirtudes(
+        VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })),
+      );
       setCarregandoVirtudes(false);
       return;
     }
@@ -384,15 +412,19 @@ function MemoriaEvangelizacao() {
       .order("ordem")
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setVirtudes((data as VirtudeCasa[]).map((v) => ({
-            id: v.id,
-            nome: v.nome,
-            cor: v.cor,
-            imagem_url: v.imagem_url,
-          })));
+          setVirtudes(
+            (data as VirtudeCasa[]).map((v) => ({
+              id: v.id,
+              nome: v.nome,
+              cor: v.cor,
+              imagem_url: v.imagem_url,
+            })),
+          );
         } else {
           // Sem configuração: usa estáticas
-          setVirtudes(VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })));
+          setVirtudes(
+            VIRTUDES.map((v) => ({ id: v.id, nome: v.virtude, cor: v.cor, imagem_url: null })),
+          );
         }
         setCarregandoVirtudes(false);
       });
@@ -404,63 +436,70 @@ function MemoriaEvangelizacao() {
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [fase]);
 
-  const iniciarJogo = useCallback((m: ModoJogo, d: Dificuldade) => {
-    const pool = m === "virtudes"
-      ? virtudes.map((v) => v.id)
-      : PALAVRAS_EVANGELHO.map((p) => p.id);
+  const iniciarJogo = useCallback(
+    (m: ModoJogo, d: Dificuldade) => {
+      const pool =
+        m === "virtudes" ? virtudes.map((v) => v.id) : PALAVRAS_EVANGELHO.map((p) => p.id);
 
-    setModo(m);
-    setDificuldade(d);
-    setCartas(criarCartas(pool, d));
-    setViradas([]);
-    setBloqueado(false);
-    setTentativas(0);
-    setTempo(0);
-    setFase("jogo");
-  }, [virtudes]);
+      setModo(m);
+      setDificuldade(d);
+      setCartas(criarCartas(pool, d));
+      setViradas([]);
+      setBloqueado(false);
+      setTentativas(0);
+      setTempo(0);
+      setFase("jogo");
+    },
+    [virtudes],
+  );
 
-  const reiniciar = useCallback(() => { iniciarJogo(modo, dificuldade); }, [iniciarJogo, modo, dificuldade]);
+  const reiniciar = useCallback(() => {
+    iniciarJogo(modo, dificuldade);
+  }, [iniciarJogo, modo, dificuldade]);
 
-  const clicarCarta = useCallback((uid: string) => {
-    if (bloqueado || viradas.includes(uid)) return;
+  const clicarCarta = useCallback(
+    (uid: string) => {
+      if (bloqueado || viradas.includes(uid)) return;
 
-    setCartas((prev) => prev.map((c) => (c.uid === uid ? { ...c, virada: true } : c)));
+      setCartas((prev) => prev.map((c) => (c.uid === uid ? { ...c, virada: true } : c)));
 
-    const novasViradas = [...viradas, uid];
-    setViradas(novasViradas);
+      const novasViradas = [...viradas, uid];
+      setViradas(novasViradas);
 
-    if (novasViradas.length === 2) {
-      setBloqueado(true);
-      setTentativas((t) => t + 1);
+      if (novasViradas.length === 2) {
+        setBloqueado(true);
+        setTentativas((t) => t + 1);
 
-      const [uidA, uidB] = novasViradas;
-      const cartaA = cartas.find((c) => c.uid === uidA);
-      const cartaB = cartas.find((c) => c.uid === uidB);
+        const [uidA, uidB] = novasViradas;
+        const cartaA = cartas.find((c) => c.uid === uidA);
+        const cartaB = cartas.find((c) => c.uid === uidB);
 
-      if (cartaA && cartaB && cartaA.grupoId === cartaB.grupoId) {
-        setCartas((prev) =>
-          prev.map((c) =>
-            c.uid === uidA || c.uid === uidB ? { ...c, combinada: true, virada: false } : c
-          )
-        );
-        setViradas([]);
-        setBloqueado(false);
-      } else {
-        setTimeout(() => {
+        if (cartaA && cartaB && cartaA.grupoId === cartaB.grupoId) {
           setCartas((prev) =>
             prev.map((c) =>
-              c.uid === uidA || c.uid === uidB ? { ...c, virada: false } : c
-            )
+              c.uid === uidA || c.uid === uidB ? { ...c, combinada: true, virada: false } : c,
+            ),
           );
           setViradas([]);
           setBloqueado(false);
-        }, 900);
+        } else {
+          setTimeout(() => {
+            setCartas((prev) =>
+              prev.map((c) => (c.uid === uidA || c.uid === uidB ? { ...c, virada: false } : c)),
+            );
+            setViradas([]);
+            setBloqueado(false);
+          }, 900);
+        }
       }
-    }
-  }, [bloqueado, viradas, cartas]);
+    },
+    [bloqueado, viradas, cartas],
+  );
 
   // Verificar conclusão
   useEffect(() => {
@@ -471,8 +510,8 @@ function MemoriaEvangelizacao() {
     }
   }, [cartas, dificuldade, fase]);
 
-
-  const colunas = cartas.length <= 12 ? "grid-cols-4" : cartas.length <= 16 ? "grid-cols-4" : "grid-cols-5";
+  const colunas =
+    cartas.length <= 12 ? "grid-cols-4" : cartas.length <= 16 ? "grid-cols-4" : "grid-cols-5";
   const modoLabel = modo === "virtudes" ? "Virtudes" : "Palavras do Evangelho";
   const difLabel = { facil: "Fácil", medio: "Médio", dificil: "Difícil" }[dificuldade];
   const temCustom = virtudes.some((v) => v.imagem_url);
@@ -480,9 +519,11 @@ function MemoriaEvangelizacao() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="mx-auto max-w-2xl">
-
         <div className="flex items-center gap-3 mb-6">
-          <Link to={user ? "/evangelizacao" : "/jogos"} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          <Link
+            to={user ? "/evangelizacao" : "/jogos"}
+            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          >
             <ArrowLeft size={18} strokeWidth={2} />
           </Link>
           <div>
@@ -492,25 +533,33 @@ function MemoriaEvangelizacao() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-
-          {fase === "selecao" && (
-            carregandoVirtudes
-              ? <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
-              : <TelaSelecao
-                  onIniciar={iniciarJogo}
-                  temCustom={temCustom}
-                  isEvangelizador={isEvangelizador}
-                />
-          )}
+          {fase === "selecao" &&
+            (carregandoVirtudes ? (
+              <div className="flex justify-center py-8">
+                <div className="w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <TelaSelecao
+                onIniciar={iniciarJogo}
+                temCustom={temCustom}
+                isEvangelizador={isEvangelizador}
+              />
+            ))}
 
           {fase === "jogo" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-gray-500">
-                <span className="font-medium text-gray-700">{modoLabel} · {difLabel}</span>
+                <span className="font-medium text-gray-700">
+                  {modoLabel} · {difLabel}
+                </span>
                 <div className="flex items-center gap-4">
                   <span>{tentativas} tentativas</span>
                   <span className="tabular-nums font-mono">{formatarTempo(tempo)}</span>
-                  <button onClick={reiniciar} aria-label="Reiniciar" className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+                  <button
+                    onClick={reiniciar}
+                    aria-label="Reiniciar"
+                    className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
                     <RotateCcw size={14} strokeWidth={2} />
                   </button>
                 </div>
@@ -529,7 +578,10 @@ function MemoriaEvangelizacao() {
                 ))}
               </div>
 
-              <button onClick={() => setFase("selecao")} className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              <button
+                onClick={() => setFase("selecao")}
+                className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 Voltar à seleção
               </button>
             </div>

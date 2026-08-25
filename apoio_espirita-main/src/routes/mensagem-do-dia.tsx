@@ -85,8 +85,8 @@ async function scheduleQueue() {
 
   await Promise.all(
     updates.map(({ id, data_exibicao }) =>
-      supabase.from("mensagens_do_dia").update({ data_exibicao }).eq("id", id)
-    )
+      supabase.from("mensagens_do_dia").update({ data_exibicao }).eq("id", id),
+    ),
   );
 }
 
@@ -96,7 +96,9 @@ function MensagemDoDia() {
   const { tab: initialTab } = Route.useSearch();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [form, setForm] = useState({ texto: "", referencia: "" });
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle",
+  );
   const [error, setError] = useState<string | null>(null);
   const [mensagens, setMensagens] = useState<MensagemDB[]>([]);
   const [filaLoading, setFilaLoading] = useState(false);
@@ -165,8 +167,7 @@ function MensagemDoDia() {
         <div className="mt-8 text-center mb-10">
           <p className="text-xs uppercase tracking-[0.4em] text-cyan-glow mb-4">Comunidade</p>
           <h1 className="text-4xl font-light text-foreground">
-            Mensagem do{" "}
-            <span className="text-gradient-aurora font-medium">Dia</span>
+            Mensagem do <span className="text-gradient-aurora font-medium">Dia</span>
           </h1>
           <p className="mt-4 text-muted-foreground font-light max-w-lg mx-auto">
             Compartilhe uma mensagem edificante. Ela entrará na fila e será exibida para toda a
@@ -192,8 +193,8 @@ function MensagemDoDia() {
         </div>
 
         {/* ── Aba: Enviar ── */}
-        {tab === "enviar" && (
-          submitStatus === "success" ? (
+        {tab === "enviar" &&
+          (submitStatus === "success" ? (
             <div className="glass rounded-3xl p-10 text-center">
               <div className="flex justify-center mb-4">
                 <CheckCircle2 size={40} strokeWidth={1.5} className="text-cyan-glow" />
@@ -280,8 +281,7 @@ function MensagemDoDia() {
                 {submitStatus === "loading" ? "Enviando…" : "Enviar para a fila"}
               </button>
             </form>
-          )
-        )}
+          ))}
 
         {/* ── Aba: Fila ── */}
         {tab === "fila" && (
@@ -337,7 +337,12 @@ function MensagemDoDia() {
                             <span className="text-xs text-muted-foreground/60">
                               {new Date(m.data_exibicao + "T12:00:00Z").toLocaleDateString(
                                 "pt-BR",
-                                { weekday: "short", day: "2-digit", month: "long", year: "numeric" }
+                                {
+                                  weekday: "short",
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                },
                               )}
                             </span>
                           )}
