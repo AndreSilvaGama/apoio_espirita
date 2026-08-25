@@ -13,7 +13,8 @@ on:
     # Permite disparar à mão pelo GitHub para testar
 
 permissions:
-  contents: read
+  # write porque o passo da estrutura commita supabase/schema.sql de volta
+  contents: write
   issues: write
 
 env:
@@ -25,6 +26,12 @@ jobs:
   vigia:
     runs-on: ubuntu-latest
     steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+        with:
+          # precisa do histórico para conseguir commitar e empurrar
+          fetch-depth: 0
+
       # 1) Confere se o banco responde E, de quebra, gera a atividade diária que
       #    impede o Supabase de pausar o projeto por inatividade.
       - name: Verificar se o banco responde
@@ -181,6 +188,52 @@ jobs:
 
           echo "Arquivo cifrado: $(du -h apoio-espirita-$CARIMBO.tar.gz.gpg | cut -f1)"
           echo "carimbo=$CARIMBO" >> "$GITHUB_ENV"
+
+      # A estrutura do banco (sem UM dado sequer) versionada no repositório.
+      # As migrações escritas à mão descreviam só 9 das 27 tabelas e já induziram
+      # a erro. Gerado pelo pg_dump, este arquivo é exato e se mantém sozinho.
+      - name: Atualizar a estrutura do banco no repositório
+        if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          DESTINO=apoio_espirita-main/supabase/schema.sql
+
+          pg_dump "$DB_URL" \
+            --schema=public --schema-only \
+            --no-owner --no-privileges \
+            --file=/tmp/schema.sql
+
+          # Rede de segurança: nunca gravar um schema truncado por cima do bom.
+          if [ "$(grep -c 'CREATE TABLE' /tmp/schema.sql)" -lt 20 ]; then
+            echo "::error::Schema com menos de 20 tabelas. Não vou sobrescrever."
+            exit 1
+          fi
+          # E nunca vazar dado: --schema-only não emite COPY nem INSERT.
+          if grep -qE '^(COPY|INSERT INTO)' /tmp/schema.sql; then
+            echo "::error::O dump traz dados. Abortado para não publicar dado em repo público."
+            exit 1
+          fi
+
+          {
+            echo "-- Estrutura do banco de produção, gerada automaticamente pelo Vigia diário."
+            echo "-- NÃO EDITE À MÃO: este arquivo é sobrescrito todo dia pelo pg_dump."
+            echo "-- Contém apenas estrutura (tabelas, RLS, políticas, funções). Nenhum dado."
+            echo "--"
+            cat /tmp/schema.sql
+          } > "$DESTINO"
+
+          if git diff --quiet -- "$DESTINO"; then
+            echo "Estrutura sem mudanças desde ontem."
+          else
+            git config user.name "Vigia diário"
+            git config user.email "actions@github.com"
+            git add "$DESTINO"
+            git commit -m "chore: atualiza a estrutura do banco (automático)"
+            git push
+            echo "Estrutura atualizada e commitada."
+          fi
 
       - name: Guardar o backup por 90 dias
         if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'

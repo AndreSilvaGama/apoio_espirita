@@ -1,0 +1,12 @@
+# Artefatos do backup gerados pelo workflow Vigia diário.
+# Este repositório é PÚBLICO: nenhum dump pode ser commitado, nem por engano.
+backup/
+*.sql.gz
+*.tar.gz
+*.tar.gz.gpg
+*.dump
+
+# Segredos
+.env
+.env.local
+.env.*.local
