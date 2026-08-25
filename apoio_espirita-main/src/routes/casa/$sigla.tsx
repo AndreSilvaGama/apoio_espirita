@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import type { Json, TablesUpdate } from "@/integrations/supabase/types";
+import { mensagemDeErro } from "@/lib/erros";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Building2,
@@ -651,6 +652,7 @@ function PaginaCasa() {
   /* UI */
   const [aba, setAba] = useState<Aba>("mural");
   const [modoAdmin, setModoAdmin] = useState(false);
+  const [salvandoPublicacao, setSalvandoPublicacao] = useState(false);
 
   useEffect(() => {
     if (!loading && user && profile) {
@@ -766,9 +768,16 @@ function PaginaCasa() {
 
   const isSameCasa = profile?.sigla_casa === sigla;
 
+  // Visitante sem sessao vendo a versao publica da casa.
+  const visitantePublico = !user;
+  // A pagina so aparece a quem nao esta logado se a casa tiver publicado.
+  const paginaPublica = !!pagina?.publicada;
+
   /* ── Auth guard ── */
+  // Visitante anonimo NAO e mais expulso: se a casa publicou a pagina, ele ve a
+  // versao publica. O redirecionamento para o login so acontece depois de
+  // carregar, quando se sabe que nao ha pagina publicada para mostrar.
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
     if (
       !loading &&
       user &&
@@ -1554,6 +1563,44 @@ function PaginaCasa() {
     toast.success("Administrador removido.");
   };
 
+  const alternarPublicacao = async () => {
+    if (!pagina) return;
+    const novo = !pagina.publicada;
+    if (
+      novo &&
+      !window.confirm(
+        [
+          "Tornar esta página pública?",
+          "",
+          "Passam a ficar visíveis a qualquer pessoa: nome, descrição, missão, endereço, contatos e os horários das atividades.",
+          "",
+          "Continuam privados: mural, tarefeiros, agenda, projetos, tesouraria e a chave PIX.",
+          "",
+          "Você pode desfazer isso quando quiser.",
+        ].join(String.fromCharCode(10)),
+      )
+    )
+      return;
+
+    setSalvandoPublicacao(true);
+    const { error } = await supabase
+      .from("paginas_casas")
+      .update({ publicada: novo })
+      .eq("sigla_casa", sigla);
+    setSalvandoPublicacao(false);
+
+    if (error) {
+      toast.error(mensagemDeErro(error, "Não foi possível alterar a publicação."));
+      return;
+    }
+    setPagina((prev) => (prev ? { ...prev, publicada: novo } : prev));
+    toast.success(
+      novo
+        ? "Página publicada. Qualquer pessoa já pode encontrá-la."
+        : "Página despublicada. Voltou a exigir login.",
+    );
+  };
+
   const copiarPix = () => {
     navigator.clipboard.writeText(pagina!.chave_pix);
     setCopiado(true);
@@ -1561,7 +1608,28 @@ function PaginaCasa() {
   };
 
   /* ── Early returns ── */
-  if (loading || !user) return null;
+  if (loading) return null;
+
+  // Sem sessao e sem pagina publicada, nao ha o que mostrar a um visitante.
+  if (!user && !carregando && !paginaPublica) {
+    return (
+      <main className="page-light min-h-screen px-6 flex items-center justify-center">
+        <div className="text-center max-w-sm space-y-4">
+          <Building2 size={32} strokeWidth={1.5} className="text-muted-foreground/40 mx-auto" />
+          <p className="text-sm text-muted-foreground font-light leading-relaxed">
+            Esta casa ainda não publicou sua página. Se você faz parte dela, entre para acessar a
+            área dos membros.
+          </p>
+          <Link
+            to="/login"
+            className="inline-block text-sm text-cyan-glow hover:text-foreground transition-colors"
+          >
+            Entrar →
+          </Link>
+        </div>
+      </main>
+    );
+  }
   if (carregando)
     return (
       <main className="page-light min-h-screen pt-20 pb-20 flex items-center justify-center">
@@ -1606,7 +1674,8 @@ function PaginaCasa() {
                   chave_pix: "",
                   texto_doacao:
                     "Sua contribuição ajuda a manter os trabalhos espíritas. Qualquer valor é bem-vindo. Gratidão.",
-                  publicada: true,
+                  // Nasce privada: nenhuma casa e exposta sem alguem da direcao decidir.
+                  publicada: false,
                 });
                 if (!error) carregar();
                 else toast.error("Erro ao criar página.");
@@ -1634,7 +1703,7 @@ function PaginaCasa() {
   /* ── Filter visible events ── */
   const hoje = startOfDay(new Date());
   const eventosVisiveis = eventos.filter(
-    (e) => e.publica || isSameCasa || isAdmin || evParts[e.id]?.some((p) => p.user_id === user.id),
+    (e) => e.publica || isSameCasa || isAdmin || evParts[e.id]?.some((p) => p.user_id === user?.id),
   );
   const eventosProximos = eventosVisiveis.filter((e) => !isAfter(hoje, parseISO(e.data_evento)));
   const eventosPassados = eventosVisiveis.filter((e) => isAfter(hoje, parseISO(e.data_evento)));
@@ -1680,12 +1749,19 @@ function PaginaCasa() {
         <div className="flex gap-0.5 border-b border-white/10 mb-6 overflow-x-auto">
           {(
             [
-              ...(isSameCasa ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }] : []),
-              { id: "mural", label: "Mural", Icon: MessageSquare },
+              // Visitante publico ve so o que a casa quis divulgar. Mural,
+              // tesouraria e tarefeiros sao internos e nem aparecem como aba —
+              // alem de estarem fechados pela RLS no banco.
+              ...(isSameCasa && !visitantePublico
+                ? [{ id: "painel", label: "Painel", Icon: LayoutDashboard }]
+                : []),
+              ...(visitantePublico ? [] : [{ id: "mural", label: "Mural", Icon: MessageSquare }]),
               { id: "sobre", label: "Atividades", Icon: Info },
-              { id: "tesouraria", label: "Tesouraria", Icon: Wallet },
+              ...(visitantePublico
+                ? []
+                : [{ id: "tesouraria", label: "Tesouraria", Icon: Wallet }]),
               { id: "doacoes", label: "Doações", Icon: Heart },
-              { id: "tarefeiros", label: "Tarefeiros", Icon: Users },
+              ...(visitantePublico ? [] : [{ id: "tarefeiros", label: "Tarefeiros", Icon: Users }]),
               ...(modoAdmin ? [{ id: "configuracoes", label: "Configurações", Icon: Wrench }] : []),
             ] as { id: Aba; label: string; Icon: LucideIcon }[]
           ).map((t) => (
@@ -2312,18 +2388,18 @@ function PaginaCasa() {
                 <div className="space-y-2">
                   {[
                     ...agendaEventos.filter((e) => {
-                      const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                      const p = e.agenda_participantes.find((p) => p.user_id === user?.id);
                       return (
                         p?.confirmado === null ||
                         (!p && e.tipo === "aberto" && e.aceita_confirmacao)
                       );
                     }),
                     ...agendaEventos.filter((e) => {
-                      const p = e.agenda_participantes.find((p) => p.user_id === user.id);
+                      const p = e.agenda_participantes.find((p) => p.user_id === user?.id);
                       return p?.confirmado === true;
                     }),
                   ].map((evento) => {
-                    const minha = evento.agenda_participantes.find((p) => p.user_id === user.id);
+                    const minha = evento.agenda_participantes.find((p) => p.user_id === user?.id);
                     const pendente = minha?.confirmado === null;
                     const confirmado = minha?.confirmado === true;
                     const abertoPendente =
@@ -2787,7 +2863,27 @@ function PaginaCasa() {
                   {pagina.texto_doacao || "Sua contribuição ajuda a manter os trabalhos espíritas."}
                 </p>
               </div>
-              {pagina.chave_pix ? (
+              {/* A chave PIX NUNCA vai para o publico: exposta, permite que um
+                  golpista copie a pagina e troque a chave pela dele. Visitante
+                  ve o convite a doar e o contato da casa; a chave so aparece a
+                  quem esta logado. */}
+              {visitantePublico ? (
+                <div className="text-center space-y-3">
+                  <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-sm mx-auto">
+                    Para contribuir, fale diretamente com a casa pelos contatos em{" "}
+                    <button
+                      onClick={() => setAba("sobre")}
+                      className="text-cyan-glow hover:underline"
+                    >
+                      Atividades
+                    </button>
+                    .
+                  </p>
+                  <p className="text-xs text-muted-foreground/50 font-light">
+                    Por segurança, os dados de doação não são exibidos publicamente.
+                  </p>
+                </div>
+              ) : pagina.chave_pix ? (
                 <>
                   <div className="flex justify-center">
                     <div className="p-3 bg-white rounded-2xl shadow-sm border border-slate-100">
@@ -3118,6 +3214,71 @@ function PaginaCasa() {
                     {salvando ? "Salvando…" : "Salvar Alterações da Casa"}
                   </button>
                 </div>
+              </div>
+            </section>
+
+            {/* Bloco: Visibilidade da página */}
+            <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/40">
+              <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                <Globe className="w-5 h-5 text-violet-600" />
+                Visibilidade da página
+              </h3>
+
+              <div className="space-y-5">
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`mt-0.5 shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                      pagina.publicada
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                        : "bg-slate-50 border-slate-200 text-slate-600"
+                    }`}
+                  >
+                    {pagina.publicada ? "Pública" : "Privada"}
+                  </span>
+                  <p className="text-sm text-gray-600 font-light leading-relaxed">
+                    {pagina.publicada
+                      ? "Qualquer pessoa pode ver esta página, inclusive pelo Google. É assim que quem procura um centro espírita na região encontra a casa."
+                      : "Somente membros da casa com conta no site conseguem ver esta página."}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-violet-100/60 bg-white/50 p-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                    O que fica visível ao publicar
+                  </p>
+                  <p className="text-sm text-gray-600 font-light leading-relaxed">
+                    Nome, descrição, missão, ano de fundação, endereço, telefone, e-mail, site e os
+                    horários das atividades.
+                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 pt-2">
+                    O que continua privado
+                  </p>
+                  <p className="text-sm text-gray-600 font-light leading-relaxed">
+                    Mural, tarefeiros e seus cargos, agenda, projetos, tesouraria e a chave PIX —
+                    protegidos no próprio banco de dados, não apenas escondidos na tela.
+                  </p>
+                </div>
+
+                <button
+                  onClick={alternarPublicacao}
+                  disabled={salvandoPublicacao}
+                  className={`w-full py-3 rounded-xl text-sm uppercase tracking-widest border transition-colors disabled:opacity-40 ${
+                    pagina.publicada
+                      ? "text-slate-600 border-slate-300 hover:bg-slate-50"
+                      : "text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                  }`}
+                >
+                  {salvandoPublicacao
+                    ? "Salvando…"
+                    : pagina.publicada
+                      ? "Tornar privada"
+                      : "Publicar página"}
+                </button>
+
+                <p className="text-xs text-gray-400 font-light text-center">
+                  Reversível a qualquer momento. Antes de publicar, preencha a descrição e os
+                  horários — página vazia no Google passa má impressão a quem chega.
+                </p>
               </div>
             </section>
 

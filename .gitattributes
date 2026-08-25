@@ -1,0 +1,17 @@
+# Normaliza as quebras de linha: LF no repositório, sempre.
+# Sem isto, o git reconverte arquivos para CRLF no checkout em Windows e o
+# prettier acusa erro em TODAS as linhas — foram 558 de uma vez.
+* text=auto eol=lf
+
+# Binários não devem ser tocados.
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.mp4   binary
+*.mp3   binary
+*.woff  binary
+*.woff2 binary
+*.docx  binary
+*.gpg   binary

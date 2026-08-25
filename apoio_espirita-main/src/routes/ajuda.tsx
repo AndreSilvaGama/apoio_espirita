@@ -144,6 +144,31 @@ const FAQ: FaqItem[] = [
       "Suas sugestões e ideias de novos recursos são muito bem-vindas! Você pode registrá-las de forma rápida clicando no link 'Sugestões' no rodapé de qualquer página (ou acessando diretamente `/sugestoes`). O formulário é simplificado e pode ser preenchido até mesmo sem realizar login no sistema.",
   },
   {
+    pergunta: "O que é a página pública da casa espírita?",
+    resposta:
+      "Cada casa cadastrada tem uma página no endereço apoioespirita.com.br/casa/SIGLA. Por padrão ela é privada: só quem tem conta e pertence à casa consegue vê-la. A direção pode optar por torná-la pública, e então qualquer pessoa passa a encontrá-la, inclusive pelo Google. A finalidade é acolhimento: quem procura um centro espírita na sua cidade encontra o endereço, os horários das atividades e como entrar em contato, sem precisar criar conta nenhuma.",
+  },
+  {
+    pergunta: "O que exatamente aparece quando a página da casa é publicada?",
+    resposta:
+      "Aparece apenas o que serve para alguém de fora conhecer e visitar a casa: nome, descrição, missão, ano de fundação, endereço completo, telefone, e-mail de contato, site e a grade de horários das atividades. NADA MAIS. Permanecem invisíveis, mesmo com a página publicada: o mural de publicações, a lista de tarefeiros e seus cargos, a agenda interna, o quadro de projetos (Kanban), a tesouraria e qualquer informação sobre os membros. Essas áreas continuam exigindo login e vínculo com a casa, e são protegidas no próprio banco de dados — não apenas escondidas na tela.",
+  },
+  {
+    pergunta: "A chave PIX da casa fica visível para o público?",
+    resposta:
+      "Não, e isso é proposital. Quando um visitante sem login abre a aba Doações de uma casa publicada, ele vê apenas o convite a contribuir e a orientação de falar com a casa pelos contatos. A chave PIX e o QR Code só aparecem para quem está logado. O motivo é proteger a casa: chave PIX exposta publicamente é alvo comum de golpe, em que alguém copia a página e troca a chave pela própria, desviando as doações de quem quer ajudar.",
+  },
+  {
+    pergunta: "Como a direção publica ou despublica a página da casa?",
+    resposta:
+      "Na página da casa, clique em 'Administrar' e vá até a aba Configurações. Lá existe a opção de tornar a página pública. Toda página nova nasce PRIVADA — nenhuma casa é exposta sem que alguém da direção decida por isso. Publicar e despublicar são reversíveis a qualquer momento: ao despublicar, a página volta a exigir login imediatamente e sai do índice do site. Apenas Presidente, Vice-presidente ou um administrador nomeado da casa podem alterar isso; membros comuns não têm acesso a essa configuração, nem à edição do conteúdo da página.",
+  },
+  {
+    pergunta: "Publicar a página da casa é seguro? Que cuidados devo ter?",
+    resposta:
+      "É seguro no que diz respeito aos dados dos membros: nenhuma informação pessoal de quem frequenta a casa fica visível, em nenhuma hipótese. O que se torna público é a informação institucional que uma casa espírita normalmente já divulga: onde fica, quando abre e como falar com ela. Ainda assim, dois cuidados valem: primeiro, a decisão deve partir da direção da casa, não de um membro isolado; segundo, antes de publicar, preencha bem a descrição e os horários — uma página vazia indexada no Google passa má impressão a quem chega. Casas sem nome preenchido, aliás, não entram no índice de buscas justamente por isso.",
+  },
+  {
     pergunta: "Como funciona o processo de exclusão da minha conta?",
     resposta:
       "Sua privacidade é nossa prioridade. Se decidir não utilizar mais a plataforma, vá em 'Perfil', desça até o rodapé da página e clique no botão de exclusão permanente. O sistema removerá imediatamente todas as suas informações pessoais, vínculos com a casa espírita e preferências do banco de dados principal. Essa ação é irreversível.",
