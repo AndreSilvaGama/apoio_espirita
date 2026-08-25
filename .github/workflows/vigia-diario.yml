@@ -249,6 +249,63 @@ jobs:
             echo "Estrutura atualizada e commitada."
           fi
 
+      # As casas que publicaram sua página entram no sitemap, para quem procura
+      # um centro espírita encontrá-las no Google. Lista pela API com a chave
+      # anônima — que só enxerga página publicada, então o filtro vem do banco.
+      # Casa sem nome preenchido fica de fora: página vazia indexada é pior
+      # que página nenhuma.
+      # As casas que publicaram sua página entram no sitemap, para quem procura
+      # um centro espírita encontrá-las no Google. Lista pela API com a chave
+      # anônima — que só enxerga página publicada, então o filtro vem do banco.
+      # Casa sem nome preenchido fica de fora: página vazia indexada é pior
+      # que página nenhuma.
+      - name: Atualizar o sitemap com as casas publicadas
+        if: steps.banco.outputs.resultado == 'ok'
+        run: |
+          set -euo pipefail
+          SITEMAP=apoio_espirita-main/public/sitemap.xml
+
+          curl -s -m 30             "$SUPABASE_URL/rest/v1/paginas_casas?select=sigla_casa,nome_completo&publicada=eq.true"             -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"             > /tmp/casas.json
+
+          cat > /tmp/sitemap.py <<'PY'
+          import json, re, sys, datetime
+          arq = sys.argv[1]
+          hoje = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+          dados = json.load(open("/tmp/casas.json", encoding="utf-8"))
+          casas = sorted(c["sigla_casa"] for c in dados if (c.get("nome_completo") or "").strip())
+          s = open(arq, encoding="utf-8").read()
+          s = re.sub(r"\s*<!-- casas -->.*?<!-- /casas -->", "", s, flags=re.S)
+          if casas:
+              blocos = "".join(
+                  "
+  <url>
+    <loc>https://apoioespirita.com.br/casa/%s</loc>
+"
+                  "    <lastmod>%s</lastmod>
+    <changefreq>weekly</changefreq>
+"
+                  "    <priority>0.8</priority>
+  </url>" % (c, hoje) for c in casas)
+              s = s.replace("</urlset>", "  <!-- casas -->%s
+  <!-- /casas -->
+</urlset>" % blocos)
+          open(arq, "w", encoding="utf-8", newline="").write(s)
+          print("casas no sitemap:", len(casas))
+          PY
+          python3 /tmp/sitemap.py "$SITEMAP"
+
+          # O passo da estrutura pode ter sido pulado, entao configurar aqui tambem.
+          git config user.name "Vigia diário"
+          git config user.email "actions@github.com"
+          git add "$SITEMAP"
+          if git diff --cached --quiet -- "$SITEMAP"; then
+            echo "Sitemap sem mudanças."
+          else
+            git commit -m "chore: atualiza o sitemap com as casas publicadas (automático)"
+            git push
+            echo "Sitemap atualizado."
+          fi
+
       - name: Guardar o backup por 90 dias
         if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
         uses: actions/upload-artifact@v4
