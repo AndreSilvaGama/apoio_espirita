@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { validarSenha, TAMANHO_MINIMO_SENHA } from "@/lib/senha";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -92,6 +93,11 @@ function Login() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
+        const problema = validarSenha(password, email);
+        if (problema) {
+          setError(problema);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -200,7 +206,7 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={TAMANHO_MINIMO_SENHA}
                 className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm sm:text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
               />
               {mode === "entrar" && (
@@ -260,7 +266,7 @@ function ForgotPasswordLink({ email }: { email: string }) {
     setInfo("");
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/perfil`,
+        redirectTo: `${window.location.origin}/nova-senha`,
       });
       if (error) throw error;
       setInfo("Link enviado! Verifique seu e-mail.");

@@ -16,6 +16,7 @@ import { Route as RadioRouteImport } from './routes/radio'
 import { Route as PermissoesRouteImport } from './routes/permissoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as NovaSenhaRouteImport } from './routes/nova-senha'
 import { Route as MusicasCifrasRouteImport } from './routes/musicas-cifras'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
@@ -71,6 +72,11 @@ const PerfilRoute = PerfilRouteImport.update({
 const PainelRoute = PainelRouteImport.update({
   id: '/painel',
   path: '/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NovaSenhaRoute = NovaSenhaRouteImport.update({
+  id: '/nova-senha',
+  path: '/nova-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MusicasCifrasRoute = MusicasCifrasRouteImport.update({
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
+  '/nova-senha': typeof NovaSenhaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
+  '/nova-senha': typeof NovaSenhaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
+  '/nova-senha': typeof NovaSenhaRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
+    | '/nova-senha'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
+    | '/nova-senha'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
+    | '/nova-senha'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -378,6 +390,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
   MusicasCifrasRoute: typeof MusicasCifrasRoute
+  NovaSenhaRoute: typeof NovaSenhaRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
   PermissoesRoute: typeof PermissoesRoute
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/painel'
       fullPath: '/painel'
       preLoaderRoute: typeof PainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nova-senha': {
+      id: '/nova-senha'
+      path: '/nova-senha'
+      fullPath: '/nova-senha'
+      preLoaderRoute: typeof NovaSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/musicas-cifras': {
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MensagemDoDiaRoute: MensagemDoDiaRoute,
   MusicasCifrasRoute: MusicasCifrasRoute,
+  NovaSenhaRoute: NovaSenhaRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
   PermissoesRoute: PermissoesRoute,

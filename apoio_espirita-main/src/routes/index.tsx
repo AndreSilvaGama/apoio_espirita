@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Microscope, Infinity, Unlock, Heart, Menu, X } from "lucide-react";
+import { Microscope, Infinity as InfinityIcon, Unlock, Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Particles } from "@/components/Particles";
@@ -8,6 +8,8 @@ import { AmbientAudio } from "@/components/AmbientAudio";
 import { HelpDialog } from "@/components/HelpDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { mensagemDeErro } from "@/lib/erros";
+import { validarSenha, TAMANHO_MINIMO_SENHA } from "@/lib/senha";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -48,7 +50,7 @@ const points = [
     body: "O Espiritismo não pede que você acredite — pede que você observe, questione e comprove. Ciência, filosofia e religião caminham juntas.",
   },
   {
-    Icon: Infinity,
+    Icon: InfinityIcon,
     title: "Evolução do espírito",
     body: "Cada existência é uma oportunidade de aprender. O progresso moral não tem atalhos, mas também não tem fim.",
   },
@@ -388,12 +390,11 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
           "Não foi possível gerar a URL de autenticação com o Google. Verifique se o provedor está ativo no console do Supabase.",
         );
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Google OAuth error:", e);
-      const msg = e.message || "Erro ao conectar com o Google.";
+      const msg = mensagemDeErro(e, "Erro ao conectar com o Google.");
       setError(msg);
       toast.error(msg);
-      alert("Erro ao conectar com o Google: " + msg);
     }
   };
 
@@ -403,12 +404,12 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
     setSubmitting(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/perfil`,
+        redirectTo: `${window.location.origin}/nova-senha`,
       });
       if (error) throw error;
       setInfo("Enviamos um link para redefinir sua senha. Verifique seu e-mail.");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erro inesperado.");
+      setError(mensagemDeErro(e, "Erro inesperado."));
     } finally {
       setSubmitting(false);
     }
@@ -424,6 +425,11 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
         if (error) throw error;
         navigate({ to: "/inicio" });
       } else {
+        const problema = validarSenha(password, email);
+        if (problema) {
+          setError(problema);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -433,7 +439,7 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
         setInfo("Verifique seu e-mail para confirmar o cadastro.");
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? translateAuthError(e.message) : "Erro inesperado.");
+      setError(mensagemDeErro(e, "Erro inesperado."));
     } finally {
       setSubmitting(false);
     }
@@ -572,7 +578,7 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={TAMANHO_MINIMO_SENHA}
                     className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-4 text-base text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
                   />
                   {mode === "entrar" && (
@@ -608,12 +614,4 @@ function InlineLogin({ user }: { user: ReturnType<typeof useAuth>["user"] }) {
       </div>
     </section>
   );
-}
-
-function translateAuthError(msg: string) {
-  if (msg.includes("Invalid login credentials")) return "E-mail ou senha incorretos.";
-  if (msg.includes("Email not confirmed")) return "Confirme seu e-mail antes de entrar.";
-  if (msg.includes("User already registered")) return "Este e-mail já está cadastrado.";
-  if (msg.includes("Password should be")) return "A senha deve ter pelo menos 6 caracteres.";
-  return msg;
 }

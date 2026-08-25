@@ -17,6 +17,7 @@ Disallow: /inicio
 Disallow: /kanban
 Disallow: /login
 Disallow: /mensagem-do-dia
+Disallow: /nova-senha
 Disallow: /painel
 Disallow: /perfil
 Disallow: /permissoes
