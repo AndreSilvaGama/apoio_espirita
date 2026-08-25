@@ -19,6 +19,16 @@ permissions:
 
 env:
   SUPABASE_URL: https://kitmwxfwwujygcmdjngm.supabase.co
+  # Conexao ao Postgres por variaveis separadas, NAO por URI.
+  # Uma URI quebra quando a senha tem @ ! # / : ? ou acento — e pior: o libpq
+  # trata o resto como nome de host e IMPRIME esse pedaco na mensagem de erro.
+  # Em repositorio publico isso vaza a senha no log. Com PG* isso nao ocorre.
+  # Host e usuario nao sao segredo (a ref do projeto ja e publica no repo).
+  PGHOST: aws-1-us-east-1.pooler.supabase.com
+  PGPORT: "5432"
+  PGUSER: postgres.kitmwxfwwujygcmdjngm
+  PGDATABASE: postgres
+  PGSSLMODE: require
   # Chave anônima: pública por natureza, protegida pela RLS. Não é segredo.
   SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpdG13eGZ3d3VqeWdjbWRqbmdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjEwNTYsImV4cCI6MjA5NDA5NzA1Nn0.Er_7LFPyup8LjcFaGuIAKMHcIVzJfbU-ihVs_r-IkXE
 
@@ -124,15 +134,15 @@ jobs:
       #    repositório é PÚBLICO — por isso o dump é cifrado com uma senha que
       #    só o Andre tem antes de virar artefato. Sem a senha, o arquivo é
       #    inútil para quem baixar.
-      #    Exige dois segredos no repositório: SUPABASE_DB_URL e BACKUP_PASSPHRASE.
+      #    Exige dois segredos no repositório: SUPABASE_DB_PASSWORD e BACKUP_PASSPHRASE.
       - name: Verificar se o backup está configurado
         id: cfg_backup
         run: |
-          if [ -n "${{ secrets.SUPABASE_DB_URL }}" ] && [ -n "${{ secrets.BACKUP_PASSPHRASE }}" ]; then
+          if [ -n "${{ secrets.SUPABASE_DB_PASSWORD }}" ] && [ -n "${{ secrets.BACKUP_PASSPHRASE }}" ]; then
             echo "pronto=sim" >> "$GITHUB_OUTPUT"
           else
             echo "pronto=nao" >> "$GITHUB_OUTPUT"
-            echo "::warning::Backup não configurado. Cadastre os segredos SUPABASE_DB_URL e BACKUP_PASSPHRASE."
+            echo "::warning::Backup não configurado. Cadastre os segredos SUPABASE_DB_PASSWORD e BACKUP_PASSPHRASE."
           fi
 
       - name: Instalar o cliente PostgreSQL 17
@@ -152,7 +162,7 @@ jobs:
       - name: Gerar backup criptografado
         if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
         env:
-          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SENHA: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           set -euo pipefail
@@ -160,14 +170,14 @@ jobs:
           mkdir -p backup
 
           # Estrutura + dados do schema da aplicação.
-          pg_dump "$DB_URL" \
+          pg_dump \
             --schema=public \
             --no-owner --no-privileges \
             --clean --if-exists \
             --file=backup/apoio-espirita-$CARIMBO.sql
 
           # Contas de acesso. Sem isto, restaurar traz os perfis mas ninguém entra.
-          pg_dump "$DB_URL" \
+          pg_dump \
             --schema=auth --data-only \
             --no-owner --no-privileges \
             --file=backup/auth-users-$CARIMBO.sql
@@ -195,12 +205,12 @@ jobs:
       - name: Atualizar a estrutura do banco no repositório
         if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
         env:
-          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           DESTINO=apoio_espirita-main/supabase/schema.sql
 
-          pg_dump "$DB_URL" \
+          pg_dump \
             --schema=public --schema-only \
             --no-owner --no-privileges \
             --file=/tmp/schema.sql
