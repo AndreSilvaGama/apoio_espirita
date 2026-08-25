@@ -112,7 +112,86 @@ jobs:
               labels: ['vigia'],
             });
 
-      # 4) Envia o resumo diário (a função que nunca chegou a rodar).
+      # 4) Backup criptografado do banco.
+      #    O plano Free do Supabase não oferece backup para download, e este
+      #    repositório é PÚBLICO — por isso o dump é cifrado com uma senha que
+      #    só o Andre tem antes de virar artefato. Sem a senha, o arquivo é
+      #    inútil para quem baixar.
+      #    Exige dois segredos no repositório: SUPABASE_DB_URL e BACKUP_PASSPHRASE.
+      - name: Verificar se o backup está configurado
+        id: cfg_backup
+        run: |
+          if [ -n "${{ secrets.SUPABASE_DB_URL }}" ] && [ -n "${{ secrets.BACKUP_PASSPHRASE }}" ]; then
+            echo "pronto=sim" >> "$GITHUB_OUTPUT"
+          else
+            echo "pronto=nao" >> "$GITHUB_OUTPUT"
+            echo "::warning::Backup não configurado. Cadastre os segredos SUPABASE_DB_URL e BACKUP_PASSPHRASE."
+          fi
+
+      - name: Instalar o cliente PostgreSQL 17
+        if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
+        run: |
+          # O runner traz um pg_dump mais antigo que o servidor (Postgres 17),
+          # e versões diferentes recusam o dump.
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          pg_dump --version
+
+      - name: Gerar backup criptografado
+        if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SENHA: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          CARIMBO=$(date -u +%Y-%m-%d)
+          mkdir -p backup
+
+          # Estrutura + dados do schema da aplicação.
+          pg_dump "$DB_URL" \
+            --schema=public \
+            --no-owner --no-privileges \
+            --clean --if-exists \
+            --file=backup/apoio-espirita-$CARIMBO.sql
+
+          # Contas de acesso. Sem isto, restaurar traz os perfis mas ninguém entra.
+          pg_dump "$DB_URL" \
+            --schema=auth --data-only \
+            --no-owner --no-privileges \
+            --file=backup/auth-users-$CARIMBO.sql
+
+          LINHAS=$(wc -l < backup/apoio-espirita-$CARIMBO.sql)
+          echo "Dump gerado: $LINHAS linhas"
+          if [ "$LINHAS" -lt 50 ]; then
+            echo "::error::Dump suspeito de vazio ($LINHAS linhas). Backup abortado."
+            exit 1
+          fi
+
+          tar -czf backup.tar.gz -C backup .
+          gpg --batch --yes --symmetric --cipher-algo AES256 \
+            --passphrase "$SENHA" \
+            --output apoio-espirita-$CARIMBO.tar.gz.gpg \
+            backup.tar.gz
+          rm -rf backup backup.tar.gz
+
+          echo "Arquivo cifrado: $(du -h apoio-espirita-$CARIMBO.tar.gz.gpg | cut -f1)"
+          echo "carimbo=$CARIMBO" >> "$GITHUB_ENV"
+
+      - name: Guardar o backup por 90 dias
+        if: steps.banco.outputs.resultado == 'ok' && steps.cfg_backup.outputs.pronto == 'sim'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ env.carimbo }}
+          path: "*.tar.gz.gpg"
+          retention-days: 90
+          if-no-files-found: error
+
+      # 5) Envia o resumo diário (a função que nunca chegou a rodar).
       #    Só tenta se o banco estiver de pé, para não gerar ruído.
       - name: Enviar resumo diário
         if: steps.banco.outputs.resultado == 'ok'
@@ -126,7 +205,7 @@ jobs:
           echo "HTTP $STATUS"
           cat /tmp/resp.json || true
 
-      # 5) Falha o job para o GitHub avisar por e-mail, além da issue.
+      # 6) Falha o job para o GitHub avisar por e-mail, além da issue.
       - name: Encerrar com erro se algo caiu
         if: steps.banco.outputs.resultado == 'falhou' || steps.site.outputs.resultado == 'falhou'
         run: |
