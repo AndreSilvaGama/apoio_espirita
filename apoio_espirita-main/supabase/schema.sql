@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict gawjnMbztlUddMuoY5VjYLeI8KFjPNCqnvNGwyMPH363ep2qblNHFfvJOfGRej5
+\restrict VMMcBaUEnBZMkyGlt6xFdUm6QjZY9fmJldXtFTIG2WIvqUBr39aDBfJvNAuKzRV
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -149,6 +149,30 @@ CREATE FUNCTION public.minha_sigla_casa() RETURNS text
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'public'
     AS $$ SELECT sigla_casa FROM public.profiles WHERE id = auth.uid() $$;
+
+
+--
+-- Name: pode_administrar_pagina(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_administrar_pagina(p_sigla text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+      AND (
+        cargo_principal = 'DEV'
+        OR (sigla_casa = p_sigla
+            AND cargo_principal IN ('Presidente', 'Vice-presidente'))
+      )
+  )
+  OR EXISTS (
+    SELECT 1 FROM public.administradores_pagina
+    WHERE sigla_casa = p_sigla AND user_id = auth.uid()
+  )
+$$;
 
 
 --
@@ -489,7 +513,7 @@ CREATE TABLE public.paginas_casas (
     horarios jsonb DEFAULT '[]'::jsonb NOT NULL,
     chave_pix text DEFAULT ''::text NOT NULL,
     texto_doacao text DEFAULT 'Sua contribuição ajuda a manter os trabalhos espíritas. Qualquer valor é bem-vindo. Gratidão.'::text NOT NULL,
-    publicada boolean DEFAULT true NOT NULL,
+    publicada boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -1708,7 +1732,14 @@ ALTER TABLE public.paginas_casas ENABLE ROW LEVEL SECURITY;
 -- Name: paginas_casas paginas_casas_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY paginas_casas_insert ON public.paginas_casas FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY paginas_casas_insert ON public.paginas_casas FOR INSERT TO authenticated WITH CHECK (public.pode_administrar_pagina(sigla_casa));
+
+
+--
+-- Name: paginas_casas paginas_casas_leitura_publica; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY paginas_casas_leitura_publica ON public.paginas_casas FOR SELECT TO anon USING ((publicada = true));
 
 
 --
@@ -1722,7 +1753,7 @@ CREATE POLICY paginas_casas_select ON public.paginas_casas FOR SELECT TO authent
 -- Name: paginas_casas paginas_casas_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY paginas_casas_update ON public.paginas_casas FOR UPDATE TO authenticated USING (true);
+CREATE POLICY paginas_casas_update ON public.paginas_casas FOR UPDATE TO authenticated USING (public.pode_administrar_pagina(sigla_casa)) WITH CHECK (public.pode_administrar_pagina(sigla_casa));
 
 
 --
@@ -2124,5 +2155,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict gawjnMbztlUddMuoY5VjYLeI8KFjPNCqnvNGwyMPH363ep2qblNHFfvJOfGRej5
+\unrestrict VMMcBaUEnBZMkyGlt6xFdUm6QjZY9fmJldXtFTIG2WIvqUBr39aDBfJvNAuKzRV
 
