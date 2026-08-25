@@ -12,10 +12,10 @@
 
 ## Mapa de arquivos
 
-| Arquivo | Ação | Responsabilidade |
-|---|---|---|
+| Arquivo                 | Ação      | Responsabilidade                                                   |
+| ----------------------- | --------- | ------------------------------------------------------------------ |
 | `src/routes/kanban.tsx` | Modificar | Tipos, estado, handlers, KanbanCard, GruposPanel e sub-componentes |
-| Supabase | Migration | Tabelas `kanban_grupos` e `kanban_tarefas` com RLS |
+| Supabase                | Migration | Tabelas `kanban_grupos` e `kanban_tarefas` com RLS                 |
 
 ---
 
@@ -92,6 +92,7 @@ CREATE POLICY "qualquer membro exclui tarefas"
 - [ ] **Step 2: Verificar tabelas criadas**
 
 Usar `mcp__claude_ai_Supabase__execute_sql`:
+
 ```sql
 SELECT table_name, column_name, data_type
 FROM information_schema.columns
@@ -106,17 +107,35 @@ Expected: `kanban_grupos` com 9 colunas, `kanban_tarefas` com 10 colunas.
 ## Task 2: Novos tipos, estado e handlers em KanbanPage
 
 **Files:**
+
 - Modify: `src/routes/kanban.tsx`
 
 - [ ] **Step 1: Adicionar imports necessários**
 
 Substituir a linha de import do lucide-react:
+
 ```tsx
 import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare } from "lucide-react";
 ```
+
 Por:
+
 ```tsx
-import { Plus, Calendar, User, Pencil, Trash2, X, KanbanSquare, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  User,
+  Pencil,
+  Trash2,
+  X,
+  KanbanSquare,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  Users,
+} from "lucide-react";
 ```
 
 - [ ] **Step 2: Adicionar interfaces KanbanGrupo e KanbanTarefa**
@@ -152,6 +171,7 @@ interface KanbanGrupo {
 - [ ] **Step 3: Adicionar helper corPrazo após fmtData**
 
 Após a função `fmtData`, adicionar:
+
 ```tsx
 function corPrazo(prazo: string | null): string {
   if (!prazo) return "text-muted-foreground/50";
@@ -169,10 +189,11 @@ function corPrazo(prazo: string | null): string {
 - [ ] **Step 4: Adicionar novo estado ao KanbanPage**
 
 Após a linha `const [formError, setFormError] = useState("");`, adicionar:
+
 ```tsx
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [grupos, setGrupos] = useState<Record<string, KanbanGrupo[]>>({});
-  const [loadingGrupos, setLoadingGrupos] = useState<Record<string, boolean>>({});
+const [expandedId, setExpandedId] = useState<string | null>(null);
+const [grupos, setGrupos] = useState<Record<string, KanbanGrupo[]>>({});
+const [loadingGrupos, setLoadingGrupos] = useState<Record<string, boolean>>({});
 ```
 
 - [ ] **Step 5: Adicionar funções fetchGrupos, handleToggleExpand e handleStatusChange**
@@ -180,89 +201,98 @@ Após a linha `const [formError, setFormError] = useState("");`, adicionar:
 Após a função `handleDelete` (após o `};` que a fecha), adicionar:
 
 ```tsx
-  const fetchGrupos = async (eventoId: string, sigla: string) => {
-    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: true }));
-    const { data } = await supabase
-      .from("kanban_grupos")
-      .select("*, kanban_tarefas(*)")
-      .eq("evento_id", eventoId)
-      .eq("sigla_casa", sigla)
-      .order("ordem");
-    const sorted = ((data as KanbanGrupo[]) ?? []).map((g) => ({
-      ...g,
-      kanban_tarefas: [...g.kanban_tarefas].sort((a, b) => a.ordem - b.ordem),
-    }));
-    setGrupos((prev) => ({ ...prev, [eventoId]: sorted }));
-    setLoadingGrupos((prev) => ({ ...prev, [eventoId]: false }));
-  };
+const fetchGrupos = async (eventoId: string, sigla: string) => {
+  setLoadingGrupos((prev) => ({ ...prev, [eventoId]: true }));
+  const { data } = await supabase
+    .from("kanban_grupos")
+    .select("*, kanban_tarefas(*)")
+    .eq("evento_id", eventoId)
+    .eq("sigla_casa", sigla)
+    .order("ordem");
+  const sorted = ((data as KanbanGrupo[]) ?? []).map((g) => ({
+    ...g,
+    kanban_tarefas: [...g.kanban_tarefas].sort((a, b) => a.ordem - b.ordem),
+  }));
+  setGrupos((prev) => ({ ...prev, [eventoId]: sorted }));
+  setLoadingGrupos((prev) => ({ ...prev, [eventoId]: false }));
+};
 
-  const handleToggleExpand = (eventoId: string) => {
-    if (expandedId === eventoId) { setExpandedId(null); return; }
-    setExpandedId(eventoId);
-    if (!grupos[eventoId] && profile?.sigla_casa) fetchGrupos(eventoId, profile.sigla_casa);
-  };
+const handleToggleExpand = (eventoId: string) => {
+  if (expandedId === eventoId) {
+    setExpandedId(null);
+    return;
+  }
+  setExpandedId(eventoId);
+  if (!grupos[eventoId] && profile?.sigla_casa) fetchGrupos(eventoId, profile.sigla_casa);
+};
 
-  const handleStatusChange = async (evento: KanbanEvento, direction: "prev" | "next") => {
-    const idx = COLUNAS.findIndex((c) => c.status === evento.status);
-    const newIdx = direction === "next" ? idx + 1 : idx - 1;
-    if (newIdx < 0 || newIdx >= COLUNAS.length) return;
-    const novoStatus = COLUNAS[newIdx].status;
-    const statusAnterior = evento.status;
-    setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: novoStatus } : e));
-    const { error } = await supabase
-      .from("kanban_eventos")
-      .update({ status: novoStatus })
-      .eq("id", evento.id);
-    if (error) setEventos((prev) => prev.map((e) => e.id === evento.id ? { ...e, status: statusAnterior } : e));
-  };
+const handleStatusChange = async (evento: KanbanEvento, direction: "prev" | "next") => {
+  const idx = COLUNAS.findIndex((c) => c.status === evento.status);
+  const newIdx = direction === "next" ? idx + 1 : idx - 1;
+  if (newIdx < 0 || newIdx >= COLUNAS.length) return;
+  const novoStatus = COLUNAS[newIdx].status;
+  const statusAnterior = evento.status;
+  setEventos((prev) => prev.map((e) => (e.id === evento.id ? { ...e, status: novoStatus } : e)));
+  const { error } = await supabase
+    .from("kanban_eventos")
+    .update({ status: novoStatus })
+    .eq("id", evento.id);
+  if (error)
+    setEventos((prev) =>
+      prev.map((e) => (e.id === evento.id ? { ...e, status: statusAnterior } : e)),
+    );
+};
 ```
 
 - [ ] **Step 6: Atualizar chamada de KanbanColumn no JSX**
 
 Localizar o bloco onde `KanbanColumn` é renderizado (dentro do `DndContext`):
+
 ```tsx
-                <KanbanColumn
-                  key={col.status}
-                  status={col.status}
-                  label={col.label}
-                  borda={col.borda}
-                  corHeader={col.corHeader}
-                  bgOver={col.bgOver}
-                  eventos={eventos.filter((e) => e.status === col.status)}
-                  userId={user.id}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onNewCard={openCreate}
-                />
+<KanbanColumn
+  key={col.status}
+  status={col.status}
+  label={col.label}
+  borda={col.borda}
+  corHeader={col.corHeader}
+  bgOver={col.bgOver}
+  eventos={eventos.filter((e) => e.status === col.status)}
+  userId={user.id}
+  onEdit={openEdit}
+  onDelete={handleDelete}
+  onNewCard={openCreate}
+/>
 ```
 
 Substituir por:
+
 ```tsx
-                <KanbanColumn
-                  key={col.status}
-                  status={col.status}
-                  label={col.label}
-                  borda={col.borda}
-                  corHeader={col.corHeader}
-                  bgOver={col.bgOver}
-                  eventos={eventos.filter((e) => e.status === col.status)}
-                  userId={user.id}
-                  expandedId={expandedId}
-                  grupos={grupos}
-                  loadingGrupos={loadingGrupos}
-                  sigla={profile?.sigla_casa ?? ""}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onNewCard={openCreate}
-                  onToggleExpand={handleToggleExpand}
-                  onStatusChange={handleStatusChange}
-                  onRefreshGrupos={fetchGrupos}
-                />
+<KanbanColumn
+  key={col.status}
+  status={col.status}
+  label={col.label}
+  borda={col.borda}
+  corHeader={col.corHeader}
+  bgOver={col.bgOver}
+  eventos={eventos.filter((e) => e.status === col.status)}
+  userId={user.id}
+  expandedId={expandedId}
+  grupos={grupos}
+  loadingGrupos={loadingGrupos}
+  sigla={profile?.sigla_casa ?? ""}
+  onEdit={openEdit}
+  onDelete={handleDelete}
+  onNewCard={openCreate}
+  onToggleExpand={handleToggleExpand}
+  onStatusChange={handleStatusChange}
+  onRefreshGrupos={fetchGrupos}
+/>
 ```
 
 - [ ] **Step 7: Atualizar interface e implementação de KanbanColumn**
 
 Substituir a interface `KanbanColumnProps` existente:
+
 ```tsx
 interface KanbanColumnProps {
   status: Status;
@@ -279,6 +309,7 @@ interface KanbanColumnProps {
 ```
 
 Por:
+
 ```tsx
 interface KanbanColumnProps {
   status: Status;
@@ -304,42 +335,40 @@ interface KanbanColumnProps {
 Substituir a linha da função `KanbanColumn` (a desestruturação dos props) e o `KanbanCard` interno:
 
 Linha da função (de):
+
 ```tsx
 function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, onEdit, onDelete, onNewCard }: KanbanColumnProps) {
 ```
 
 Para:
+
 ```tsx
 function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, expandedId, grupos, loadingGrupos, sigla, onEdit, onDelete, onNewCard, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanColumnProps) {
 ```
 
 Dentro do `KanbanColumn`, substituir a chamada de `KanbanCard`:
+
 ```tsx
-          <KanbanCard
-            key={evento.id}
-            evento={evento}
-            userId={userId}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+<KanbanCard key={evento.id} evento={evento} userId={userId} onEdit={onEdit} onDelete={onDelete} />
 ```
 
 Por:
+
 ```tsx
-          <KanbanCard
-            key={evento.id}
-            evento={evento}
-            userId={userId}
-            expanded={expandedId === evento.id}
-            gruposData={grupos[evento.id] ?? []}
-            loadingGrupos={loadingGrupos[evento.id] ?? false}
-            sigla={sigla}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleExpand={() => onToggleExpand(evento.id)}
-            onStatusChange={(dir) => onStatusChange(evento, dir)}
-            onRefreshGrupos={() => onRefreshGrupos(evento.id, sigla)}
-          />
+<KanbanCard
+  key={evento.id}
+  evento={evento}
+  userId={userId}
+  expanded={expandedId === evento.id}
+  gruposData={grupos[evento.id] ?? []}
+  loadingGrupos={loadingGrupos[evento.id] ?? false}
+  sigla={sigla}
+  onEdit={onEdit}
+  onDelete={onDelete}
+  onToggleExpand={() => onToggleExpand(evento.id)}
+  onStatusChange={(dir) => onStatusChange(evento, dir)}
+  onRefreshGrupos={() => onRefreshGrupos(evento.id, sigla)}
+/>
 ```
 
 - [ ] **Step 8: Build para verificar tipos**
@@ -363,11 +392,13 @@ git commit -m "feat: adiciona tipos, estado e handlers para grupos e tarefas"
 ## Task 3: Atualizar KanbanCard
 
 **Files:**
+
 - Modify: `src/routes/kanban.tsx`
 
 - [ ] **Step 1: Substituir interface e implementação de KanbanCard**
 
 Substituir a interface `KanbanCardProps` existente:
+
 ```tsx
 interface KanbanCardProps {
   evento: KanbanEvento;
@@ -378,6 +409,7 @@ interface KanbanCardProps {
 ```
 
 Por:
+
 ```tsx
 interface KanbanCardProps {
   evento: KanbanEvento;
@@ -399,8 +431,22 @@ interface KanbanCardProps {
 Substituir toda a função `KanbanCard` (de `function KanbanCard` até o `}` final) por:
 
 ```tsx
-function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla, onEdit, onDelete, onToggleExpand, onStatusChange, onRefreshGrupos }: KanbanCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: evento.id });
+function KanbanCard({
+  evento,
+  userId,
+  expanded,
+  gruposData,
+  loadingGrupos,
+  sigla,
+  onEdit,
+  onDelete,
+  onToggleExpand,
+  onStatusChange,
+  onRefreshGrupos,
+}: KanbanCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: evento.id,
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -410,7 +456,10 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
   const isCriador = evento.criador_id === userId;
   const statusIdx = COLUNAS.findIndex((c) => c.status === evento.status);
   const totalTarefas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.length, 0);
-  const totalFeitas = gruposData.reduce((acc, g) => acc + g.kanban_tarefas.filter((t) => t.feito).length, 0);
+  const totalFeitas = gruposData.reduce(
+    (acc, g) => acc + g.kanban_tarefas.filter((t) => t.feito).length,
+    0,
+  );
 
   return (
     <div
@@ -428,24 +477,27 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
             className="cursor-grab active:cursor-grabbing select-none pt-0.5 shrink-0 text-gray-300 hover:text-gray-400"
           >
             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-              <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
-              <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
-              <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
+              <circle cx="2" cy="2" r="1.5" />
+              <circle cx="8" cy="2" r="1.5" />
+              <circle cx="2" cy="8" r="1.5" />
+              <circle cx="8" cy="8" r="1.5" />
+              <circle cx="2" cy="14" r="1.5" />
+              <circle cx="8" cy="14" r="1.5" />
             </svg>
           </div>
 
           {/* Título clicável para expandir */}
-          <button
-            onClick={onToggleExpand}
-            className="flex-1 text-left"
-          >
+          <button onClick={onToggleExpand} className="flex-1 text-left">
             <p className="text-sm font-medium text-gray-800 leading-snug">{evento.titulo}</p>
           </button>
 
           {/* Setas de status */}
           <div className="flex items-center gap-0.5 shrink-0">
             <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("prev"); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusChange("prev");
+              }}
               disabled={statusIdx === 0}
               className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
             >
@@ -455,7 +507,10 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
               {COLUNAS[statusIdx]?.label}
             </span>
             <button
-              onClick={(e) => { e.stopPropagation(); onStatusChange("next"); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusChange("next");
+              }}
               disabled={statusIdx === COLUNAS.length - 1}
               className="p-1 rounded text-gray-300 hover:text-gray-500 disabled:opacity-20 transition-colors"
             >
@@ -491,27 +546,29 @@ function KanbanCard({ evento, userId, expanded, gruposData, loadingGrupos, sigla
             onClick={onToggleExpand}
             className="flex items-center gap-1 text-xs text-cyan-600/70 hover:text-cyan-600 transition-colors"
           >
-            {expanded
-              ? <ChevronUp size={11} />
-              : <ChevronDown size={11} />
-            }
+            {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             {gruposData.length > 0
               ? `${gruposData.length} grupo${gruposData.length !== 1 ? "s" : ""} · ${totalTarefas} tarefa${totalTarefas !== 1 ? "s" : ""} (${totalFeitas} feita${totalFeitas !== 1 ? "s" : ""})`
-              : "Grupos de trabalho"
-            }
+              : "Grupos de trabalho"}
           </button>
 
           {/* Editar / excluir (só criador) */}
           {isCriador && (
             <div className="flex gap-1">
               <button
-                onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(evento);
+                }}
                 className="p-1 rounded text-muted-foreground/30 hover:text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <Pencil size={11} />
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(evento.id);
+                }}
                 className="p-1 rounded text-red-300/50 hover:text-red-500 hover:bg-red-50 transition-colors"
               >
                 <Trash2 size={11} />
@@ -557,6 +614,7 @@ git commit -m "feat: KanbanCard com setas de status e expansão inline"
 ## Task 4: Implementar GruposPanel e sub-componentes
 
 **Files:**
+
 - Modify: `src/routes/kanban.tsx` (adicionar ao final do arquivo)
 
 - [ ] **Step 1: Adicionar GruposPanel ao final do arquivo**
@@ -585,12 +643,7 @@ function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPane
         <>
           <div className="space-y-3">
             {grupos.map((grupo) => (
-              <GrupoItem
-                key={grupo.id}
-                grupo={grupo}
-                sigla={sigla}
-                onRefresh={onRefresh}
-              />
+              <GrupoItem key={grupo.id} grupo={grupo} sigla={sigla} onRefresh={onRefresh} />
             ))}
           </div>
 
@@ -599,7 +652,10 @@ function GruposPanel({ eventoId, sigla, grupos, loading, onRefresh }: GruposPane
               eventoId={eventoId}
               sigla={sigla}
               nextOrdem={grupos.length}
-              onSaved={() => { setShowFormGrupo(false); onRefresh(); }}
+              onSaved={() => {
+                setShowFormGrupo(false);
+                onRefresh();
+              }}
               onCancel={() => setShowFormGrupo(false)}
             />
           ) : (
@@ -636,11 +692,17 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
   const handleSaveGrupo = async () => {
     if (!eName.trim()) return;
     setSaving(true);
-    await supabase.from("kanban_grupos").update({
-      nome: eName.trim(),
-      responsavel: eResp.trim() || null,
-      membros: eMembros.split(",").map((m) => m.trim()).filter(Boolean),
-    }).eq("id", grupo.id);
+    await supabase
+      .from("kanban_grupos")
+      .update({
+        nome: eName.trim(),
+        responsavel: eResp.trim() || null,
+        membros: eMembros
+          .split(",")
+          .map((m) => m.trim())
+          .filter(Boolean),
+      })
+      .eq("id", grupo.id);
     setSaving(false);
     setEditing(false);
     onRefresh();
@@ -705,7 +767,8 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
             )}
             {grupo.kanban_tarefas.length > 0 && (
               <p className="text-xs text-muted-foreground/40 mt-0.5">
-                {completadas}/{grupo.kanban_tarefas.length} tarefa{grupo.kanban_tarefas.length !== 1 ? "s" : ""}
+                {completadas}/{grupo.kanban_tarefas.length} tarefa
+                {grupo.kanban_tarefas.length !== 1 ? "s" : ""}
               </p>
             )}
           </div>
@@ -730,11 +793,7 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
       {grupo.kanban_tarefas.length > 0 && (
         <div className="border-t border-gray-50 divide-y divide-gray-50">
           {grupo.kanban_tarefas.map((tarefa) => (
-            <TarefaItem
-              key={tarefa.id}
-              tarefa={tarefa}
-              onRefresh={onRefresh}
-            />
+            <TarefaItem key={tarefa.id} tarefa={tarefa} onRefresh={onRefresh} />
           ))}
         </div>
       )}
@@ -746,7 +805,10 @@ function GrupoItem({ grupo, sigla, onRefresh }: GrupoItemProps) {
             grupoId={grupo.id}
             sigla={sigla}
             nextOrdem={grupo.kanban_tarefas.length}
-            onSaved={() => { setShowFormTarefa(false); onRefresh(); }}
+            onSaved={() => {
+              setShowFormTarefa(false);
+              onRefresh();
+            }}
             onCancel={() => setShowFormTarefa(false)}
           />
         ) : (
@@ -802,7 +864,9 @@ function TarefaItem({ tarefa, onRefresh }: TarefaItemProps) {
 
       {/* Conteúdo */}
       <div className="flex-1 min-w-0">
-        <p className={`text-xs leading-snug ${tarefa.feito ? "line-through text-muted-foreground/40" : "text-gray-700"}`}>
+        <p
+          className={`text-xs leading-snug ${tarefa.feito ? "line-through text-muted-foreground/40" : "text-gray-700"}`}
+        >
           {tarefa.titulo}
         </p>
         {(tarefa.responsavel || tarefa.prazo) && (
@@ -852,7 +916,10 @@ function FormNovoGrupo({ eventoId, sigla, nextOrdem, onSaved, onCancel }: FormNo
       sigla_casa: sigla,
       nome: nome.trim(),
       responsavel: resp.trim() || null,
-      membros: membros.split(",").map((m) => m.trim()).filter(Boolean),
+      membros: membros
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean),
       ordem: nextOrdem,
     });
     setSaving(false);
@@ -994,6 +1061,7 @@ git commit -m "feat: GruposPanel, GrupoItem, TarefaItem e forms inline"
 ## Task 5: Roadmap + deploy + push
 
 **Files:**
+
 - Modify: `src/routes/painel.tsx`
 
 - [ ] **Step 1: Atualizar roadmap**

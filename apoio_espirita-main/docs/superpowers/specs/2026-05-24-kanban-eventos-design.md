@@ -105,12 +105,12 @@ KanbanPage
 
 ### Colunas e cores
 
-| Status | Label | Cor de destaque |
-|---|---|---|
-| `ideia` | Ideia | cinza (`text-muted-foreground`) |
-| `planejando` | Planejando | âmbar (`text-amber-600`) |
-| `confirmado` | Confirmado | ciano (`text-cyan-glow`) |
-| `realizado` | Realizado | esmeralda (`text-emerald-600`) |
+| Status       | Label      | Cor de destaque                 |
+| ------------ | ---------- | ------------------------------- |
+| `ideia`      | Ideia      | cinza (`text-muted-foreground`) |
+| `planejando` | Planejando | âmbar (`text-amber-600`)        |
+| `confirmado` | Confirmado | ciano (`text-cyan-glow`)        |
+| `realizado`  | Realizado  | esmeralda (`text-emerald-600`)  |
 
 ### Card
 
@@ -138,13 +138,13 @@ KanbanPage
 
 ## Permissões
 
-| Ação | Quem pode |
-|---|---|
-| Ver cards da casa | Qualquer membro autenticado |
-| Criar card | Qualquer membro |
-| Mover card (status) | Qualquer membro |
-| Editar campos do card | Somente o criador |
-| Excluir card | Somente o criador |
+| Ação                  | Quem pode                   |
+| --------------------- | --------------------------- |
+| Ver cards da casa     | Qualquer membro autenticado |
+| Criar card            | Qualquer membro             |
+| Mover card (status)   | Qualquer membro             |
+| Editar campos do card | Somente o criador           |
+| Excluir card          | Somente o criador           |
 
 > Nota: permissões temporárias — todos os membros podem criar e mover. Revisar quando o sistema de permissões evoluir.
 

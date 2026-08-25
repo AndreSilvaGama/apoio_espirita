@@ -1,680 +1,864 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mobile — Apoio Espírita</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile — Apoio Espírita</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-:root {
-  --blue:      #004a8c;
-  --blue-mid:  #1863a8;
-  --blue-pale: #ebf0f9;
-  --blue-dim:  rgba(0,74,140,.07);
-  --gold:      #b08826;
-  --gold-pale: #faf5e8;
-  --gold-border: rgba(176,136,38,.3);
-  --ink:       #111418;
-  --ink-2:     #2e3540;
-  --ink-3:     #637080;
-  --ink-4:     #a3adb8;
-  --surface:   #ffffff;
-  --bg:        #f7f8fc;
-  --border:    rgba(0,20,70,.08);
-  --border-2:  rgba(0,20,70,.15);
-}
+      :root {
+        --blue: #004a8c;
+        --blue-mid: #1863a8;
+        --blue-pale: #ebf0f9;
+        --blue-dim: rgba(0, 74, 140, 0.07);
+        --gold: #b08826;
+        --gold-pale: #faf5e8;
+        --gold-border: rgba(176, 136, 38, 0.3);
+        --ink: #111418;
+        --ink-2: #2e3540;
+        --ink-3: #637080;
+        --ink-4: #a3adb8;
+        --surface: #ffffff;
+        --bg: #f7f8fc;
+        --border: rgba(0, 20, 70, 0.08);
+        --border-2: rgba(0, 20, 70, 0.15);
+      }
 
-/* página de apresentação — fundo neutro para o frame */
-body {
-  background: #e8eaf0;
-  font-family: 'Inter', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px 24px 60px;
-  gap: 48px;
-  flex-wrap: wrap;
-}
+      /* página de apresentação — fundo neutro para o frame */
+      body {
+        background: #e8eaf0;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 40px 24px 60px;
+        gap: 48px;
+        flex-wrap: wrap;
+      }
 
-/* frame de telefone */
-.phone-frame {
-  width: 390px;
-  flex-shrink: 0;
-}
+      /* frame de telefone */
+      .phone-frame {
+        width: 390px;
+        flex-shrink: 0;
+      }
 
-.phone-label {
-  text-align: center;
-  font-size: .78rem;
-  font-weight: 600;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: #7a8090;
-  margin-bottom: 16px;
-}
+      .phone-label {
+        text-align: center;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #7a8090;
+        margin-bottom: 16px;
+      }
 
-.phone-shell {
-  background: #1a1a1a;
-  border-radius: 48px;
-  padding: 12px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.2),
-              inset 0 0 0 1px rgba(255,255,255,.08);
-}
+      .phone-shell {
+        background: #1a1a1a;
+        border-radius: 48px;
+        padding: 12px;
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.35),
+          0 4px 16px rgba(0, 0, 0, 0.2),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
 
-.phone-screen {
-  background: var(--bg);
-  border-radius: 38px;
-  overflow: hidden;
-  height: 780px;
-  overflow-y: auto;
-  position: relative;
-  scrollbar-width: none;
-}
-.phone-screen::-webkit-scrollbar { display: none; }
+      .phone-screen {
+        background: var(--bg);
+        border-radius: 38px;
+        overflow: hidden;
+        height: 780px;
+        overflow-y: auto;
+        position: relative;
+        scrollbar-width: none;
+      }
+      .phone-screen::-webkit-scrollbar {
+        display: none;
+      }
 
-/* ── CONTEÚDO DO PHONE ── */
-.p-topbar {
-  position: sticky; top: 0; z-index: 50;
-  height: 56px;
-  background: rgba(247,248,252,.96);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-}
-.p-brand {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: .9rem;
-  color: var(--blue);
-  flex: 1;
-}
-.p-avatar {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: var(--blue-pale);
-  border: 1.5px solid rgba(0,74,140,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .66rem; font-weight: 700; color: var(--blue);
-  letter-spacing: .05em;
-}
+      /* ── CONTEÚDO DO PHONE ── */
+      .p-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: 56px;
+        background: rgba(247, 248, 252, 0.96);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+      }
+      .p-brand {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 0.9rem;
+        color: var(--blue);
+        flex: 1;
+      }
+      .p-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--blue-pale);
+        border: 1.5px solid rgba(0, 74, 140, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.66rem;
+        font-weight: 700;
+        color: var(--blue);
+        letter-spacing: 0.05em;
+      }
 
-/* hero do centro */
-.p-hero {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 28px 20px 24px;
-}
-.p-supra {
-  font-size: .64rem;
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.p-supra::before {
-  content: '';
-  display: block;
-  width: 20px; height: 1.5px;
-  background: var(--gold);
-  border-radius: 1px;
-}
-.p-nome {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: 1.85rem;
-  font-weight: 400;
-  line-height: 1.12;
-  letter-spacing: -.02em;
-  color: var(--ink);
-  margin-bottom: 14px;
-}
-.p-nome span { display: block; font-style: italic; color: var(--blue); }
+      /* hero do centro */
+      .p-hero {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 28px 20px 24px;
+      }
+      .p-supra {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .p-supra::before {
+        content: "";
+        display: block;
+        width: 20px;
+        height: 1.5px;
+        background: var(--gold);
+        border-radius: 1px;
+      }
+      .p-nome {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 1.85rem;
+        font-weight: 400;
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+        margin-bottom: 14px;
+      }
+      .p-nome span {
+        display: block;
+        font-style: italic;
+        color: var(--blue);
+      }
 
-.p-stats {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--bg);
-}
-.p-stat {
-  flex: 1;
-  padding: 12px 0;
-  text-align: center;
-  border-right: 1px solid var(--border);
-}
-.p-stat:last-child { border-right: none; }
-.p-stat-n {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--blue);
-  line-height: 1;
-  font-variant-numeric: lining-nums;
-}
-.p-stat-l {
-  font-size: .64rem;
-  font-weight: 500;
-  color: var(--ink-4);
-  margin-top: 4px;
-  letter-spacing: .03em;
-}
+      .p-stats {
+        display: flex;
+        gap: 0;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      .p-stat {
+        flex: 1;
+        padding: 12px 0;
+        text-align: center;
+        border-right: 1px solid var(--border);
+      }
+      .p-stat:last-child {
+        border-right: none;
+      }
+      .p-stat-n {
+        font-family: "Inter", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--blue);
+        line-height: 1;
+        font-variant-numeric: lining-nums;
+      }
+      .p-stat-l {
+        font-size: 0.64rem;
+        font-weight: 500;
+        color: var(--ink-4);
+        margin-top: 4px;
+        letter-spacing: 0.03em;
+      }
 
-/* corpo */
-.p-body { padding: 20px 20px 90px; }
+      /* corpo */
+      .p-body {
+        padding: 20px 20px 90px;
+      }
 
-/* pensamento */
-.p-pensamento {
-  background: var(--gold-pale);
-  border: 1px solid var(--gold-border);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 28px;
-  display: flex;
-  gap: 14px;
-}
-.p-acento {
-  width: 3px; border-radius: 2px;
-  background: var(--gold);
-  align-self: stretch;
-  flex-shrink: 0;
-  min-height: 32px;
-}
-.p-pens-label {
-  font-size: .62rem;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 8px;
-}
-.p-pens-texto {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-style: italic;
-  font-size: 1rem;
-  color: var(--ink-2);
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-.p-pens-autor { font-size: .72rem; color: var(--ink-4); font-weight: 500; }
+      /* pensamento */
+      .p-pensamento {
+        background: var(--gold-pale);
+        border: 1px solid var(--gold-border);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 28px;
+        display: flex;
+        gap: 14px;
+      }
+      .p-acento {
+        width: 3px;
+        border-radius: 2px;
+        background: var(--gold);
+        align-self: stretch;
+        flex-shrink: 0;
+        min-height: 32px;
+      }
+      .p-pens-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 8px;
+      }
+      .p-pens-texto {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--ink-2);
+        line-height: 1.6;
+        margin-bottom: 8px;
+      }
+      .p-pens-autor {
+        font-size: 0.72rem;
+        color: var(--ink-4);
+        font-weight: 500;
+      }
 
-/* seção */
-.p-sec-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  gap: 12px;
-}
-.p-sec-title {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 400;
-  color: var(--ink);
-}
-.p-btn-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--blue);
-  color: #fff;
-  border: none;
-  border-radius: 9px;
-  padding: 9px 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: .8rem;
-  font-weight: 600;
-  cursor: pointer;
-}
+      /* seção */
+      .p-sec-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+      }
+      .p-sec-title {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 1.1rem;
+        font-weight: 400;
+        color: var(--ink);
+      }
+      .p-btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 9px 16px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
 
-/* abas */
-.p-tabs {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 4px;
-  gap: 3px;
-  margin-bottom: 20px;
-}
-.p-tab {
-  flex: 1;
-  font-family: 'Inter', sans-serif;
-  font-size: .82rem;
-  font-weight: 500;
-  padding: 8px 0;
-  border-radius: 8px;
-  border: none; cursor: pointer;
-  color: var(--ink-3);
-  background: transparent;
-  text-align: center;
-  transition: all .18s;
-}
-.p-tab.on {
-  background: var(--blue);
-  color: #fff;
-  font-weight: 600;
-}
+      /* abas */
+      .p-tabs {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 4px;
+        gap: 3px;
+        margin-bottom: 20px;
+      }
+      .p-tab {
+        flex: 1;
+        font-family: "Inter", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 8px 0;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        color: var(--ink-3);
+        background: transparent;
+        text-align: center;
+        transition: all 0.18s;
+      }
+      .p-tab.on {
+        background: var(--blue);
+        color: #fff;
+        font-weight: 600;
+      }
 
-/* separador de mês */
-.p-mes {
-  display: flex; align-items: center; gap: 12px;
-  margin: 24px 0 14px;
-}
-.p-mes:first-of-type { margin-top: 0; }
-.p-mes-nome {
-  font-size: .64rem; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink-4); white-space: nowrap;
-  font-variant-numeric: lining-nums;
-}
-.p-mes-linha { flex:1; height:1px; background:var(--border); }
+      /* separador de mês */
+      .p-mes {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0 14px;
+      }
+      .p-mes:first-of-type {
+        margin-top: 0;
+      }
+      .p-mes-nome {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+        white-space: nowrap;
+        font-variant-numeric: lining-nums;
+      }
+      .p-mes-linha {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
 
-/* card de evento — mobile */
-.p-evento {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 4px rgba(0,20,70,.04), 0 2px 10px rgba(0,20,70,.04);
-}
+      /* card de evento — mobile */
+      .p-evento {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        box-shadow:
+          0 1px 4px rgba(0, 20, 70, 0.04),
+          0 2px 10px rgba(0, 20, 70, 0.04);
+      }
 
-.p-ev-topo {
-  background: var(--blue-dim);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-}
-.p-ev-data {
-  font-family: 'Inter', sans-serif;
-  font-size: .7rem;
-  font-weight: 700;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--blue);
-  font-variant-numeric: lining-nums;
-}
-.p-ev-tipo {
-  font-size: .62rem;
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 999px;
-}
-.tipo-a { background: #eaf8f1; color: #0a5c35; }
-.tipo-f { background: #fdf0f0; color: #8a1515; }
+      .p-ev-topo {
+        background: var(--blue-dim);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+      }
+      .p-ev-data {
+        font-family: "Inter", sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--blue);
+        font-variant-numeric: lining-nums;
+      }
+      .p-ev-tipo {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 999px;
+      }
+      .tipo-a {
+        background: #eaf8f1;
+        color: #0a5c35;
+      }
+      .tipo-f {
+        background: #fdf0f0;
+        color: #8a1515;
+      }
 
-.p-ev-corpo { padding: 16px; }
+      .p-ev-corpo {
+        padding: 16px;
+      }
 
-.p-ev-titulo {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--ink);
-  line-height: 1.3;
-  margin-bottom: 10px;
-}
+      .p-ev-titulo {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: var(--ink);
+        line-height: 1.3;
+        margin-bottom: 10px;
+      }
 
-.p-ev-metas {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.p-ev-meta {
-  display: flex; align-items: center; gap: 6px;
-  font-family: 'Inter', sans-serif;
-  font-size: .82rem; color: var(--ink-3);
-  font-variant-numeric: lining-nums;
-}
-.p-ev-meta svg { width:13px; height:13px; opacity:.6; flex-shrink:0; }
+      .p-ev-metas {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .p-ev-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.82rem;
+        color: var(--ink-3);
+        font-variant-numeric: lining-nums;
+      }
+      .p-ev-meta svg {
+        width: 13px;
+        height: 13px;
+        opacity: 0.6;
+        flex-shrink: 0;
+      }
 
-.p-ev-desc {
-  font-size: .88rem;
-  color: var(--ink-2);
-  line-height: 1.65;
-  font-weight: 300;
-  margin-bottom: 12px;
-}
+      .p-ev-desc {
+        font-size: 0.88rem;
+        color: var(--ink-2);
+        line-height: 1.65;
+        font-weight: 300;
+        margin-bottom: 12px;
+      }
 
-.p-ev-rodape {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
+      .p-ev-rodape {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
-.p-etag {
-  font-family: 'Inter', sans-serif;
-  font-size: .62rem; font-weight: 700;
-  letter-spacing: .07em; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 999px;
-}
-.etag-b { background: var(--blue-pale); color: var(--blue); }
-.etag-g { background: var(--gold-pale); color: #7a5800; }
+      .p-etag {
+        font-family: "Inter", sans-serif;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 999px;
+      }
+      .etag-b {
+        background: var(--blue-pale);
+        color: var(--blue);
+      }
+      .etag-g {
+        background: var(--gold-pale);
+        color: #7a5800;
+      }
 
-.p-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-family: 'Inter', sans-serif;
-  font-size: .76rem; font-weight: 600;
-  padding: 6px 14px; border-radius: 999px;
-}
-.p-pill svg { width:11px; height:11px; }
-.pill-ok   { background:#eaf8f1; color:#0a5c35; }
-.pill-wait { background:#fff8ec; color:#7a4f00; }
+      .p-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 999px;
+      }
+      .p-pill svg {
+        width: 11px;
+        height: 11px;
+      }
+      .pill-ok {
+        background: #eaf8f1;
+        color: #0a5c35;
+      }
+      .pill-wait {
+        background: #fff8ec;
+        color: #7a4f00;
+      }
 
-/* botão de confirmar — área grande para polegar */
-.p-btn-conf {
-  width: 100%;
-  margin-top: 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: .9rem;
-  font-weight: 600;
-  padding: 13px 0;
-  border-radius: 11px;
-  border: 1.5px solid rgba(0,74,140,.35);
-  background: transparent;
-  color: var(--blue);
-  cursor: pointer;
-  text-align: center;
-  transition: background .15s;
-}
-.p-btn-conf:hover { background: var(--blue-pale); }
+      /* botão de confirmar — área grande para polegar */
+      .p-btn-conf {
+        width: 100%;
+        margin-top: 12px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 13px 0;
+        border-radius: 11px;
+        border: 1.5px solid rgba(0, 74, 140, 0.35);
+        background: transparent;
+        color: var(--blue);
+        cursor: pointer;
+        text-align: center;
+        transition: background 0.15s;
+      }
+      .p-btn-conf:hover {
+        background: var(--blue-pale);
+      }
 
-/* navegação inferior — thumb zone, sempre visível */
-.p-bottomnav {
-  position: sticky;
-  bottom: 0; left: 0; right: 0;
-  height: 72px;
-  background: rgba(255,255,255,.97);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-}
-.p-bnav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 0;
-  text-decoration: none;
-  cursor: pointer;
-}
-.p-bnav-icon {
-  width: 24px; height: 24px;
-  color: var(--ink-4);
-}
-.p-bnav-item.on .p-bnav-icon { color: var(--blue); }
-.p-bnav-label {
-  font-size: .66rem;
-  font-weight: 600;
-  letter-spacing: .04em;
-  color: var(--ink-4);
-}
-.p-bnav-item.on .p-bnav-label { color: var(--blue); }
+      /* navegação inferior — thumb zone, sempre visível */
+      .p-bottomnav {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 72px;
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(16px);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+      }
+      .p-bnav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px 0;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .p-bnav-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--ink-4);
+      }
+      .p-bnav-item.on .p-bnav-icon {
+        color: var(--blue);
+      }
+      .p-bnav-label {
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--ink-4);
+      }
+      .p-bnav-item.on .p-bnav-label {
+        color: var(--blue);
+      }
 
-/* ── NOTAS À DIREITA ── */
-.notas {
-  width: 280px;
-  flex-shrink: 0;
-  padding-top: 20px;
-}
-.nota-titulo {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: 1.1rem;
-  color: #2e3540;
-  margin-bottom: 20px;
-  font-weight: 400;
-}
-.nota {
-  margin-bottom: 18px;
-  padding-left: 14px;
-  border-left: 2px solid #d0d5e0;
-}
-.nota-head {
-  font-size: .76rem;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: #004a8c;
-  margin-bottom: 5px;
-}
-.nota-texto {
-  font-size: .84rem;
-  color: #637080;
-  line-height: 1.6;
-  font-weight: 400;
-}
-</style>
-</head>
-<body>
+      /* ── NOTAS À DIREITA ── */
+      .notas {
+        width: 280px;
+        flex-shrink: 0;
+        padding-top: 20px;
+      }
+      .nota-titulo {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 1.1rem;
+        color: #2e3540;
+        margin-bottom: 20px;
+        font-weight: 400;
+      }
+      .nota {
+        margin-bottom: 18px;
+        padding-left: 14px;
+        border-left: 2px solid #d0d5e0;
+      }
+      .nota-head {
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #004a8c;
+        margin-bottom: 5px;
+      }
+      .nota-texto {
+        font-size: 0.84rem;
+        color: #637080;
+        line-height: 1.6;
+        font-weight: 400;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- FRAME DO TELEFONE -->
+    <div class="phone-frame">
+      <div class="phone-label">Celular / Tablet</div>
+      <div class="phone-shell">
+        <div class="phone-screen">
+          <!-- topbar -->
+          <div class="p-topbar">
+            <span class="p-brand">Apoio Espírita</span>
+            <div class="p-avatar">AG</div>
+          </div>
 
-<!-- FRAME DO TELEFONE -->
-<div class="phone-frame">
-  <div class="phone-label">Celular / Tablet</div>
-  <div class="phone-shell">
-    <div class="phone-screen">
+          <!-- hero do centro -->
+          <section class="p-hero">
+            <div class="p-supra">Sua casa espírita</div>
+            <h1 class="p-nome">
+              Centro Espírita
+              <span>Luz e Caridade</span>
+            </h1>
+            <div class="p-stats">
+              <div class="p-stat">
+                <div class="p-stat-n">24</div>
+                <div class="p-stat-l">Membros</div>
+              </div>
+              <div class="p-stat">
+                <div class="p-stat-n">4</div>
+                <div class="p-stat-l">Eventos</div>
+              </div>
+              <div class="p-stat">
+                <div class="p-stat-n">SP</div>
+                <div class="p-stat-l">Estado</div>
+              </div>
+            </div>
+          </section>
 
-      <!-- topbar -->
-      <div class="p-topbar">
-        <span class="p-brand">Apoio Espírita</span>
-        <div class="p-avatar">AG</div>
+          <!-- corpo -->
+          <div class="p-body">
+            <!-- pensamento -->
+            <div class="p-pensamento">
+              <div class="p-acento"></div>
+              <div>
+                <div class="p-pens-label">Pensamento do dia</div>
+                <p class="p-pens-texto">"Fora da caridade não há salvação."</p>
+                <p class="p-pens-autor">Allan Kardec</p>
+              </div>
+            </div>
+
+            <!-- seção de eventos -->
+            <div class="p-sec-head">
+              <h2 class="p-sec-title">Próximos eventos</h2>
+              <button class="p-btn-add">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Novo
+              </button>
+            </div>
+
+            <div class="p-tabs">
+              <button class="p-tab on">Próximos</button>
+              <button class="p-tab">Este mês</button>
+              <button class="p-tab">Passados</button>
+            </div>
+
+            <div class="p-mes">
+              <span class="p-mes-nome">Junho 2026</span>
+              <div class="p-mes-linha"></div>
+            </div>
+
+            <!-- evento 1 -->
+            <div class="p-evento">
+              <div class="p-ev-topo">
+                <span class="p-ev-data">Sáb, 07 jun 2026</span>
+                <span class="p-ev-tipo tipo-a">Aberto</span>
+              </div>
+              <div class="p-ev-corpo">
+                <h3 class="p-ev-titulo">Reunião de Estudo do Evangelho</h3>
+                <div class="p-ev-metas">
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    19h00 – 21h00
+                  </span>
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Salão Principal · 12 confirmados
+                  </span>
+                </div>
+                <p class="p-ev-desc">
+                  Estudo e debate do capítulo 8 — "As bem-aventuranças". Aberto para todos.
+                </p>
+                <div class="p-ev-rodape">
+                  <span class="p-etag etag-b">Evangelho</span>
+                  <span class="p-pill pill-ok">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Confirmado
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- evento 2 -->
+            <div class="p-evento">
+              <div class="p-ev-topo">
+                <span class="p-ev-data">Sáb, 14 jun 2026</span>
+                <span class="p-ev-tipo tipo-f">Fechado</span>
+              </div>
+              <div class="p-ev-corpo">
+                <h3 class="p-ev-titulo">Reunião Mediúnica — Passes e Desobsessão</h3>
+                <div class="p-ev-metas">
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    20h00 – 22h00
+                  </span>
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Sala de Trabalho
+                  </span>
+                </div>
+                <p class="p-ev-desc">Sessão fechada para médiuns em desenvolvimento.</p>
+                <div class="p-ev-rodape">
+                  <span class="p-etag etag-g">Mediunidade</span>
+                  <span class="p-pill pill-wait">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Aguardando
+                  </span>
+                </div>
+                <button class="p-btn-conf">Confirmar presença</button>
+              </div>
+            </div>
+
+            <!-- evento 3 -->
+            <div class="p-evento">
+              <div class="p-ev-topo">
+                <span class="p-ev-data">Sáb, 21 jun 2026</span>
+                <span class="p-ev-tipo tipo-a">Aberto</span>
+              </div>
+              <div class="p-ev-corpo">
+                <h3 class="p-ev-titulo">Palestra Pública — A Lei de Causa e Efeito</h3>
+                <div class="p-ev-metas">
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    18h30 – 20h00
+                  </span>
+                  <span class="p-ev-meta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Auditório Central
+                  </span>
+                </div>
+                <p class="p-ev-desc">Palestra aberta ao público. Expositor: Irmão João Alves.</p>
+                <div class="p-ev-rodape">
+                  <span class="p-etag etag-b">Doutrina</span>
+                </div>
+                <button class="p-btn-conf">Confirmar presença</button>
+              </div>
+            </div>
+          </div>
+          <!-- /p-body -->
+
+          <!-- navegação inferior -->
+          <nav class="p-bottomnav">
+            <div class="p-bnav-item on">
+              <svg
+                class="p-bnav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span class="p-bnav-label">Agenda</span>
+            </div>
+            <div class="p-bnav-item">
+              <svg
+                class="p-bnav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+              </svg>
+              <span class="p-bnav-label">Kanban</span>
+            </div>
+            <div class="p-bnav-item">
+              <svg
+                class="p-bnav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span class="p-bnav-label">Evangel.</span>
+            </div>
+            <div class="p-bnav-item">
+              <svg
+                class="p-bnav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span class="p-bnav-label">Perfil</span>
+            </div>
+          </nav>
+        </div>
+        <!-- /phone-screen -->
+      </div>
+      <!-- /phone-shell -->
+    </div>
+    <!-- /phone-frame -->
+
+    <!-- NOTAS DO DESIGN -->
+    <div class="notas">
+      <p class="nota-titulo">Decisões de design<br />para telas pequenas</p>
+
+      <div class="nota">
+        <div class="nota-head">Navegação inferior</div>
+        <div class="nota-texto">
+          Ícone + label sempre visíveis. Nenhum menu hambúrguer que confunda. O polegar alcança sem
+          esforço.
+        </div>
       </div>
 
-      <!-- hero do centro -->
-      <section class="p-hero">
-        <div class="p-supra">Sua casa espírita</div>
-        <h1 class="p-nome">
-          Centro Espírita
-          <span>Luz e Caridade</span>
-        </h1>
-        <div class="p-stats">
-          <div class="p-stat">
-            <div class="p-stat-n">24</div>
-            <div class="p-stat-l">Membros</div>
-          </div>
-          <div class="p-stat">
-            <div class="p-stat-n">4</div>
-            <div class="p-stat-l">Eventos</div>
-          </div>
-          <div class="p-stat">
-            <div class="p-stat-n">SP</div>
-            <div class="p-stat-l">Estado</div>
-          </div>
+      <div class="nota">
+        <div class="nota-head">Nome do centro</div>
+        <div class="nota-texto">
+          Permanece como o primeiro elemento após a barra. Membros idosos sabem imediatamente onde
+          estão.
         </div>
-      </section>
+      </div>
 
-      <!-- corpo -->
-      <div class="p-body">
-
-        <!-- pensamento -->
-        <div class="p-pensamento">
-          <div class="p-acento"></div>
-          <div>
-            <div class="p-pens-label">Pensamento do dia</div>
-            <p class="p-pens-texto">"Fora da caridade não há salvação."</p>
-            <p class="p-pens-autor">Allan Kardec</p>
-          </div>
+      <div class="nota">
+        <div class="nota-head">Botão "Confirmar"</div>
+        <div class="nota-texto">
+          Largura total no mobile — área de toque generosa, sem risco de erro de toque.
         </div>
+      </div>
 
-        <!-- seção de eventos -->
-        <div class="p-sec-head">
-          <h2 class="p-sec-title">Próximos eventos</h2>
-          <button class="p-btn-add">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Novo
-          </button>
+      <div class="nota">
+        <div class="nota-head">Textos</div>
+        <div class="nota-texto">
+          Hierarquia mantida. Títulos de eventos em 19px, descrições em 16px — confortável para
+          baixa visão.
         </div>
+      </div>
 
-        <div class="p-tabs">
-          <button class="p-tab on">Próximos</button>
-          <button class="p-tab">Este mês</button>
-          <button class="p-tab">Passados</button>
+      <div class="nota">
+        <div class="nota-head">Números</div>
+        <div class="nota-texto">
+          Datas e horas sempre em Inter lining-nums. Sem distorção em nenhuma tela.
         </div>
-
-        <div class="p-mes">
-          <span class="p-mes-nome">Junho 2026</span>
-          <div class="p-mes-linha"></div>
-        </div>
-
-        <!-- evento 1 -->
-        <div class="p-evento">
-          <div class="p-ev-topo">
-            <span class="p-ev-data">Sáb, 07 jun 2026</span>
-            <span class="p-ev-tipo tipo-a">Aberto</span>
-          </div>
-          <div class="p-ev-corpo">
-            <h3 class="p-ev-titulo">Reunião de Estudo do Evangelho</h3>
-            <div class="p-ev-metas">
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                19h00 – 21h00
-              </span>
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Salão Principal · 12 confirmados
-              </span>
-            </div>
-            <p class="p-ev-desc">Estudo e debate do capítulo 8 — "As bem-aventuranças". Aberto para todos.</p>
-            <div class="p-ev-rodape">
-              <span class="p-etag etag-b">Evangelho</span>
-              <span class="p-pill pill-ok">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                Confirmado
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- evento 2 -->
-        <div class="p-evento">
-          <div class="p-ev-topo">
-            <span class="p-ev-data">Sáb, 14 jun 2026</span>
-            <span class="p-ev-tipo tipo-f">Fechado</span>
-          </div>
-          <div class="p-ev-corpo">
-            <h3 class="p-ev-titulo">Reunião Mediúnica — Passes e Desobsessão</h3>
-            <div class="p-ev-metas">
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                20h00 – 22h00
-              </span>
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Sala de Trabalho
-              </span>
-            </div>
-            <p class="p-ev-desc">Sessão fechada para médiuns em desenvolvimento.</p>
-            <div class="p-ev-rodape">
-              <span class="p-etag etag-g">Mediunidade</span>
-              <span class="p-pill pill-wait">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Aguardando
-              </span>
-            </div>
-            <button class="p-btn-conf">Confirmar presença</button>
-          </div>
-        </div>
-
-        <!-- evento 3 -->
-        <div class="p-evento">
-          <div class="p-ev-topo">
-            <span class="p-ev-data">Sáb, 21 jun 2026</span>
-            <span class="p-ev-tipo tipo-a">Aberto</span>
-          </div>
-          <div class="p-ev-corpo">
-            <h3 class="p-ev-titulo">Palestra Pública — A Lei de Causa e Efeito</h3>
-            <div class="p-ev-metas">
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                18h30 – 20h00
-              </span>
-              <span class="p-ev-meta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Auditório Central
-              </span>
-            </div>
-            <p class="p-ev-desc">Palestra aberta ao público. Expositor: Irmão João Alves.</p>
-            <div class="p-ev-rodape">
-              <span class="p-etag etag-b">Doutrina</span>
-            </div>
-            <button class="p-btn-conf">Confirmar presença</button>
-          </div>
-        </div>
-
-      </div><!-- /p-body -->
-
-      <!-- navegação inferior -->
-      <nav class="p-bottomnav">
-        <div class="p-bnav-item on">
-          <svg class="p-bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span class="p-bnav-label">Agenda</span>
-        </div>
-        <div class="p-bnav-item">
-          <svg class="p-bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          <span class="p-bnav-label">Kanban</span>
-        </div>
-        <div class="p-bnav-item">
-          <svg class="p-bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span class="p-bnav-label">Evangel.</span>
-        </div>
-        <div class="p-bnav-item">
-          <svg class="p-bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span class="p-bnav-label">Perfil</span>
-        </div>
-      </nav>
-
-    </div><!-- /phone-screen -->
-  </div><!-- /phone-shell -->
-</div><!-- /phone-frame -->
-
-<!-- NOTAS DO DESIGN -->
-<div class="notas">
-  <p class="nota-titulo">Decisões de design<br>para telas pequenas</p>
-
-  <div class="nota">
-    <div class="nota-head">Navegação inferior</div>
-    <div class="nota-texto">Ícone + label sempre visíveis. Nenhum menu hambúrguer que confunda. O polegar alcança sem esforço.</div>
-  </div>
-
-  <div class="nota">
-    <div class="nota-head">Nome do centro</div>
-    <div class="nota-texto">Permanece como o primeiro elemento após a barra. Membros idosos sabem imediatamente onde estão.</div>
-  </div>
-
-  <div class="nota">
-    <div class="nota-head">Botão "Confirmar"</div>
-    <div class="nota-texto">Largura total no mobile — área de toque generosa, sem risco de erro de toque.</div>
-  </div>
-
-  <div class="nota">
-    <div class="nota-head">Textos</div>
-    <div class="nota-texto">Hierarquia mantida. Títulos de eventos em 19px, descrições em 16px — confortável para baixa visão.</div>
-  </div>
-
-  <div class="nota">
-    <div class="nota-head">Números</div>
-    <div class="nota-texto">Datas e horas sempre em Inter lining-nums. Sem distorção em nenhuma tela.</div>
-  </div>
-</div>
-
-</body>
+      </div>
+    </div>
+  </body>
 </html>

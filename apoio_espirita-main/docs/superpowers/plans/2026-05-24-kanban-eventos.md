@@ -12,17 +12,18 @@
 
 ## Mapa de arquivos
 
-| Arquivo | Ação | Responsabilidade |
-|---|---|---|
-| `src/routes/kanban.tsx` | Criar | Página Kanban completa (board, form, DnD) |
+| Arquivo                 | Ação      | Responsabilidade                                  |
+| ----------------------- | --------- | ------------------------------------------------- |
+| `src/routes/kanban.tsx` | Criar     | Página Kanban completa (board, form, DnD)         |
 | `src/routes/__root.tsx` | Modificar | Adicionar link "Eventos" no menu desktop e mobile |
-| `package.json` | Modificar | Instalar @dnd-kit/core e @dnd-kit/utilities |
+| `package.json`          | Modificar | Instalar @dnd-kit/core e @dnd-kit/utilities       |
 
 ---
 
 ## Task 1: Instalar dependências @dnd-kit
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Instalar os pacotes**
@@ -50,6 +51,7 @@ git commit -m "chore: instala @dnd-kit/core e @dnd-kit/utilities"
 ## Task 2: Migration Supabase — tabela kanban_eventos
 
 **Files:**
+
 - Supabase MCP
 
 - [ ] **Step 1: Aplicar migration via Supabase MCP**
@@ -93,6 +95,7 @@ CREATE POLICY "somente criador exclui"
 - [ ] **Step 2: Confirmar tabela criada**
 
 Usar `mcp__claude_ai_Supabase__execute_sql`:
+
 ```sql
 SELECT column_name, data_type
 FROM information_schema.columns
@@ -107,6 +110,7 @@ Expected: 10 colunas listadas (id, sigla_casa, titulo, descricao, data, responsa
 ## Task 3: Criar src/routes/kanban.tsx
 
 **Files:**
+
 - Create: `src/routes/kanban.tsx`
 
 - [ ] **Step 1: Criar o arquivo com o conteúdo completo**
@@ -139,11 +143,41 @@ interface KanbanEvento {
   created_at: string;
 }
 
-const COLUNAS: { status: Status; label: string; borda: string; corHeader: string; bgOver: string }[] = [
-  { status: "ideia",      label: "Ideia",      borda: "border-gray-200",   corHeader: "text-gray-500",    bgOver: "bg-gray-50" },
-  { status: "planejando", label: "Planejando", borda: "border-amber-200",  corHeader: "text-amber-600",   bgOver: "bg-amber-50/50" },
-  { status: "confirmado", label: "Confirmado", borda: "border-cyan-200",   corHeader: "text-cyan-600",    bgOver: "bg-cyan-50/50" },
-  { status: "realizado",  label: "Realizado",  borda: "border-emerald-200",corHeader: "text-emerald-600", bgOver: "bg-emerald-50/50" },
+const COLUNAS: {
+  status: Status;
+  label: string;
+  borda: string;
+  corHeader: string;
+  bgOver: string;
+}[] = [
+  {
+    status: "ideia",
+    label: "Ideia",
+    borda: "border-gray-200",
+    corHeader: "text-gray-500",
+    bgOver: "bg-gray-50",
+  },
+  {
+    status: "planejando",
+    label: "Planejando",
+    borda: "border-amber-200",
+    corHeader: "text-amber-600",
+    bgOver: "bg-amber-50/50",
+  },
+  {
+    status: "confirmado",
+    label: "Confirmado",
+    borda: "border-cyan-200",
+    corHeader: "text-cyan-600",
+    bgOver: "bg-cyan-50/50",
+  },
+  {
+    status: "realizado",
+    label: "Realizado",
+    borda: "border-emerald-200",
+    corHeader: "text-emerald-600",
+    bgOver: "bg-emerald-50/50",
+  },
 ];
 
 function fmtData(iso: string) {
@@ -162,16 +196,24 @@ function KanbanPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingEvento, setEditingEvento] = useState<KanbanEvento | null>(null);
 
-  const [fTitulo, setFTitulo]       = useState("");
+  const [fTitulo, setFTitulo] = useState("");
   const [fDescricao, setFDescricao] = useState("");
-  const [fData, setFData]           = useState("");
+  const [fData, setFData] = useState("");
   const [fResponsavel, setFResponsavel] = useState("");
-  const [saving, setSaving]         = useState(false);
-  const [formError, setFormError]   = useState("");
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (!loading && user && (!profile?.sigla_casa || !profile?.nome || !profile?.cargo_principal || !profile?.uf || !profile?.cidade))
+    if (
+      !loading &&
+      user &&
+      (!profile?.sigla_casa ||
+        !profile?.nome ||
+        !profile?.cargo_principal ||
+        !profile?.uf ||
+        !profile?.cidade)
+    )
       navigate({ to: "/completar-perfil" });
   }, [user, profile, loading, navigate]);
 
@@ -193,7 +235,10 @@ function KanbanPage() {
 
   const openCreate = () => {
     setEditingEvento(null);
-    setFTitulo(""); setFDescricao(""); setFData(""); setFResponsavel("");
+    setFTitulo("");
+    setFDescricao("");
+    setFData("");
+    setFResponsavel("");
     setFormError("");
     setShowForm(true);
   };
@@ -215,7 +260,10 @@ function KanbanPage() {
   };
 
   const handleSave = async () => {
-    if (!fTitulo.trim()) { setFormError("Informe o título."); return; }
+    if (!fTitulo.trim()) {
+      setFormError("Informe o título.");
+      return;
+    }
     if (!profile?.sigla_casa || !user) return;
     setSaving(true);
     setFormError("");
@@ -232,18 +280,16 @@ function KanbanPage() {
           .eq("id", editingEvento.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from("kanban_eventos")
-          .insert({
-            sigla_casa: profile.sigla_casa,
-            titulo: fTitulo.trim(),
-            descricao: fDescricao.trim() || null,
-            data: fData || null,
-            responsavel: fResponsavel.trim() || null,
-            status: "ideia",
-            criador_id: user.id,
-            criador_nome: profile.nome ?? "Membro",
-          });
+        const { error } = await supabase.from("kanban_eventos").insert({
+          sigla_casa: profile.sigla_casa,
+          titulo: fTitulo.trim(),
+          descricao: fDescricao.trim() || null,
+          data: fData || null,
+          responsavel: fResponsavel.trim() || null,
+          status: "ideia",
+          criador_id: user.id,
+          criador_nome: profile.nome ?? "Membro",
+        });
         if (error) throw error;
       }
       closeForm();
@@ -270,16 +316,14 @@ function KanbanPage() {
     if (!evento || evento.status === novoStatus) return;
 
     const statusAnterior = evento.status;
-    setEventos((prev) =>
-      prev.map((e) => (e.id === eventoId ? { ...e, status: novoStatus } : e))
-    );
+    setEventos((prev) => prev.map((e) => (e.id === eventoId ? { ...e, status: novoStatus } : e)));
     const { error } = await supabase
       .from("kanban_eventos")
       .update({ status: novoStatus })
       .eq("id", eventoId);
     if (error) {
       setEventos((prev) =>
-        prev.map((e) => (e.id === eventoId ? { ...e, status: statusAnterior } : e))
+        prev.map((e) => (e.id === eventoId ? { ...e, status: statusAnterior } : e)),
       );
     }
   };
@@ -287,7 +331,6 @@ function KanbanPage() {
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
       <div className="max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <div>
@@ -295,9 +338,7 @@ function KanbanPage() {
               <KanbanSquare size={12} />
               Eventos
             </p>
-            <h1 className="text-3xl font-light text-foreground">
-              Casa {profile?.sigla_casa}
-            </h1>
+            <h1 className="text-3xl font-light text-foreground">Casa {profile?.sigla_casa}</h1>
           </div>
           <button
             onClick={openCreate}
@@ -343,7 +384,10 @@ function KanbanPage() {
               <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-widest">
                 {editingEvento ? "Editar Card" : "Novo Card"}
               </h2>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button
+                onClick={closeForm}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -355,7 +399,10 @@ function KanbanPage() {
                 <input
                   type="text"
                   value={fTitulo}
-                  onChange={(e) => { setFTitulo(e.target.value); setFormError(""); }}
+                  onChange={(e) => {
+                    setFTitulo(e.target.value);
+                    setFormError("");
+                  }}
                   placeholder="Nome do evento"
                   className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors"
                 />
@@ -428,7 +475,18 @@ interface KanbanColumnProps {
   onNewCard: () => void;
 }
 
-function KanbanColumn({ status, label, borda, corHeader, bgOver, eventos, userId, onEdit, onDelete, onNewCard }: KanbanColumnProps) {
+function KanbanColumn({
+  status,
+  label,
+  borda,
+  corHeader,
+  bgOver,
+  eventos,
+  userId,
+  onEdit,
+  onDelete,
+  onNewCard,
+}: KanbanColumnProps) {
   const { isOver, setNodeRef } = useDroppable({ id: status });
 
   return (
@@ -474,7 +532,9 @@ interface KanbanCardProps {
 }
 
 function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: evento.id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: evento.id,
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -512,14 +572,20 @@ function KanbanCard({ evento, userId, onEdit, onDelete }: KanbanCardProps) {
       {isCriador && (
         <div className="flex gap-2 mt-3 pt-2 border-t border-gray-100">
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(evento); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(evento);
+            }}
             onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center gap-1 text-xs text-muted-foreground/40 hover:text-gray-600 transition-colors py-1 px-2 rounded-lg hover:bg-gray-50"
           >
             <Pencil size={11} />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(evento.id); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(evento.id);
+            }}
             onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center gap-1 text-xs text-red-400/50 hover:text-red-500 transition-colors py-1 px-2 rounded-lg hover:bg-red-50"
           >
@@ -553,6 +619,7 @@ git commit -m "feat: kanban de eventos com drag-and-drop"
 ## Task 4: Adicionar link "Eventos" na Navbar
 
 **Files:**
+
 - Modify: `src/routes/__root.tsx`
 
 ### 4a — Importar KanbanSquare
@@ -560,13 +627,60 @@ git commit -m "feat: kanban de eventos com drag-and-drop"
 - [ ] **Step 1: Adicionar `KanbanSquare` aos imports do lucide-react**
 
 Na linha 17 de `src/routes/__root.tsx`, a linha atual é:
+
 ```tsx
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2 } from "lucide-react";
+import {
+  Radio,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  ArrowUp,
+  Menu,
+  X,
+  ChevronDown,
+  Gamepad2,
+  AlertTriangle,
+  MessageCircle,
+  GraduationCap,
+  Brain,
+  ShieldAlert,
+  HelpCircle,
+  Wallet,
+  BookOpen,
+  User,
+  LogOut,
+  BarChart2,
+} from "lucide-react";
 ```
 
 Substituir por:
+
 ```tsx
-import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Gamepad2, AlertTriangle, MessageCircle, GraduationCap, Brain, ShieldAlert, HelpCircle, Wallet, BookOpen, User, LogOut, BarChart2, KanbanSquare } from "lucide-react";
+import {
+  Radio,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  ArrowUp,
+  Menu,
+  X,
+  ChevronDown,
+  Gamepad2,
+  AlertTriangle,
+  MessageCircle,
+  GraduationCap,
+  Brain,
+  ShieldAlert,
+  HelpCircle,
+  Wallet,
+  BookOpen,
+  User,
+  LogOut,
+  BarChart2,
+  KanbanSquare,
+} from "lucide-react";
 ```
 
 ### 4b — Desktop nav
@@ -574,12 +688,14 @@ import { Radio, Play, Pause, Volume2, VolumeX, ArrowUp, Menu, X, ChevronDown, Ga
 - [ ] **Step 2: Inserir link "Eventos" no desktop nav**
 
 Localizar no arquivo (linha ~345):
+
 ```tsx
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/mensagem-do-dia" className={linkCls("/mensagem-do-dia")}>Mensagem</Link>
 ```
 
 Substituir por:
+
 ```tsx
           <Link to="/agenda" className={linkCls("/agenda")}>Agenda</Link>
           <Link to="/kanban" className={linkCls("/kanban")}>Eventos</Link>
@@ -591,6 +707,7 @@ Substituir por:
 - [ ] **Step 3: Inserir link "Eventos" no menu mobile**
 
 Localizar no arquivo (linha ~448):
+
 ```tsx
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Agenda
@@ -601,6 +718,7 @@ Localizar no arquivo (linha ~448):
 ```
 
 Substituir por:
+
 ```tsx
             <Link to="/agenda" className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-cyan-700 border-b border-gray-100 transition-colors">
               Agenda
@@ -634,6 +752,7 @@ git commit -m "feat: adiciona link Eventos no menu desktop e mobile"
 ## Task 5: Atualizar roadmap e fazer deploy
 
 **Files:**
+
 - Modify: `src/routes/painel.tsx`
 
 - [ ] **Step 1: Mover "Kanban de Eventos" de planejado para feito no roadmap**

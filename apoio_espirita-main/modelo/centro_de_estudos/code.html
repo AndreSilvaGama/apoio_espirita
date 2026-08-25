@@ -1,424 +1,679 @@
-<!DOCTYPE html>
+<!doctype html>
 
-<html lang="pt-BR"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
-            "colors": {
-                    "surface-variant": "#e1e2e7",
-                    "on-primary-fixed-variant": "#004883",
-                    "secondary-container": "#d6e0f6",
-                    "spiritual-blue": "#4A90E2",
-                    "tertiary-container": "#cca72f",
-                    "on-primary-container": "#fdfcff",
-                    "on-surface": "#191c1f",
-                    "surface": "#f8f9fe",
-                    "warm-grey": "#718096",
-                    "tertiary-fixed": "#ffe088",
-                    "primary-fixed-dim": "#a4c9ff",
-                    "on-tertiary-fixed-variant": "#574500",
-                    "tertiary": "#735c00",
-                    "surface-container-lowest": "#ffffff",
-                    "surface-container": "#eceef3",
-                    "primary-fixed": "#d4e3ff",
-                    "on-error": "#ffffff",
-                    "secondary": "#555f71",
-                    "on-surface-variant": "#414751",
-                    "border-haze": "#E2E8F0",
-                    "on-secondary-fixed": "#121c2c",
-                    "on-error-container": "#93000a",
-                    "on-secondary-container": "#596376",
-                    "outline": "#717783",
-                    "on-background": "#191c1f",
-                    "background": "#f8f9fe",
-                    "secondary-fixed-dim": "#bdc7dc",
-                    "tertiary-fixed-dim": "#e9c349",
-                    "primary-container": "#2976c7",
-                    "inverse-surface": "#2e3134",
-                    "error": "#ba1a1a",
-                    "surface-container-low": "#f2f3f8",
-                    "surface-dim": "#d8dadf",
-                    "on-secondary-fixed-variant": "#3d4759",
-                    "primary": "#005da7",
-                    "surface-tint": "#0060ac",
-                    "surface-bright": "#f8f9fe",
-                    "on-secondary": "#ffffff",
-                    "surface-container-high": "#e7e8ed",
-                    "on-tertiary": "#ffffff",
-                    "surface-container-highest": "#e1e2e7",
-                    "on-tertiary-container": "#4e3d00",
-                    "ethereal-white": "#F8F9FE",
-                    "on-primary": "#ffffff",
-                    "inverse-on-surface": "#eff0f5",
-                    "outline-variant": "#c1c7d3",
-                    "sacred-gold": "#D4AF37",
-                    "on-tertiary-fixed": "#241a00",
-                    "deep-slate": "#2D3748",
-                    "secondary-fixed": "#d9e3f9",
-                    "error-container": "#ffdad6",
-                    "inverse-primary": "#a4c9ff",
-                    "on-primary-fixed": "#001c39"
+            colors: {
+              "surface-variant": "#e1e2e7",
+              "on-primary-fixed-variant": "#004883",
+              "secondary-container": "#d6e0f6",
+              "spiritual-blue": "#4A90E2",
+              "tertiary-container": "#cca72f",
+              "on-primary-container": "#fdfcff",
+              "on-surface": "#191c1f",
+              surface: "#f8f9fe",
+              "warm-grey": "#718096",
+              "tertiary-fixed": "#ffe088",
+              "primary-fixed-dim": "#a4c9ff",
+              "on-tertiary-fixed-variant": "#574500",
+              tertiary: "#735c00",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#eceef3",
+              "primary-fixed": "#d4e3ff",
+              "on-error": "#ffffff",
+              secondary: "#555f71",
+              "on-surface-variant": "#414751",
+              "border-haze": "#E2E8F0",
+              "on-secondary-fixed": "#121c2c",
+              "on-error-container": "#93000a",
+              "on-secondary-container": "#596376",
+              outline: "#717783",
+              "on-background": "#191c1f",
+              background: "#f8f9fe",
+              "secondary-fixed-dim": "#bdc7dc",
+              "tertiary-fixed-dim": "#e9c349",
+              "primary-container": "#2976c7",
+              "inverse-surface": "#2e3134",
+              error: "#ba1a1a",
+              "surface-container-low": "#f2f3f8",
+              "surface-dim": "#d8dadf",
+              "on-secondary-fixed-variant": "#3d4759",
+              primary: "#005da7",
+              "surface-tint": "#0060ac",
+              "surface-bright": "#f8f9fe",
+              "on-secondary": "#ffffff",
+              "surface-container-high": "#e7e8ed",
+              "on-tertiary": "#ffffff",
+              "surface-container-highest": "#e1e2e7",
+              "on-tertiary-container": "#4e3d00",
+              "ethereal-white": "#F8F9FE",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff0f5",
+              "outline-variant": "#c1c7d3",
+              "sacred-gold": "#D4AF37",
+              "on-tertiary-fixed": "#241a00",
+              "deep-slate": "#2D3748",
+              "secondary-fixed": "#d9e3f9",
+              "error-container": "#ffdad6",
+              "inverse-primary": "#a4c9ff",
+              "on-primary-fixed": "#001c39",
             },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
             },
-            "spacing": {
-                    "container-max": "1120px",
-                    "gutter": "24px",
-                    "margin-desktop": "64px",
-                    "unit": "8px",
-                    "margin-mobile": "20px"
+            spacing: {
+              "container-max": "1120px",
+              gutter: "24px",
+              "margin-desktop": "64px",
+              unit: "8px",
+              "margin-mobile": "20px",
             },
-            "fontFamily": {
-                    "body-md": ["Inter"],
-                    "label-sm": ["Inter"],
-                    "body-lg": ["Inter"],
-                    "display-lg": ["Libre Caslon Text"],
-                    "headline-md": ["Libre Caslon Text"],
-                    "headline-lg": ["Libre Caslon Text"],
-                    "display-lg-mobile": ["Libre Caslon Text"],
-                    "label-lg": ["Inter"]
+            fontFamily: {
+              "body-md": ["Inter"],
+              "label-sm": ["Inter"],
+              "body-lg": ["Inter"],
+              "display-lg": ["Libre Caslon Text"],
+              "headline-md": ["Libre Caslon Text"],
+              "headline-lg": ["Libre Caslon Text"],
+              "display-lg-mobile": ["Libre Caslon Text"],
+              "label-lg": ["Inter"],
             },
-            "fontSize": {
-                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
-                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
-                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "400"}],
-                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
-                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "400"}],
-                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
-            }
+            fontSize: {
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              "label-sm": [
+                "12px",
+                { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" },
+              ],
+              "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+              "display-lg": [
+                "48px",
+                { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "400" },
+              ],
+              "headline-md": ["24px", { lineHeight: "32px", fontWeight: "400" }],
+              "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "400" }],
+              "display-lg-mobile": ["36px", { lineHeight: "44px", fontWeight: "400" }],
+              "label-lg": [
+                "14px",
+                { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" },
+              ],
+            },
           },
         },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+        display: inline-block;
+        vertical-align: middle;
       }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .wisdom-block {
-            border-left: 4px solid #D4AF37;
-            padding-left: 24px;
-            font-style: italic;
-        }
-        .glass-nav {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        .airy-shadow {
-            box-shadow: 0 10px 30px -10px rgba(74, 144, 226, 0.08);
-        }
+      .wisdom-block {
+        border-left: 4px solid #d4af37;
+        padding-left: 24px;
+        font-style: italic;
+      }
+      .glass-nav {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .airy-shadow {
+        box-shadow: 0 10px 30px -10px rgba(74, 144, 226, 0.08);
+      }
     </style>
-</head>
-<body class="bg-surface font-body-md text-on-surface">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-md border-b border-border-haze shadow-sm shadow-spiritual-blue/5">
-<div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
-<div class="font-headline-md text-headline-md text-spiritual-blue">Apoio Espírita</div>
-<div class="hidden md:flex items-center space-x-8">
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Artigos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Livros</a>
-<a class="font-label-lg text-label-lg text-spiritual-blue border-b-2 border-spiritual-blue pb-1" href="#">Estudos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Eventos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Vídeos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Podcasts</a>
-</div>
-<div class="flex items-center space-x-4">
-<button class="p-2 rounded-full hover:bg-surface-container transition-all">
-<span class="material-symbols-outlined text-deep-slate">search</span>
-</button>
-<button class="bg-spiritual-blue text-white px-6 py-2 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all">
-                    Entrar
-                </button>
-</div>
-</div>
-</nav>
-<main class="pt-20">
-<!-- Hero Section -->
-<section class="relative py-24 md:py-32 overflow-hidden bg-white">
-<div class="max-w-container-max mx-auto px-gutter relative z-10 grid md:grid-cols-2 gap-12 items-center">
-<div>
-<span class="bg-spiritual-blue/10 text-spiritual-blue px-4 py-1 rounded-full text-label-sm font-label-sm mb-6 inline-block">CENTRO DE ESTUDOS</span>
-<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-deep-slate mb-6">
-                        Sua Jornada de <span class="text-spiritual-blue">Iluminação</span> Começa Aqui.
-                    </h1>
-<p class="text-body-lg font-body-lg text-warm-grey mb-8 max-w-lg">
-                        Explore cursos estruturados que guiam você através da sabedoria espírita, desde os princípios básicos até estudos avançados para a alma.
-                    </p>
-<div class="flex flex-wrap gap-4">
-<button class="bg-spiritual-blue text-white px-8 py-4 rounded-full font-label-lg text-label-lg airy-shadow hover:scale-105 transition-all">Começar Agora</button>
-<button class="border border-border-haze text-deep-slate px-8 py-4 rounded-full font-label-lg text-label-lg hover:bg-surface-container transition-all">Ver Catálogo</button>
-</div>
-</div>
-<div class="relative">
-<div class="w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden airy-shadow">
-<img class="w-full h-full object-cover" data-alt="A serene, high-key photograph of a focused person sitting in a light-filled minimalist room, reading a classical book with a soft digital tablet nearby. The environment is bathed in bright morning light, creating a peaceful and intellectual atmosphere. The color palette is dominated by airy whites, soft spiritual blues, and warm wooden textures, reflecting a modern sanctuary for learning and reflection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZcxbCGHq_Ga4Fm4ZnF6saHsWUae3fgyiEQbbZFfY9m3WCJno0Yo3-95zBv5lCZ8blEwg96OzXxSmBe6ej7PPKYOd7ZHfHflYEOlJk4_kyNQVui6lB8irWTf8IzTfcxOj-eYwa6FzWX3tCuHDvjYq8XPJTf8tmbRtByDOUICsBi4n-ISmWJtM0S8mmTA0SNXGbvfCppg0z7B8UWjHazJUjIgweYAN--HCgZah4_CDMEG7mV1mOawdNq5OVyqr1X_3TbZZ8ZH8ljo8"/>
-</div>
-<!-- Stats Floating Card -->
-<div class="absolute -bottom-6 -left-6 bg-white/80 backdrop-blur-md p-6 rounded-2xl airy-shadow border border-white/50">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 bg-spiritual-blue rounded-full flex items-center justify-center text-white">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
-</div>
-<div>
-<div class="text-headline-md font-headline-md text-deep-slate">120+</div>
-<div class="text-label-sm font-label-sm text-warm-grey">Lições Ativas</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Decorative Elements -->
-<div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-spiritual-blue/5 to-transparent -z-0"></div>
-</section>
-<!-- Bento Grid Categories -->
-<section class="py-24 bg-surface-container-low">
-<div class="max-w-container-max mx-auto px-gutter">
-<div class="text-center mb-16">
-<h2 class="font-headline-lg text-headline-lg text-deep-slate mb-4">Trilhas de Aprendizado</h2>
-<p class="text-body-md font-body-md text-warm-grey">Categorias pensadas para cada estágio da sua evolução intelectual e moral.</p>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
-<!-- Large Feature Card -->
-<div class="md:col-span-8 bg-white rounded-[1.5rem] p-8 airy-shadow flex flex-col justify-between relative overflow-hidden group">
-<div class="relative z-10">
-<span class="text-spiritual-blue font-label-lg text-label-lg">SÉRIE ESSENCIAL</span>
-<h3 class="text-headline-lg font-headline-lg text-deep-slate mt-4 max-w-md">Doutrina Espírita para Iniciantes</h3>
-<p class="text-body-md font-body-md text-warm-grey mt-4 max-w-sm">Um guia passo a passo sobre os fundamentos de O Livro dos Espíritos.</p>
-</div>
-<div class="relative z-10 flex items-center gap-4 mt-8">
-<button class="bg-deep-slate text-white px-6 py-2 rounded-full font-label-lg text-label-lg">Ver Módulos</button>
-<span class="text-warm-grey font-label-sm text-label-sm">8 Cursos inclusos</span>
-</div>
-<img class="absolute right-0 bottom-0 w-1/2 h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" data-alt="A macro photograph of an open classical book with elegant typography, resting on a white marble surface. Soft sunlight creates long, gentle shadows. The aesthetic is clean, minimalist, and deeply academic, with subtle hints of spiritual blue in the highlights. The overall mood is one of quiet discovery and ancient wisdom being brought into the light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmkOM9dWOWOqoCl9iEvc1NSv4LOR0o_eYEILxhTNuomFRb-VGAufFTkrBMZQKHnoOSzRAC-tSl4T1-kdmdDqgPCWhY1Qe5Cj9gE0wFzWqEXxo0quXa_aOMJmN2_P4mdWVsJdTiv7g27elJj64dA31o_biOsGEnRyPgDhtO_3XoFJDdpW4M_S8pXs-qAVjVqlNlH-vmPJ4DzkeV0ttFBVX1GhB_so-R7Qsvy-2pv3nCtqWxbIigNORyv_yl5OKLAccmaOCAzufqmNU"/>
-</div>
-<!-- Medium Vertical Card -->
-<div class="md:col-span-4 bg-spiritual-blue rounded-[1.5rem] p-8 text-white flex flex-col justify-between airy-shadow">
-<div>
-<span class="material-symbols-outlined text-4xl mb-6">psychology</span>
-<h3 class="text-headline-md font-headline-md">Filosofia &amp; Ciência</h3>
-<p class="text-body-md font-body-md opacity-90 mt-2">A conexão entre o mundo material e o espiritual.</p>
-</div>
-<button class="flex items-center gap-2 font-label-lg text-label-lg group">
-                            Explorar <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
-</div>
-<!-- Small Horizontal Card 1 -->
-<div class="md:col-span-4 bg-white rounded-[1.5rem] p-8 border border-border-haze hover:border-spiritual-blue/30 transition-all flex flex-col justify-center text-center">
-<span class="material-symbols-outlined text-spiritual-blue text-3xl mb-4">favorite</span>
-<h4 class="font-headline-md text-headline-md text-deep-slate">Evangelho no Lar</h4>
-<p class="text-label-sm font-label-sm text-warm-grey">Série de estudos práticos</p>
-</div>
-<!-- Small Horizontal Card 2 -->
-<div class="md:col-span-4 bg-white rounded-[1.5rem] p-8 border border-border-haze hover:border-spiritual-blue/30 transition-all flex flex-col justify-center text-center">
-<span class="material-symbols-outlined text-sacred-gold text-3xl mb-4">history_edu</span>
-<h4 class="font-headline-md text-headline-md text-deep-slate">Obras Completas</h4>
-<p class="text-label-sm font-label-sm text-warm-grey">Análise aprofundada de Kardec</p>
-</div>
-<!-- Medium Horizontal Card -->
-<div class="md:col-span-4 bg-surface-container-highest rounded-[1.5rem] p-8 flex flex-col justify-between">
-<h4 class="font-headline-md text-headline-md text-deep-slate">Mediumnidade</h4>
-<p class="text-body-md font-body-md text-on-surface-variant">Prática e responsabilidade ética.</p>
-<div class="w-full bg-white/50 h-2 rounded-full mt-4">
-<div class="bg-spiritual-blue h-full w-1/3 rounded-full"></div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Current Learning Section -->
-<section class="py-24 bg-white">
-<div class="max-w-container-max mx-auto px-gutter">
-<div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-<div>
-<h2 class="font-headline-lg text-headline-lg text-deep-slate mb-2">Continue de onde parou</h2>
-<p class="text-body-md font-body-md text-warm-grey">Seu progresso pessoal é o nosso maior objetivo.</p>
-</div>
-<a class="text-spiritual-blue font-label-lg text-label-lg hover:underline flex items-center gap-2" href="#">
-                        Minha Área de Aluno <span class="material-symbols-outlined">account_circle</span>
-</a>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-<!-- Lesson Card 1 -->
-<div class="bg-white rounded-[1.5rem] overflow-hidden airy-shadow border border-border-haze group">
-<div class="relative aspect-video">
-<img class="w-full h-full object-cover" data-alt="A minimalist and serene video thumbnail layout showing a peaceful landscape of a misty mountain at sunrise, symbolizing spiritual ascent. The design uses high-key lighting, soft blue gradients, and clean typography. It feels like a high-end educational platform for mindfulness and spiritual study, with a focus on tranquility and intellectual growth." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCkJn_Y-FHS6H0gwf1jLN1mJmv7e7tNsSbfElleHD59kQ7SUIyDGTDsM3lzQxzImWPPsyeWTDzW3jBK3CFOw5N2ky14Ae5nMGcbobTfkZ4Hizo8RFJWF7HuTMaeQ4IQguVPmffz_mOG_h_lywwGjZ7Uo_8Ovo_JsGXLl4GooL46Tih_aqTTcxIhtEfvMN_2vYxvANSxwP51HCey8r46l0cjdhKoOIBKnN11ea6EtHpcCyrpk6iyY9OrCHRAlOzkG7HizIuUqoTK8c"/>
-<div class="absolute inset-0 bg-deep-slate/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-<div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-spiritual-blue shadow-xl">
-<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-</div>
-</div>
-<div class="absolute bottom-4 right-4 bg-deep-slate/60 backdrop-blur-md text-white text-label-sm px-2 py-1 rounded">15:20</div>
-</div>
-<div class="p-6">
-<div class="flex justify-between items-start mb-2">
-<span class="text-label-sm font-label-sm text-spiritual-blue">MÓDULO 4</span>
-<span class="flex items-center gap-1 text-label-sm text-warm-grey">
-<span class="material-symbols-outlined text-sm">download</span> Guia PDF
-                                </span>
-</div>
-<h4 class="font-headline-md text-headline-md text-deep-slate mb-4">A Lei de Causa e Efeito</h4>
-<div class="space-y-3">
-<div class="flex justify-between text-label-sm">
-<span class="text-warm-grey">Progresso</span>
-<span class="text-deep-slate font-bold">65%</span>
-</div>
-<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-<div class="bg-spiritual-blue h-full w-[65%]"></div>
-</div>
-</div>
-</div>
-</div>
-<!-- Lesson Card 2 -->
-<div class="bg-white rounded-[1.5rem] overflow-hidden airy-shadow border border-border-haze group">
-<div class="relative aspect-video">
-<img class="w-full h-full object-cover" data-alt="An elegant video thumbnail depicting a close-up of a fountain pen writing on high-quality cream paper, illuminated by warm, focused light against a soft-focus library background. The aesthetic is academic, spiritual, and calm. The visual composition emphasizes the act of learning and recording spiritual truths, using a palette of deep blues and ivory." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoPgYapuzM8QeCpg18l1t6SVGcNV9koHNm9KIKB2eLOj8dPVVLI1X1y6o0VF892ryDnwoMc7EruUeOj5QxtDnn8-5X7Q_W6LClDPJlCNGNM6vFltsbmxXOK0HQHVX9uKwKX4OOofuEfJbmz2ifH2z9XvWToupE-Gd6JLJWHHOenjhrZQlZPtRNJWMKdNgm3LZBH-PtwYIcinJ3VLI0SK3yDkGfPNzr3BaFdfAb4mjAtOn4Tt0OtfcbRHXxzXQOwsY6JnHB2b7DRSc"/>
-<div class="absolute inset-0 bg-deep-slate/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-<div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-spiritual-blue shadow-xl">
-<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-</div>
-</div>
-<div class="absolute bottom-4 right-4 bg-deep-slate/60 backdrop-blur-md text-white text-label-sm px-2 py-1 rounded">22:45</div>
-</div>
-<div class="p-6">
-<div class="flex justify-between items-start mb-2">
-<span class="text-label-sm font-label-sm text-spiritual-blue">MÓDULO 2</span>
-<span class="flex items-center gap-1 text-label-sm text-warm-grey">
-<span class="material-symbols-outlined text-sm">download</span> Apostila
-                                </span>
-</div>
-<h4 class="font-headline-md text-headline-md text-deep-slate mb-4">A Imortalidade da Alma</h4>
-<div class="space-y-3">
-<div class="flex justify-between text-label-sm">
-<span class="text-warm-grey">Progresso</span>
-<span class="text-deep-slate font-bold">12%</span>
-</div>
-<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-<div class="bg-spiritual-blue h-full w-[12%]"></div>
-</div>
-</div>
-</div>
-</div>
-<!-- Wisdom Block Sidebar -->
-<div class="lg:row-span-1">
-<div class="wisdom-block mb-8">
-<p class="font-display-lg text-headline-md italic text-deep-slate">
-                                "Nascer, viver, morrer, renascer ainda e progredir sempre, tal é a lei."
-                            </p>
-<footer class="mt-4 text-label-lg font-label-lg text-sacred-gold">— ALLAN KARDEC</footer>
-</div>
-<div class="bg-surface-container-high p-8 rounded-[1.5rem]">
-<h5 class="font-headline-md text-headline-md text-deep-slate mb-4">Recursos de Estudo</h5>
-<ul class="space-y-4">
-<li class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer">
-<span class="material-symbols-outlined text-spiritual-blue">library_books</span>
-<span class="font-label-lg text-label-lg">Biblioteca Digital</span>
-</li>
-<li class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer">
-<span class="material-symbols-outlined text-spiritual-blue">forum</span>
-<span class="font-label-lg text-label-lg">Fórum de Dúvidas</span>
-</li>
-<li class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer">
-<span class="material-symbols-outlined text-spiritual-blue">calendar_month</span>
-<span class="font-label-lg text-label-lg">Monitorias ao Vivo</span>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Newsletter / Encouragement -->
-<section class="py-24 bg-white relative">
-<div class="max-w-4xl mx-auto px-gutter text-center">
-<div class="mb-8">
-<span class="material-symbols-outlined text-spiritual-blue text-5xl">mail_outline</span>
-</div>
-<h2 class="font-headline-lg text-headline-lg text-deep-slate mb-4">Mantenha seu ritmo de estudo</h2>
-<p class="text-body-lg font-body-lg text-warm-grey mb-8">Receba pílulas diárias de sabedoria e avisos sobre novos cursos diretamente no seu e-mail.</p>
-<form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-<input class="flex-grow px-6 py-4 rounded-full border border-border-haze bg-surface focus:ring-2 focus:ring-spiritual-blue/20 focus:border-spiritual-blue outline-none transition-all" placeholder="Seu melhor e-mail" type="email"/>
-<button class="bg-spiritual-blue text-white px-8 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary-container transition-all shadow-lg shadow-spiritual-blue/20">Inscrever-se</button>
-</form>
-</div>
-</section>
-</main>
-<!-- Footer -->
-<footer class="bg-surface-container-lowest border-t border-border-haze w-full py-16">
-<div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-12">
-<div class="col-span-1 md:col-span-1">
-<div class="font-headline-md text-headline-md text-spiritual-blue mb-6">Apoio Espírita</div>
-<p class="text-body-md font-body-md text-warm-grey">
-                    Iluminando caminhos através da razão e da fé, promovendo o estudo sério e a prática do bem.
+  </head>
+  <body class="bg-surface font-body-md text-on-surface">
+    <!-- TopNavBar -->
+    <nav
+      class="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-md border-b border-border-haze shadow-sm shadow-spiritual-blue/5"
+    >
+      <div class="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
+        <div class="font-headline-md text-headline-md text-spiritual-blue">Apoio Espírita</div>
+        <div class="hidden md:flex items-center space-x-8">
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Artigos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Livros</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-spiritual-blue border-b-2 border-spiritual-blue pb-1"
+            href="#"
+            >Estudos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Eventos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Vídeos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Podcasts</a
+          >
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="p-2 rounded-full hover:bg-surface-container transition-all">
+            <span class="material-symbols-outlined text-deep-slate">search</span>
+          </button>
+          <button
+            class="bg-spiritual-blue text-white px-6 py-2 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all"
+          >
+            Entrar
+          </button>
+        </div>
+      </div>
+    </nav>
+    <main class="pt-20">
+      <!-- Hero Section -->
+      <section class="relative py-24 md:py-32 overflow-hidden bg-white">
+        <div
+          class="max-w-container-max mx-auto px-gutter relative z-10 grid md:grid-cols-2 gap-12 items-center"
+        >
+          <div>
+            <span
+              class="bg-spiritual-blue/10 text-spiritual-blue px-4 py-1 rounded-full text-label-sm font-label-sm mb-6 inline-block"
+              >CENTRO DE ESTUDOS</span
+            >
+            <h1
+              class="font-display-lg text-display-lg-mobile md:text-display-lg text-deep-slate mb-6"
+            >
+              Sua Jornada de <span class="text-spiritual-blue">Iluminação</span> Começa Aqui.
+            </h1>
+            <p class="text-body-lg font-body-lg text-warm-grey mb-8 max-w-lg">
+              Explore cursos estruturados que guiam você através da sabedoria espírita, desde os
+              princípios básicos até estudos avançados para a alma.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <button
+                class="bg-spiritual-blue text-white px-8 py-4 rounded-full font-label-lg text-label-lg airy-shadow hover:scale-105 transition-all"
+              >
+                Começar Agora
+              </button>
+              <button
+                class="border border-border-haze text-deep-slate px-8 py-4 rounded-full font-label-lg text-label-lg hover:bg-surface-container transition-all"
+              >
+                Ver Catálogo
+              </button>
+            </div>
+          </div>
+          <div class="relative">
+            <div class="w-full h-[400px] md:h-[500px] rounded-[2rem] overflow-hidden airy-shadow">
+              <img
+                class="w-full h-full object-cover"
+                data-alt="A serene, high-key photograph of a focused person sitting in a light-filled minimalist room, reading a classical book with a soft digital tablet nearby. The environment is bathed in bright morning light, creating a peaceful and intellectual atmosphere. The color palette is dominated by airy whites, soft spiritual blues, and warm wooden textures, reflecting a modern sanctuary for learning and reflection."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZcxbCGHq_Ga4Fm4ZnF6saHsWUae3fgyiEQbbZFfY9m3WCJno0Yo3-95zBv5lCZ8blEwg96OzXxSmBe6ej7PPKYOd7ZHfHflYEOlJk4_kyNQVui6lB8irWTf8IzTfcxOj-eYwa6FzWX3tCuHDvjYq8XPJTf8tmbRtByDOUICsBi4n-ISmWJtM0S8mmTA0SNXGbvfCppg0z7B8UWjHazJUjIgweYAN--HCgZah4_CDMEG7mV1mOawdNq5OVyqr1X_3TbZZ8ZH8ljo8"
+              />
+            </div>
+            <!-- Stats Floating Card -->
+            <div
+              class="absolute -bottom-6 -left-6 bg-white/80 backdrop-blur-md p-6 rounded-2xl airy-shadow border border-white/50"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 bg-spiritual-blue rounded-full flex items-center justify-center text-white"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-variation-settings: &quot;FILL&quot; 1"
+                    >auto_stories</span
+                  >
+                </div>
+                <div>
+                  <div class="text-headline-md font-headline-md text-deep-slate">120+</div>
+                  <div class="text-label-sm font-label-sm text-warm-grey">Lições Ativas</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Decorative Elements -->
+        <div
+          class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-spiritual-blue/5 to-transparent -z-0"
+        ></div>
+      </section>
+      <!-- Bento Grid Categories -->
+      <section class="py-24 bg-surface-container-low">
+        <div class="max-w-container-max mx-auto px-gutter">
+          <div class="text-center mb-16">
+            <h2 class="font-headline-lg text-headline-lg text-deep-slate mb-4">
+              Trilhas de Aprendizado
+            </h2>
+            <p class="text-body-md font-body-md text-warm-grey">
+              Categorias pensadas para cada estágio da sua evolução intelectual e moral.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+            <!-- Large Feature Card -->
+            <div
+              class="md:col-span-8 bg-white rounded-[1.5rem] p-8 airy-shadow flex flex-col justify-between relative overflow-hidden group"
+            >
+              <div class="relative z-10">
+                <span class="text-spiritual-blue font-label-lg text-label-lg">SÉRIE ESSENCIAL</span>
+                <h3 class="text-headline-lg font-headline-lg text-deep-slate mt-4 max-w-md">
+                  Doutrina Espírita para Iniciantes
+                </h3>
+                <p class="text-body-md font-body-md text-warm-grey mt-4 max-w-sm">
+                  Um guia passo a passo sobre os fundamentos de O Livro dos Espíritos.
                 </p>
-</div>
-<div>
-<h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">Plataforma</h5>
-<ul class="space-y-4">
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Sobre Nós</a></li>
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Cursos</a></li>
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Biblioteca</a></li>
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Eventos</a></li>
-</ul>
-</div>
-<div>
-<h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">Suporte</h5>
-<ul class="space-y-4">
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Privacidade</a></li>
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Contato</a></li>
-<li><a class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md" href="#">Imprensa</a></li>
-</ul>
-</div>
-<div>
-<h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">Contribua</h5>
-<p class="text-label-sm font-label-sm text-warm-grey mb-4">Ajude-nos a manter esta plataforma gratuita para todos.</p>
-<button class="w-full border border-spiritual-blue text-spiritual-blue px-6 py-3 rounded-full font-label-lg text-label-lg hover:bg-spiritual-blue hover:text-white transition-all">Doações</button>
-</div>
-</div>
-<div class="max-w-container-max mx-auto px-gutter mt-16 pt-8 border-t border-border-haze text-center">
-<p class="text-body-md font-body-md text-warm-grey">© 2024 Apoio Espírita. Todos os direitos reservados.</p>
-</div>
-</footer>
-<script>
-        // Micro-interaction for lesson cards progress bar
-        document.querySelectorAll('.group').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                const bar = card.querySelector('.bg-spiritual-blue');
-                if (bar) {
-                    bar.style.filter = 'brightness(1.2)';
-                    bar.style.transition = 'all 0.3s ease';
-                }
-            });
-            card.addEventListener('mouseleave', () => {
-                const bar = card.querySelector('.bg-spiritual-blue');
-                if (bar) {
-                    bar.style.filter = 'brightness(1)';
-                }
-            });
+              </div>
+              <div class="relative z-10 flex items-center gap-4 mt-8">
+                <button
+                  class="bg-deep-slate text-white px-6 py-2 rounded-full font-label-lg text-label-lg"
+                >
+                  Ver Módulos
+                </button>
+                <span class="text-warm-grey font-label-sm text-label-sm">8 Cursos inclusos</span>
+              </div>
+              <img
+                class="absolute right-0 bottom-0 w-1/2 h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity"
+                data-alt="A macro photograph of an open classical book with elegant typography, resting on a white marble surface. Soft sunlight creates long, gentle shadows. The aesthetic is clean, minimalist, and deeply academic, with subtle hints of spiritual blue in the highlights. The overall mood is one of quiet discovery and ancient wisdom being brought into the light."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmkOM9dWOWOqoCl9iEvc1NSv4LOR0o_eYEILxhTNuomFRb-VGAufFTkrBMZQKHnoOSzRAC-tSl4T1-kdmdDqgPCWhY1Qe5Cj9gE0wFzWqEXxo0quXa_aOMJmN2_P4mdWVsJdTiv7g27elJj64dA31o_biOsGEnRyPgDhtO_3XoFJDdpW4M_S8pXs-qAVjVqlNlH-vmPJ4DzkeV0ttFBVX1GhB_so-R7Qsvy-2pv3nCtqWxbIigNORyv_yl5OKLAccmaOCAzufqmNU"
+              />
+            </div>
+            <!-- Medium Vertical Card -->
+            <div
+              class="md:col-span-4 bg-spiritual-blue rounded-[1.5rem] p-8 text-white flex flex-col justify-between airy-shadow"
+            >
+              <div>
+                <span class="material-symbols-outlined text-4xl mb-6">psychology</span>
+                <h3 class="text-headline-md font-headline-md">Filosofia &amp; Ciência</h3>
+                <p class="text-body-md font-body-md opacity-90 mt-2">
+                  A conexão entre o mundo material e o espiritual.
+                </p>
+              </div>
+              <button class="flex items-center gap-2 font-label-lg text-label-lg group">
+                Explorar
+                <span
+                  class="material-symbols-outlined group-hover:translate-x-1 transition-transform"
+                  >arrow_forward</span
+                >
+              </button>
+            </div>
+            <!-- Small Horizontal Card 1 -->
+            <div
+              class="md:col-span-4 bg-white rounded-[1.5rem] p-8 border border-border-haze hover:border-spiritual-blue/30 transition-all flex flex-col justify-center text-center"
+            >
+              <span class="material-symbols-outlined text-spiritual-blue text-3xl mb-4"
+                >favorite</span
+              >
+              <h4 class="font-headline-md text-headline-md text-deep-slate">Evangelho no Lar</h4>
+              <p class="text-label-sm font-label-sm text-warm-grey">Série de estudos práticos</p>
+            </div>
+            <!-- Small Horizontal Card 2 -->
+            <div
+              class="md:col-span-4 bg-white rounded-[1.5rem] p-8 border border-border-haze hover:border-spiritual-blue/30 transition-all flex flex-col justify-center text-center"
+            >
+              <span class="material-symbols-outlined text-sacred-gold text-3xl mb-4"
+                >history_edu</span
+              >
+              <h4 class="font-headline-md text-headline-md text-deep-slate">Obras Completas</h4>
+              <p class="text-label-sm font-label-sm text-warm-grey">
+                Análise aprofundada de Kardec
+              </p>
+            </div>
+            <!-- Medium Horizontal Card -->
+            <div
+              class="md:col-span-4 bg-surface-container-highest rounded-[1.5rem] p-8 flex flex-col justify-between"
+            >
+              <h4 class="font-headline-md text-headline-md text-deep-slate">Mediumnidade</h4>
+              <p class="text-body-md font-body-md text-on-surface-variant">
+                Prática e responsabilidade ética.
+              </p>
+              <div class="w-full bg-white/50 h-2 rounded-full mt-4">
+                <div class="bg-spiritual-blue h-full w-1/3 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Current Learning Section -->
+      <section class="py-24 bg-white">
+        <div class="max-w-container-max mx-auto px-gutter">
+          <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+              <h2 class="font-headline-lg text-headline-lg text-deep-slate mb-2">
+                Continue de onde parou
+              </h2>
+              <p class="text-body-md font-body-md text-warm-grey">
+                Seu progresso pessoal é o nosso maior objetivo.
+              </p>
+            </div>
+            <a
+              class="text-spiritual-blue font-label-lg text-label-lg hover:underline flex items-center gap-2"
+              href="#"
+            >
+              Minha Área de Aluno <span class="material-symbols-outlined">account_circle</span>
+            </a>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Lesson Card 1 -->
+            <div
+              class="bg-white rounded-[1.5rem] overflow-hidden airy-shadow border border-border-haze group"
+            >
+              <div class="relative aspect-video">
+                <img
+                  class="w-full h-full object-cover"
+                  data-alt="A minimalist and serene video thumbnail layout showing a peaceful landscape of a misty mountain at sunrise, symbolizing spiritual ascent. The design uses high-key lighting, soft blue gradients, and clean typography. It feels like a high-end educational platform for mindfulness and spiritual study, with a focus on tranquility and intellectual growth."
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCkJn_Y-FHS6H0gwf1jLN1mJmv7e7tNsSbfElleHD59kQ7SUIyDGTDsM3lzQxzImWPPsyeWTDzW3jBK3CFOw5N2ky14Ae5nMGcbobTfkZ4Hizo8RFJWF7HuTMaeQ4IQguVPmffz_mOG_h_lywwGjZ7Uo_8Ovo_JsGXLl4GooL46Tih_aqTTcxIhtEfvMN_2vYxvANSxwP51HCey8r46l0cjdhKoOIBKnN11ea6EtHpcCyrpk6iyY9OrCHRAlOzkG7HizIuUqoTK8c"
+                />
+                <div
+                  class="absolute inset-0 bg-deep-slate/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <div
+                    class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-spiritual-blue shadow-xl"
+                  >
+                    <span
+                      class="material-symbols-outlined text-3xl"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >play_arrow</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="absolute bottom-4 right-4 bg-deep-slate/60 backdrop-blur-md text-white text-label-sm px-2 py-1 rounded"
+                >
+                  15:20
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-label-sm font-label-sm text-spiritual-blue">MÓDULO 4</span>
+                  <span class="flex items-center gap-1 text-label-sm text-warm-grey">
+                    <span class="material-symbols-outlined text-sm">download</span> Guia PDF
+                  </span>
+                </div>
+                <h4 class="font-headline-md text-headline-md text-deep-slate mb-4">
+                  A Lei de Causa e Efeito
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between text-label-sm">
+                    <span class="text-warm-grey">Progresso</span>
+                    <span class="text-deep-slate font-bold">65%</span>
+                  </div>
+                  <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-spiritual-blue h-full w-[65%]"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Lesson Card 2 -->
+            <div
+              class="bg-white rounded-[1.5rem] overflow-hidden airy-shadow border border-border-haze group"
+            >
+              <div class="relative aspect-video">
+                <img
+                  class="w-full h-full object-cover"
+                  data-alt="An elegant video thumbnail depicting a close-up of a fountain pen writing on high-quality cream paper, illuminated by warm, focused light against a soft-focus library background. The aesthetic is academic, spiritual, and calm. The visual composition emphasizes the act of learning and recording spiritual truths, using a palette of deep blues and ivory."
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoPgYapuzM8QeCpg18l1t6SVGcNV9koHNm9KIKB2eLOj8dPVVLI1X1y6o0VF892ryDnwoMc7EruUeOj5QxtDnn8-5X7Q_W6LClDPJlCNGNM6vFltsbmxXOK0HQHVX9uKwKX4OOofuEfJbmz2ifH2z9XvWToupE-Gd6JLJWHHOenjhrZQlZPtRNJWMKdNgm3LZBH-PtwYIcinJ3VLI0SK3yDkGfPNzr3BaFdfAb4mjAtOn4Tt0OtfcbRHXxzXQOwsY6JnHB2b7DRSc"
+                />
+                <div
+                  class="absolute inset-0 bg-deep-slate/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <div
+                    class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-spiritual-blue shadow-xl"
+                  >
+                    <span
+                      class="material-symbols-outlined text-3xl"
+                      style="font-variation-settings: &quot;FILL&quot; 1"
+                      >play_arrow</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="absolute bottom-4 right-4 bg-deep-slate/60 backdrop-blur-md text-white text-label-sm px-2 py-1 rounded"
+                >
+                  22:45
+                </div>
+              </div>
+              <div class="p-6">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="text-label-sm font-label-sm text-spiritual-blue">MÓDULO 2</span>
+                  <span class="flex items-center gap-1 text-label-sm text-warm-grey">
+                    <span class="material-symbols-outlined text-sm">download</span> Apostila
+                  </span>
+                </div>
+                <h4 class="font-headline-md text-headline-md text-deep-slate mb-4">
+                  A Imortalidade da Alma
+                </h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between text-label-sm">
+                    <span class="text-warm-grey">Progresso</span>
+                    <span class="text-deep-slate font-bold">12%</span>
+                  </div>
+                  <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-spiritual-blue h-full w-[12%]"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Wisdom Block Sidebar -->
+            <div class="lg:row-span-1">
+              <div class="wisdom-block mb-8">
+                <p class="font-display-lg text-headline-md italic text-deep-slate">
+                  "Nascer, viver, morrer, renascer ainda e progredir sempre, tal é a lei."
+                </p>
+                <footer class="mt-4 text-label-lg font-label-lg text-sacred-gold">
+                  — ALLAN KARDEC
+                </footer>
+              </div>
+              <div class="bg-surface-container-high p-8 rounded-[1.5rem]">
+                <h5 class="font-headline-md text-headline-md text-deep-slate mb-4">
+                  Recursos de Estudo
+                </h5>
+                <ul class="space-y-4">
+                  <li
+                    class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-spiritual-blue">library_books</span>
+                    <span class="font-label-lg text-label-lg">Biblioteca Digital</span>
+                  </li>
+                  <li
+                    class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-spiritual-blue">forum</span>
+                    <span class="font-label-lg text-label-lg">Fórum de Dúvidas</span>
+                  </li>
+                  <li
+                    class="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-shadow cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-spiritual-blue"
+                      >calendar_month</span
+                    >
+                    <span class="font-label-lg text-label-lg">Monitorias ao Vivo</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Newsletter / Encouragement -->
+      <section class="py-24 bg-white relative">
+        <div class="max-w-4xl mx-auto px-gutter text-center">
+          <div class="mb-8">
+            <span class="material-symbols-outlined text-spiritual-blue text-5xl">mail_outline</span>
+          </div>
+          <h2 class="font-headline-lg text-headline-lg text-deep-slate mb-4">
+            Mantenha seu ritmo de estudo
+          </h2>
+          <p class="text-body-lg font-body-lg text-warm-grey mb-8">
+            Receba pílulas diárias de sabedoria e avisos sobre novos cursos diretamente no seu
+            e-mail.
+          </p>
+          <form class="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
+            <input
+              class="flex-grow px-6 py-4 rounded-full border border-border-haze bg-surface focus:ring-2 focus:ring-spiritual-blue/20 focus:border-spiritual-blue outline-none transition-all"
+              placeholder="Seu melhor e-mail"
+              type="email"
+            />
+            <button
+              class="bg-spiritual-blue text-white px-8 py-4 rounded-full font-label-lg text-label-lg hover:bg-primary-container transition-all shadow-lg shadow-spiritual-blue/20"
+            >
+              Inscrever-se
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-surface-container-lowest border-t border-border-haze w-full py-16">
+      <div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div class="col-span-1 md:col-span-1">
+          <div class="font-headline-md text-headline-md text-spiritual-blue mb-6">
+            Apoio Espírita
+          </div>
+          <p class="text-body-md font-body-md text-warm-grey">
+            Iluminando caminhos através da razão e da fé, promovendo o estudo sério e a prática do
+            bem.
+          </p>
+        </div>
+        <div>
+          <h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">
+            Plataforma
+          </h5>
+          <ul class="space-y-4">
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Sobre Nós</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Cursos</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Biblioteca</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Eventos</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">
+            Suporte
+          </h5>
+          <ul class="space-y-4">
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Privacidade</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Contato</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-warm-grey hover:text-spiritual-blue hover:underline transition-colors font-body-md text-body-md"
+                href="#"
+                >Imprensa</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h5 class="font-label-lg text-label-lg text-deep-slate uppercase tracking-wider mb-6">
+            Contribua
+          </h5>
+          <p class="text-label-sm font-label-sm text-warm-grey mb-4">
+            Ajude-nos a manter esta plataforma gratuita para todos.
+          </p>
+          <button
+            class="w-full border border-spiritual-blue text-spiritual-blue px-6 py-3 rounded-full font-label-lg text-label-lg hover:bg-spiritual-blue hover:text-white transition-all"
+          >
+            Doações
+          </button>
+        </div>
+      </div>
+      <div
+        class="max-w-container-max mx-auto px-gutter mt-16 pt-8 border-t border-border-haze text-center"
+      >
+        <p class="text-body-md font-body-md text-warm-grey">
+          © 2024 Apoio Espírita. Todos os direitos reservados.
+        </p>
+      </div>
+    </footer>
+    <script>
+      // Micro-interaction for lesson cards progress bar
+      document.querySelectorAll(".group").forEach((card) => {
+        card.addEventListener("mouseenter", () => {
+          const bar = card.querySelector(".bg-spiritual-blue");
+          if (bar) {
+            bar.style.filter = "brightness(1.2)";
+            bar.style.transition = "all 0.3s ease";
+          }
         });
+        card.addEventListener("mouseleave", () => {
+          const bar = card.querySelector(".bg-spiritual-blue");
+          if (bar) {
+            bar.style.filter = "brightness(1)";
+          }
+        });
+      });
 
-        // Floating elements subtle parallax
-        window.addEventListener('mousemove', (e) => {
-            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-            const floatingCard = document.querySelector('.absolute.-bottom-6.-left-6');
-            if (floatingCard) {
-                floatingCard.style.transform = `translate(${moveX}px, ${moveY}px)`;
-            }
-        });
+      // Floating elements subtle parallax
+      window.addEventListener("mousemove", (e) => {
+        const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+        const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+        const floatingCard = document.querySelector(".absolute.-bottom-6.-left-6");
+        if (floatingCard) {
+          floatingCard.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        }
+      });
     </script>
-</body></html>
+  </body>
+</html>

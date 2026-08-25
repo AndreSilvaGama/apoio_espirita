@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-25  
 **Escopo:** Todas as páginas acessadas após login  
-**Fora do escopo:** Página inicial com vídeo (`/`) — permanece intacta  
+**Fora do escopo:** Página inicial com vídeo (`/`) — permanece intacta
 
 ---
 
@@ -20,26 +20,27 @@ As páginas autenticadas do Apoio Espírita recebem um novo design system chamad
 
 ### 2.1 Paleta de Cores
 
-| Token | Valor | Uso |
-|---|---|---|
-| `--blue` | `#004a8c` | Ações primárias, links, destaque azul |
-| `--blue-mid` | `#1863a8` | Hover de botões primários |
-| `--blue-pale` | `#ebf0f9` | Fundos de badges, tags, nav-link ativa |
-| `--blue-dim` | `rgba(0,74,140,.07)` | Faixa de data nos cards de evento |
-| `--gold` | `#b08826` | Acento do centro espírita, borda do Wisdom Block |
-| `--gold-pale` | `#faf5e8` | Fundo do Wisdom Block |
-| `--ink` | `#111418` | Texto principal |
-| `--ink-2` | `#2e3540` | Texto de corpo, descrições |
-| `--ink-3` | `#637080` | Metadata, textos secundários |
-| `--ink-4` | `#a3adb8` | Textos muito discretos, rodapés |
-| `--surface` | `#ffffff` | Superfície de cards |
-| `--bg` | `#f7f8fc` | Fundo geral das páginas |
-| `--border` | `rgba(0,20,70,.08)` | Bordas suaves |
-| `--border-2` | `rgba(0,20,70,.15)` | Bordas em hover |
+| Token         | Valor                | Uso                                              |
+| ------------- | -------------------- | ------------------------------------------------ |
+| `--blue`      | `#004a8c`            | Ações primárias, links, destaque azul            |
+| `--blue-mid`  | `#1863a8`            | Hover de botões primários                        |
+| `--blue-pale` | `#ebf0f9`            | Fundos de badges, tags, nav-link ativa           |
+| `--blue-dim`  | `rgba(0,74,140,.07)` | Faixa de data nos cards de evento                |
+| `--gold`      | `#b08826`            | Acento do centro espírita, borda do Wisdom Block |
+| `--gold-pale` | `#faf5e8`            | Fundo do Wisdom Block                            |
+| `--ink`       | `#111418`            | Texto principal                                  |
+| `--ink-2`     | `#2e3540`            | Texto de corpo, descrições                       |
+| `--ink-3`     | `#637080`            | Metadata, textos secundários                     |
+| `--ink-4`     | `#a3adb8`            | Textos muito discretos, rodapés                  |
+| `--surface`   | `#ffffff`            | Superfície de cards                              |
+| `--bg`        | `#f7f8fc`            | Fundo geral das páginas                          |
+| `--border`    | `rgba(0,20,70,.08)`  | Bordas suaves                                    |
+| `--border-2`  | `rgba(0,20,70,.15)`  | Bordas em hover                                  |
 
 ### 2.2 Tipografia
 
 **Fontes utilizadas:**
+
 - `Libre Caslon Text` — títulos, nome do centro, citações em bloco
 - `Inter` — todo o restante: corpo, metadata, números, botões, labels
 
@@ -47,21 +48,21 @@ As páginas autenticadas do Apoio Espírita recebem um novo design system chamad
 
 **Escala base:** `html { font-size: 18px }` — toda a escala usa `rem`.
 
-| Elemento | Fonte | Tamanho | Peso |
-|---|---|---|---|
-| Nome do centro espírita | Libre Caslon Text | 3.2rem (~58px) | 400 |
-| Títulos de seção (`h2`) | Libre Caslon Text | 1.5rem (~27px) | 400 |
-| Títulos de item (`h3`) | Libre Caslon Text | 1.2rem (~22px) | 400 |
-| Corpo / descrições | Inter | 0.93rem (~17px) | 300 |
-| Metadata (hora, local) | Inter | 0.84rem (~15px) | 400 |
-| Labels e tags | Inter | 0.68rem (~12px) | 700 |
-| Botões | Inter | 0.88–0.9rem (~16px) | 600 |
+| Elemento                | Fonte             | Tamanho             | Peso |
+| ----------------------- | ----------------- | ------------------- | ---- |
+| Nome do centro espírita | Libre Caslon Text | 3.2rem (~58px)      | 400  |
+| Títulos de seção (`h2`) | Libre Caslon Text | 1.5rem (~27px)      | 400  |
+| Títulos de item (`h3`)  | Libre Caslon Text | 1.2rem (~22px)      | 400  |
+| Corpo / descrições      | Inter             | 0.93rem (~17px)     | 300  |
+| Metadata (hora, local)  | Inter             | 0.84rem (~15px)     | 400  |
+| Labels e tags           | Inter             | 0.68rem (~12px)     | 700  |
+| Botões                  | Inter             | 0.88–0.9rem (~16px) | 600  |
 
 ### 2.3 Raio de Borda
 
-- Cards: `20px`  
-- Botões: `11–13px`  
-- Tags/pills: `999px`  
+- Cards: `20px`
+- Botões: `11–13px`
+- Tags/pills: `999px`
 - Hero do centro: sem borda arredondada (full-bleed)
 
 ### 2.4 Sombras
@@ -135,11 +136,13 @@ Exibido nas páginas que têm espaço editorial acima do conteúdo principal (Ag
 Estrutura de dois blocos:
 
 **Faixa superior (`evento-topo`)**
+
 - Fundo: `--blue-dim`
 - Data por extenso: Inter bold, 0.75rem, azul, lining-nums
 - Badge Aberto/Fechado: pill verde ou vermelho, à direita
 
 **Corpo (`evento-corpo`)**
+
 - Grid: conteúdo | ações
 - Título: Libre Caslon, 1.2rem
 - Metadata (hora, local, confirmados): Inter, 0.84rem, icones Lucide 14px
@@ -147,6 +150,7 @@ Estrutura de dois blocos:
 - Tags: pills Inter bold 0.66rem uppercase
 
 **Ações**
+
 - Status confirmado: pill verde
 - Status aguardando: pill âmbar
 - Botão confirmar: outline azul, min-width 164px, padding 11px
@@ -186,8 +190,14 @@ Cards e seções entram com animação `rise` ao carregar a página:
 
 ```css
 @keyframes rise {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -210,15 +220,15 @@ Escalonamento de 0.04s a 0.52s para criar sequência orgânica de aparecimento. 
 
 Todas as rotas autenticadas recebem o novo design system:
 
-| Rota | Notas |
-|---|---|
-| `/agenda` | Primeiro a ser implementado; serve como referência |
-| `/kanban` | Adaptar Casa Hero + cards de tarefa no novo estilo |
-| `/evangelizacao` | Adaptar seções de conteúdo |
-| `/perfil` | Adaptar formulários e seções de dados |
-| `/painel` | Adaptar roadmap e estatísticas |
-| `/jogos/*` | Páginas de jogos — aplicar TopBar e fundo `--bg`; Casa Hero opcional pois o contexto é lúdico |
-| Demais rotas autenticadas | Seguir o mesmo padrão |
+| Rota                      | Notas                                                                                         |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `/agenda`                 | Primeiro a ser implementado; serve como referência                                            |
+| `/kanban`                 | Adaptar Casa Hero + cards de tarefa no novo estilo                                            |
+| `/evangelizacao`          | Adaptar seções de conteúdo                                                                    |
+| `/perfil`                 | Adaptar formulários e seções de dados                                                         |
+| `/painel`                 | Adaptar roadmap e estatísticas                                                                |
+| `/jogos/*`                | Páginas de jogos — aplicar TopBar e fundo `--bg`; Casa Hero opcional pois o contexto é lúdico |
+| Demais rotas autenticadas | Seguir o mesmo padrão                                                                         |
 
 ---
 
@@ -234,19 +244,19 @@ Todas as rotas autenticadas recebem o novo design system:
 
 ## 9. Arquivos a Modificar
 
-| Arquivo | Tipo de mudança |
-|---|---|
-| `src/styles.css` | **Estender** (não substituir) `.page-light` com os tokens Serene Wisdom — as variáveis CSS do bloco são sobrescritas, as classes Tailwind existentes continuam funcionando sem alteração no JSX |
-| `src/routes/__root.tsx` | Adicionar `Libre Caslon Text` ao Google Fonts |
-| `src/routes/agenda.tsx` | Aplicar layout Serene Wisdom |
-| `src/routes/kanban.tsx` | Aplicar layout Serene Wisdom |
-| `src/routes/evangelizacao.tsx` | Aplicar layout Serene Wisdom |
-| `src/routes/perfil.tsx` | Aplicar layout Serene Wisdom |
-| `src/routes/painel.tsx` | Aplicar layout Serene Wisdom |
+| Arquivo                        | Tipo de mudança                                                                                                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles.css`               | **Estender** (não substituir) `.page-light` com os tokens Serene Wisdom — as variáveis CSS do bloco são sobrescritas, as classes Tailwind existentes continuam funcionando sem alteração no JSX |
+| `src/routes/__root.tsx`        | Adicionar `Libre Caslon Text` ao Google Fonts                                                                                                                                                   |
+| `src/routes/agenda.tsx`        | Aplicar layout Serene Wisdom                                                                                                                                                                    |
+| `src/routes/kanban.tsx`        | Aplicar layout Serene Wisdom                                                                                                                                                                    |
+| `src/routes/evangelizacao.tsx` | Aplicar layout Serene Wisdom                                                                                                                                                                    |
+| `src/routes/perfil.tsx`        | Aplicar layout Serene Wisdom                                                                                                                                                                    |
+| `src/routes/painel.tsx`        | Aplicar layout Serene Wisdom                                                                                                                                                                    |
 
 Novos arquivos a criar:
 
-| Arquivo | Descrição |
-|---|---|
-| `src/components/CasaHero.tsx` | Componente reutilizável do hero do centro espírita — recebe dados de `profile` via `useAuth()`: `sigla_casa`, `cidade`, `uf`, `created_at`. Estatísticas (membros, eventos) são props opcionais |
-| `src/components/WisdomBlock.tsx` | Componente da citação diária |
+| Arquivo                          | Descrição                                                                                                                                                                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/CasaHero.tsx`    | Componente reutilizável do hero do centro espírita — recebe dados de `profile` via `useAuth()`: `sigla_casa`, `cidade`, `uf`, `created_at`. Estatísticas (membros, eventos) são props opcionais |
+| `src/components/WisdomBlock.tsx` | Componente da citação diária                                                                                                                                                                    |

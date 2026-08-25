@@ -14,23 +14,24 @@
 
 ## Mapa de Arquivos
 
-| Arquivo | Ação |
-|---|---|
-| `src/styles.css` | Modificar — atualizar `.page-light` com tokens Serene Wisdom; adicionar `html { font-size: 18px }` |
-| `src/routes/__root.tsx` | Modificar — adicionar Libre Caslon Text ao Google Fonts; atualizar cores do NavBar ativo; adicionar BottomNav mobile |
-| `src/components/CasaHero.tsx` | Criar — hero reutilizável com nome do centro espírita |
-| `src/components/WisdomBlock.tsx` | Criar — bloco de citação com acento dourado |
-| `src/routes/agenda.tsx` | Modificar — aplicar CasaHero + WisdomBlock + novo layout de cards |
-| `src/routes/kanban.tsx` | Modificar — aplicar CasaHero + atualizar estilos de cards |
-| `src/routes/evangelizacao.tsx` | Modificar — aplicar CasaHero + atualizar seções |
-| `src/routes/perfil.tsx` | Modificar — aplicar CasaHero + atualizar formulários |
-| `src/routes/painel.tsx` | Modificar — aplicar CasaHero + atualizar seções |
+| Arquivo                          | Ação                                                                                                                 |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `src/styles.css`                 | Modificar — atualizar `.page-light` com tokens Serene Wisdom; adicionar `html { font-size: 18px }`                   |
+| `src/routes/__root.tsx`          | Modificar — adicionar Libre Caslon Text ao Google Fonts; atualizar cores do NavBar ativo; adicionar BottomNav mobile |
+| `src/components/CasaHero.tsx`    | Criar — hero reutilizável com nome do centro espírita                                                                |
+| `src/components/WisdomBlock.tsx` | Criar — bloco de citação com acento dourado                                                                          |
+| `src/routes/agenda.tsx`          | Modificar — aplicar CasaHero + WisdomBlock + novo layout de cards                                                    |
+| `src/routes/kanban.tsx`          | Modificar — aplicar CasaHero + atualizar estilos de cards                                                            |
+| `src/routes/evangelizacao.tsx`   | Modificar — aplicar CasaHero + atualizar seções                                                                      |
+| `src/routes/perfil.tsx`          | Modificar — aplicar CasaHero + atualizar formulários                                                                 |
+| `src/routes/painel.tsx`          | Modificar — aplicar CasaHero + atualizar seções                                                                      |
 
 ---
 
 ## Task 1: Atualizar tokens de design em styles.css
 
 **Files:**
+
 - Modify: `src/styles.css`
 
 - [ ] **Passo 1: Substituir o bloco `.page-light` completo**
@@ -40,35 +41,35 @@ Localizar o bloco atual `.page-light { ... }` (linhas ~233–307) e substituir p
 ```css
 /* ── Serene Wisdom — páginas autenticadas ── */
 .page-light {
-  --background:        #f7f8fc;
-  --foreground:        #111418;
-  --muted-foreground:  #637080;
-  --border:            rgba(0,20,70,.08);
-  --card:              #ffffff;
-  --card-foreground:   #111418;
-  --glass-bg:          rgba(255,255,255,.92);
-  --glass-border:      rgba(0,20,70,.10);
+  --background: #f7f8fc;
+  --foreground: #111418;
+  --muted-foreground: #637080;
+  --border: rgba(0, 20, 70, 0.08);
+  --card: #ffffff;
+  --card-foreground: #111418;
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(0, 20, 70, 0.1);
 
   /* tokens Serene Wisdom */
-  --sw-blue:           #004a8c;
-  --sw-blue-mid:       #1863a8;
-  --sw-blue-pale:      #ebf0f9;
-  --sw-blue-dim:       rgba(0,74,140,.07);
-  --sw-gold:           #b08826;
-  --sw-gold-pale:      #faf5e8;
-  --sw-gold-border:    rgba(176,136,38,.3);
-  --sw-ink:            #111418;
-  --sw-ink-2:          #2e3540;
-  --sw-ink-3:          #637080;
-  --sw-ink-4:          #a3adb8;
-  --sw-surface:        #ffffff;
-  --sw-border-2:       rgba(0,20,70,.15);
-  --sw-shadow-card:    0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05);
-  --sw-shadow-hover:   0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08);
+  --sw-blue: #004a8c;
+  --sw-blue-mid: #1863a8;
+  --sw-blue-pale: #ebf0f9;
+  --sw-blue-dim: rgba(0, 74, 140, 0.07);
+  --sw-gold: #b08826;
+  --sw-gold-pale: #faf5e8;
+  --sw-gold-border: rgba(176, 136, 38, 0.3);
+  --sw-ink: #111418;
+  --sw-ink-2: #2e3540;
+  --sw-ink-3: #637080;
+  --sw-ink-4: #a3adb8;
+  --sw-surface: #ffffff;
+  --sw-border-2: rgba(0, 20, 70, 0.15);
+  --sw-shadow-card: 0 1px 4px rgba(0, 20, 70, 0.04), 0 3px 14px rgba(0, 20, 70, 0.05);
+  --sw-shadow-hover: 0 4px 16px rgba(0, 20, 70, 0.07), 0 12px 36px rgba(0, 20, 70, 0.08);
 
   /* cyan-glow e violet-glow redefinidos para o contexto claro */
-  --cyan-glow:         #004a8c;
-  --violet-glow:       #004a8c;
+  --cyan-glow: #004a8c;
+  --violet-glow: #004a8c;
 
   background: var(--background);
   color: var(--foreground);
@@ -81,7 +82,7 @@ Localizar o bloco atual `.page-light { ... }` (linhas ~233–307) e substituir p
 .page-light select,
 .page-light textarea {
   background-color: white !important;
-  border-color: rgba(0,20,70,.15) !important;
+  border-color: rgba(0, 20, 70, 0.15) !important;
   color: #111418 !important;
   transition: all 0.2s ease !important;
 }
@@ -90,17 +91,17 @@ Localizar o bloco atual `.page-light { ... }` (linhas ~233–307) e substituir p
 .page-light input[type="password"]:focus,
 .page-light select:focus,
 .page-light textarea:focus {
-  border-color: rgba(0,74,140,.6) !important;
-  box-shadow: 0 0 0 3px rgba(0,74,140,.10) !important;
+  border-color: rgba(0, 74, 140, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(0, 74, 140, 0.1) !important;
   outline: none !important;
 }
 .page-light input::placeholder,
 .page-light textarea::placeholder {
-  color: rgba(99,112,128,.55) !important;
+  color: rgba(99, 112, 128, 0.55) !important;
 }
 .page-light select {
   background-color: white !important;
-  border-color: rgba(0,20,70,.15) !important;
+  border-color: rgba(0, 20, 70, 0.15) !important;
   color: #111418 !important;
 }
 .page-light select option {
@@ -120,9 +121,9 @@ Localizar o bloco atual `.page-light { ... }` (linhas ~233–307) e substituir p
 Localizar o bloco `@layer base { ... }` e adicionar antes do fechamento `}`:
 
 ```css
-  html {
-    font-size: 18px;
-  }
+html {
+  font-size: 18px;
+}
 ```
 
 E após o bloco `@layer base`, adicionar:
@@ -130,16 +131,36 @@ E após o bloco `@layer base`, adicionar:
 ```css
 /* Serene Wisdom — animação de entrada suave */
 @keyframes sw-rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.sw-rise   { animation: sw-rise 0.65s cubic-bezier(.22,1,.36,1) both; }
-.sw-rise-1 { animation-delay: .04s; }
-.sw-rise-2 { animation-delay: .12s; }
-.sw-rise-3 { animation-delay: .20s; }
-.sw-rise-4 { animation-delay: .28s; }
-.sw-rise-5 { animation-delay: .36s; }
-.sw-rise-6 { animation-delay: .44s; }
+.sw-rise {
+  animation: sw-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sw-rise-1 {
+  animation-delay: 0.04s;
+}
+.sw-rise-2 {
+  animation-delay: 0.12s;
+}
+.sw-rise-3 {
+  animation-delay: 0.2s;
+}
+.sw-rise-4 {
+  animation-delay: 0.28s;
+}
+.sw-rise-5 {
+  animation-delay: 0.36s;
+}
+.sw-rise-6 {
+  animation-delay: 0.44s;
+}
 ```
 
 - [ ] **Passo 3: Verificar build sem erros**
@@ -163,6 +184,7 @@ git commit -m "feat: tokens Serene Wisdom em .page-light + animação sw-rise"
 ## Task 2: Adicionar Libre Caslon Text ao projeto
 
 **Files:**
+
 - Modify: `src/routes/__root.tsx`
 
 - [ ] **Passo 1: Atualizar URL do Google Fonts**
@@ -186,7 +208,7 @@ Substituir por:
 Localizar o bloco `@theme inline { ... }` (segunda ocorrência, linhas ~149–154) e adicionar:
 
 ```css
-  --font-caslon: "Libre Caslon Text", Georgia, serif;
+--font-caslon: "Libre Caslon Text", Georgia, serif;
 ```
 
 - [ ] **Passo 3: Build e commit**
@@ -202,6 +224,7 @@ git commit -m "feat: adicionar Libre Caslon Text ao projeto"
 ## Task 3: Atualizar cores do NavBar para Serene Wisdom
 
 **Files:**
+
 - Modify: `src/routes/__root.tsx` — função `NavBar`
 
 O NavBar já é claro nas páginas autenticadas (`.glass-premium`). A mudança é substituir o violeta (`violet-50`/`violet-700`) pelo azul Serene Wisdom.
@@ -259,13 +282,15 @@ const dropBtnCls = (paths: string[]) =>
 Localizar (linha ~334):
 
 ```tsx
-const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 rounded-lg mx-1 my-0.5 transition-all duration-200";
+const dropItemCls =
+  "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-700 rounded-lg mx-1 my-0.5 transition-all duration-200";
 ```
 
 Substituir por:
 
 ```tsx
-const dropItemCls = "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#ebf0f9] hover:text-[#004a8c] rounded-lg mx-1 my-0.5 transition-all duration-200";
+const dropItemCls =
+  "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#ebf0f9] hover:text-[#004a8c] rounded-lg mx-1 my-0.5 transition-all duration-200";
 ```
 
 - [ ] **Passo 4: Build e commit**
@@ -281,6 +306,7 @@ git commit -m "feat: atualizar NavBar para cores Serene Wisdom"
 ## Task 4: Criar componente CasaHero
 
 **Files:**
+
 - Create: `src/components/CasaHero.tsx`
 
 O `CasaHero` busca o nome completo da casa espírita em `casas_espirita` e exibe o hero de identidade. Valores opcionais `membros` e `eventos` vêm de quem usa o componente.
@@ -302,7 +328,9 @@ interface CasaHeroProps {
 function splitNome(nome: string): [string, string] {
   const words = nome.trim().split(/\s+/);
   if (words.length <= 2) return [nome, ""];
-  const idx = words.findIndex((w) => w.toLowerCase() === "espírita" || w.toLowerCase() === "espirita");
+  const idx = words.findIndex(
+    (w) => w.toLowerCase() === "espírita" || w.toLowerCase() === "espirita",
+  );
   if (idx >= 0 && idx < words.length - 1) {
     return [words.slice(0, idx + 1).join(" "), words.slice(idx + 1).join(" ")];
   }
@@ -329,9 +357,7 @@ export function CasaHero({ membros, eventos }: CasaHeroProps) {
 
   const displayName = nomeCasa || profile.sigla_casa;
   const [linha1, linha2] = splitNome(displayName);
-  const membroSince = profile.created_at
-    ? new Date(profile.created_at).getFullYear()
-    : null;
+  const membroSince = profile.created_at ? new Date(profile.created_at).getFullYear() : null;
 
   return (
     <section
@@ -342,12 +368,31 @@ export function CasaHero({ membros, eventos }: CasaHeroProps) {
         padding: "52px 44px 44px",
       }}
     >
-      <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+      <div
+        style={{
+          maxWidth: 860,
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 32,
+          flexWrap: "wrap",
+        }}
+      >
         {/* nome */}
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 28, height: 1.5, background: "#b08826", borderRadius: 1 }} />
-            <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#b08826" }}>
+            <span
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#b08826",
+              }}
+            >
               Sua casa espírita
             </span>
           </div>
@@ -373,7 +418,16 @@ export function CasaHero({ membros, eventos }: CasaHeroProps) {
 
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             {(profile.cidade || profile.uf) && (
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "Inter", fontSize: "0.82rem", color: "#637080" }}>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontFamily: "Inter",
+                  fontSize: "0.82rem",
+                  color: "#637080",
+                }}
+              >
                 <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
                 {[profile.cidade, profile.uf].filter(Boolean).join(" · ")}
               </span>
@@ -402,20 +456,56 @@ export function CasaHero({ membros, eventos }: CasaHeroProps) {
           <div style={{ display: "flex", gap: 28, flexShrink: 0, paddingBottom: 4 }}>
             {membros !== undefined && (
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: "Inter, sans-serif", fontSize: "2rem", fontWeight: 700, color: "#004a8c", lineHeight: 1, fontVariantNumeric: "lining-nums" }}>
+                <div
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "2rem",
+                    fontWeight: 700,
+                    color: "#004a8c",
+                    lineHeight: 1,
+                    fontVariantNumeric: "lining-nums",
+                  }}
+                >
                   {membros}
                 </div>
-                <div style={{ fontFamily: "Inter", fontSize: "0.72rem", fontWeight: 500, color: "#a3adb8", marginTop: 4, letterSpacing: "0.03em" }}>
+                <div
+                  style={{
+                    fontFamily: "Inter",
+                    fontSize: "0.72rem",
+                    fontWeight: 500,
+                    color: "#a3adb8",
+                    marginTop: 4,
+                    letterSpacing: "0.03em",
+                  }}
+                >
                   Membros ativos
                 </div>
               </div>
             )}
             {eventos !== undefined && (
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: "Inter, sans-serif", fontSize: "2rem", fontWeight: 700, color: "#004a8c", lineHeight: 1, fontVariantNumeric: "lining-nums" }}>
+                <div
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "2rem",
+                    fontWeight: 700,
+                    color: "#004a8c",
+                    lineHeight: 1,
+                    fontVariantNumeric: "lining-nums",
+                  }}
+                >
                   {eventos}
                 </div>
-                <div style={{ fontFamily: "Inter", fontSize: "0.72rem", fontWeight: 500, color: "#a3adb8", marginTop: 4, letterSpacing: "0.03em" }}>
+                <div
+                  style={{
+                    fontFamily: "Inter",
+                    fontSize: "0.72rem",
+                    fontWeight: 500,
+                    color: "#a3adb8",
+                    marginTop: 4,
+                    letterSpacing: "0.03em",
+                  }}
+                >
                   Próximos eventos
                 </div>
               </div>
@@ -448,6 +538,7 @@ git commit -m "feat: componente CasaHero para páginas autenticadas"
 ## Task 5: Criar componente WisdomBlock
 
 **Files:**
+
 - Create: `src/components/WisdomBlock.tsx`
 
 - [ ] **Passo 1: Criar o arquivo**
@@ -473,15 +564,51 @@ export function WisdomBlock({ texto, autor }: WisdomBlockProps) {
         alignItems: "flex-start",
       }}
     >
-      <div style={{ width: 3, borderRadius: 2, background: "#b08826", alignSelf: "stretch", flexShrink: 0, minHeight: 40 }} />
+      <div
+        style={{
+          width: 3,
+          borderRadius: 2,
+          background: "#b08826",
+          alignSelf: "stretch",
+          flexShrink: 0,
+          minHeight: 40,
+        }}
+      />
       <div>
-        <div style={{ fontFamily: "Inter", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "#b08826", marginBottom: 10 }}>
+        <div
+          style={{
+            fontFamily: "Inter",
+            fontSize: "0.68rem",
+            fontWeight: 700,
+            letterSpacing: "0.13em",
+            textTransform: "uppercase",
+            color: "#b08826",
+            marginBottom: 10,
+          }}
+        >
           Pensamento do dia
         </div>
-        <p style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontStyle: "italic", fontSize: "1.2rem", color: "#2e3540", lineHeight: 1.65, marginBottom: 10 }}>
+        <p
+          style={{
+            fontFamily: '"Libre Caslon Text", Georgia, serif',
+            fontStyle: "italic",
+            fontSize: "1.2rem",
+            color: "#2e3540",
+            lineHeight: 1.65,
+            marginBottom: 10,
+          }}
+        >
           {texto}
         </p>
-        <p style={{ fontFamily: "Inter", fontSize: "0.8rem", color: "#a3adb8", fontWeight: 500, letterSpacing: "0.03em" }}>
+        <p
+          style={{
+            fontFamily: "Inter",
+            fontSize: "0.8rem",
+            color: "#a3adb8",
+            fontWeight: 500,
+            letterSpacing: "0.03em",
+          }}
+        >
           {autor}
         </p>
       </div>
@@ -503,6 +630,7 @@ git commit -m "feat: componente WisdomBlock"
 ## Task 6: Aplicar Serene Wisdom à página /agenda
 
 **Files:**
+
 - Modify: `src/routes/agenda.tsx`
 
 Esta é a página de referência. O padrão aqui se repete nas demais.
@@ -574,34 +702,71 @@ Para o card externo (hoje provavelmente `<div className="glass rounded-...">` ou
     transition: "box-shadow .3s, border-color .3s, transform .3s cubic-bezier(.22,1,.36,1)",
   }}
   onMouseEnter={(e) => {
-    (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08)";
+    (e.currentTarget as HTMLDivElement).style.boxShadow =
+      "0 4px 16px rgba(0,20,70,.07), 0 12px 36px rgba(0,20,70,.08)";
     (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
     (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(0,20,70,.18)";
   }}
   onMouseLeave={(e) => {
-    (e.currentTarget as HTMLDivElement).style.boxShadow = "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)";
+    (e.currentTarget as HTMLDivElement).style.boxShadow =
+      "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)";
     (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
     (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(0,20,70,.08)";
   }}
 >
   {/* faixa de data */}
-  <div style={{ background: "rgba(0,74,140,.07)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(0,20,70,.08)" }}>
-    <span style={{ fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase", color: "#004a8c", fontVariantNumeric: "lining-nums" }}>
+  <div
+    style={{
+      background: "rgba(0,74,140,.07)",
+      padding: "10px 24px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderBottom: "1px solid rgba(0,20,70,.08)",
+    }}
+  >
+    <span
+      style={{
+        fontFamily: "Inter, sans-serif",
+        fontSize: "0.75rem",
+        fontWeight: 700,
+        letterSpacing: "0.09em",
+        textTransform: "uppercase",
+        color: "#004a8c",
+        fontVariantNumeric: "lining-nums",
+      }}
+    >
       {fmtData(ev.data_inicio)}
     </span>
-    <span style={{
-      fontFamily: "Inter", fontSize: "0.68rem", fontWeight: 700,
-      letterSpacing: "0.06em", textTransform: "uppercase", padding: "3px 11px", borderRadius: 999,
-      background: ev.tipo === "aberto" ? "#eaf8f1" : "#fdf0f0",
-      color: ev.tipo === "aberto" ? "#0a5c35" : "#8a1515",
-    }}>
+    <span
+      style={{
+        fontFamily: "Inter",
+        fontSize: "0.68rem",
+        fontWeight: 700,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        padding: "3px 11px",
+        borderRadius: 999,
+        background: ev.tipo === "aberto" ? "#eaf8f1" : "#fdf0f0",
+        color: ev.tipo === "aberto" ? "#0a5c35" : "#8a1515",
+      }}
+    >
       {ev.tipo === "aberto" ? "Aberto" : "Fechado"}
     </span>
   </div>
   {/* corpo do card — manter JSX existente, apenas atualizar classes de texto */}
   <div style={{ padding: "22px 28px 24px" }}>
     {/* título */}
-    <h3 style={{ fontFamily: '"Libre Caslon Text", Georgia, serif', fontSize: "1.2rem", fontWeight: 400, color: "#111418", lineHeight: 1.3, marginBottom: 10 }}>
+    <h3
+      style={{
+        fontFamily: '"Libre Caslon Text", Georgia, serif',
+        fontSize: "1.2rem",
+        fontWeight: 400,
+        color: "#111418",
+        lineHeight: 1.3,
+        marginBottom: 10,
+      }}
+    >
       {ev.titulo}
     </h3>
     {/* metas existentes — manter lógica, atualizar apenas cores de texto para --sw-ink-3 */}
@@ -630,6 +795,7 @@ git commit -m "feat: aplicar Serene Wisdom à página Agenda"
 ## Task 7: Aplicar Serene Wisdom à página /kanban
 
 **Files:**
+
 - Modify: `src/routes/kanban.tsx`
 
 - [ ] **Passo 1: Importar CasaHero**
@@ -651,6 +817,7 @@ import { CasaHero } from "@/components/CasaHero";
 Adicionar `<CasaHero />` como primeiro filho do `<main>`.
 
 Envolver o conteúdo restante em:
+
 ```tsx
 <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
   {/* conteúdo existente */}
@@ -661,12 +828,12 @@ Envolver o conteúdo restante em:
 
 Localizar onde as colunas e cards são renderizados. Substituir classes de fundo violeta/dark por equivalentes Serene Wisdom:
 
-| Classe antiga | Substituto |
-|---|---|
-| `bg-white/5` ou `glass` em colunas | `background: "#f7f8fc"` |
-| `border-white/10` | `border: "1px solid rgba(0,20,70,.08)"` |
-| `text-cyan-glow` em títulos | `color: "#004a8c"` |
-| badges de status violeta | azul `#ebf0f9` / `#004a8c` |
+| Classe antiga                      | Substituto                              |
+| ---------------------------------- | --------------------------------------- |
+| `bg-white/5` ou `glass` em colunas | `background: "#f7f8fc"`                 |
+| `border-white/10`                  | `border: "1px solid rgba(0,20,70,.08)"` |
+| `text-cyan-glow` em títulos        | `color: "#004a8c"`                      |
+| badges de status violeta           | azul `#ebf0f9` / `#004a8c`              |
 
 - [ ] **Passo 4: Build e commit**
 
@@ -681,6 +848,7 @@ git commit -m "feat: aplicar Serene Wisdom à página Kanban"
 ## Task 8: Aplicar Serene Wisdom à página /evangelizacao
 
 **Files:**
+
 - Modify: `src/routes/evangelizacao.tsx`
 
 - [ ] **Passo 1: Importar CasaHero**
@@ -692,16 +860,19 @@ import { CasaHero } from "@/components/CasaHero";
 - [ ] **Passo 2: Atualizar `<main>` e adicionar CasaHero**
 
 Localizar (linha ~279):
+
 ```tsx
 <main className="page-light min-h-screen px-4 pt-20 pb-28">
 ```
 
 Substituir por:
+
 ```tsx
 <main className="page-light min-h-screen pt-20 pb-28">
 ```
 
 Adicionar `<CasaHero />` como primeiro filho. Envolver conteúdo restante em:
+
 ```tsx
 <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
 ```
@@ -711,6 +882,7 @@ Adicionar `<CasaHero />` como primeiro filho. Envolver conteúdo restante em:
 Localizar onde `cor` e `corBadge` são usados nos cards de plano de aula. As cores de borda rosa/emerald do conteúdo de evangelização podem ser mantidas (são semânticas por faixa etária) — apenas atualizar o container principal dos cards:
 
 Substituir `className="glass rounded-2xl p-6"` por:
+
 ```tsx
 style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "24px 28px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
 ```
@@ -728,6 +900,7 @@ git commit -m "feat: aplicar Serene Wisdom à página Evangelização"
 ## Task 9: Aplicar Serene Wisdom à página /perfil
 
 **Files:**
+
 - Modify: `src/routes/perfil.tsx`
 
 - [ ] **Passo 1: Importar CasaHero**
@@ -739,16 +912,19 @@ import { CasaHero } from "@/components/CasaHero";
 - [ ] **Passo 2: Atualizar `<main>` e adicionar CasaHero**
 
 Localizar (linha ~273):
+
 ```tsx
 <main className="page-light min-h-screen px-6 pt-20 pb-28">
 ```
 
 Substituir por:
+
 ```tsx
 <main className="page-light min-h-screen pt-20 pb-28">
 ```
 
 Adicionar `<CasaHero />` como primeiro filho. Envolver conteúdo restante em:
+
 ```tsx
 <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
 ```
@@ -756,6 +932,7 @@ Adicionar `<CasaHero />` como primeiro filho. Envolver conteúdo restante em:
 - [ ] **Passo 3: Atualizar cards de seção do perfil**
 
 Localizar containers `<div className="glass rounded-3xl p-8 ...">` e substituir por:
+
 ```tsx
 style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRadius: 20, padding: "32px", boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)" }}
 ```
@@ -763,6 +940,7 @@ style={{ background: "#ffffff", border: "1px solid rgba(0,20,70,.08)", borderRad
 - [ ] **Passo 4: Atualizar botão de salvar perfil**
 
 Localizar `<button>` de submit do formulário e atualizar para:
+
 ```tsx
 style={{ background: "#004a8c", color: "#fff", borderRadius: 13, padding: "12px 28px", fontFamily: "Inter", fontSize: "0.9rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,74,140,.22)" }}
 ```
@@ -780,6 +958,7 @@ git commit -m "feat: aplicar Serene Wisdom à página Perfil"
 ## Task 10: Aplicar Serene Wisdom à página /painel
 
 **Files:**
+
 - Modify: `src/routes/painel.tsx`
 
 - [ ] **Passo 1: Importar CasaHero**
@@ -791,16 +970,19 @@ import { CasaHero } from "@/components/CasaHero";
 - [ ] **Passo 2: Atualizar `<main>` e adicionar CasaHero**
 
 Localizar (linha ~299):
+
 ```tsx
 <main className="page-light min-h-screen px-6 pt-20 pb-20">
 ```
 
 Substituir por:
+
 ```tsx
 <main className="page-light min-h-screen pt-20 pb-20">
 ```
 
 Adicionar `<CasaHero />` como primeiro filho. Envolver conteúdo restante em:
+
 ```tsx
 <div style={{ maxWidth: 860, margin: "0 auto", padding: "48px 44px 0" }}>
 ```
@@ -829,6 +1011,7 @@ git commit -m "feat: aplicar Serene Wisdom à página Painel"
 ## Task 11: Adicionar BottomNav mobile ao layout raiz
 
 **Files:**
+
 - Modify: `src/routes/__root.tsx`
 
 O BottomNav substitui o menu hamburger mobile para as rotas autenticadas. O NavBar desktop permanece inalterado.
@@ -872,7 +1055,9 @@ function BottomNav() {
       className="lg:hidden"
       style={{
         position: "fixed",
-        bottom: 0, left: 0, right: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
         height: 72,
         background: "rgba(255,255,255,.97)",
         backdropFilter: "blur(16px)",
@@ -999,6 +1184,7 @@ git push
 ## Auto-revisão do plano
 
 **Cobertura da spec:**
+
 - ✅ Tokens Serene Wisdom em `.page-light` → Task 1
 - ✅ `html { font-size: 18px }` → Task 1
 - ✅ Libre Caslon Text → Task 2
@@ -1015,4 +1201,5 @@ git push
 - ✅ Inter com lining-nums para números → declarado em Task 4 e aplicado nos cards
 
 **Páginas não cobertas explicitamente (seguem `.page-light` automaticamente após Task 1):**
+
 - `/tesouraria`, `/ajuda`, `/mensagem-do-dia`, `/permissoes`, `/configurar-memoria`, `/feb`, `/radio`, `/jogos/*`, `/casa/$sigla` — recebem os tokens Serene Wisdom via `.page-light` sem mudanças de JSX.

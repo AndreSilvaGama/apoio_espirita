@@ -1,6 +1,6 @@
 # Apoio Espírita
 
-> *"Fora da caridade não há salvação."* — Allan Kardec
+> _"Fora da caridade não há salvação."_ — Allan Kardec
 
 Plataforma espírita gratuita de acolhimento, estudo e serviço. Desenvolvida como trabalho de caridade, sem fins lucrativos e sem vínculo com a FEB, UFE ou qualquer federação.
 
@@ -41,16 +41,16 @@ Cada casa espírita cadastrada gerencia seu próprio espaço: membros, cargos, m
 
 ## Stack técnica
 
-| Camada | Tecnologia |
-|---|---|
-| Framework | React 19 + TanStack Start (SSR) |
-| Linguagem | TypeScript |
-| CSS | Tailwind CSS 4 |
-| Componentes | shadcn/ui + Lucide React |
-| Backend | Supabase (PostgreSQL + Auth + RLS) |
-| Build | Vite 7 |
-| Deploy | Cloudflare Workers |
-| E-mail | Brevo |
+| Camada      | Tecnologia                         |
+| ----------- | ---------------------------------- |
+| Framework   | React 19 + TanStack Start (SSR)    |
+| Linguagem   | TypeScript                         |
+| CSS         | Tailwind CSS 4                     |
+| Componentes | shadcn/ui + Lucide React           |
+| Backend     | Supabase (PostgreSQL + Auth + RLS) |
+| Build       | Vite 7                             |
+| Deploy      | Cloudflare Workers                 |
+| E-mail      | Brevo                              |
 
 ---
 

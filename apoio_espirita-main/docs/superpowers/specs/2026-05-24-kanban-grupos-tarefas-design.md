@@ -187,13 +187,15 @@ KanbanPage
 ### Forms inline
 
 **Novo grupo** (abre abaixo do botão "+"):
-- Input: Nome do grupo *
+
+- Input: Nome do grupo \*
 - Input: Responsável
 - Input: Membros (separados por vírgula)
 - Botões: Salvar / Cancelar
 
 **Nova tarefa** (abre abaixo do "+" de cada grupo):
-- Input: Título *
+
+- Input: Título \*
 - Input: Responsável
 - Input type=date: Prazo
 - Botões: Salvar / Cancelar
@@ -208,13 +210,13 @@ KanbanPage
 
 ## Permissões
 
-| Ação | Quem pode |
-|---|---|
-| Ver grupos e tarefas | Qualquer membro autenticado da casa |
-| Criar / editar / excluir grupo | Qualquer membro |
-| Criar / editar / excluir tarefa | Qualquer membro |
-| Marcar tarefa como feita | Qualquer membro |
-| Mudar status do evento (setas) | Qualquer membro |
+| Ação                            | Quem pode                           |
+| ------------------------------- | ----------------------------------- |
+| Ver grupos e tarefas            | Qualquer membro autenticado da casa |
+| Criar / editar / excluir grupo  | Qualquer membro                     |
+| Criar / editar / excluir tarefa | Qualquer membro                     |
+| Marcar tarefa como feita        | Qualquer membro                     |
+| Mudar status do evento (setas)  | Qualquer membro                     |
 
 ---
 

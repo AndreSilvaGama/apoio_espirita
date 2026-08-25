@@ -1,357 +1,553 @@
-<!DOCTYPE html>
+<!doctype html>
 
-<html lang="pt-BR"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Artigos - Apoio Espírita</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Artigos - Apoio Espírita</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
-            "colors": {
-                    "surface-variant": "#e1e2e7",
-                    "on-primary-fixed-variant": "#004883",
-                    "secondary-container": "#d6e0f6",
-                    "spiritual-blue": "#4A90E2",
-                    "tertiary-container": "#cca72f",
-                    "on-primary-container": "#fdfcff",
-                    "on-surface": "#191c1f",
-                    "surface": "#f8f9fe",
-                    "warm-grey": "#718096",
-                    "tertiary-fixed": "#ffe088",
-                    "primary-fixed-dim": "#a4c9ff",
-                    "on-tertiary-fixed-variant": "#574500",
-                    "tertiary": "#735c00",
-                    "surface-container-lowest": "#ffffff",
-                    "surface-container": "#eceef3",
-                    "primary-fixed": "#d4e3ff",
-                    "on-error": "#ffffff",
-                    "secondary": "#555f71",
-                    "on-surface-variant": "#414751",
-                    "border-haze": "#E2E8F0",
-                    "on-secondary-fixed": "#121c2c",
-                    "on-error-container": "#93000a",
-                    "on-secondary-container": "#596376",
-                    "outline": "#717783",
-                    "on-background": "#191c1f",
-                    "background": "#f8f9fe",
-                    "secondary-fixed-dim": "#bdc7dc",
-                    "tertiary-fixed-dim": "#e9c349",
-                    "primary-container": "#2976c7",
-                    "inverse-surface": "#2e3134",
-                    "error": "#ba1a1a",
-                    "surface-container-low": "#f2f3f8",
-                    "surface-dim": "#d8dadf",
-                    "on-secondary-fixed-variant": "#3d4759",
-                    "primary": "#005da7",
-                    "surface-tint": "#0060ac",
-                    "surface-bright": "#f8f9fe",
-                    "on-secondary": "#ffffff",
-                    "surface-container-high": "#e7e8ed",
-                    "on-tertiary": "#ffffff",
-                    "surface-container-highest": "#e1e2e7",
-                    "on-tertiary-container": "#4e3d00",
-                    "ethereal-white": "#F8F9FE",
-                    "on-primary": "#ffffff",
-                    "inverse-on-surface": "#eff0f5",
-                    "outline-variant": "#c1c7d3",
-                    "sacred-gold": "#D4AF37",
-                    "on-tertiary-fixed": "#241a00",
-                    "deep-slate": "#2D3748",
-                    "secondary-fixed": "#d9e3f9",
-                    "error-container": "#ffdad6",
-                    "inverse-primary": "#a4c9ff",
-                    "on-primary-fixed": "#001c39"
+            colors: {
+              "surface-variant": "#e1e2e7",
+              "on-primary-fixed-variant": "#004883",
+              "secondary-container": "#d6e0f6",
+              "spiritual-blue": "#4A90E2",
+              "tertiary-container": "#cca72f",
+              "on-primary-container": "#fdfcff",
+              "on-surface": "#191c1f",
+              surface: "#f8f9fe",
+              "warm-grey": "#718096",
+              "tertiary-fixed": "#ffe088",
+              "primary-fixed-dim": "#a4c9ff",
+              "on-tertiary-fixed-variant": "#574500",
+              tertiary: "#735c00",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#eceef3",
+              "primary-fixed": "#d4e3ff",
+              "on-error": "#ffffff",
+              secondary: "#555f71",
+              "on-surface-variant": "#414751",
+              "border-haze": "#E2E8F0",
+              "on-secondary-fixed": "#121c2c",
+              "on-error-container": "#93000a",
+              "on-secondary-container": "#596376",
+              outline: "#717783",
+              "on-background": "#191c1f",
+              background: "#f8f9fe",
+              "secondary-fixed-dim": "#bdc7dc",
+              "tertiary-fixed-dim": "#e9c349",
+              "primary-container": "#2976c7",
+              "inverse-surface": "#2e3134",
+              error: "#ba1a1a",
+              "surface-container-low": "#f2f3f8",
+              "surface-dim": "#d8dadf",
+              "on-secondary-fixed-variant": "#3d4759",
+              primary: "#005da7",
+              "surface-tint": "#0060ac",
+              "surface-bright": "#f8f9fe",
+              "on-secondary": "#ffffff",
+              "surface-container-high": "#e7e8ed",
+              "on-tertiary": "#ffffff",
+              "surface-container-highest": "#e1e2e7",
+              "on-tertiary-container": "#4e3d00",
+              "ethereal-white": "#F8F9FE",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#eff0f5",
+              "outline-variant": "#c1c7d3",
+              "sacred-gold": "#D4AF37",
+              "on-tertiary-fixed": "#241a00",
+              "deep-slate": "#2D3748",
+              "secondary-fixed": "#d9e3f9",
+              "error-container": "#ffdad6",
+              "inverse-primary": "#a4c9ff",
+              "on-primary-fixed": "#001c39",
             },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
             },
-            "spacing": {
-                    "container-max": "1120px",
-                    "gutter": "24px",
-                    "margin-desktop": "64px",
-                    "unit": "8px",
-                    "margin-mobile": "20px"
+            spacing: {
+              "container-max": "1120px",
+              gutter: "24px",
+              "margin-desktop": "64px",
+              unit: "8px",
+              "margin-mobile": "20px",
             },
-            "fontFamily": {
-                    "body-md": ["Inter"],
-                    "label-sm": ["Inter"],
-                    "body-lg": ["Inter"],
-                    "display-lg": ["Libre Caslon Text"],
-                    "headline-md": ["Libre Caslon Text"],
-                    "headline-lg": ["Libre Caslon Text"],
-                    "display-lg-mobile": ["Libre Caslon Text"],
-                    "label-lg": ["Inter"]
+            fontFamily: {
+              "body-md": ["Inter"],
+              "label-sm": ["Inter"],
+              "body-lg": ["Inter"],
+              "display-lg": ["Libre Caslon Text"],
+              "headline-md": ["Libre Caslon Text"],
+              "headline-lg": ["Libre Caslon Text"],
+              "display-lg-mobile": ["Libre Caslon Text"],
+              "label-lg": ["Inter"],
             },
-            "fontSize": {
-                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
-                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "400"}],
-                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "400"}],
-                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "400"}],
-                    "display-lg-mobile": ["36px", {"lineHeight": "44px", "fontWeight": "400"}],
-                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
-            }
+            fontSize: {
+              "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              "label-sm": [
+                "12px",
+                { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" },
+              ],
+              "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+              "display-lg": [
+                "48px",
+                { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "400" },
+              ],
+              "headline-md": ["24px", { lineHeight: "32px", fontWeight: "400" }],
+              "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "400" }],
+              "display-lg-mobile": ["36px", { lineHeight: "44px", fontWeight: "400" }],
+              "label-lg": [
+                "14px",
+                { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "600" },
+              ],
+            },
           },
         },
+      };
+    </script>
+    <style>
+      .glass-nav {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
       }
-    </script>
-<style>
-        .glass-nav {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-        .airy-shadow {
-            box-shadow: 0 24px 32px -12px rgba(74, 144, 226, 0.06);
-        }
-        .wisdom-block {
-            border-left: 4px solid #D4AF37;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #E2E8F0;
-            border-radius: 10px;
-        }
+      .airy-shadow {
+        box-shadow: 0 24px 32px -12px rgba(74, 144, 226, 0.06);
+      }
+      .wisdom-block {
+        border-left: 4px solid #d4af37;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+      }
     </style>
-</head>
-<body class="bg-surface font-body-md text-on-surface selection:bg-spiritual-blue/20">
-<!-- TopNavBar -->
-<header class="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-md border-b border-border-haze shadow-sm shadow-spiritual-blue/5">
-<div class="max-w-container-max mx-auto px-gutter flex justify-between items-center h-20">
-<div class="font-headline-md text-headline-md text-spiritual-blue font-bold tracking-tight">Apoio Espírita</div>
-<nav class="hidden md:flex items-center space-x-8">
-<a class="font-label-lg text-label-lg text-spiritual-blue border-b-2 border-spiritual-blue pb-1" href="#">Artigos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Livros</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Estudos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Eventos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Vídeos</a>
-<a class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors" href="#">Podcasts</a>
-</nav>
-<div class="flex items-center space-x-4">
-<button class="p-2 hover:bg-surface-container rounded-full transition-all">
-<span class="material-symbols-outlined text-deep-slate">search</span>
-</button>
-<button class="bg-spiritual-blue text-white px-6 py-2 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all">
-                    Entrar
-                </button>
-</div>
-</div>
-</header>
-<main class="pt-32 pb-24 max-w-container-max mx-auto px-gutter">
-<!-- Hero Title -->
-<div class="mb-12 text-center md:text-left">
-<h1 class="font-display-lg text-display-lg text-deep-slate mb-4">Reflexões para a Alma</h1>
-<p class="font-body-lg text-body-lg text-warm-grey max-w-2xl">Explore nossa coleção de artigos sobre a doutrina, o evangelho e a ciência sob a luz do espiritismo.</p>
-</div>
-<!-- Filters -->
-<div class="flex flex-wrap gap-3 mb-12">
-<button class="px-6 py-2 rounded-full bg-spiritual-blue text-white font-label-lg text-label-lg shadow-md transition-all">Todos</button>
-<button class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all">Doutrina</button>
-<button class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all">Evangelho</button>
-<button class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all">Ciência</button>
-</div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-<!-- Article List -->
-<div class="lg:col-span-8 space-y-16">
-<!-- Article Card 1 -->
-<article class="group cursor-pointer">
-<div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" data-alt="A serene landscape at dawn with soft morning light filtering through ancient trees, creating a peaceful and spiritual atmosphere. The colors are muted blues and warm golds, reflecting a sense of tranquility and intellectual clarity. The composition is wide and open, suggesting a path to discovery and spiritual awakening." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbco2L_Ec2RlMJ4Z1JjQozX96qIjrQNWVL5yD8Sk1kk6fLyEsFcThwYFH_NsMcTtL5PP0RQNLmtapm0Rg3kN4fWbu5KZxHKmeLxmnC40n2DwGmPaRz4jJKC3MfOtsY5fK_BjTcuyplsgsl8OWV9jLyUut4qalqO3trLQpFwcEqZ4Unt8eccb50OPP9XYQVISOfoIiy9RtdKFd6oCMXSySGgtllluMIwASZXJEUX_nEl5ZPuReEJ8eW4b6uiBrzldl3V4JyA1v_Xo0"/>
-</div>
-<div class="flex items-center gap-4 mb-4">
-<span class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm">Doutrina</span>
-<span class="text-warm-grey font-label-sm text-label-sm">12 de Maio, 2024</span>
-</div>
-<h2 class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4">A Imortalidade da Alma e a Lógica da Reencarnação</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">Uma análise profunda sobre as evidências racionais da sobrevivência do espírito após o desencarne e como a pluralidade das existências responde aos maiores enigmas da humanidade.</p>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue">AM</div>
-<span class="font-label-lg text-label-lg text-deep-slate">André Moreira</span>
-</div>
-<span class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all">arrow_forward</span>
-</div>
-</article>
-<!-- Article Card 2 -->
-<article class="group cursor-pointer">
-<div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" data-alt="A minimalist overhead view of an open book on a clean white linen surface next to a ceramic cup of tea and a small sprig of lavender. The lighting is bright and airy, with soft shadows creating a high-end, meditative aesthetic. The overall mood is quiet, focused, and perfect for long-form reading and spiritual reflection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo-9ZDsBf3v4q6tVfQtWMI_sk7x0gqejItNOnxQRbNFlvuKKPmw99LweLmmsg__mYgQb9jw8Gb-zxVl2vzmMoBNRRtYMKATovuTH_umcnUss_rlpSv8cByWOT2LMQ-htdiuHURViLUjoBhWdQWx4NPCxi5LCK1pcvojMngKFPvgGZsPI5KAFR-GLTROsw77hV7ZafL-nZrK71KlxwuNFM5as3HUaI4w0H3piu5aX-edhK3YeqBVYXpiwK95TY-Nzjm0-B1Y5Pi_DY"/>
-</div>
-<div class="flex items-center gap-4 mb-4">
-<span class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm">Evangelho</span>
-<span class="text-warm-grey font-label-sm text-label-sm">08 de Maio, 2024</span>
-</div>
-<h2 class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4">O Sermão da Montanha: Um Roteiro de Felicidade</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">Como os ensinamentos de Jesus podem ser aplicados no cotidiano moderno para encontrar paz interior e equilíbrio emocional em tempos de incerteza.</p>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue">SC</div>
-<span class="font-label-lg text-label-lg text-deep-slate">Sandra Cavalcanti</span>
-</div>
-<span class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all">arrow_forward</span>
-</div>
-</article>
-<!-- Article Card 3 -->
-<article class="group cursor-pointer">
-<div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
-<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" data-alt="A futuristic representation of the human mind merging with cosmic energy, showing subtle blue glowing neural networks against a dark starry background. The visual style is modern minimalist with glassmorphism accents, suggesting the intersection of science and spirituality. The lighting is ethereal and sophisticated." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYpW0fFWxbDt0lGjV7JLmXeHlto0yifi5k7c44IipO4-rYwHnluS3Ef9ZRi9g1_S6dpYE0Jizy-a54DP6iRkkFdPoSt9i_9_j9KLpD3f8Bxw66H7fKy0ZUFPSScKBX1sVpa7Z32TMcohBwPrLGW0EK2-bZDmxWOUIz4WnHWK1fi_YSG1EI7qG19s-ss0iXamtaG15_3u3rcAfmhL7zPxicAN8C54hu7uvwUPy-89T0I4FTZdaturF-igPN_F1IvuDnuTc0BHj1qTs"/>
-</div>
-<div class="flex items-center gap-4 mb-4">
-<span class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm">Ciência</span>
-<span class="text-warm-grey font-label-sm text-label-sm">02 de Maio, 2024</span>
-</div>
-<h2 class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4">Física Quântica e Espiritualidade: Onde os Mundos se Encontram</h2>
-<p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">Explorando as correlações entre as descobertas da física moderna e os princípios básicos da mediunidade e da influência do pensamento sobre a matéria.</p>
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue">RP</div>
-<span class="font-label-lg text-label-lg text-deep-slate">Ricardo Pereira</span>
-</div>
-<span class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all">arrow_forward</span>
-</div>
-</article>
-</div>
-<!-- Sidebar -->
-<aside class="lg:col-span-4 space-y-12">
-<!-- Most Read -->
-<div class="bg-white p-8 rounded-[1.5rem] airy-shadow">
-<h3 class="font-headline-md text-headline-md text-deep-slate mb-6">Mais Lidos</h3>
-<div class="space-y-6">
-<div class="group cursor-pointer">
-<span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">01</span>
-<h4 class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors">Como iniciar os estudos espíritas em casa?</h4>
-<p class="text-label-sm text-warm-grey mt-1">4 min de leitura</p>
-</div>
-<div class="group cursor-pointer">
-<span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">02</span>
-<h4 class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors">O poder da prece segundo a ciência contemporânea</h4>
-<p class="text-label-sm text-warm-grey mt-1">7 min de leitura</p>
-</div>
-<div class="group cursor-pointer">
-<span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">03</span>
-<h4 class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors">A obsessão espiritual e os métodos de cura</h4>
-<p class="text-label-sm text-warm-grey mt-1">10 min de leitura</p>
-</div>
-</div>
-</div>
-<!-- Wisdom Quote -->
-<div class="wisdom-block bg-white p-8 rounded-[1.5rem] airy-shadow">
-<span class="material-symbols-outlined text-sacred-gold mb-4" style="font-variation-settings: 'FILL' 1;">format_quote</span>
-<p class="font-display-lg italic text-headline-md text-deep-slate leading-snug mb-4">
-                        "Nascer, viver, morrer, renascer ainda e progredir sempre, tal é a lei."
-                    </p>
-<p class="font-label-lg text-label-lg text-sacred-gold font-bold">Allan Kardec</p>
-</div>
-<!-- Newsletter -->
-<div class="bg-primary-container p-8 rounded-[1.5rem] text-white">
-<h3 class="font-headline-md text-headline-md mb-4">Luz no seu E-mail</h3>
-<p class="font-body-md text-body-md opacity-90 mb-6">Receba reflexões e estudos semanais diretamente na sua caixa de entrada.</p>
-<div class="space-y-3">
-<input class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all" placeholder="Seu melhor e-mail" type="email"/>
-<button class="w-full py-3 bg-white text-spiritual-blue font-bold rounded-xl hover:bg-ethereal-white transition-all">Inscrever-se</button>
-</div>
-</div>
-</aside>
-</div>
-<!-- Pagination -->
-<div class="mt-20 flex justify-center items-center space-x-2">
-<button class="w-10 h-10 flex items-center justify-center rounded-full border border-border-haze text-deep-slate hover:bg-surface-container transition-all">
-<span class="material-symbols-outlined text-[18px]">chevron_left</span>
-</button>
-<button class="w-10 h-10 flex items-center justify-center rounded-full bg-spiritual-blue text-white font-label-lg">1</button>
-<button class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all">2</button>
-<button class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all">3</button>
-<span class="text-warm-grey px-2">...</span>
-<button class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all">12</button>
-<button class="w-10 h-10 flex items-center justify-center rounded-full border border-border-haze text-deep-slate hover:bg-surface-container transition-all">
-<span class="material-symbols-outlined text-[18px]">chevron_right</span>
-</button>
-</div>
-</main>
-<!-- Footer -->
-<footer class="bg-surface-container-lowest border-t border-border-haze py-16">
-<div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-8">
-<div class="col-span-1 md:col-span-1">
-<div class="font-headline-md text-headline-md text-spiritual-blue font-bold mb-4">Apoio Espírita</div>
-<p class="font-body-md text-body-md text-warm-grey">Espalhando a luz da doutrina espírita através do conhecimento e da caridade.</p>
-</div>
-<div>
-<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Portal</h4>
-<ul class="space-y-4 font-body-md text-body-md text-warm-grey">
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Sobre Nós</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Artigos</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Estudos</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Doações</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Suporte</h4>
-<ul class="space-y-4 font-body-md text-body-md text-warm-grey">
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Contato</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Privacidade</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Termos de Uso</a></li>
-<li><a class="hover:text-spiritual-blue hover:underline" href="#">Imprensa</a></li>
-</ul>
-</div>
-<div>
-<h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Siga-nos</h4>
-<div class="flex space-x-4">
-<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">public</span>
-</a>
-<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">share</span>
-</a>
-<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all" href="#">
-<span class="material-symbols-outlined text-[20px]">favorite</span>
-</a>
-</div>
-</div>
-</div>
-<div class="max-w-container-max mx-auto px-gutter mt-16 pt-8 border-t border-border-haze text-center">
-<p class="font-body-md text-body-md text-warm-grey">© 2024 Apoio Espírita. Todos os direitos reservados.</p>
-</div>
-</footer>
-<script>
-        // Simple micro-interaction for filter buttons
-        const filterButtons = document.querySelectorAll('.flex.flex-wrap.gap-3 button');
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterButtons.forEach(b => {
-                    b.classList.remove('bg-spiritual-blue', 'text-white', 'shadow-md');
-                    b.classList.add('bg-spiritual-blue/10', 'text-deep-slate');
-                });
-                btn.classList.add('bg-spiritual-blue', 'text-white', 'shadow-md');
-                btn.classList.remove('bg-spiritual-blue/10', 'text-deep-slate');
-            });
+  </head>
+  <body class="bg-surface font-body-md text-on-surface selection:bg-spiritual-blue/20">
+    <!-- TopNavBar -->
+    <header
+      class="fixed top-0 w-full z-50 bg-white/60 backdrop-blur-md border-b border-border-haze shadow-sm shadow-spiritual-blue/5"
+    >
+      <div class="max-w-container-max mx-auto px-gutter flex justify-between items-center h-20">
+        <div class="font-headline-md text-headline-md text-spiritual-blue font-bold tracking-tight">
+          Apoio Espírita
+        </div>
+        <nav class="hidden md:flex items-center space-x-8">
+          <a
+            class="font-label-lg text-label-lg text-spiritual-blue border-b-2 border-spiritual-blue pb-1"
+            href="#"
+            >Artigos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Livros</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Estudos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Eventos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Vídeos</a
+          >
+          <a
+            class="font-label-lg text-label-lg text-deep-slate hover:text-spiritual-blue transition-colors"
+            href="#"
+            >Podcasts</a
+          >
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button class="p-2 hover:bg-surface-container rounded-full transition-all">
+            <span class="material-symbols-outlined text-deep-slate">search</span>
+          </button>
+          <button
+            class="bg-spiritual-blue text-white px-6 py-2 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all"
+          >
+            Entrar
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="pt-32 pb-24 max-w-container-max mx-auto px-gutter">
+      <!-- Hero Title -->
+      <div class="mb-12 text-center md:text-left">
+        <h1 class="font-display-lg text-display-lg text-deep-slate mb-4">Reflexões para a Alma</h1>
+        <p class="font-body-lg text-body-lg text-warm-grey max-w-2xl">
+          Explore nossa coleção de artigos sobre a doutrina, o evangelho e a ciência sob a luz do
+          espiritismo.
+        </p>
+      </div>
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-3 mb-12">
+        <button
+          class="px-6 py-2 rounded-full bg-spiritual-blue text-white font-label-lg text-label-lg shadow-md transition-all"
+        >
+          Todos
+        </button>
+        <button
+          class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all"
+        >
+          Doutrina
+        </button>
+        <button
+          class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all"
+        >
+          Evangelho
+        </button>
+        <button
+          class="px-6 py-2 rounded-full bg-spiritual-blue/10 text-deep-slate hover:bg-spiritual-blue/20 font-label-lg text-label-lg transition-all"
+        >
+          Ciência
+        </button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <!-- Article List -->
+        <div class="lg:col-span-8 space-y-16">
+          <!-- Article Card 1 -->
+          <article class="group cursor-pointer">
+            <div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
+              <img
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                data-alt="A serene landscape at dawn with soft morning light filtering through ancient trees, creating a peaceful and spiritual atmosphere. The colors are muted blues and warm golds, reflecting a sense of tranquility and intellectual clarity. The composition is wide and open, suggesting a path to discovery and spiritual awakening."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbco2L_Ec2RlMJ4Z1JjQozX96qIjrQNWVL5yD8Sk1kk6fLyEsFcThwYFH_NsMcTtL5PP0RQNLmtapm0Rg3kN4fWbu5KZxHKmeLxmnC40n2DwGmPaRz4jJKC3MfOtsY5fK_BjTcuyplsgsl8OWV9jLyUut4qalqO3trLQpFwcEqZ4Unt8eccb50OPP9XYQVISOfoIiy9RtdKFd6oCMXSySGgtllluMIwASZXJEUX_nEl5ZPuReEJ8eW4b6uiBrzldl3V4JyA1v_Xo0"
+              />
+            </div>
+            <div class="flex items-center gap-4 mb-4">
+              <span
+                class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm"
+                >Doutrina</span
+              >
+              <span class="text-warm-grey font-label-sm text-label-sm">12 de Maio, 2024</span>
+            </div>
+            <h2
+              class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4"
+            >
+              A Imortalidade da Alma e a Lógica da Reencarnação
+            </h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+              Uma análise profunda sobre as evidências racionais da sobrevivência do espírito após o
+              desencarne e como a pluralidade das existências responde aos maiores enigmas da
+              humanidade.
+            </p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue"
+                >
+                  AM
+                </div>
+                <span class="font-label-lg text-label-lg text-deep-slate">André Moreira</span>
+              </div>
+              <span
+                class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all"
+                >arrow_forward</span
+              >
+            </div>
+          </article>
+          <!-- Article Card 2 -->
+          <article class="group cursor-pointer">
+            <div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
+              <img
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                data-alt="A minimalist overhead view of an open book on a clean white linen surface next to a ceramic cup of tea and a small sprig of lavender. The lighting is bright and airy, with soft shadows creating a high-end, meditative aesthetic. The overall mood is quiet, focused, and perfect for long-form reading and spiritual reflection."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo-9ZDsBf3v4q6tVfQtWMI_sk7x0gqejItNOnxQRbNFlvuKKPmw99LweLmmsg__mYgQb9jw8Gb-zxVl2vzmMoBNRRtYMKATovuTH_umcnUss_rlpSv8cByWOT2LMQ-htdiuHURViLUjoBhWdQWx4NPCxi5LCK1pcvojMngKFPvgGZsPI5KAFR-GLTROsw77hV7ZafL-nZrK71KlxwuNFM5as3HUaI4w0H3piu5aX-edhK3YeqBVYXpiwK95TY-Nzjm0-B1Y5Pi_DY"
+              />
+            </div>
+            <div class="flex items-center gap-4 mb-4">
+              <span
+                class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm"
+                >Evangelho</span
+              >
+              <span class="text-warm-grey font-label-sm text-label-sm">08 de Maio, 2024</span>
+            </div>
+            <h2
+              class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4"
+            >
+              O Sermão da Montanha: Um Roteiro de Felicidade
+            </h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+              Como os ensinamentos de Jesus podem ser aplicados no cotidiano moderno para encontrar
+              paz interior e equilíbrio emocional em tempos de incerteza.
+            </p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue"
+                >
+                  SC
+                </div>
+                <span class="font-label-lg text-label-lg text-deep-slate">Sandra Cavalcanti</span>
+              </div>
+              <span
+                class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all"
+                >arrow_forward</span
+              >
+            </div>
+          </article>
+          <!-- Article Card 3 -->
+          <article class="group cursor-pointer">
+            <div class="mb-6 overflow-hidden rounded-xl bg-surface-container-low aspect-[16/9]">
+              <img
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                data-alt="A futuristic representation of the human mind merging with cosmic energy, showing subtle blue glowing neural networks against a dark starry background. The visual style is modern minimalist with glassmorphism accents, suggesting the intersection of science and spirituality. The lighting is ethereal and sophisticated."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYpW0fFWxbDt0lGjV7JLmXeHlto0yifi5k7c44IipO4-rYwHnluS3Ef9ZRi9g1_S6dpYE0Jizy-a54DP6iRkkFdPoSt9i_9_j9KLpD3f8Bxw66H7fKy0ZUFPSScKBX1sVpa7Z32TMcohBwPrLGW0EK2-bZDmxWOUIz4WnHWK1fi_YSG1EI7qG19s-ss0iXamtaG15_3u3rcAfmhL7zPxicAN8C54hu7uvwUPy-89T0I4FTZdaturF-igPN_F1IvuDnuTc0BHj1qTs"
+              />
+            </div>
+            <div class="flex items-center gap-4 mb-4">
+              <span
+                class="px-3 py-1 rounded-full bg-spiritual-blue/10 text-spiritual-blue font-label-sm text-label-sm"
+                >Ciência</span
+              >
+              <span class="text-warm-grey font-label-sm text-label-sm">02 de Maio, 2024</span>
+            </div>
+            <h2
+              class="font-headline-lg text-headline-lg text-deep-slate group-hover:text-spiritual-blue transition-colors mb-4"
+            >
+              Física Quântica e Espiritualidade: Onde os Mundos se Encontram
+            </h2>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+              Explorando as correlações entre as descobertas da física moderna e os princípios
+              básicos da mediunidade e da influência do pensamento sobre a matéria.
+            </p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-full bg-spiritual-blue/20 flex items-center justify-center font-bold text-spiritual-blue"
+                >
+                  RP
+                </div>
+                <span class="font-label-lg text-label-lg text-deep-slate">Ricardo Pereira</span>
+              </div>
+              <span
+                class="material-symbols-outlined text-warm-grey group-hover:text-spiritual-blue translate-x-0 group-hover:translate-x-2 transition-all"
+                >arrow_forward</span
+              >
+            </div>
+          </article>
+        </div>
+        <!-- Sidebar -->
+        <aside class="lg:col-span-4 space-y-12">
+          <!-- Most Read -->
+          <div class="bg-white p-8 rounded-[1.5rem] airy-shadow">
+            <h3 class="font-headline-md text-headline-md text-deep-slate mb-6">Mais Lidos</h3>
+            <div class="space-y-6">
+              <div class="group cursor-pointer">
+                <span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">01</span>
+                <h4
+                  class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors"
+                >
+                  Como iniciar os estudos espíritas em casa?
+                </h4>
+                <p class="text-label-sm text-warm-grey mt-1">4 min de leitura</p>
+              </div>
+              <div class="group cursor-pointer">
+                <span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">02</span>
+                <h4
+                  class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors"
+                >
+                  O poder da prece segundo a ciência contemporânea
+                </h4>
+                <p class="text-label-sm text-warm-grey mt-1">7 min de leitura</p>
+              </div>
+              <div class="group cursor-pointer">
+                <span class="font-label-sm text-label-sm text-spiritual-blue block mb-1">03</span>
+                <h4
+                  class="font-body-md text-body-md font-semibold text-deep-slate group-hover:text-spiritual-blue transition-colors"
+                >
+                  A obsessão espiritual e os métodos de cura
+                </h4>
+                <p class="text-label-sm text-warm-grey mt-1">10 min de leitura</p>
+              </div>
+            </div>
+          </div>
+          <!-- Wisdom Quote -->
+          <div class="wisdom-block bg-white p-8 rounded-[1.5rem] airy-shadow">
+            <span
+              class="material-symbols-outlined text-sacred-gold mb-4"
+              style="font-variation-settings: &quot;FILL&quot; 1"
+              >format_quote</span
+            >
+            <p class="font-display-lg italic text-headline-md text-deep-slate leading-snug mb-4">
+              "Nascer, viver, morrer, renascer ainda e progredir sempre, tal é a lei."
+            </p>
+            <p class="font-label-lg text-label-lg text-sacred-gold font-bold">Allan Kardec</p>
+          </div>
+          <!-- Newsletter -->
+          <div class="bg-primary-container p-8 rounded-[1.5rem] text-white">
+            <h3 class="font-headline-md text-headline-md mb-4">Luz no seu E-mail</h3>
+            <p class="font-body-md text-body-md opacity-90 mb-6">
+              Receba reflexões e estudos semanais diretamente na sua caixa de entrada.
+            </p>
+            <div class="space-y-3">
+              <input
+                class="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all"
+                placeholder="Seu melhor e-mail"
+                type="email"
+              />
+              <button
+                class="w-full py-3 bg-white text-spiritual-blue font-bold rounded-xl hover:bg-ethereal-white transition-all"
+              >
+                Inscrever-se
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <!-- Pagination -->
+      <div class="mt-20 flex justify-center items-center space-x-2">
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full border border-border-haze text-deep-slate hover:bg-surface-container transition-all"
+        >
+          <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-spiritual-blue text-white font-label-lg"
+        >
+          1
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all"
+        >
+          2
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all"
+        >
+          3
+        </button>
+        <span class="text-warm-grey px-2">...</span>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full text-deep-slate hover:bg-surface-container font-label-lg transition-all"
+        >
+          12
+        </button>
+        <button
+          class="w-10 h-10 flex items-center justify-center rounded-full border border-border-haze text-deep-slate hover:bg-surface-container transition-all"
+        >
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-surface-container-lowest border-t border-border-haze py-16">
+      <div class="max-w-container-max mx-auto px-gutter grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="col-span-1 md:col-span-1">
+          <div class="font-headline-md text-headline-md text-spiritual-blue font-bold mb-4">
+            Apoio Espírita
+          </div>
+          <p class="font-body-md text-body-md text-warm-grey">
+            Espalhando a luz da doutrina espírita através do conhecimento e da caridade.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Portal</h4>
+          <ul class="space-y-4 font-body-md text-body-md text-warm-grey">
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Sobre Nós</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Artigos</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Estudos</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Doações</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Suporte</h4>
+          <ul class="space-y-4 font-body-md text-body-md text-warm-grey">
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Contato</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Privacidade</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Termos de Uso</a></li>
+            <li><a class="hover:text-spiritual-blue hover:underline" href="#">Imprensa</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-label-lg text-label-lg text-deep-slate mb-6">Siga-nos</h4>
+          <div class="flex space-x-4">
+            <a
+              class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all"
+              href="#"
+            >
+              <span class="material-symbols-outlined text-[20px]">public</span>
+            </a>
+            <a
+              class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all"
+              href="#"
+            >
+              <span class="material-symbols-outlined text-[20px]">share</span>
+            </a>
+            <a
+              class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-deep-slate hover:bg-spiritual-blue hover:text-white transition-all"
+              href="#"
+            >
+              <span class="material-symbols-outlined text-[20px]">favorite</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        class="max-w-container-max mx-auto px-gutter mt-16 pt-8 border-t border-border-haze text-center"
+      >
+        <p class="font-body-md text-body-md text-warm-grey">
+          © 2024 Apoio Espírita. Todos os direitos reservados.
+        </p>
+      </div>
+    </footer>
+    <script>
+      // Simple micro-interaction for filter buttons
+      const filterButtons = document.querySelectorAll(".flex.flex-wrap.gap-3 button");
+      filterButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filterButtons.forEach((b) => {
+            b.classList.remove("bg-spiritual-blue", "text-white", "shadow-md");
+            b.classList.add("bg-spiritual-blue/10", "text-deep-slate");
+          });
+          btn.classList.add("bg-spiritual-blue", "text-white", "shadow-md");
+          btn.classList.remove("bg-spiritual-blue/10", "text-deep-slate");
         });
+      });
 
-        // Sticky header effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 20) {
-                header.classList.add('py-2');
-                header.classList.remove('h-20');
-                header.classList.add('h-16');
-            } else {
-                header.classList.remove('py-2');
-                header.classList.add('h-20');
-                header.classList.remove('h-16');
-            }
-        });
+      // Sticky header effect
+      window.addEventListener("scroll", () => {
+        const header = document.querySelector("header");
+        if (window.scrollY > 20) {
+          header.classList.add("py-2");
+          header.classList.remove("h-20");
+          header.classList.add("h-16");
+        } else {
+          header.classList.remove("py-2");
+          header.classList.add("h-20");
+          header.classList.remove("h-16");
+        }
+      });
     </script>
-</body></html>
+  </body>
+</html>

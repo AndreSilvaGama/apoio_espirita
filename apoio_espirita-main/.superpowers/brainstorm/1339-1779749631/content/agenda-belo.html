@@ -1,714 +1,870 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apoio Espírita — Agenda</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apoio Espírita — Agenda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-:root {
-  --ink:       #0f1217;
-  --ink-2:     #323847;
-  --ink-3:     #6b7588;
-  --ink-4:     #a0aab8;
-  --blue:      #004a8c;
-  --blue-mid:  #1863a8;
-  --blue-pale: #ebf0f9;
-  --blue-glow: rgba(0,74,140,0.12);
-  --gold:      #b08826;
-  --gold-pale: #faf5e8;
-  --gold-line: rgba(176,136,38,0.35);
-  --cream:     #fdfcf9;
-  --surface:   #ffffff;
-  --border:    rgba(0,30,80,0.09);
-  --border-2:  rgba(0,30,80,0.16);
-  --shadow-card: 0 1px 4px rgba(0,20,60,0.04), 0 4px 20px rgba(0,20,60,0.06);
-  --shadow-hover: 0 4px 12px rgba(0,20,60,0.06), 0 12px 40px rgba(0,20,60,0.10);
-}
+      :root {
+        --ink: #0f1217;
+        --ink-2: #323847;
+        --ink-3: #6b7588;
+        --ink-4: #a0aab8;
+        --blue: #004a8c;
+        --blue-mid: #1863a8;
+        --blue-pale: #ebf0f9;
+        --blue-glow: rgba(0, 74, 140, 0.12);
+        --gold: #b08826;
+        --gold-pale: #faf5e8;
+        --gold-line: rgba(176, 136, 38, 0.35);
+        --cream: #fdfcf9;
+        --surface: #ffffff;
+        --border: rgba(0, 30, 80, 0.09);
+        --border-2: rgba(0, 30, 80, 0.16);
+        --shadow-card: 0 1px 4px rgba(0, 20, 60, 0.04), 0 4px 20px rgba(0, 20, 60, 0.06);
+        --shadow-hover: 0 4px 12px rgba(0, 20, 60, 0.06), 0 12px 40px rgba(0, 20, 60, 0.1);
+      }
 
-html { font-size: 18px; }
+      html {
+        font-size: 18px;
+      }
 
-body {
-  background: var(--cream);
-  font-family: 'Inter', system-ui, sans-serif;
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  /* textura de papel muito sutil */
-  background-image:
-    radial-gradient(ellipse 180% 60% at 50% 0%, rgba(0,74,140,0.03) 0%, transparent 70%);
-}
+      body {
+        background: var(--cream);
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
+        /* textura de papel muito sutil */
+        background-image: radial-gradient(
+          ellipse 180% 60% at 50% 0%,
+          rgba(0, 74, 140, 0.03) 0%,
+          transparent 70%
+        );
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    ANIMAÇÃO DE ENTRADA
 ────────────────────────────────────────────────────────────────── */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.rise { animation: rise 0.7s cubic-bezier(.22,1,.36,1) both; }
-.rise-1 { animation-delay: 0.05s; }
-.rise-2 { animation-delay: 0.13s; }
-.rise-3 { animation-delay: 0.21s; }
-.rise-4 { animation-delay: 0.29s; }
-.rise-5 { animation-delay: 0.37s; }
-.rise-6 { animation-delay: 0.45s; }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .rise {
+        animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .rise-1 {
+        animation-delay: 0.05s;
+      }
+      .rise-2 {
+        animation-delay: 0.13s;
+      }
+      .rise-3 {
+        animation-delay: 0.21s;
+      }
+      .rise-4 {
+        animation-delay: 0.29s;
+      }
+      .rise-5 {
+        animation-delay: 0.37s;
+      }
+      .rise-6 {
+        animation-delay: 0.45s;
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    NAVEGAÇÃO
 ────────────────────────────────────────────────────────────────── */
-.nav {
-  position: sticky;
-  top: 0; z-index: 100;
-  height: 64px;
-  background: rgba(253,252,249,0.94);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 48px;
-}
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: 64px;
+        background: rgba(253, 252, 249, 0.94);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 48px;
+      }
 
-.nav-brand {
-  font-family: 'Libre Caslon Text', Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 400;
-  color: var(--blue);
-  letter-spacing: 0.025em;
-  margin-right: 52px;
-  white-space: nowrap;
-}
+      .nav-brand {
+        font-family: "Libre Caslon Text", Georgia, serif;
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: var(--blue);
+        letter-spacing: 0.025em;
+        margin-right: 52px;
+        white-space: nowrap;
+      }
 
-.nav-links { display: flex; gap: 2px; flex: 1; }
+      .nav-links {
+        display: flex;
+        gap: 2px;
+        flex: 1;
+      }
 
-.nav-link {
-  font-size: 0.87rem;
-  font-weight: 500;
-  color: var(--ink-3);
-  padding: 8px 15px;
-  border-radius: 9px;
-  text-decoration: none;
-  letter-spacing: 0.01em;
-  transition: background 0.15s, color 0.15s;
-}
-.nav-link:hover { background: var(--blue-pale); color: var(--blue); }
-.nav-link.active {
-  color: var(--blue);
-  font-weight: 600;
-  background: var(--blue-pale);
-}
+      .nav-link {
+        font-size: 0.87rem;
+        font-weight: 500;
+        color: var(--ink-3);
+        padding: 8px 15px;
+        border-radius: 9px;
+        text-decoration: none;
+        letter-spacing: 0.01em;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .nav-link:hover {
+        background: var(--blue-pale);
+        color: var(--blue);
+      }
+      .nav-link.active {
+        color: var(--blue);
+        font-weight: 600;
+        background: var(--blue-pale);
+      }
 
-.nav-end { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+      .nav-end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
 
-.nav-avatar {
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  background: var(--blue-pale);
-  border: 1.5px solid rgba(0,74,140,0.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.7rem; font-weight: 700;
-  color: var(--blue);
-  letter-spacing: 0.05em;
-}
+      .nav-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--blue-pale);
+        border: 1.5px solid rgba(0, 74, 140, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--blue);
+        letter-spacing: 0.05em;
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    LAYOUT PRINCIPAL
 ────────────────────────────────────────────────────────────────── */
-.main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 64px 48px 96px;
-}
+      .main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 64px 48px 96px;
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    CABEÇALHO DA PÁGINA
 ────────────────────────────────────────────────────────────────── */
-.page-head {
-  margin-bottom: 52px;
-}
+      .page-head {
+        margin-bottom: 52px;
+      }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--blue);
-  margin-bottom: 18px;
-}
-.eyebrow-dot {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--gold);
-  flex-shrink: 0;
-}
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--blue);
+        margin-bottom: 18px;
+      }
+      .eyebrow-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--gold);
+        flex-shrink: 0;
+      }
 
-.page-title {
-  font-family: 'Cormorant Garamond', 'Libre Caslon Text', Georgia, serif;
-  font-size: 3.6rem;
-  font-weight: 300;
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  color: var(--ink);
-  margin-bottom: 18px;
-}
-.page-title em {
-  font-style: italic;
-  color: var(--blue);
-}
+      .page-title {
+        font-family: "Cormorant Garamond", "Libre Caslon Text", Georgia, serif;
+        font-size: 3.6rem;
+        font-weight: 300;
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+        margin-bottom: 18px;
+      }
+      .page-title em {
+        font-style: italic;
+        color: var(--blue);
+      }
 
-.title-rule {
-  width: 56px; height: 2px;
-  background: linear-gradient(to right, var(--gold), transparent);
-  border-radius: 2px;
-  margin-bottom: 20px;
-}
+      .title-rule {
+        width: 56px;
+        height: 2px;
+        background: linear-gradient(to right, var(--gold), transparent);
+        border-radius: 2px;
+        margin-bottom: 20px;
+      }
 
-.page-sub {
-  font-size: 1.05rem;
-  color: var(--ink-3);
-  line-height: 1.7;
-  max-width: 520px;
-  font-weight: 300;
-}
+      .page-sub {
+        font-size: 1.05rem;
+        color: var(--ink-3);
+        line-height: 1.7;
+        max-width: 520px;
+        font-weight: 300;
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    TOOLBAR
 ────────────────────────────────────────────────────────────────── */
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 44px;
-  flex-wrap: wrap;
-}
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 44px;
+        flex-wrap: wrap;
+      }
 
-.tabs {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 5px;
-  gap: 3px;
-  box-shadow: 0 1px 4px rgba(0,20,60,0.04);
-}
+      .tabs {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 5px;
+        gap: 3px;
+        box-shadow: 0 1px 4px rgba(0, 20, 60, 0.04);
+      }
 
-.tab {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.87rem;
-  font-weight: 500;
-  padding: 9px 22px;
-  border-radius: 10px;
-  border: none; cursor: pointer;
-  color: var(--ink-3);
-  background: transparent;
-  transition: all 0.2s;
-  letter-spacing: 0.01em;
-}
-.tab:hover { color: var(--ink); }
-.tab.active {
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(0,74,140,0.28);
-  font-weight: 600;
-}
+      .tab {
+        font-family: "Inter", sans-serif;
+        font-size: 0.87rem;
+        font-weight: 500;
+        padding: 9px 22px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        color: var(--ink-3);
+        background: transparent;
+        transition: all 0.2s;
+        letter-spacing: 0.01em;
+      }
+      .tab:hover {
+        color: var(--ink);
+      }
+      .tab.active {
+        background: var(--blue);
+        color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 74, 140, 0.28);
+        font-weight: 600;
+      }
 
-.btn-new {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--blue);
-  color: #fff;
-  border: none;
-  border-radius: 13px;
-  padding: 12px 28px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 12px rgba(0,74,140,0.25), 0 1px 3px rgba(0,74,140,0.15);
-  transition: all 0.25s cubic-bezier(.22,1,.36,1);
-}
-.btn-new:hover {
-  background: var(--blue-mid);
-  box-shadow: 0 4px 20px rgba(0,74,140,0.35), 0 2px 6px rgba(0,74,140,0.15);
-  transform: translateY(-1px);
-}
+      .btn-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 13px;
+        padding: 12px 28px;
+        font-family: "Inter", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+        box-shadow:
+          0 2px 12px rgba(0, 74, 140, 0.25),
+          0 1px 3px rgba(0, 74, 140, 0.15);
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .btn-new:hover {
+        background: var(--blue-mid);
+        box-shadow:
+          0 4px 20px rgba(0, 74, 140, 0.35),
+          0 2px 6px rgba(0, 74, 140, 0.15);
+        transform: translateY(-1px);
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    BLOCO DE SABEDORIA
 ────────────────────────────────────────────────────────────────── */
-.wisdom-block {
-  position: relative;
-  background: var(--gold-pale);
-  border-radius: 20px;
-  padding: 40px 48px 36px;
-  margin-bottom: 56px;
-  overflow: hidden;
-  border: 1px solid var(--gold-line);
-}
+      .wisdom-block {
+        position: relative;
+        background: var(--gold-pale);
+        border-radius: 20px;
+        padding: 40px 48px 36px;
+        margin-bottom: 56px;
+        overflow: hidden;
+        border: 1px solid var(--gold-line);
+      }
 
-.wisdom-block::before {
-  content: '\201C';
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 14rem;
-  line-height: 1;
-  color: rgba(176,136,38,0.08);
-  position: absolute;
-  top: -20px; left: 24px;
-  pointer-events: none;
-  font-weight: 300;
-}
+      .wisdom-block::before {
+        content: "\201C";
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 14rem;
+        line-height: 1;
+        color: rgba(176, 136, 38, 0.08);
+        position: absolute;
+        top: -20px;
+        left: 24px;
+        pointer-events: none;
+        font-weight: 300;
+      }
 
-.wisdom-ornament {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.wisdom-line {
-  height: 1px;
-  width: 32px;
-  background: var(--gold);
-  border-radius: 1px;
-}
-.wisdom-label {
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
+      .wisdom-ornament {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .wisdom-line {
+        height: 1px;
+        width: 32px;
+        background: var(--gold);
+        border-radius: 1px;
+      }
+      .wisdom-label {
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
 
-.wisdom-quote {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-size: 1.65rem;
-  font-weight: 400;
-  color: var(--ink-2);
-  line-height: 1.55;
-  margin-bottom: 20px;
-  position: relative;
-}
+      .wisdom-quote {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-style: italic;
+        font-size: 1.65rem;
+        font-weight: 400;
+        color: var(--ink-2);
+        line-height: 1.55;
+        margin-bottom: 20px;
+        position: relative;
+      }
 
-.wisdom-author {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--ink-4);
-  letter-spacing: 0.04em;
-}
+      .wisdom-author {
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--ink-4);
+        letter-spacing: 0.04em;
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    SEPARADOR DE MÊS
 ────────────────────────────────────────────────────────────────── */
-.month-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.month-row + .month-row { margin-top: 48px; }
-.month-row:not(:first-of-type) { margin-top: 48px; }
+      .month-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .month-row + .month-row {
+        margin-top: 48px;
+      }
+      .month-row:not(:first-of-type) {
+        margin-top: 48px;
+      }
 
-.month-name {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--ink-4);
-  white-space: nowrap;
-}
-.month-hr {
-  flex: 1; height: 1px;
-  background: var(--border);
-}
+      .month-name {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--ink-4);
+        white-space: nowrap;
+      }
+      .month-hr {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    CARD DE EVENTO
 ────────────────────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 30px 36px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-card);
-  display: grid;
-  grid-template-columns: 68px 1fr auto;
-  gap: 28px;
-  align-items: start;
-  transition: box-shadow 0.3s cubic-bezier(.22,1,.36,1),
-              border-color 0.3s,
-              transform 0.3s cubic-bezier(.22,1,.36,1);
-  cursor: default;
-}
-.card:hover {
-  box-shadow: var(--shadow-hover);
-  border-color: rgba(0,74,140,0.18);
-  transform: translateY(-3px);
-}
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 30px 36px;
+        margin-bottom: 14px;
+        box-shadow: var(--shadow-card);
+        display: grid;
+        grid-template-columns: 68px 1fr auto;
+        gap: 28px;
+        align-items: start;
+        transition:
+          box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+          border-color 0.3s,
+          transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        cursor: default;
+      }
+      .card:hover {
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(0, 74, 140, 0.18);
+        transform: translateY(-3px);
+      }
 
-/* Badge circular de data */
-.date-badge {
-  width: 68px; height: 68px;
-  border-radius: 50%;
-  background: var(--blue-pale);
-  border: 1.5px solid rgba(0,74,140,0.14);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.date-n {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.9rem;
-  font-weight: 500;
-  color: var(--blue);
-  line-height: 1;
-}
-.date-w {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--blue-mid);
-  margin-top: 3px;
-}
+      /* Badge circular de data */
+      .date-badge {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: var(--blue-pale);
+        border: 1.5px solid rgba(0, 74, 140, 0.14);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .date-n {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 1.9rem;
+        font-weight: 500;
+        color: var(--blue);
+        line-height: 1;
+      }
+      .date-w {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--blue-mid);
+        margin-top: 3px;
+      }
 
-/* Corpo */
-.card-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  margin-bottom: 10px;
-}
+      /* Corpo */
+      .card-title {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 1.4rem;
+        font-weight: 500;
+        color: var(--ink);
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+      }
 
-.card-metas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  margin-bottom: 12px;
-}
-.card-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.84rem;
-  color: var(--ink-3);
-  font-weight: 400;
-}
-.card-meta svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.6; }
+      .card-metas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-bottom: 12px;
+      }
+      .card-meta {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.84rem;
+        color: var(--ink-3);
+        font-weight: 400;
+      }
+      .card-meta svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        opacity: 0.6;
+      }
 
-.card-desc {
-  font-size: 0.95rem;
-  color: var(--ink-2);
-  line-height: 1.7;
-  font-weight: 300;
-}
+      .card-desc {
+        font-size: 0.95rem;
+        color: var(--ink-2);
+        line-height: 1.7;
+        font-weight: 300;
+      }
 
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 14px;
-}
-.tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 999px;
-}
-.tag-blue   { background: var(--blue-pale); color: var(--blue); }
-.tag-gold   { background: var(--gold-pale); color: #7a5800; }
-.tag-green  { background: #edf8f2; color: #0a5c35; }
-.tag-red    { background: #fdf0f0; color: #8a1515; }
+      .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 14px;
+      }
+      .tag {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 999px;
+      }
+      .tag-blue {
+        background: var(--blue-pale);
+        color: var(--blue);
+      }
+      .tag-gold {
+        background: var(--gold-pale);
+        color: #7a5800;
+      }
+      .tag-green {
+        background: #edf8f2;
+        color: #0a5c35;
+      }
+      .tag-red {
+        background: #fdf0f0;
+        color: #8a1515;
+      }
 
-/* Ações */
-.card-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  flex-shrink: 0;
-}
+      /* Ações */
+      .card-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        flex-shrink: 0;
+      }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 999px;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-}
-.status-pill svg { width: 12px; height: 12px; }
-.pill-ok     { background: #edf8f2; color: #0a5c35; }
-.pill-wait   { background: #fff8ec; color: #7a4f00; }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 7px 16px;
+        border-radius: 999px;
+        white-space: nowrap;
+        letter-spacing: 0.01em;
+      }
+      .status-pill svg {
+        width: 12px;
+        height: 12px;
+      }
+      .pill-ok {
+        background: #edf8f2;
+        color: #0a5c35;
+      }
+      .pill-wait {
+        background: #fff8ec;
+        color: #7a4f00;
+      }
 
-.btn-confirm {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 11px 24px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(0,74,140,0.4);
-  background: transparent;
-  color: var(--blue);
-  cursor: pointer;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  min-width: 168px;
-  text-align: center;
-  transition: all 0.2s;
-}
-.btn-confirm:hover {
-  background: var(--blue-pale);
-  border-color: var(--blue);
-}
+      .btn-confirm {
+        font-family: "Inter", sans-serif;
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 11px 24px;
+        border-radius: 12px;
+        border: 1.5px solid rgba(0, 74, 140, 0.4);
+        background: transparent;
+        color: var(--blue);
+        cursor: pointer;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        min-width: 168px;
+        text-align: center;
+        transition: all 0.2s;
+      }
+      .btn-confirm:hover {
+        background: var(--blue-pale);
+        border-color: var(--blue);
+      }
 
-/* ──────────────────────────────────────────────────────────────────
+      /* ──────────────────────────────────────────────────────────────────
    RODAPÉ DISCRETO
 ────────────────────────────────────────────────────────────────── */
-.page-foot {
-  margin-top: 64px;
-  padding-top: 32px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.foot-note {
-  font-size: 0.8rem;
-  color: var(--ink-4);
-  font-weight: 400;
-}
-.foot-link {
-  font-size: 0.8rem;
-  color: var(--blue);
-  font-weight: 500;
-  text-decoration: none;
-  letter-spacing: 0.01em;
-}
-.foot-link:hover { text-decoration: underline; }
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav class="nav">
-  <span class="nav-brand">Apoio Espírita</span>
-  <div class="nav-links">
-    <a class="nav-link active" href="#">Agenda</a>
-    <a class="nav-link" href="#">Kanban</a>
-    <a class="nav-link" href="#">Evangelização</a>
-    <a class="nav-link" href="#">Perfil</a>
-  </div>
-  <div class="nav-end">
-    <div class="nav-avatar">AG</div>
-  </div>
-</nav>
-
-<main class="main">
-
-  <!-- CABEÇALHO -->
-  <header class="page-head rise rise-1">
-    <div class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      Centro Espírita Luz e Caridade
-    </div>
-    <h1 class="page-title">Agenda de<br><em>Eventos</em></h1>
-    <div class="title-rule"></div>
-    <p class="page-sub">Acompanhe os próximos encontros, reuniões e atividades da sua casa espírita.</p>
-  </header>
-
-  <!-- TOOLBAR -->
-  <div class="toolbar rise rise-2">
-    <div class="tabs">
-      <button class="tab active">Próximos</button>
-      <button class="tab">Este mês</button>
-      <button class="tab">Passados</button>
-    </div>
-    <button class="btn-new">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Novo evento
-    </button>
-  </div>
-
-  <!-- WISDOM -->
-  <div class="wisdom-block rise rise-3">
-    <div class="wisdom-ornament">
-      <span class="wisdom-line"></span>
-      <span class="wisdom-label">Pensamento do dia</span>
-    </div>
-    <p class="wisdom-quote">
-      "Fora da caridade não há salvação."
-    </p>
-    <p class="wisdom-author">Allan Kardec &mdash; O Evangelho Segundo o Espiritismo</p>
-  </div>
-
-  <!-- JUNHO -->
-  <div class="month-row rise rise-3">
-    <span class="month-name">Junho 2026</span>
-    <div class="month-hr"></div>
-  </div>
-
-  <article class="card rise rise-4">
-    <div class="date-badge">
-      <span class="date-n">07</span>
-      <span class="date-w">Sáb</span>
-    </div>
-    <div>
-      <h2 class="card-title">Reunião de Estudo do Evangelho</h2>
-      <div class="card-metas">
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          19h00 – 21h00
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Salão Principal
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          12 confirmados
-        </span>
+      .page-foot {
+        margin-top: 64px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .foot-note {
+        font-size: 0.8rem;
+        color: var(--ink-4);
+        font-weight: 400;
+      }
+      .foot-link {
+        font-size: 0.8rem;
+        color: var(--blue);
+        font-weight: 500;
+        text-decoration: none;
+        letter-spacing: 0.01em;
+      }
+      .foot-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav class="nav">
+      <span class="nav-brand">Apoio Espírita</span>
+      <div class="nav-links">
+        <a class="nav-link active" href="#">Agenda</a>
+        <a class="nav-link" href="#">Kanban</a>
+        <a class="nav-link" href="#">Evangelização</a>
+        <a class="nav-link" href="#">Perfil</a>
       </div>
-      <p class="card-desc">Estudo e debate do capítulo 8 — "As bem-aventuranças". Aberto para todos os membros e visitantes.</p>
-      <div class="card-tags">
-        <span class="tag tag-blue">Evangelho</span>
-        <span class="tag tag-green">Aberto</span>
+      <div class="nav-end">
+        <div class="nav-avatar">AG</div>
       </div>
-    </div>
-    <div class="card-actions">
-      <span class="status-pill pill-ok">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        Confirmado
-      </span>
-    </div>
-  </article>
+    </nav>
 
-  <article class="card rise rise-4">
-    <div class="date-badge">
-      <span class="date-n">14</span>
-      <span class="date-w">Sáb</span>
-    </div>
-    <div>
-      <h2 class="card-title">Reunião Mediúnica — Passes e Desobsessão</h2>
-      <div class="card-metas">
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          20h00 – 22h00
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Sala de Trabalho
-        </span>
+    <main class="main">
+      <!-- CABEÇALHO -->
+      <header class="page-head rise rise-1">
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          Centro Espírita Luz e Caridade
+        </div>
+        <h1 class="page-title">Agenda de<br /><em>Eventos</em></h1>
+        <div class="title-rule"></div>
+        <p class="page-sub">
+          Acompanhe os próximos encontros, reuniões e atividades da sua casa espírita.
+        </p>
+      </header>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar rise rise-2">
+        <div class="tabs">
+          <button class="tab active">Próximos</button>
+          <button class="tab">Este mês</button>
+          <button class="tab">Passados</button>
+        </div>
+        <button class="btn-new">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Novo evento
+        </button>
       </div>
-      <p class="card-desc">Sessão fechada para médiuns em desenvolvimento. Presença obrigatória para os da turma avançada.</p>
-      <div class="card-tags">
-        <span class="tag tag-gold">Mediunidade</span>
-        <span class="tag tag-red">Fechado</span>
+
+      <!-- WISDOM -->
+      <div class="wisdom-block rise rise-3">
+        <div class="wisdom-ornament">
+          <span class="wisdom-line"></span>
+          <span class="wisdom-label">Pensamento do dia</span>
+        </div>
+        <p class="wisdom-quote">"Fora da caridade não há salvação."</p>
+        <p class="wisdom-author">Allan Kardec &mdash; O Evangelho Segundo o Espiritismo</p>
       </div>
-    </div>
-    <div class="card-actions">
-      <span class="status-pill pill-wait">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Aguardando
-      </span>
-      <button class="btn-confirm">Confirmar presença</button>
-    </div>
-  </article>
 
-  <article class="card rise rise-5">
-    <div class="date-badge">
-      <span class="date-n">21</span>
-      <span class="date-w">Sáb</span>
-    </div>
-    <div>
-      <h2 class="card-title">Palestra Pública — A Lei de Causa e Efeito</h2>
-      <div class="card-metas">
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          18h30 – 20h00
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Auditório Central
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          3 confirmados
-        </span>
+      <!-- JUNHO -->
+      <div class="month-row rise rise-3">
+        <span class="month-name">Junho 2026</span>
+        <div class="month-hr"></div>
       </div>
-      <p class="card-desc">Palestra aberta ao público em geral. Expositor: Irmão João Alves. Transmissão ao vivo pelo canal da casa.</p>
-      <div class="card-tags">
-        <span class="tag tag-blue">Doutrina</span>
-        <span class="tag tag-green">Aberto</span>
+
+      <article class="card rise rise-4">
+        <div class="date-badge">
+          <span class="date-n">07</span>
+          <span class="date-w">Sáb</span>
+        </div>
+        <div>
+          <h2 class="card-title">Reunião de Estudo do Evangelho</h2>
+          <div class="card-metas">
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              19h00 – 21h00
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Salão Principal
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              12 confirmados
+            </span>
+          </div>
+          <p class="card-desc">
+            Estudo e debate do capítulo 8 — "As bem-aventuranças". Aberto para todos os membros e
+            visitantes.
+          </p>
+          <div class="card-tags">
+            <span class="tag tag-blue">Evangelho</span>
+            <span class="tag tag-green">Aberto</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <span class="status-pill pill-ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Confirmado
+          </span>
+        </div>
+      </article>
+
+      <article class="card rise rise-4">
+        <div class="date-badge">
+          <span class="date-n">14</span>
+          <span class="date-w">Sáb</span>
+        </div>
+        <div>
+          <h2 class="card-title">Reunião Mediúnica — Passes e Desobsessão</h2>
+          <div class="card-metas">
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              20h00 – 22h00
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Sala de Trabalho
+            </span>
+          </div>
+          <p class="card-desc">
+            Sessão fechada para médiuns em desenvolvimento. Presença obrigatória para os da turma
+            avançada.
+          </p>
+          <div class="card-tags">
+            <span class="tag tag-gold">Mediunidade</span>
+            <span class="tag tag-red">Fechado</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <span class="status-pill pill-wait">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Aguardando
+          </span>
+          <button class="btn-confirm">Confirmar presença</button>
+        </div>
+      </article>
+
+      <article class="card rise rise-5">
+        <div class="date-badge">
+          <span class="date-n">21</span>
+          <span class="date-w">Sáb</span>
+        </div>
+        <div>
+          <h2 class="card-title">Palestra Pública — A Lei de Causa e Efeito</h2>
+          <div class="card-metas">
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              18h30 – 20h00
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Auditório Central
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              3 confirmados
+            </span>
+          </div>
+          <p class="card-desc">
+            Palestra aberta ao público em geral. Expositor: Irmão João Alves. Transmissão ao vivo
+            pelo canal da casa.
+          </p>
+          <div class="card-tags">
+            <span class="tag tag-blue">Doutrina</span>
+            <span class="tag tag-green">Aberto</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-confirm">Confirmar presença</button>
+        </div>
+      </article>
+
+      <!-- JULHO -->
+      <div class="month-row rise rise-5">
+        <span class="month-name">Julho 2026</span>
+        <div class="month-hr"></div>
       </div>
-    </div>
-    <div class="card-actions">
-      <button class="btn-confirm">Confirmar presença</button>
-    </div>
-  </article>
 
-  <!-- JULHO -->
-  <div class="month-row rise rise-5">
-    <span class="month-name">Julho 2026</span>
-    <div class="month-hr"></div>
-  </div>
+      <article class="card rise rise-6">
+        <div class="date-badge">
+          <span class="date-n">05</span>
+          <span class="date-w">Dom</span>
+        </div>
+        <div>
+          <h2 class="card-title">Confraternização Anual da Casa</h2>
+          <div class="card-metas">
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              10h00 – 15h00
+            </span>
+            <span class="card-meta">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Jardim da Casa
+            </span>
+          </div>
+          <p class="card-desc">
+            Celebração do aniversário de fundação com almoço fraterno, atividades para crianças e
+            música ao vivo.
+          </p>
+          <div class="card-tags">
+            <span class="tag tag-gold">Especial</span>
+            <span class="tag tag-green">Aberto</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-confirm">Confirmar presença</button>
+        </div>
+      </article>
 
-  <article class="card rise rise-6">
-    <div class="date-badge">
-      <span class="date-n">05</span>
-      <span class="date-w">Dom</span>
-    </div>
-    <div>
-      <h2 class="card-title">Confraternização Anual da Casa</h2>
-      <div class="card-metas">
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          10h00 – 15h00
-        </span>
-        <span class="card-meta">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Jardim da Casa
-        </span>
-      </div>
-      <p class="card-desc">Celebração do aniversário de fundação com almoço fraterno, atividades para crianças e música ao vivo.</p>
-      <div class="card-tags">
-        <span class="tag tag-gold">Especial</span>
-        <span class="tag tag-green">Aberto</span>
-      </div>
-    </div>
-    <div class="card-actions">
-      <button class="btn-confirm">Confirmar presença</button>
-    </div>
-  </article>
-
-  <footer class="page-foot rise rise-6">
-    <span class="foot-note">4 eventos encontrados · Casa CELC</span>
-    <a class="foot-link" href="#">Ver eventos passados</a>
-  </footer>
-
-</main>
-
-</body>
+      <footer class="page-foot rise rise-6">
+        <span class="foot-note">4 eventos encontrados · Casa CELC</span>
+        <a class="foot-link" href="#">Ver eventos passados</a>
+      </footer>
+    </main>
+  </body>
 </html>
