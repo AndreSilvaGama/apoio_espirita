@@ -234,12 +234,16 @@ jobs:
             cat /tmp/schema.sql
           } > "$DESTINO"
 
-          if git diff --quiet -- "$DESTINO"; then
+          # git diff IGNORA arquivo nao rastreado — na primeira vez o schema.sql
+          # nao existia no repositorio e o passo se achava sem trabalho a fazer.
+          # Por isso: adicionar PRIMEIRO, e so entao perguntar se mudou algo.
+          git config user.name "Vigia diário"
+          git config user.email "actions@github.com"
+          git add "$DESTINO"
+
+          if git diff --cached --quiet -- "$DESTINO"; then
             echo "Estrutura sem mudanças desde ontem."
           else
-            git config user.name "Vigia diário"
-            git config user.email "actions@github.com"
-            git add "$DESTINO"
             git commit -m "chore: atualiza a estrutura do banco (automático)"
             git push
             echo "Estrutura atualizada e commitada."
