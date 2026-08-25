@@ -1,0 +1,134 @@
+name: Vigia diário
+
+# ATENÇÃO: este arquivo precisa ficar em .github/workflows/ NA RAIZ do repositório.
+# O projeto mora na subpasta apoio_espirita-main/, e o GitHub ignora workflows que
+# estejam dentro de subpastas — foi por isso que o resumo diário nunca rodou e nada
+# gerava atividade no banco, o que deixou o projeto Supabase ser pausado.
+
+on:
+  schedule:
+    # 08h00 de Brasília (UTC-3) = 11h00 UTC
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+    # Permite disparar à mão pelo GitHub para testar
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  SUPABASE_URL: https://kitmwxfwwujygcmdjngm.supabase.co
+  # Chave anônima: pública por natureza, protegida pela RLS. Não é segredo.
+  SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpdG13eGZ3d3VqeWdjbWRqbmdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjEwNTYsImV4cCI6MjA5NDA5NzA1Nn0.Er_7LFPyup8LjcFaGuIAKMHcIVzJfbU-ihVs_r-IkXE
+
+jobs:
+  vigia:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) Confere se o banco responde E, de quebra, gera a atividade diária que
+      #    impede o Supabase de pausar o projeto por inatividade.
+      - name: Verificar se o banco responde
+        id: banco
+        run: |
+          set +e
+          STATUS=$(curl -s -m 30 -o /tmp/banco.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/siglas_casas?select=sigla&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP $STATUS"
+          head -c 300 /tmp/banco.json || true
+          echo ""
+          if [ "$STATUS" = "200" ]; then
+            echo "resultado=ok" >> "$GITHUB_OUTPUT"
+          else
+            echo "resultado=falhou" >> "$GITHUB_OUTPUT"
+            echo "codigo=$STATUS" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 2) Confere se o site está no ar.
+      - name: Verificar se o site responde
+        id: site
+        run: |
+          set +e
+          STATUS=$(curl -s -m 30 -o /dev/null -w "%{http_code}" https://apoioespirita.com.br/)
+          echo "HTTP $STATUS"
+          if [ "$STATUS" = "200" ]; then
+            echo "resultado=ok" >> "$GITHUB_OUTPUT"
+          else
+            echo "resultado=falhou" >> "$GITHUB_OUTPUT"
+            echo "codigo=$STATUS" >> "$GITHUB_OUTPUT"
+          fi
+
+      # 3) Abre um aviso no GitHub quando algo caiu. E-mail passa despercebido;
+      #    uma issue aberta fica visível até alguém resolver.
+      - name: Abrir aviso se algo caiu
+        if: steps.banco.outputs.resultado == 'falhou' || steps.site.outputs.resultado == 'falhou'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const banco = '${{ steps.banco.outputs.resultado }}';
+            const site = '${{ steps.site.outputs.resultado }}';
+            const codBanco = '${{ steps.banco.outputs.codigo }}';
+            const codSite = '${{ steps.site.outputs.codigo }}';
+
+            const titulo = 'Apoio Espírita fora do ar';
+            const abertas = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'vigia',
+            });
+            if (abertas.data.some((i) => i.title === titulo)) {
+              core.info('Já existe um aviso aberto. Não vou duplicar.');
+              return;
+            }
+
+            const linhas = [
+              'A verificação automática encontrou um problema.',
+              '',
+              `- Banco de dados (Supabase): **${banco === 'ok' ? 'respondendo' : `NÃO respondeu (HTTP ${codBanco})`}**`,
+              `- Site (apoioespirita.com.br): **${site === 'ok' ? 'respondendo' : `NÃO respondeu (HTTP ${codSite})`}**`,
+              '',
+              '### O que verificar primeiro',
+              '',
+              'Se o banco não respondeu, a causa mais provável é o **projeto Supabase ter sido pausado**',
+              'por inatividade — o plano Free pausa após 7 dias de pouco uso. Nesse caso o site continua',
+              'respondendo normalmente, mas login, cadastro e toda a área autenticada param.',
+              '',
+              '1. Abra https://supabase.com/dashboard/project/kitmwxfwwujygcmdjngm',
+              '2. Se aparecer **Resume project**, clique e aguarde cerca de 2 minutos',
+              '3. Confirme que voltou: `nslookup kitmwxfwwujygcmdjngm.supabase.co` deve resolver',
+              '',
+              'Há uma janela de **90 dias** para restaurar um projeto pausado. Depois disso os dados se perdem.',
+              '',
+              '_Aviso gerado automaticamente pelo workflow Vigia diário._',
+            ];
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: titulo,
+              body: linhas.join('\n'),
+              labels: ['vigia'],
+            });
+
+      # 4) Envia o resumo diário (a função que nunca chegou a rodar).
+      #    Só tenta se o banco estiver de pé, para não gerar ruído.
+      - name: Enviar resumo diário
+        if: steps.banco.outputs.resultado == 'ok'
+        continue-on-error: true
+        run: |
+          STATUS=$(curl -s -m 60 -o /tmp/resp.json -w "%{http_code}" \
+            -X POST \
+            "$SUPABASE_URL/functions/v1/daily-digest" \
+            -H "x-cron-secret: ${{ secrets.DIGEST_CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          echo "HTTP $STATUS"
+          cat /tmp/resp.json || true
+
+      # 5) Falha o job para o GitHub avisar por e-mail, além da issue.
+      - name: Encerrar com erro se algo caiu
+        if: steps.banco.outputs.resultado == 'falhou' || steps.site.outputs.resultado == 'falhou'
+        run: |
+          echo "Banco: ${{ steps.banco.outputs.resultado }} | Site: ${{ steps.site.outputs.resultado }}"
+          exit 1
