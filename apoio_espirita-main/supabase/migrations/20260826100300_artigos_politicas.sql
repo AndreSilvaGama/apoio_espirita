@@ -22,7 +22,35 @@ as $$
 $$;
 
 revoke execute on function public.pode_revisar_artigo(uuid) from public;
-grant execute on function public.pode_revisar_artigo(uuid) to authenticated;
+grant execute on function public.pode_revisar_artigo(uuid) to authenticated, anon;
+
+-- Quem pode sancionar QUEM: o DEV alcanca a plataforma inteira; Presidente e
+-- Vice alcancam somente pessoas da propria casa. Sem esta funcao, qualquer
+-- Presidente punia membro de casa alheia.
+create or replace function public.pode_sancionar(alvo_user uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.profiles quem
+     where quem.id = auth.uid()
+       and (
+         quem.cargo_principal = 'DEV'
+         or (
+           quem.cargo_principal in ('Presidente', 'Vice-presidente')
+           and quem.sigla_casa = (
+             select alvo.sigla_casa from public.profiles alvo where alvo.id = alvo_user
+           )
+         )
+       )
+  );
+$$;
+
+revoke execute on function public.pode_sancionar(uuid) from public;
+grant execute on function public.pode_sancionar(uuid) to authenticated;
 
 -- ── artigos ────────────────────────────────────────────────────────────────
 -- Qualquer pessoa, com ou sem conta, le os publicados. O autor ve os seus em
@@ -129,14 +157,50 @@ create policy usuarios_sancoes_select on public.usuarios_sancoes for select
   );
 
 create policy usuarios_sancoes_insert on public.usuarios_sancoes for insert
-  with check (
-    aplicada_por = auth.uid()
-    and exists (select 1 from public.profiles p
-                 where p.id = auth.uid()
-                   and p.cargo_principal in ('DEV', 'Presidente', 'Vice-presidente'))
-  );
+  with check (aplicada_por = auth.uid() and public.pode_sancionar(user_id));
 
 create policy usuarios_sancoes_update on public.usuarios_sancoes for update
-  using (exists (select 1 from public.profiles p
-                  where p.id = auth.uid()
-                    and p.cargo_principal in ('DEV', 'Presidente', 'Vice-presidente')));
+  using (public.pode_sancionar(user_id))
+  with check (public.pode_sancionar(user_id));
+
+-- Maquina de estados do artigo. Fica em gatilho, e nao em politica, porque
+-- politica so enxerga a linha nova: nao da para comparar o estado antigo com o
+-- novo. Sem isto, o autor levava o proprio artigo de 'retirado' de volta a
+-- 'publicado' e desfazia sozinho a retirada da comunidade.
+create or replace function public.artigo_transicao_valida()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.estado is distinct from old.estado then
+    -- Quem revisa faz qualquer transicao.
+    if public.pode_revisar_artigo(new.id) then
+      return new;
+    end if;
+    -- Tirar do ar nunca faz mal: e o caminho do gatilho de retirada automatica
+    -- e tambem do autor que desiste do proprio texto.
+    if old.estado = 'publicado' and new.estado = 'retirado' then
+      return new;
+    end if;
+    -- O autor leva o proprio artigo retirado para correcao, e nada alem disso.
+    if old.autor_id = auth.uid()
+       and old.estado = 'retirado'
+       and new.estado = 'em_correcao' then
+      return new;
+    end if;
+    raise exception
+      'Transicao de estado nao permitida para este usuario: % -> %',
+      old.estado, new.estado;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists artigos_transicao on public.artigos;
+create trigger artigos_transicao
+before update on public.artigos
+for each row execute function public.artigo_transicao_valida();
+
+revoke execute on function public.artigo_transicao_valida() from public;
