@@ -27,6 +27,13 @@ interface CasaHeroProps {
   cidade?: string;
   uf?: string;
   paginaData?: PaginaCasa | null;
+  /**
+   * Cabecalho visto por quem chega de fora. Esconde o que so serve a quem ja
+   * faz parte (a sigla, que e identificador interno) e os contatos, que na
+   * pagina publica ficam no bloco "Como chegar e falar", com area de toque de
+   * verdade. Sem isto os mesmos telefone, e-mail e site apareciam duas vezes.
+   */
+  publico?: boolean;
 }
 
 function splitNome(nome: string): [string, string] {
@@ -41,7 +48,16 @@ function splitNome(nome: string): [string, string] {
   return [words.slice(0, 2).join(" "), words.slice(2).join(" ")];
 }
 
-export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData }: CasaHeroProps) {
+export function CasaHero({
+  membros,
+  eventos,
+  sigla,
+  nome,
+  cidade,
+  uf,
+  paginaData,
+  publico = false,
+}: CasaHeroProps) {
   const { profile } = useAuth();
   const [nomeCasa, setNomeCasa] = useState<string | null>(null);
   const [dataPagina, setDataPagina] = useState<PaginaCasa | null>(paginaData ?? null);
@@ -101,6 +117,26 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
   const displayCidade = cidade || dataPagina?.cidade || profile?.cidade;
   const displayUf = uf || dataPagina?.uf || profile?.uf;
 
+  // Endereço completo, usado tanto no texto quanto no link de rota. Só vira
+  // link quando há logradouro: cidade e UF sozinhas levariam a pessoa ao
+  // centro do município, não à casa.
+  const enderecoTexto = dataPagina?.endereco
+    ? [dataPagina.endereco, dataPagina.bairro, displayCidade, displayUf].filter(Boolean).join(", ")
+    : [displayCidade, displayUf].filter(Boolean).join(" · ");
+  const enderecoParaRota = !publico && dataPagina?.endereco ? enderecoTexto : null;
+  // Discagem precisa dos dígitos limpos; o texto na tela continua formatado.
+  const telefoneDiscagem = dataPagina?.telefone?.replace(/[^\d+]/g, "") || null;
+
+  const itemStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    fontFamily: "Inter, sans-serif",
+    fontSize: "0.82rem",
+    color: "#637080",
+  };
+  const linkStyle: React.CSSProperties = { ...itemStyle, color: "#004a8c", fontWeight: 500 };
+
   // `created_at` existe na tabela profiles, mas nao no tipo exposto pelo AuthContext.
   const perfilCriadoEm = (profile as { created_at?: string } | null)?.created_at;
 
@@ -113,11 +149,10 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
 
   return (
     <section
-      className="sw-rise sw-rise-1"
+      className="casa-hero sw-rise sw-rise-1"
       style={{
         background: "#ffffff",
         borderBottom: "1px solid rgba(0,20,70,.08)",
-        padding: "52px 44px 44px",
       }}
     >
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
@@ -169,28 +204,27 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
 
             <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
               {/* Localização / Endereço */}
-              {(dataPagina?.endereco || displayCidade || displayUf) && (
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "0.82rem",
-                    color: "#637080",
-                  }}
-                >
-                  <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
-                  {dataPagina?.endereco
-                    ? [dataPagina.endereco, dataPagina.bairro, displayCidade]
-                        .filter(Boolean)
-                        .join(", ")
-                    : [displayCidade, displayUf].filter(Boolean).join(" · ")}
-                </span>
-              )}
+              {(dataPagina?.endereco || displayCidade || displayUf) &&
+                (enderecoParaRota ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoParaRota)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={linkStyle}
+                    className="hover:underline"
+                  >
+                    <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+                    {enderecoTexto}
+                  </a>
+                ) : (
+                  <span style={itemStyle}>
+                    <MapPin size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
+                    {enderecoTexto}
+                  </span>
+                ))}
 
               {/* Sigla */}
-              {targetSigla && (
+              {targetSigla && !publico && (
                 <>
                   <span
                     style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }}
@@ -208,29 +242,20 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
               )}
 
               {/* Telefone */}
-              {dataPagina?.telefone && (
+              {dataPagina?.telefone && !publico && (
                 <>
                   <span
                     style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }}
                   />
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "0.82rem",
-                      color: "#637080",
-                    }}
-                  >
+                  <a href={`tel:${telefoneDiscagem}`} style={linkStyle} className="hover:underline">
                     <Phone size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
                     {dataPagina.telefone}
-                  </span>
+                  </a>
                 </>
               )}
 
               {/* Website */}
-              {dataPagina?.site && (
+              {dataPagina?.site && !publico && (
                 <>
                   <span
                     style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }}
@@ -264,24 +289,19 @@ export function CasaHero({ membros, eventos, sigla, nome, cidade, uf, paginaData
               )}
 
               {/* E-mail */}
-              {dataPagina?.email_contato && (
+              {dataPagina?.email_contato && !publico && (
                 <>
                   <span
                     style={{ width: 3, height: 3, borderRadius: "50%", background: "#a3adb8" }}
                   />
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "0.82rem",
-                      color: "#637080",
-                    }}
+                  <a
+                    href={`mailto:${dataPagina.email_contato}`}
+                    style={linkStyle}
+                    className="hover:underline"
                   >
                     <Mail size={14} strokeWidth={1.5} style={{ opacity: 0.6 }} />
                     {dataPagina.email_contato}
-                  </span>
+                  </a>
                 </>
               )}
 

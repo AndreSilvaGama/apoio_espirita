@@ -801,3 +801,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── CABEÇALHO DA CASA ──────────────────────────────────────────────────────
+   O espaçamento vinha fixo em 44px nas laterais e o nome em 2,6rem. Num
+   celular de 390px isso consome um quinto da largura e parte o nome da casa em
+   três linhas — e é pelo celular que chega quem procura uma casa espírita. */
+.casa-hero {
+  padding: 52px 44px 44px;
+}
+@media (max-width: 640px) {
+  .casa-hero {
+    padding: 32px 20px 26px;
+  }
+  .casa-hero h1 {
+    font-size: 1.95rem !important;
+    margin-bottom: 10px !important;
+  }
+}

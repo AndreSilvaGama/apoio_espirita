@@ -142,6 +142,56 @@ interface HorarioItem {
   atividade: string;
 }
 
+/**
+ * O que o visitante procura numa página de casa espírita.
+ *
+ * Publicar com estes campos em branco entrega uma casa que parece abandonada —
+ * pior do que não publicar. A lista não bloqueia a publicação: ela informa, com
+ * nome e lugar, o que ainda falta. A decisão continua sendo da direção da casa.
+ */
+const ITENS_PAGINA_PUBLICA: {
+  chave: string;
+  rotulo: string;
+  onde: string;
+  preenchido: (p: PaginaData) => boolean;
+}[] = [
+  {
+    chave: "nome",
+    rotulo: "Nome completo da casa",
+    onde: "aqui em Configurações",
+    preenchido: (p) => !!p.nome_completo?.trim(),
+  },
+  {
+    chave: "descricao",
+    rotulo: "Descrição — o que a casa é",
+    onde: "aqui em Configurações",
+    preenchido: (p) => !!p.descricao?.trim(),
+  },
+  {
+    chave: "endereco",
+    rotulo: "Endereço, para o visitante chegar",
+    onde: "aqui em Configurações",
+    preenchido: (p) => !!p.endereco?.trim(),
+  },
+  {
+    chave: "contato",
+    rotulo: "Um contato: telefone, e-mail ou site",
+    onde: "aqui em Configurações",
+    preenchido: (p) => !!(p.telefone?.trim() || p.email_contato?.trim() || p.site?.trim()),
+  },
+  {
+    chave: "horarios",
+    rotulo: "Horários das atividades",
+    onde: "na aba Atividades",
+    preenchido: (p) =>
+      (p.horarios ?? []).some((h) => !("tipo" in h) || (h as MuralItem).tipo !== "escala"),
+  },
+];
+
+function pendenciasDaPagina(p: PaginaData) {
+  return ITENS_PAGINA_PUBLICA.filter((i) => !i.preenchido(p));
+}
+
 interface Post {
   id: string;
   sigla_casa: string;
@@ -828,9 +878,21 @@ function PaginaCasa() {
     setCarregando(false);
   }, [sigla]);
 
+  // Carrega tambem para visitante anonimo. Enquanto isto dependia de `user`,
+  // quem chegava sem sessao ficava preso em "Carregando..." para sempre:
+  // `carregando` nasce true e so e desligado dentro de carregar(). A pagina
+  // publica da casa nunca chegava a aparecer. O que o visitante pode ler e
+  // decidido pela RLS no banco, nao por este efeito.
   useEffect(() => {
-    if (!loading && user) carregar();
-  }, [loading, user, carregar]);
+    if (!loading) carregar();
+  }, [loading, carregar]);
+
+  // O visitante nao tem a aba Mural, mas a aba inicial nasce nela: sem esta
+  // correcao ele cai num painel interno vazio, sem nenhuma aba marcada.
+  // Atividades e o que ele veio procurar — os horarios da casa.
+  useEffect(() => {
+    if (!loading && !user) setAba((a) => (a === "mural" ? "sobre" : a));
+  }, [loading, user]);
 
   // Auto-archive expired mural scales in the database
   useEffect(() => {
@@ -1566,18 +1628,32 @@ function PaginaCasa() {
   const alternarPublicacao = async () => {
     if (!pagina) return;
     const novo = !pagina.publicada;
+    const nl = String.fromCharCode(10);
+    // Nomeia o que falta em vez de dar conselho generico: quem publica precisa
+    // saber exatamente o que o visitante NAO vai encontrar. Continua podendo
+    // publicar assim mesmo — a decisao e da casa.
+    const faltando = novo ? pendenciasDaPagina(pagina) : [];
     if (
       novo &&
       !window.confirm(
         [
           "Tornar esta página pública?",
           "",
+          ...(faltando.length
+            ? [
+                `Ainda faltam ${faltando.length} ${faltando.length === 1 ? "item" : "itens"} que o visitante procura:`,
+                ...faltando.map((i) => `  • ${i.rotulo}`),
+                "",
+                "Publicando agora, a página aparece praticamente vazia para quem chegar.",
+                "",
+              ]
+            : []),
           "Passam a ficar visíveis a qualquer pessoa: nome, descrição, missão, endereço, contatos e os horários das atividades.",
           "",
           "Continuam privados: mural, tarefeiros, agenda, projetos, tesouraria e a chave PIX.",
           "",
           "Você pode desfazer isso quando quiser.",
-        ].join(String.fromCharCode(10)),
+        ].join(nl),
       )
     )
       return;
@@ -1717,9 +1793,14 @@ function PaginaCasa() {
   return (
     <main className="page-light min-h-screen pt-14 pb-20">
       {/* Premium Hero with espectacular destaque for the name */}
+      {/* A contagem de membros vem de `profiles`, que a RLS fecha para quem
+          nao esta logado: o visitante receberia sempre zero. Anunciar "0
+          membros ativos" na vitrine da casa e pior do que nao contar nada,
+          entao as estatisticas ficam so para quem faz parte. */}
       <CasaHero
-        membros={membrosCount}
-        eventos={totalEventosCount}
+        membros={visitantePublico ? undefined : membrosCount}
+        eventos={visitantePublico ? undefined : totalEventosCount}
+        publico={visitantePublico}
         sigla={sigla}
         nome={pagina.nome_completo || sigla}
         cidade={pagina.cidade}
@@ -1728,6 +1809,18 @@ function PaginaCasa() {
       />
 
       <div className="mx-auto max-w-4xl px-4">
+        {visitantePublico && (
+          <ComoChegar
+            endereco={pagina.endereco}
+            bairro={pagina.bairro}
+            cidade={pagina.cidade}
+            uf={pagina.uf}
+            telefone={pagina.telefone}
+            email={pagina.email_contato}
+            site={pagina.site}
+          />
+        )}
+
         {/* Option to toggle administration mode */}
         {isAdmin && (
           <div className="flex justify-end mb-4 pt-4">
@@ -2819,7 +2912,7 @@ function PaginaCasa() {
                           className="flex items-center justify-between px-6 py-3 hover:bg-white/5 transition-colors"
                         >
                           <div className="flex items-center gap-4">
-                            <span className="text-xs font-medium text-cyan-glow w-24 shrink-0">
+                            <span className="text-xs font-medium text-cyan-glow w-14 sm:w-24 shrink-0">
                               {h.dia.slice(0, 3)}.
                             </span>
                             <span className="text-xs font-mono text-muted-foreground/70 w-12 shrink-0">
@@ -2869,18 +2962,16 @@ function PaginaCasa() {
                   quem esta logado. */}
               {visitantePublico ? (
                 <div className="text-center space-y-3">
+                  {/* A instrucao anterior mandava procurar o contato na aba
+                      "Atividades", que so tem horarios. Os contatos estao no
+                      bloco "Como chegar e falar", no topo desta pagina. */}
                   <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-sm mx-auto">
-                    Para contribuir, fale diretamente com a casa pelos contatos em{" "}
-                    <button
-                      onClick={() => setAba("sobre")}
-                      className="text-cyan-glow hover:underline"
-                    >
-                      Atividades
-                    </button>
-                    .
+                    Para contribuir, fale diretamente com a casa pelo telefone ou e-mail em
+                    &ldquo;Como chegar e falar&rdquo;, no topo desta página.
                   </p>
                   <p className="text-xs text-muted-foreground/50 font-light">
-                    Por segurança, os dados de doação não são exibidos publicamente.
+                    Por segurança, a chave PIX não é exibida publicamente — assim ninguém pode
+                    copiar esta página e trocar a chave pela própria.
                   </p>
                 </div>
               ) : pagina.chave_pix ? (
@@ -3259,13 +3350,75 @@ function PaginaCasa() {
                   </p>
                 </div>
 
+                {/* Antes era um conselho genérico em letra miúda ("preencha a
+                    descrição e os horários"). Agora diz, item a item, o que o
+                    visitante vai ou não encontrar — e onde preencher. */}
+                {(() => {
+                  const faltando = pendenciasDaPagina(pagina);
+                  const completa = faltando.length === 0;
+                  return (
+                    <div className="rounded-2xl border border-violet-100/60 bg-white/50 p-4 space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                        O que o visitante vai encontrar
+                      </p>
+                      <ul className="space-y-2">
+                        {ITENS_PAGINA_PUBLICA.map((item) => {
+                          const ok = item.preenchido(pagina);
+                          return (
+                            <li key={item.chave} className="flex items-start gap-2.5 text-sm">
+                              {ok ? (
+                                <Check
+                                  size={15}
+                                  strokeWidth={2.4}
+                                  className="mt-0.5 shrink-0 text-emerald-600"
+                                />
+                              ) : (
+                                <span
+                                  aria-hidden
+                                  className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
+                                />
+                              )}
+                              <span
+                                className={
+                                  ok ? "text-gray-500 font-light" : "text-gray-700 font-light"
+                                }
+                              >
+                                {item.rotulo}
+                                {!ok && (
+                                  <span className="text-amber-700">
+                                    {" "}
+                                    — falta preencher {item.onde}
+                                  </span>
+                                )}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <p
+                        className={`text-sm font-light leading-relaxed pt-1 ${
+                          completa ? "text-emerald-700" : "text-amber-700"
+                        }`}
+                      >
+                        {completa
+                          ? "A página está pronta para receber visitantes."
+                          : `Publicando assim, quem chegar vê uma página quase vazia. Nada impede publicar agora — dá para completar depois, a qualquer momento.`}
+                      </p>
+                    </div>
+                  );
+                })()}
+
                 <button
                   onClick={alternarPublicacao}
                   disabled={salvandoPublicacao}
-                  className={`w-full py-3 rounded-xl text-sm uppercase tracking-widest border transition-colors disabled:opacity-40 ${
+                  // Publicar é a ação construtiva e vem preenchida; tornar
+                  // privada recua um passo e fica de contorno. Com os campos
+                  // agora rebaixados, um botão vazado ao lado deles seria lido
+                  // como mais um campo em branco.
+                  className={`w-full py-3 rounded-xl text-sm uppercase tracking-widest border font-semibold transition-colors disabled:opacity-40 ${
                     pagina.publicada
                       ? "text-slate-600 border-slate-300 hover:bg-slate-50"
-                      : "text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                      : "bg-emerald-600 border-emerald-700 text-white shadow-sm hover:bg-emerald-700"
                   }`}
                 >
                   {salvandoPublicacao
@@ -3276,8 +3429,7 @@ function PaginaCasa() {
                 </button>
 
                 <p className="text-xs text-gray-400 font-light text-center">
-                  Reversível a qualquer momento. Antes de publicar, preencha a descrição e os
-                  horários — página vazia no Google passa má impressão a quem chega.
+                  Reversível a qualquer momento.
                 </p>
               </div>
             </section>
@@ -3348,6 +3500,119 @@ function PaginaCasa() {
 const inputCls =
   "w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/40 transition-colors";
 const labelCls = "text-xs uppercase tracking-widest text-muted-foreground/60 mb-1.5 block";
+
+/**
+ * Bloco exibido apenas ao visitante que chega sem login.
+ *
+ * Ele responde as duas perguntas que nenhuma aba do visitante responde: onde
+ * a casa fica e com quem falar. Os contatos existiam somente como texto solto
+ * no cabecalho — no celular nao dava para tocar e ligar, e a aba Doacoes ainda
+ * mandava o visitante procurar contato em "Atividades", onde ha apenas
+ * horarios.
+ *
+ * Cada item so aparece quando a casa preencheu o dado. Nada aqui afirma como a
+ * casa recebe quem chega: o texto apresenta o que a propria casa divulgou.
+ */
+function ComoChegar({
+  endereco,
+  bairro,
+  cidade,
+  uf,
+  telefone,
+  email,
+  site,
+}: {
+  endereco?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  uf?: string | null;
+  telefone?: string | null;
+  email?: string | null;
+  site?: string | null;
+}) {
+  const enderecoCompleto = [endereco, bairro, cidade, uf].filter(Boolean).join(", ");
+  const temEndereco = !!endereco;
+  const temContato = !!(telefone || email || site);
+  const telefoneDiscagem = telefone?.replace(/[^\d+]/g, "") || null;
+  const siteHref = site ? (site.startsWith("http") ? site : `https://${site}`) : null;
+
+  const itemCls =
+    "flex items-center gap-3 min-h-11 px-4 rounded-xl border border-white/10 bg-white/5 text-sm text-foreground/85 hover:border-cyan-glow/40 hover:text-cyan-glow transition-colors";
+
+  return (
+    <section className="glass rounded-2xl p-6 md:p-8 mt-6 sw-rise sw-rise-2">
+      <div className="flex items-center gap-2.5 mb-1">
+        <span className="block h-px w-7 rounded-sm bg-[#b08826]" />
+        <span className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-[#b08826]">
+          Para quem deseja conhecer
+        </span>
+      </div>
+      <h2 className="text-2xl font-normal text-foreground">Como chegar e falar</h2>
+
+      {temEndereco || temContato ? (
+        <div className="grid gap-6 md:grid-cols-2 mt-5">
+          {temEndereco && (
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                Onde fica
+              </p>
+              <p className="text-sm leading-relaxed text-foreground/85">{enderecoCompleto}</p>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(enderecoCompleto)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${itemCls} mt-3`}
+              >
+                <MapPin size={15} strokeWidth={1.6} />
+                Ver rota no mapa
+              </a>
+            </div>
+          )}
+
+          {temContato && (
+            <div>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                Fale com a casa
+              </p>
+              <div className="space-y-2">
+                {telefone && (
+                  <a href={`tel:${telefoneDiscagem}`} className={itemCls}>
+                    <Phone size={15} strokeWidth={1.6} />
+                    {telefone}
+                  </a>
+                )}
+                {email && (
+                  <a href={`mailto:${email}`} className={itemCls}>
+                    <Mail size={15} strokeWidth={1.6} />
+                    <span className="truncate">{email}</span>
+                  </a>
+                )}
+                {siteHref && (
+                  <a href={siteHref} target="_blank" rel="noopener noreferrer" className={itemCls}>
+                    <Globe size={15} strokeWidth={1.6} />
+                    <span className="truncate">{site!.replace(/https?:\/\/(www\.)?/, "")}</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Esta casa ainda não divulgou endereço nem contato nesta página.
+          </p>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-sm text-cyan-glow hover:underline"
+          >
+            Faço parte desta casa e quero completar a página →
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

@@ -356,12 +356,13 @@ function AppLayout() {
     location.pathname === "/feb" ||
     location.pathname === "/jogos" ||
     location.pathname.startsWith("/jogos/");
+  const isPaginaCasa = location.pathname.startsWith("/casa/");
 
   useEffect(() => {
     if (isLightMode) {
       // Combina com o chão da camada "Definição" para o overscroll não
       // revelar um tom diferente por trás da página.
-      document.body.style.backgroundColor = user ? "#eceff7" : "#f7f8fc";
+      document.body.style.backgroundColor = user || isPaginaCasa ? "#e6ebf4" : "#f7f8fc";
       document.body.style.backgroundImage = "none";
       document.body.style.color = "#111418";
     } else {
@@ -369,7 +370,7 @@ function AppLayout() {
       document.body.style.backgroundImage = "";
       document.body.style.color = "";
     }
-  }, [isLightMode, user]);
+  }, [isLightMode, user, isPaginaCasa]);
 
   if (loading && !isPublic) {
     return (
@@ -392,9 +393,13 @@ function AppLayout() {
     <div
       className={
         isLightMode
-          ? // sw-app: camada "Definição" (ver src/styles.css). Só entra com
-            // usuário autenticado, para não alterar nada antes do login.
-            `page-light min-h-screen flex flex-col ${user ? "sw-app" : "bg-[#f7f8fc]"}`
+          ? // sw-app: camada "Definição" (ver src/styles.css). Entra para quem
+            // está autenticado e também na página pública da casa, que é a
+            // vitrine da casa espírita para quem chega de fora. As demais
+            // telas anteriores ao login seguem intocadas.
+            `page-light min-h-screen flex flex-col ${
+              user || isPaginaCasa ? "sw-app" : "bg-[#f7f8fc]"
+            }`
           : "min-h-screen flex flex-col"
       }
     >

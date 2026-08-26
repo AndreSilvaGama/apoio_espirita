@@ -31,6 +31,12 @@ const roadmap: Item[] = [
   },
   {
     status: "feito",
+    titulo: "Página pública da casa — visitante agora consegue abrir e usar",
+    descricao:
+      "A página só carregava para quem estava logado: quem chegava de fora ficava preso em “Carregando...” e nunca via a casa. Corrigido. O visitante passa a cair direto em Atividades, com o bloco “Como chegar e falar” — endereço com rota no mapa e telefone, e-mail e site tocáveis. As estatísticas de membros, que a RLS zerava para visitante, deixaram de aparecer, e a aba Doações parou de mandar procurar contato no lugar errado. Antes de publicar, a direção passa a ver a conferência do que o visitante vai encontrar — nome, descrição, endereço, um contato e horários — com o que falta e onde preencher, repetida no aviso de confirmação. Informa, não bloqueia.",
+  },
+  {
+    status: "feito",
     titulo: "Limites visíveis entre campos, cartões e seções — páginas autenticadas",
     descricao:
       "Cada superfície passou a ter altura própria: fundo azulado, cartão branco elevado por borda e sombra, e campo rebaixado com contorno definido. Ao receber o foco, o campo fica branco e sobe, tornando-se o único elemento claro do cartão. Inclui altura mínima de 44px nos campos, seta própria no seletor, separação entre linhas de tabela, asterisco de obrigatório em dourado e contorno de foco para navegação por teclado.",
