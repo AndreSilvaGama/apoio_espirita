@@ -29,6 +29,12 @@ const roadmap: Item[] = [
     descricao:
       "Novo design system premium com foco em acessibilidade para idosos: CasaHero com nome do centro em destaque, Libre Caslon Text + Inter, BottomNav mobile, tokens de cor Serene Wisdom em todas as páginas autenticadas",
   },
+  {
+    status: "feito",
+    titulo: "Limites visíveis entre campos, cartões e seções — páginas autenticadas",
+    descricao:
+      "Cada superfície passou a ter altura própria: fundo azulado, cartão branco elevado por borda e sombra, e campo rebaixado com contorno definido. Ao receber o foco, o campo fica branco e sobe, tornando-se o único elemento claro do cartão. Inclui altura mínima de 44px nos campos, seta própria no seletor, separação entre linhas de tabela, asterisco de obrigatório em dourado e contorno de foco para navegação por teclado.",
+  },
 
   // ── PENDENTE — Base e qualidade do site ──────────────────────────────────
 

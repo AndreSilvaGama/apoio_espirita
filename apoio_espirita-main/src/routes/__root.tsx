@@ -359,7 +359,9 @@ function AppLayout() {
 
   useEffect(() => {
     if (isLightMode) {
-      document.body.style.backgroundColor = "#f7f8fc";
+      // Combina com o chão da camada "Definição" para o overscroll não
+      // revelar um tom diferente por trás da página.
+      document.body.style.backgroundColor = user ? "#eceff7" : "#f7f8fc";
       document.body.style.backgroundImage = "none";
       document.body.style.color = "#111418";
     } else {
@@ -367,7 +369,7 @@ function AppLayout() {
       document.body.style.backgroundImage = "";
       document.body.style.color = "";
     }
-  }, [isLightMode]);
+  }, [isLightMode, user]);
 
   if (loading && !isPublic) {
     return (
@@ -390,7 +392,9 @@ function AppLayout() {
     <div
       className={
         isLightMode
-          ? "page-light min-h-screen flex flex-col bg-[#f7f8fc]"
+          ? // sw-app: camada "Definição" (ver src/styles.css). Só entra com
+            // usuário autenticado, para não alterar nada antes do login.
+            `page-light min-h-screen flex flex-col ${user ? "sw-app" : "bg-[#f7f8fc]"}`
           : "min-h-screen flex flex-col"
       }
     >

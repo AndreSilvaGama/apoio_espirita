@@ -458,3 +458,346 @@
 .sw-rise-6 {
   animation-delay: 0.44s;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAMADA "DEFINIÇÃO" — exclusiva da área autenticada (.sw-app)
+   ---------------------------------------------------------------------------
+   Objetivo: dar limite visível a cada superfície. Antes, cartão branco sobre
+   fundo quase branco e campo branco dentro de cartão branco: o olho não
+   encontrava onde um elemento termina e o outro começa.
+
+   O sistema tem três alturas, e cada uma tem material próprio:
+     1. CHÃO   — fundo azulado frio, um degrau abaixo do cartão
+     2. CARTÃO — branco puro, elevado por borda e sombra em duas camadas
+     3. CAMPO  — encaixe rebaixado, com preenchimento e sombra interna
+
+   A assinatura é a inversão no foco: em repouso o campo é uma reentrância
+   levemente tingida; ao receber o foco fica branco e sobe. O campo ativo é
+   então a única superfície branca do cartão — leitura imediata, sem ruído.
+
+   Nada disto alcança as telas anteriores ao login: a classe .sw-app só é
+   aplicada pelo layout quando existe usuário autenticado.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sw-app {
+  /* Linhas */
+  --sw-line: rgba(13, 42, 92, 0.14);
+  --sw-line-strong: rgba(13, 42, 92, 0.22);
+  --sw-line-field: #c4d0e2;
+  --sw-line-field-hover: #a5b6ce;
+
+  /* Superfícies */
+  --sw-ground: #e6ebf4;
+  --sw-paper: #ffffff;
+  --sw-recess: #f3f6fc;
+  --sw-recess-2: #e7edf7;
+  --sw-recess-deep: #edf1f9;
+
+  /* Elevações */
+  --sw-e1: 0 1px 1px rgba(11, 37, 79, 0.04), 0 2px 6px -2px rgba(11, 37, 79, 0.07);
+  --sw-e2: 0 1px 2px rgba(11, 37, 79, 0.05), 0 10px 26px -10px rgba(11, 37, 79, 0.16);
+  --sw-e3: 0 2px 5px rgba(11, 37, 79, 0.07), 0 20px 44px -16px rgba(11, 37, 79, 0.22);
+  --sw-recess-shadow: inset 0 1px 2px rgba(11, 37, 79, 0.07);
+  --sw-paper-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* Realimenta os tokens já homologados do Serene Wisdom */
+  --glass-bg: #ffffff;
+  --glass-border: var(--sw-line);
+  --border: var(--sw-line);
+  --input: var(--sw-line-field);
+
+  background-color: var(--sw-ground);
+  background-image:
+    radial-gradient(115% 55% at 50% -8%, rgba(0, 74, 140, 0.07), transparent 62%),
+    linear-gradient(180deg, #e6ebf4 0%, #eff2f9 42%, #e6ebf4 100%);
+  background-attachment: fixed;
+}
+
+/* ── CARTÃO ─────────────────────────────────────────────────────────────────
+   Papel branco com borda definida e sombra em duas camadas (contato e
+   ambiente). O :not([class*="bg-"]) preserva os cartões que já escolhem cor
+   própria — avisos em âmbar, destaques em azul — e preenche só quem estava
+   sem cor nenhuma. */
+.sw-app .glass,
+.sw-app .glass-premium {
+  border: 1px solid var(--sw-line);
+  box-shadow: var(--sw-e2), var(--sw-paper-edge);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.sw-app .glass:not([class*="bg-"]),
+.sw-app .glass-premium:not([class*="bg-"]) {
+  background: var(--sw-paper);
+}
+
+/* Painel dentro de painel: em vez de branco sobre branco, vira reentrância.
+   Sem sombra externa — o que separa aqui é o degrau de tom. */
+.sw-app .glass .glass:not([class*="bg-"]),
+.sw-app .glass .glass-premium:not([class*="bg-"]),
+.sw-app .glass-premium .glass:not([class*="bg-"]),
+.sw-app .glass-premium .glass-premium:not([class*="bg-"]) {
+  background: var(--sw-recess-deep);
+  box-shadow: none;
+}
+
+.sw-app .hover-premium:hover {
+  box-shadow: var(--sw-e3);
+  border-color: rgba(0, 74, 140, 0.28) !important;
+}
+
+/* ── LINHAS HERDADAS DO TEMA ESCURO ─────────────────────────────────────────
+   border-white/10 e bg-white/5 nasceram para o fundo cósmico; sobre papel
+   branco desaparecem. Recebem aqui o equivalente claro, mantendo a intenção
+   de cada um: fio de separação e preenchimento discreto. */
+.sw-app [class~="border-white/5"],
+.sw-app [class~="border-white/10"] {
+  border-color: var(--sw-line) !important;
+}
+.sw-app [class~="border-white/20"],
+.sw-app [class~="hover:border-white/20"]:hover {
+  border-color: var(--sw-line-strong) !important;
+}
+.sw-app [class~="border-violet-100/50"],
+.sw-app [class~="border-violet-100/60"],
+.sw-app [class~="border-gray-100"],
+.sw-app [class~="border-gray-50"],
+.sw-app [class~="border-slate-100"] {
+  border-color: var(--sw-line) !important;
+}
+.sw-app [class~="bg-white/5"] {
+  background-color: var(--sw-recess) !important;
+}
+.sw-app [class~="bg-white/10"] {
+  background-color: var(--sw-recess-2) !important;
+}
+
+/* ── CAMPO ──────────────────────────────────────────────────────────────────
+   O encaixe: preenchimento frio, borda de verdade e sombra interna no topo.
+   Altura mínima de 44px: boa parte de quem usa a plataforma é voluntário mais
+   velho, muitas vezes no celular. */
+.sw-app input[type="text"],
+.sw-app input[type="email"],
+.sw-app input[type="password"],
+.sw-app input[type="search"],
+.sw-app input[type="number"],
+.sw-app input[type="tel"],
+.sw-app input[type="url"],
+.sw-app input[type="date"],
+.sw-app input[type="time"],
+.sw-app input[type="month"],
+.sw-app input[type="week"],
+.sw-app input[type="datetime-local"],
+.sw-app select,
+.sw-app textarea {
+  background-color: var(--sw-recess) !important;
+  border: 1px solid var(--sw-line-field) !important;
+  color: #111418 !important;
+  box-shadow: var(--sw-recess-shadow) !important;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease !important;
+}
+.sw-app
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not(
+    [type="color"]
+  ):not([type="submit"]):not([type="button"]),
+.sw-app select,
+.sw-app textarea {
+  min-height: 2.75rem;
+}
+.sw-app textarea {
+  min-height: 5.5rem;
+  line-height: 1.55;
+}
+
+.sw-app input[type="text"]:hover:not(:focus),
+.sw-app input[type="email"]:hover:not(:focus),
+.sw-app input[type="password"]:hover:not(:focus),
+.sw-app input[type="search"]:hover:not(:focus),
+.sw-app input[type="number"]:hover:not(:focus),
+.sw-app input[type="tel"]:hover:not(:focus),
+.sw-app input[type="url"]:hover:not(:focus),
+.sw-app input[type="date"]:hover:not(:focus),
+.sw-app input[type="time"]:hover:not(:focus),
+.sw-app input[type="datetime-local"]:hover:not(:focus),
+.sw-app select:hover:not(:focus),
+.sw-app textarea:hover:not(:focus) {
+  border-color: var(--sw-line-field-hover) !important;
+  background-color: #f9fbfe !important;
+}
+
+/* A assinatura: no foco o campo inverte para branco e sobe. */
+.sw-app input[type="text"]:focus,
+.sw-app input[type="email"]:focus,
+.sw-app input[type="password"]:focus,
+.sw-app input[type="search"]:focus,
+.sw-app input[type="number"]:focus,
+.sw-app input[type="tel"]:focus,
+.sw-app input[type="url"]:focus,
+.sw-app input[type="date"]:focus,
+.sw-app input[type="time"]:focus,
+.sw-app input[type="month"]:focus,
+.sw-app input[type="week"]:focus,
+.sw-app input[type="datetime-local"]:focus,
+.sw-app select:focus,
+.sw-app textarea:focus {
+  background-color: #ffffff !important;
+  border-color: #004a8c !important;
+  box-shadow:
+    0 0 0 3px rgba(0, 74, 140, 0.16),
+    0 2px 8px -2px rgba(11, 37, 79, 0.16) !important;
+  outline: none !important;
+}
+
+.sw-app input::placeholder,
+.sw-app textarea::placeholder {
+  color: #8a97a8 !important;
+}
+.sw-app input:disabled,
+.sw-app select:disabled,
+.sw-app textarea:disabled {
+  background-color: var(--sw-recess-2) !important;
+  color: #8a97a8 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+.sw-app input[readonly] {
+  background-color: var(--sw-recess-2) !important;
+}
+
+/* Seta própria no select: a nativa muda de desenho a cada navegador e
+   destoa dos demais campos. */
+.sw-app select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23637080' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.9rem center !important;
+  padding-right: 2.5rem !important;
+}
+.sw-app select:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23004a8c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+}
+
+.sw-app input[type="checkbox"],
+.sw-app input[type="radio"] {
+  accent-color: #004a8c;
+  width: 1.05rem;
+  height: 1.05rem;
+  cursor: pointer;
+}
+.sw-app input[type="range"] {
+  accent-color: #004a8c;
+}
+.sw-app ::selection {
+  background: rgba(0, 74, 140, 0.18);
+}
+
+/* ── RÓTULO ─────────────────────────────────────────────────────────────────
+   Mais escuro e mais firme: é o rótulo que anuncia onde um campo começa. */
+.sw-app label {
+  color: #4a5768;
+}
+.sw-app label.text-muted-foreground,
+.sw-app label .text-muted-foreground {
+  color: #4a5768 !important;
+}
+/* Obrigatório em dourado — cor já do sistema e distinta do azul de ação,
+   para o asterisco não ser lido como algo clicável. */
+.sw-app label .text-cyan-glow {
+  color: var(--sw-gold, #b08826) !important;
+}
+
+/* ── LINHAS DE CONTEÚDO ─────────────────────────────────────────────────────
+   Listas e tabelas ganham fio inferior e realce ao passar o mouse, para a
+   leitura horizontal não escorregar de uma linha para outra. */
+.sw-app hr {
+  border: 0;
+  border-top: 1px solid var(--sw-line);
+}
+.sw-app table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+.sw-app thead th {
+  background: var(--sw-recess);
+  border-bottom: 1px solid var(--sw-line-strong);
+  color: #4a5768;
+  font-weight: 600;
+  text-align: left;
+}
+.sw-app tbody tr + tr td {
+  border-top: 1px solid var(--sw-line);
+}
+.sw-app tbody tr:hover td {
+  background: rgba(0, 74, 140, 0.035);
+}
+
+/* ── FOCO VISÍVEL ───────────────────────────────────────────────────────────
+   Quem navega por teclado precisa ver onde está, inclusive fora dos campos. */
+.sw-app a:focus-visible,
+.sw-app button:focus-visible,
+.sw-app [role="button"]:focus-visible,
+.sw-app [tabindex]:focus-visible {
+  outline: 2px solid #004a8c;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* ── CABEÇALHO FIXO ─────────────────────────────────────────────────────────
+   A barra precisa de aresta clara contra o conteúdo que passa por baixo. */
+.sw-app header.fixed {
+  box-shadow:
+    0 1px 0 var(--sw-line),
+    0 6px 20px -12px rgba(11, 37, 79, 0.28);
+}
+
+/* ── AÇÃO PRINCIPAL ─────────────────────────────────────────────────────────
+   Com o campo agora rebaixado e contornado, o botão de contorno passava a ser
+   lido como mais um campo vazio. A ação principal ganha corpo: azul sólido,
+   texto branco e sombra curta, para ser o único elemento cheio do cartão. */
+.sw-app button[class~="text-cyan-glow"][class~="border-cyan-glow/40"],
+.sw-app a[class~="text-cyan-glow"][class~="border-cyan-glow/40"] {
+  background-image: linear-gradient(180deg, #0a5b9f 0%, #004a8c 100%) !important;
+  background-color: #004a8c !important;
+  border-color: #004077 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow:
+    0 1px 2px rgba(0, 40, 90, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease !important;
+}
+.sw-app button[class~="text-cyan-glow"][class~="border-cyan-glow/40"]:hover:not(:disabled),
+.sw-app a[class~="text-cyan-glow"][class~="border-cyan-glow/40"]:hover {
+  background-image: linear-gradient(180deg, #0d67b2 0%, #01559d 100%) !important;
+  box-shadow:
+    0 3px 10px -2px rgba(0, 40, 90, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+.sw-app button[class~="text-cyan-glow"][class~="border-cyan-glow/40"]:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 40, 90, 0.28) !important;
+}
+.sw-app button[class~="text-cyan-glow"][class~="border-cyan-glow/40"]:disabled {
+  background-image: none !important;
+  background-color: #b9c5d6 !important;
+  border-color: #b9c5d6 !important;
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sw-app *,
+  .sw-app *::before,
+  .sw-app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
