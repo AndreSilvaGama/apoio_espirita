@@ -39,6 +39,7 @@ import { Route as JogosMemoriaEvangelizacaoRouteImport } from './routes/jogos/me
 import { Route as JogosCaminhoDaLuzRouteImport } from './routes/jogos/caminho-da-luz'
 import { Route as JogosCacaPalavrasRouteImport } from './routes/jogos/caca-palavras'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
+import { Route as ArtigosNovoRouteImport } from './routes/artigos.novo'
 import { Route as ArtigosSlugRouteImport } from './routes/artigos.$slug'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
@@ -192,6 +193,11 @@ const CasaSiglaRoute = CasaSiglaRouteImport.update({
   path: '/casa/$sigla',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtigosNovoRoute = ArtigosNovoRouteImport.update({
+  id: '/artigos/novo',
+  path: '/artigos/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtigosSlugRoute = ArtigosSlugRouteImport.update({
   id: '/artigos/$slug',
   path: '/artigos/$slug',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -423,6 +435,7 @@ export interface RootRouteChildren {
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
   ArtigosSlugRoute: typeof ArtigosSlugRoute
+  ArtigosNovoRoute: typeof ArtigosNovoRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
   JogosCacaPalavrasRoute: typeof JogosCacaPalavrasRoute
   JogosCaminhoDaLuzRoute: typeof JogosCaminhoDaLuzRoute
@@ -646,6 +659,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasaSiglaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artigos/novo': {
+      id: '/artigos/novo'
+      path: '/artigos/novo'
+      fullPath: '/artigos/novo'
+      preLoaderRoute: typeof ArtigosNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artigos/$slug': {
       id: '/artigos/$slug'
       path: '/artigos/$slug'
@@ -679,6 +699,7 @@ const rootRouteChildren: RootRouteChildren = {
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
   ArtigosSlugRoute: ArtigosSlugRoute,
+  ArtigosNovoRoute: ArtigosNovoRoute,
   CasaSiglaRoute: CasaSiglaRoute,
   JogosCacaPalavrasRoute: JogosCacaPalavrasRoute,
   JogosCaminhoDaLuzRoute: JogosCaminhoDaLuzRoute,
