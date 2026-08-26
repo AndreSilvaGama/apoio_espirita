@@ -31,6 +31,7 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogosIndexRouteImport } from './routes/jogos/index'
+import { Route as ArtigosIndexRouteImport } from './routes/artigos.index'
 import { Route as JogosSemeadorMensagensRouteImport } from './routes/jogos/semeador-mensagens'
 import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
@@ -38,6 +39,7 @@ import { Route as JogosMemoriaEvangelizacaoRouteImport } from './routes/jogos/me
 import { Route as JogosCaminhoDaLuzRouteImport } from './routes/jogos/caminho-da-luz'
 import { Route as JogosCacaPalavrasRouteImport } from './routes/jogos/caca-palavras'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
+import { Route as ArtigosSlugRouteImport } from './routes/artigos.$slug'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
@@ -149,6 +151,11 @@ const JogosIndexRoute = JogosIndexRouteImport.update({
   path: '/jogos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtigosIndexRoute = ArtigosIndexRouteImport.update({
+  id: '/artigos/',
+  path: '/artigos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogosSemeadorMensagensRoute = JogosSemeadorMensagensRouteImport.update({
   id: '/jogos/semeador-mensagens',
   path: '/jogos/semeador-mensagens',
@@ -185,6 +192,11 @@ const CasaSiglaRoute = CasaSiglaRouteImport.update({
   path: '/casa/$sigla',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtigosSlugRoute = ArtigosSlugRouteImport.update({
+  id: '/artigos/$slug',
+  path: '/artigos/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/artigos/$slug': typeof ArtigosSlugRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -215,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/artigos/': typeof ArtigosIndexRoute
   '/jogos/': typeof JogosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -239,6 +253,7 @@ export interface FileRoutesByTo {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/artigos/$slug': typeof ArtigosSlugRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -246,6 +261,7 @@ export interface FileRoutesByTo {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/artigos': typeof ArtigosIndexRoute
   '/jogos': typeof JogosIndexRoute
 }
 export interface FileRoutesById {
@@ -271,6 +287,7 @@ export interface FileRoutesById {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/artigos/$slug': typeof ArtigosSlugRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
@@ -278,6 +295,7 @@ export interface FileRoutesById {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/artigos/': typeof ArtigosIndexRoute
   '/jogos/': typeof JogosIndexRoute
 }
 export interface FileRouteTypes {
@@ -304,6 +322,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/artigos/$slug'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -311,6 +330,7 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/artigos/'
     | '/jogos/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -335,6 +355,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/artigos/$slug'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -342,6 +363,7 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/artigos'
     | '/jogos'
   id:
     | '__root__'
@@ -366,6 +388,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/artigos/$slug'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
@@ -373,6 +396,7 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/artigos/'
     | '/jogos/'
   fileRoutesById: FileRoutesById
 }
@@ -398,6 +422,7 @@ export interface RootRouteChildren {
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
+  ArtigosSlugRoute: typeof ArtigosSlugRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
   JogosCacaPalavrasRoute: typeof JogosCacaPalavrasRoute
   JogosCaminhoDaLuzRoute: typeof JogosCaminhoDaLuzRoute
@@ -405,6 +430,7 @@ export interface RootRouteChildren {
   JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
   JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
   JogosSemeadorMensagensRoute: typeof JogosSemeadorMensagensRoute
+  ArtigosIndexRoute: typeof ArtigosIndexRoute
   JogosIndexRoute: typeof JogosIndexRoute
 }
 
@@ -564,6 +590,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artigos/': {
+      id: '/artigos/'
+      path: '/artigos'
+      fullPath: '/artigos/'
+      preLoaderRoute: typeof ArtigosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogos/semeador-mensagens': {
       id: '/jogos/semeador-mensagens'
       path: '/jogos/semeador-mensagens'
@@ -613,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasaSiglaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artigos/$slug': {
+      id: '/artigos/$slug'
+      path: '/artigos/$slug'
+      fullPath: '/artigos/$slug'
+      preLoaderRoute: typeof ArtigosSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -638,6 +678,7 @@ const rootRouteChildren: RootRouteChildren = {
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
+  ArtigosSlugRoute: ArtigosSlugRoute,
   CasaSiglaRoute: CasaSiglaRoute,
   JogosCacaPalavrasRoute: JogosCacaPalavrasRoute,
   JogosCaminhoDaLuzRoute: JogosCaminhoDaLuzRoute,
@@ -645,6 +686,7 @@ const rootRouteChildren: RootRouteChildren = {
   JogosPlanteASementeRoute: JogosPlanteASementeRoute,
   JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
   JogosSemeadorMensagensRoute: JogosSemeadorMensagensRoute,
+  ArtigosIndexRoute: ArtigosIndexRoute,
   JogosIndexRoute: JogosIndexRoute,
 }
 export const routeTree = rootRouteImport

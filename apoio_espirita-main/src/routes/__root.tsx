@@ -536,6 +536,9 @@ function NavBar() {
           <Link to="/musicas-cifras" className={linkCls("/musicas-cifras")}>
             Músicas
           </Link>
+          <Link to="/artigos" className={linkCls("/artigos")}>
+            Artigos
+          </Link>
           <Link to="/kanban" className={linkCls("/kanban")}>
             Projetos
           </Link>
@@ -710,6 +713,12 @@ function NavBar() {
               className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
             >
               Músicas
+            </Link>
+            <Link
+              to="/artigos"
+              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
+            >
+              Artigos
             </Link>
             <Link
               to="/kanban"
