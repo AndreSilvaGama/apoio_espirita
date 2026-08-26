@@ -41,6 +41,11 @@ function sufixoCurto(): string {
   return Math.random().toString(36).slice(2, 6);
 }
 
+/** "1 caractere" / "2 caracteres" — concordância de número, não fixo no plural. */
+function pluralCaracteres(n: number): string {
+  return n === 1 ? "caractere" : "caracteres";
+}
+
 function ArtigoNovo() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
@@ -130,9 +135,10 @@ function ArtigoNovo() {
       return `O título deve ter entre ${TITULO_MIN} e ${TITULO_MAX} caracteres.`;
     }
     if (c.length < CONTEUDO_MIN) {
-      return `O conteúdo deve ter pelo menos ${CONTEUDO_MIN} caracteres. Faltam ${
-        CONTEUDO_MIN - c.length
-      }.`;
+      const faltam = CONTEUDO_MIN - c.length;
+      return `O conteúdo deve ter pelo menos ${CONTEUDO_MIN} caracteres. ${
+        faltam === 1 ? "Falta" : "Faltam"
+      } ${faltam} ${pluralCaracteres(faltam)}.`;
     }
     if (r.length > RESUMO_MAX) {
       return `O resumo pode ter no máximo ${RESUMO_MAX} caracteres.`;
@@ -241,7 +247,7 @@ function ArtigoNovo() {
             <div className="flex items-center gap-2.5">
               <Ban size={18} strokeWidth={1.6} className="text-red-600" />
               <h2 className="text-lg font-medium text-foreground">
-                Sua conta não pode publicar no momento
+                Você não pode publicar no momento
               </h2>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{sancao.motivo}</p>
@@ -301,7 +307,8 @@ function ArtigoNovo() {
                 className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors resize-y"
               />
               <p className="mt-1.5 text-xs text-muted-foreground/60">
-                {conteudo.trim().length} caracteres (mínimo {CONTEUDO_MIN})
+                {conteudo.trim().length} {pluralCaracteres(conteudo.trim().length)} (mínimo{" "}
+                {CONTEUDO_MIN})
               </p>
             </div>
 
