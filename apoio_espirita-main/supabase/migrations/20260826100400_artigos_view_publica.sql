@@ -21,3 +21,26 @@ select
 from public.artigos a;
 
 grant select on public.artigos_publicos to anon, authenticated;
+
+-- A especificacao promete que o endereco de um artigo retirado continua no ar
+-- com um aviso. As politicas, porem, so mostram artigos publicados a quem nao
+-- tem conta — entao o visitante receberia "nao encontrado" e a promessa nao se
+-- cumpriria.
+--
+-- Esta view existe so para o aviso. Ela nao respeita as politicas de propósito,
+-- e por isso e deliberadamente minima: NAO seleciona conteudo, NAO seleciona
+-- titulo e NAO seleciona o motivo da retirada. Nao da para vazar o que a view
+-- nem enxerga.
+--
+-- O titulo fica de fora porque ele mesmo pode carregar a informacao falsa que
+-- causou a retirada; repeti-lo na tela seria republicar o problema em miniatura.
+-- O motivo fica de fora porque expor a contagem de denuncias em publico convida
+-- a brigada.
+create or replace view public.artigos_avisos
+with (security_invoker = false)
+as
+select a.slug, a.estado, a.retirado_em
+  from public.artigos a
+ where a.estado in ('retirado', 'em_correcao');
+
+grant select on public.artigos_avisos to anon, authenticated;
