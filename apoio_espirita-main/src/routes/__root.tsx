@@ -356,13 +356,17 @@ function AppLayout() {
     location.pathname === "/feb" ||
     location.pathname === "/jogos" ||
     location.pathname.startsWith("/jogos/");
-  const isPaginaCasa = location.pathname.startsWith("/casa/");
+  // Paginas publicas que usam o acabamento da area logada. Sao vitrine para quem
+  // chega de fora — a pagina da casa e a lista de artigos — e nao faz sentido
+  // terem aparencia diferente da que o membro ve.
+  const isVitrinePublica =
+    location.pathname.startsWith("/casa/") || location.pathname.startsWith("/artigos");
 
   useEffect(() => {
     if (isLightMode) {
       // Combina com o chão da camada "Definição" para o overscroll não
       // revelar um tom diferente por trás da página.
-      document.body.style.backgroundColor = user || isPaginaCasa ? "#e6ebf4" : "#f7f8fc";
+      document.body.style.backgroundColor = user || isVitrinePublica ? "#e6ebf4" : "#f7f8fc";
       document.body.style.backgroundImage = "none";
       document.body.style.color = "#111418";
     } else {
@@ -370,7 +374,7 @@ function AppLayout() {
       document.body.style.backgroundImage = "";
       document.body.style.color = "";
     }
-  }, [isLightMode, user, isPaginaCasa]);
+  }, [isLightMode, user, isVitrinePublica]);
 
   if (loading && !isPublic) {
     return (
@@ -398,7 +402,7 @@ function AppLayout() {
             // vitrine da casa espírita para quem chega de fora. As demais
             // telas anteriores ao login seguem intocadas.
             `page-light min-h-screen flex flex-col ${
-              user || isPaginaCasa ? "sw-app" : "bg-[#f7f8fc]"
+              user || isVitrinePublica ? "sw-app" : "bg-[#f7f8fc]"
             }`
           : "min-h-screen flex flex-col"
       }

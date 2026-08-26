@@ -204,7 +204,7 @@ function ArtigosIndex() {
                   )}
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
                     <ThumbsUp size={12} strokeWidth={1.6} />
-                    {a.aprovacoes ?? 0} aprovações
+                    {(a.aprovacoes ?? 0) === 1 ? "1 aprovação" : `${a.aprovacoes ?? 0} aprovações`}
                   </span>
                 </div>
               </Link>
