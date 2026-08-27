@@ -286,10 +286,10 @@ const roadmap: Item[] = [
       "Alertas automáticos via WhatsApp sobre eventos, ausências, aprovações e solicitações importantes · Integração com a API oficial do WhatsApp",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Instalar o site como aplicativo no celular — sem loja de aplicativos",
     descricao:
-      "O usuário pode salvar o site como um aplicativo na tela inicial do celular, sem precisar baixar nada de uma loja · O site funciona mesmo com internet fraca ou ausente em partes do conteúdo",
+      "O site passou a se instalar como aplicativo direto do navegador, com ícone próprio e abertura em tela cheia. No Android, a opção “Instalar aplicativo” aparece no menu Ajuda quando o navegador a permite; no iPhone, o caminho manual do Safari está explicado na Ajuda. Os arquivos de funcionamento ficam guardados no aparelho, o que acelera a abertura e sustenta melhor uma internet fraca, e a queda de conexão passou a mostrar um aviso com botão de tentar de novo no lugar da tela de erro do navegador. As páginas continuam sendo buscadas atualizadas a cada acesso, de propósito: guardar telas mostraria conteúdo vencido ou de outra pessoa que usou o mesmo aparelho.",
   },
 
   // ── PENDENTE — Tesouraria e financeiro ───────────────────────────────────

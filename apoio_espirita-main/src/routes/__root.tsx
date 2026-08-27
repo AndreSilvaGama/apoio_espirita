@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = ["/", "/login", "/transparencia", "/sugestoes", "/feb", "/
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RadioProvider, useRadio } from "@/contexts/RadioContext";
 import { supabase } from "@/integrations/supabase/client";
+import { registrarServiceWorker, useInstalarApp } from "@/hooks/useInstalarApp";
 import { useState, useEffect, useRef } from "react";
 import {
   Radio,
@@ -43,6 +44,7 @@ import {
   Sprout,
   Sparkles,
   Search,
+  Download,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -143,9 +145,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Plataforma espírita gratuita de acolhimento, estudo e serviço para membros de casas espíritas.",
       },
       { name: "twitter:image", content: "https://apoioespirita.com.br/og-image.png" },
+      // Instalação como aplicativo, sem loja
+      { name: "theme-color", content: "#004a8c" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "Apoio Espírita" },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/favicon.png" },
       { rel: "canonical", href: "https://apoioespirita.com.br/" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -420,6 +430,13 @@ function AppLayout() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Registro único: guarda os arquivos com código no nome e o aviso de falta
+  // de conexão. É também o que torna o site instalável no Android.
+  useEffect(() => {
+    registrarServiceWorker();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -441,6 +458,7 @@ function NavBar() {
   const [ajudaOpen, setAjudaOpen] = useState(false);
   const [recursosMobileOpen, setRecursosMobileOpen] = useState(false);
   const [ajudaMobileOpen, setAjudaMobileOpen] = useState(false);
+  const { instalavel, instalar } = useInstalarApp();
   const recursosRef = useRef<HTMLDivElement>(null);
   const ajudaRef = useRef<HTMLDivElement>(null);
 
@@ -647,6 +665,19 @@ function NavBar() {
                   <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
                   FAQ / Dúvidas
                 </Link>
+                {instalavel && (
+                  <button
+                    type="button"
+                    className={dropItemCls}
+                    onClick={() => {
+                      setAjudaOpen(false);
+                      void instalar();
+                    }}
+                  >
+                    <Download size={14} strokeWidth={1.5} className="text-emerald-500" />
+                    Instalar aplicativo
+                  </button>
+                )}
                 {isDecisao && (
                   <Link
                     to="/permissoes"
@@ -812,6 +843,15 @@ function NavBar() {
                 >
                   FAQ / Dúvidas
                 </Link>
+                {instalavel && (
+                  <button
+                    type="button"
+                    onClick={() => void instalar()}
+                    className="py-3 pl-5 pr-2 text-left text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
+                  >
+                    Instalar aplicativo
+                  </button>
+                )}
                 {isDecisao && (
                   <Link
                     to="/permissoes"

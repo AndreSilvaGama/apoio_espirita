@@ -111,7 +111,12 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "O site tem aplicativo na App Store ou Google Play?",
     resposta:
-      "Não é necessário instalar das lojas oficiais de aplicativos. O site é desenvolvido como um PWA (Progressive Web App). Você pode adicioná-lo como um ícone na tela inicial de seu celular: no navegador do celular (Chrome ou Safari), acesse as opções de compartilhamento ou o menu de três pontos e clique em 'Adicionar à tela inicial'. Ele funcionará de forma idêntica a um aplicativo nativo.",
+      "Não, e não é preciso: o próprio site se instala como aplicativo, direto do navegador, sem passar por loja nenhuma e sem ocupar o espaço de um aplicativo comum. Depois de instalado, ele ganha ícone na tela do celular e abre em tela cheia, sem a barra de endereço. No Android (Chrome): 1) abra o site e faça login; 2) no menu superior, clique em 'Ajuda'; 3) clique em 'Instalar aplicativo' — essa opção só aparece quando o navegador permite a instalação e some depois que o site já está instalado; 4) confirme na janela do navegador. Se preferir, o próprio Chrome também oferece 'Instalar aplicativo' no menu de três pontos. No iPhone e no iPad (Safari): a Apple não permite que o site faça a instalação sozinho, então o caminho é manual: 1) abra o site no Safari; 2) toque no botão Compartilhar, o quadrado com a seta para cima, na barra de baixo; 3) role a lista e toque em 'Adicionar à Tela de Início'; 4) confirme em 'Adicionar'. Em qualquer um dos dois, o ícone aparece junto com os demais aplicativos do aparelho.",
+  },
+  {
+    pergunta: "O site funciona sem internet?",
+    resposta:
+      "Em parte. As telas do site precisam de conexão para carregar, porque o conteúdo é sempre buscado atualizado — uma página guardada no aparelho poderia mostrar informação vencida ou de outra pessoa que usou o mesmo celular. O que fica guardado no aparelho são os arquivos de funcionamento do site, e por isso ele abre bem mais rápido a partir da segunda visita e aguenta melhor uma internet fraca. Se a conexão cair no meio do uso, aparece um aviso explicando o que houve, com um botão para tentar de novo, em vez da tela de erro do navegador. Nada do que você já enviou se perde nessa situação.",
   },
   {
     pergunta: "Como funciona a fila da Mensagem do Dia?",

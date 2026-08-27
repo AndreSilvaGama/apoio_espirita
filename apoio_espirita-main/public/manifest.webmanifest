@@ -1,0 +1,46 @@
+{
+  "id": "/inicio",
+  "name": "Apoio Espírita — Acolhimento, Estudo e Serviço",
+  "short_name": "Apoio Espírita",
+  "description": "Plataforma espírita gratuita de acolhimento, estudo e serviço para os trabalhadores das casas espíritas.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/inicio",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7f8fc",
+  "theme_color": "#004a8c",
+  "categories": ["education", "lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "1024x1024",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mensagem do Dia",
+      "short_name": "Mensagem",
+      "url": "/mensagem-do-dia"
+    },
+    {
+      "name": "Agenda e presença",
+      "short_name": "Agenda",
+      "url": "/agenda"
+    },
+    {
+      "name": "Artigos da comunidade",
+      "short_name": "Artigos",
+      "url": "/artigos"
+    }
+  ]
+}
