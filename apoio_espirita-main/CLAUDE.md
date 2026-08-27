@@ -21,10 +21,11 @@
 2. [ ] NUNCA alterar `src/routes/index.tsx` sem autorização formal do usuário
 3. [ ] Usar Supabase MCP (execute_sql / list_tables) se envolver banco
 4. [ ] Implementar
-5. [ ] npm run build  — verificar zero erros
-6. [ ] npx wrangler deploy --config wrangler.json  (em dist/server/)
-7. [ ] Atualizar roadmap em src/routes/painel.tsx  (planejado → feito)
-8. [ ] git add <arquivos específicos> && git commit && git push
+5. [ ] npx tsc --noEmit  — **obrigatorio**, e NAO e o mesmo que o build
+6. [ ] npm run build  — verificar zero erros
+7. [ ] npx wrangler deploy --config wrangler.json  (em dist/server/)
+8. [ ] Atualizar roadmap em src/routes/painel.tsx  (planejado → feito)
+9. [ ] git add <arquivos específicos> && git commit && git push
 ```
 
 **Nunca pular nenhum passo. Nunca perguntar — só executar.**
@@ -33,7 +34,17 @@
 
 ## Comandos prontos (copiar e colar)
 
+> [!IMPORTANT]
+> **`npm run build` NAO faz checagem de tipo.** O Vite usa esbuild, que
+> transpila cada arquivo isoladamente e nao verifica tipos entre arquivos.
+> Build verde nunca foi prova de tipagem correta. `npx tsc --noEmit` e um
+> passo SEPARADO e OBRIGATORIO — foi assim que apareceram erros reais que o
+> build engoliu em silencio (2026-08-27).
+
 ```bash
+# Checagem de tipo — o build nao faz isto
+npx tsc --noEmit
+
 # Build
 cd "D:\DEV\Apoio Espírita\apoio_espirita-main"
 npm run build
@@ -199,7 +210,7 @@ SELECT * FROM profiles_public;
 3. **Usar Glob/Grep** antes de ler arquivos — localizar o trecho exato antes de carregar o arquivo inteiro
 4. **Não perguntar** sobre deploy, push ou atualização do roadmap — fazer automaticamente
 5. **Ler MEMORY.md** ao iniciar sessão — recuperar contexto de conversas anteriores
-6. **Verificar build antes de deployar** — se `npm run build` falhar, corrigir antes de prosseguir
+6. **Verificar `npx tsc --noEmit` E o build antes de deployar** — o build nao checa tipo; os dois sao necessarios
 7. **Ao editar lista de cargos**, atualizar **sempre os dois arquivos**: `completar-perfil.tsx` e `perfil.tsx`
 
 ---

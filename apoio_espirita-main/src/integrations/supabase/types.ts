@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
@@ -183,6 +183,180 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      artigo_avaliacoes: {
+        Row: {
+          artigo_id: string;
+          avaliador_nome: string | null;
+          created_at: string;
+          descricao_erro: string | null;
+          editado_em: string | null;
+          id: string;
+          tipo: string;
+          user_id: string;
+        };
+        Insert: {
+          artigo_id: string;
+          avaliador_nome?: string | null;
+          created_at?: string;
+          descricao_erro?: string | null;
+          editado_em?: string | null;
+          id?: string;
+          tipo: string;
+          user_id: string;
+        };
+        Update: {
+          artigo_id?: string;
+          avaliador_nome?: string | null;
+          created_at?: string;
+          descricao_erro?: string | null;
+          editado_em?: string | null;
+          id?: string;
+          tipo?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "artigo_avaliacoes_artigo_id_fkey";
+            columns: ["artigo_id"];
+            isOneToOne: false;
+            referencedRelation: "artigos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artigo_avaliacoes_artigo_id_fkey";
+            columns: ["artigo_id"];
+            isOneToOne: false;
+            referencedRelation: "artigos_publicos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      artigo_revisoes: {
+        Row: {
+          aberta_em: string;
+          artigo_id: string;
+          decidida_em: string | null;
+          decidida_por: string | null;
+          decisao: string | null;
+          estado: string;
+          id: string;
+          justificativa: string | null;
+          origem: string;
+        };
+        Insert: {
+          aberta_em?: string;
+          artigo_id: string;
+          decidida_em?: string | null;
+          decidida_por?: string | null;
+          decisao?: string | null;
+          estado?: string;
+          id?: string;
+          justificativa?: string | null;
+          origem: string;
+        };
+        Update: {
+          aberta_em?: string;
+          artigo_id?: string;
+          decidida_em?: string | null;
+          decidida_por?: string | null;
+          decisao?: string | null;
+          estado?: string;
+          id?: string;
+          justificativa?: string | null;
+          origem?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "artigo_revisoes_artigo_id_fkey";
+            columns: ["artigo_id"];
+            isOneToOne: false;
+            referencedRelation: "artigos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "artigo_revisoes_artigo_id_fkey";
+            columns: ["artigo_id"];
+            isOneToOne: false;
+            referencedRelation: "artigos_publicos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      artigos: {
+        Row: {
+          autor_id: string;
+          autor_nome: string;
+          autor_sigla_casa: string | null;
+          aval_bom: number;
+          aval_erro: number;
+          aval_erro_grave: number;
+          aval_gostei: number;
+          aval_nao_gostei: number;
+          aval_otimo: number;
+          conteudo: string;
+          created_at: string;
+          editado_em: string | null;
+          estado: string;
+          id: string;
+          publicado_em: string;
+          resumo: string | null;
+          retirado_em: string | null;
+          retirado_motivo: string | null;
+          retirado_por: string | null;
+          retirado_por_user_id: string | null;
+          slug: string;
+          titulo: string;
+        };
+        Insert: {
+          autor_id: string;
+          autor_nome: string;
+          autor_sigla_casa?: string | null;
+          aval_bom?: number;
+          aval_erro?: number;
+          aval_erro_grave?: number;
+          aval_gostei?: number;
+          aval_nao_gostei?: number;
+          aval_otimo?: number;
+          conteudo: string;
+          created_at?: string;
+          editado_em?: string | null;
+          estado?: string;
+          id?: string;
+          publicado_em?: string;
+          resumo?: string | null;
+          retirado_em?: string | null;
+          retirado_motivo?: string | null;
+          retirado_por?: string | null;
+          retirado_por_user_id?: string | null;
+          slug: string;
+          titulo: string;
+        };
+        Update: {
+          autor_id?: string;
+          autor_nome?: string;
+          autor_sigla_casa?: string | null;
+          aval_bom?: number;
+          aval_erro?: number;
+          aval_erro_grave?: number;
+          aval_gostei?: number;
+          aval_nao_gostei?: number;
+          aval_otimo?: number;
+          conteudo?: string;
+          created_at?: string;
+          editado_em?: string | null;
+          estado?: string;
+          id?: string;
+          publicado_em?: string;
+          resumo?: string | null;
+          retirado_em?: string | null;
+          retirado_motivo?: string | null;
+          retirado_por?: string | null;
+          retirado_por_user_id?: string | null;
+          slug?: string;
+          titulo?: string;
+        };
+        Relationships: [];
       };
       casas_espirita: {
         Row: {
@@ -1227,8 +1401,134 @@ export type Database = {
           },
         ];
       };
+      usuarios_sancoes: {
+        Row: {
+          aplicada_por: string;
+          created_at: string;
+          fim: string | null;
+          id: string;
+          inicio: string;
+          motivo: string;
+          revogada_em: string | null;
+          tipo: string;
+          user_id: string;
+        };
+        Insert: {
+          aplicada_por: string;
+          created_at?: string;
+          fim?: string | null;
+          id?: string;
+          inicio?: string;
+          motivo: string;
+          revogada_em?: string | null;
+          tipo: string;
+          user_id: string;
+        };
+        Update: {
+          aplicada_por?: string;
+          created_at?: string;
+          fim?: string | null;
+          id?: string;
+          inicio?: string;
+          motivo?: string;
+          revogada_em?: string | null;
+          tipo?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
+      artigos_avisos: {
+        Row: {
+          estado: string | null;
+          retirado_em: string | null;
+          slug: string | null;
+        };
+        Insert: {
+          estado?: string | null;
+          retirado_em?: string | null;
+          slug?: string | null;
+        };
+        Update: {
+          estado?: string | null;
+          retirado_em?: string | null;
+          slug?: string | null;
+        };
+        Relationships: [];
+      };
+      artigos_publicos: {
+        Row: {
+          aprovacoes: number | null;
+          autor_id: string | null;
+          autor_nome: string | null;
+          autor_sigla_casa: string | null;
+          aval_bom: number | null;
+          aval_gostei: number | null;
+          aval_nao_gostei: number | null;
+          aval_otimo: number | null;
+          conteudo: string | null;
+          created_at: string | null;
+          editado_em: string | null;
+          estado: string | null;
+          id: string | null;
+          piso_atual: number | null;
+          publicado_em: string | null;
+          resumo: string | null;
+          retirado_em: string | null;
+          retirado_motivo: string | null;
+          retirado_por: string | null;
+          slug: string | null;
+          titulo: string | null;
+        };
+        Insert: {
+          aprovacoes?: never;
+          autor_id?: string | null;
+          autor_nome?: string | null;
+          autor_sigla_casa?: string | null;
+          aval_bom?: number | null;
+          aval_gostei?: number | null;
+          aval_nao_gostei?: number | null;
+          aval_otimo?: number | null;
+          conteudo?: never;
+          created_at?: string | null;
+          editado_em?: string | null;
+          estado?: string | null;
+          id?: string | null;
+          piso_atual?: never;
+          publicado_em?: string | null;
+          resumo?: string | null;
+          retirado_em?: string | null;
+          retirado_motivo?: string | null;
+          retirado_por?: string | null;
+          slug?: string | null;
+          titulo?: string | null;
+        };
+        Update: {
+          aprovacoes?: never;
+          autor_id?: string | null;
+          autor_nome?: string | null;
+          autor_sigla_casa?: string | null;
+          aval_bom?: number | null;
+          aval_gostei?: number | null;
+          aval_nao_gostei?: number | null;
+          aval_otimo?: number | null;
+          conteudo?: never;
+          created_at?: string | null;
+          editado_em?: string | null;
+          estado?: string | null;
+          id?: string | null;
+          piso_atual?: never;
+          publicado_em?: string | null;
+          resumo?: string | null;
+          retirado_em?: string | null;
+          retirado_motivo?: string | null;
+          retirado_por?: string | null;
+          slug?: string | null;
+          titulo?: string | null;
+        };
+        Relationships: [];
+      };
       profiles_public: {
         Row: {
           cidade: string | null;
@@ -1263,11 +1563,31 @@ export type Database = {
       };
     };
     Functions: {
+      artigo_deve_cair: {
+        Args: { elogios: number; erro_grave: number; piso: number };
+        Returns: boolean;
+      };
+      artigo_piso_retirada: { Args: { verificados: number }; Returns: number };
+      email_verificado: { Args: never; Returns: boolean };
       get_request_kanban_token: { Args: never; Returns: string };
       has_kanban_access: { Args: { p_sigla_casa: string }; Returns: boolean };
       is_tesouraria_admin: { Args: { p_sigla_casa: string }; Returns: boolean };
       minha_sigla_casa: { Args: never; Returns: string };
+      pode_administrar_pagina: { Args: { p_sigla: string }; Returns: boolean };
+      pode_revisar_artigo: { Args: { alvo: string }; Returns: boolean };
+      pode_sancionar: { Args: { alvo_user: string }; Returns: boolean };
+      resolver_revisao_artigo: {
+        Args: {
+          p_decisao: string;
+          p_dias_suspensao?: number;
+          p_justificativa: string;
+          p_revisao: string;
+        };
+        Returns: undefined;
+      };
       sou_dev: { Args: never; Returns: boolean };
+      total_verificados: { Args: never; Returns: number };
+      usuario_sancionado: { Args: { uid: string }; Returns: boolean };
     };
     Enums: {
       [_ in never]: never;

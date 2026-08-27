@@ -262,7 +262,7 @@ jobs:
       # As casas que publicaram sua página entram no sitemap, para quem procura
       # um centro espírita encontrá-las no Google. A lista vem da API com a
       # chave anônima, que só enxerga página publicada — o filtro é do banco.
-      - name: Atualizar o sitemap com as casas publicadas
+      - name: Atualizar o sitemap com as casas e os artigos publicados
         if: steps.banco.outputs.resultado == 'ok'
         run: |
           set -euo pipefail
@@ -270,7 +270,9 @@ jobs:
 
           curl -s -m 30             "$SUPABASE_URL/rest/v1/paginas_casas?select=sigla_casa,nome_completo&publicada=eq.true"             -H "apikey: $SUPABASE_ANON_KEY"             -H "Authorization: Bearer $SUPABASE_ANON_KEY"             -o /tmp/casas.json
 
-          python3 apoio_espirita-main/scripts/atualiza-sitemap.py "$SITEMAP" /tmp/casas.json
+          curl -s -m 30             "$SUPABASE_URL/rest/v1/artigos_publicos?select=slug,estado,publicado_em,editado_em&estado=eq.publicado"             -H "apikey: $SUPABASE_ANON_KEY"             -H "Authorization: Bearer $SUPABASE_ANON_KEY"             -o /tmp/artigos.json
+
+          python3 apoio_espirita-main/scripts/atualiza-sitemap.py "$SITEMAP" /tmp/casas.json /tmp/artigos.json
 
           # O passo da estrutura pode ter sido pulado, então configurar aqui também.
           git config user.name "Vigia diário"
@@ -279,7 +281,7 @@ jobs:
           if git diff --cached --quiet -- "$SITEMAP"; then
             echo "Sitemap sem mudanças."
           else
-            git commit -m "chore: atualiza o sitemap com as casas publicadas (automático)"
+            git commit -m "chore: atualiza o sitemap com as casas e os artigos publicados (automático)"
             git push
             echo "Sitemap atualizado."
           fi

@@ -70,6 +70,7 @@ import {
   FileHeart,
   Cake,
   ThumbsUp,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -79,6 +80,7 @@ import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
 import { TesourariaTab } from "@/components/TesourariaTab";
+import { FilaRevisaoArtigos } from "@/components/FilaRevisaoArtigos";
 
 export const Route = createFileRoute("/casa/$sigla")({
   component: PaginaCasa,
@@ -696,7 +698,7 @@ function fmtHora(h: string | null) {
 
 function PaginaCasa() {
   const { sigla } = Route.useParams();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isPresident } = useAuth();
   const navigate = useNavigate();
 
   /* UI */
@@ -3477,6 +3479,21 @@ function PaginaCasa() {
                 </div>
               </div>
             </section>
+
+            {/* Bloco 3: Moderação de artigos — só Presidente e Vice da casa (ou DEV) */}
+            {isPresident && (
+              <section className="glass rounded-3xl border border-violet-100/50 shadow-md p-6 md:p-8 bg-white/80">
+                <h3 className="text-lg font-semibold text-gray-800 border-b border-violet-100/40 pb-4 mb-5 flex items-center gap-2">
+                  <Scale className="w-5 h-5 text-violet-600" />
+                  Moderação de Artigos
+                </h3>
+                <p className="text-xs text-gray-400 -mt-3 mb-5">
+                  Casos de autores desta casa retirados pela comunidade, por decisão humana ou
+                  reenviados após correção.
+                </p>
+                <FilaRevisaoArtigos escopo="casa" sigla={sigla} />
+              </section>
+            )}
           </div>
         )}
 
