@@ -1461,8 +1461,6 @@ export type Database = {
           autor_nome: string | null;
           autor_sigla_casa: string | null;
           aval_bom: number | null;
-          aval_erro: number | null;
-          aval_erro_grave: number | null;
           aval_gostei: number | null;
           aval_nao_gostei: number | null;
           aval_otimo: number | null;
@@ -1486,8 +1484,6 @@ export type Database = {
           autor_nome?: string | null;
           autor_sigla_casa?: string | null;
           aval_bom?: number | null;
-          aval_erro?: number | null;
-          aval_erro_grave?: number | null;
           aval_gostei?: number | null;
           aval_nao_gostei?: number | null;
           aval_otimo?: number | null;
@@ -1511,8 +1507,6 @@ export type Database = {
           autor_nome?: string | null;
           autor_sigla_casa?: string | null;
           aval_bom?: number | null;
-          aval_erro?: number | null;
-          aval_erro_grave?: number | null;
           aval_gostei?: number | null;
           aval_nao_gostei?: number | null;
           aval_otimo?: number | null;
