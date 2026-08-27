@@ -26,21 +26,15 @@ import {
   Menu,
   X,
   ChevronDown,
-  Gamepad2,
   AlertTriangle,
   MessageCircle,
   GraduationCap,
   Brain,
   ShieldAlert,
   HelpCircle,
-  Wallet,
   BookOpen,
-  User,
   LogOut,
   BarChart2,
-  CalendarDays,
-  KanbanSquare,
-  Building2,
   LayoutDashboard,
   Sprout,
   Sparkles,
@@ -451,17 +445,29 @@ function RootComponent() {
 }
 
 /* ── Navbar ── */
+
+/**
+ * Os dez destinos do menu não cabiam lado a lado: em 1366px eles espremiam o
+ * campo de busca até ele virar um círculo. Agora os de conteúdo ficam
+ * agrupados em dois menus com nome escrito, e no topo permanecem apenas os
+ * destinos de uso diário.
+ *
+ * Nenhum grupo é identificado só por ícone, de propósito: boa parte de quem
+ * usa o site tem dificuldade com tecnologia, e um desenho sem palavra obriga
+ * a adivinhar o que há atrás dele.
+ */
+type MenuSuspenso = "estudo" | "jogos" | "ajuda";
+
 function NavBar() {
-  const { user, profile, isDev, isTesoureiro, isDecisao, isEvangelizador, signOut } = useAuth();
+  const { user, profile, isDev, isDecisao, signOut } = useAuth();
   const { location } = useRouterState();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [recursosOpen, setRecursosOpen] = useState(false);
-  const [ajudaOpen, setAjudaOpen] = useState(false);
-  const [recursosMobileOpen, setRecursosMobileOpen] = useState(false);
-  const [ajudaMobileOpen, setAjudaMobileOpen] = useState(false);
-  const { instalavel, instalar } = useInstalarApp();
+  const [aberto, setAberto] = useState<MenuSuspenso | null>(null);
+  const [abertoMobile, setAbertoMobile] = useState<MenuSuspenso | null>(null);
   const [buscaTopo, setBuscaTopo] = useState("");
+  const { instalavel, instalar } = useInstalarApp();
+  const navRef = useRef<HTMLElement>(null);
 
   // Enter no campo do cabeçalho leva à tela de busca com o termo já aplicado.
   // O campo é limpo em seguida: quem chega lá encontra o termo no campo da
@@ -472,28 +478,19 @@ function NavBar() {
     setBuscaTopo("");
     navigate({ to: "/busca", search: termo ? { q: termo } : {} });
   };
-  const recursosRef = useRef<HTMLDivElement>(null);
-  const ajudaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMenuOpen(false);
-    setRecursosOpen(false);
-    setAjudaOpen(false);
-    setRecursosMobileOpen(false);
-    setAjudaMobileOpen(false);
+    setAberto(null);
+    setAbertoMobile(null);
   }, [location.pathname]);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (recursosRef.current && !recursosRef.current.contains(e.target as Node)) {
-        setRecursosOpen(false);
-      }
-      if (ajudaRef.current && !ajudaRef.current.contains(e.target as Node)) {
-        setAjudaOpen(false);
-      }
+    function aoClicarFora(e: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setAberto(null);
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
   }, []);
 
   const isPublicRoute =
@@ -518,17 +515,25 @@ function NavBar() {
         : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
     }`;
 
-  const dropBtnCls = (paths: string[]) =>
-    `flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-      isAnyActive(paths)
-        ? "bg-[#ebf0f9] text-[#004a8c] shadow-sm border border-[#004a8c]/10"
-        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-    }`;
-
   const dropItemCls =
     "flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-[#ebf0f9] hover:text-[#004a8c] rounded-lg mx-1 my-0.5 transition-all duration-200";
 
+  const itemMobileCls =
+    "py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors";
+  const subItemMobileCls =
+    "py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors";
+  const grupoMobileCls =
+    "flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors";
+
+  const alternar = (menu: MenuSuspenso) => setAberto((atual) => (atual === menu ? null : menu));
+  const alternarMobile = (menu: MenuSuspenso) =>
+    setAbertoMobile((atual) => (atual === menu ? null : menu));
+
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
+
+  const ROTAS_ESTUDO = ["/feb", "/artigos", "/evangelizacao", "/musicas-cifras"];
+  const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
+  const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes"];
 
   return (
     <header
@@ -550,12 +555,9 @@ function NavBar() {
           <span className="text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
-        {/* Campo de busca — só onde há largura sobrando para ele */}
-        <form
-          role="search"
-          onSubmit={enviarBusca}
-          className="hidden xl:flex flex-1 min-w-0 max-w-[260px]"
-        >
+        {/* Campo de busca. Largura fixa e shrink-0: com largura elástica ele
+            era esmagado pelo menu até virar um círculo sem utilidade. */}
+        <form role="search" onSubmit={enviarBusca} className="hidden xl:block w-[230px] shrink-0">
           <div className="relative w-full">
             <Search
               size={15}
@@ -574,7 +576,8 @@ function NavBar() {
         </form>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav ref={navRef} className="hidden lg:flex items-center gap-1">
+          {/* Onde o campo não cabe, a busca vira um item escrito do menu */}
           <Link
             to="/busca"
             search={{}}
@@ -583,6 +586,7 @@ function NavBar() {
             <Search size={14} strokeWidth={2} />
             Buscar
           </Link>
+
           <Link
             to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
             params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
@@ -593,148 +597,116 @@ function NavBar() {
           <Link to="/agenda" className={linkCls("/agenda")}>
             Agenda
           </Link>
-          <Link to="/evangelizacao" className={linkCls("/evangelizacao")}>
-            Evangelização
-          </Link>
-          <Link to="/feb" className={linkCls("/feb")}>
-            Biblioteca
-          </Link>
-          <Link to="/musicas-cifras" className={linkCls("/musicas-cifras")}>
-            Músicas
-          </Link>
-          <Link to="/artigos" className={linkCls("/artigos")}>
-            Artigos
-          </Link>
           <Link to="/kanban" className={linkCls("/kanban")}>
             Projetos
           </Link>
 
-          {/* Recursos dropdown */}
-          <div ref={recursosRef} className="relative">
-            <button
-              onClick={() => {
-                setRecursosOpen((o) => !o);
-                setAjudaOpen(false);
-              }}
-              className={dropBtnCls(["/jogos", "/configurar-memoria"])}
-            >
-              Jogos
-              <ChevronDown
-                size={12}
-                strokeWidth={2.5}
-                className={`transition-transform ${recursosOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-            {recursosOpen && (
-              <div
-                className="absolute top-full left-0 mt-2 w-56 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up"
-                style={{ animationDuration: "200ms" }}
-              >
-                <Link
-                  to="/jogos/semeador-mensagens"
-                  className={dropItemCls}
-                  onClick={() => setRecursosOpen(false)}
-                >
-                  <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
-                  Semeador de Mensagens
-                </Link>
-                <Link
-                  to="/jogos/caca-palavras"
-                  className={dropItemCls}
-                  onClick={() => setRecursosOpen(false)}
-                >
-                  <Search size={14} strokeWidth={1.5} className="text-violet-500" />
-                  Caça-Palavras
-                </Link>
-                <Link
-                  to="/jogos/plante-a-semente"
-                  className={dropItemCls}
-                  onClick={() => setRecursosOpen(false)}
-                >
-                  <Sprout size={14} strokeWidth={1.5} className="text-emerald-500" />
-                  Plante a Semente
-                </Link>
-                <Link
-                  to="/jogos/memoria-evangelizacao"
-                  className={dropItemCls}
-                  onClick={() => setRecursosOpen(false)}
-                >
-                  <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
-                  Jogo da Memória
-                </Link>
-                <Link
-                  to="/jogos/quiz-espirita"
-                  className={dropItemCls}
-                  onClick={() => setRecursosOpen(false)}
-                >
-                  <HelpCircle size={14} strokeWidth={1.5} className="text-[#004a8c]" />
-                  Quiz Espírita
-                </Link>
-              </div>
-            )}
-          </div>
+          <GrupoSuspenso
+            rotulo="Estudo"
+            aberto={aberto === "estudo"}
+            ativo={isAnyActive(ROTAS_ESTUDO)}
+            aoAlternar={() => alternar("estudo")}
+          >
+            <Link to="/feb" className={dropItemCls} onClick={() => setAberto(null)}>
+              <BookOpen size={14} strokeWidth={1.5} className="text-[#004a8c]" />
+              Biblioteca
+            </Link>
+            <Link to="/artigos" className={dropItemCls} onClick={() => setAberto(null)}>
+              <MessageCircle size={14} strokeWidth={1.5} className="text-violet-500" />
+              Artigos
+            </Link>
+            <Link to="/evangelizacao" className={dropItemCls} onClick={() => setAberto(null)}>
+              <GraduationCap size={14} strokeWidth={1.5} className="text-emerald-500" />
+              Evangelização
+            </Link>
+            <Link to="/musicas-cifras" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
+              Músicas e Cifras
+            </Link>
+          </GrupoSuspenso>
 
-          {/* Ajuda dropdown */}
-          <div ref={ajudaRef} className="relative">
-            <button
-              onClick={() => {
-                setAjudaOpen((o) => !o);
-                setRecursosOpen(false);
-              }}
-              className={dropBtnCls(["/painel", "/ajuda", "/admin", "/permissoes"])}
+          <GrupoSuspenso
+            rotulo="Jogos"
+            aberto={aberto === "jogos"}
+            ativo={isAnyActive(ROTAS_JOGOS)}
+            aoAlternar={() => alternar("jogos")}
+          >
+            <Link
+              to="/jogos/semeador-mensagens"
+              className={dropItemCls}
+              onClick={() => setAberto(null)}
             >
-              Ajuda
-              <ChevronDown
-                size={12}
-                strokeWidth={2.5}
-                className={`transition-transform ${ajudaOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-            {ajudaOpen && (
-              <div
-                className="absolute top-full right-0 mt-2 w-52 bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up"
-                style={{ animationDuration: "200ms" }}
-              >
-                {isDev && (
-                  <Link to="/admin" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                    <LayoutDashboard size={14} strokeWidth={1.5} className="text-violet-500" />
-                    Painel do Administrador
-                  </Link>
-                )}
-                <Link to="/painel" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
-                  Status do Projeto
-                </Link>
-                <Link to="/ajuda" className={dropItemCls} onClick={() => setAjudaOpen(false)}>
-                  <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
-                  FAQ / Dúvidas
-                </Link>
-                {instalavel && (
-                  <button
-                    type="button"
-                    className={dropItemCls}
-                    onClick={() => {
-                      setAjudaOpen(false);
-                      void instalar();
-                    }}
-                  >
-                    <Download size={14} strokeWidth={1.5} className="text-emerald-500" />
-                    Instalar aplicativo
-                  </button>
-                )}
-                {isDecisao && (
-                  <Link
-                    to="/permissoes"
-                    className={dropItemCls}
-                    onClick={() => setAjudaOpen(false)}
-                  >
-                    <ShieldAlert size={14} strokeWidth={1.5} className="text-amber-500" />
-                    Permissões
-                  </Link>
-                )}
-              </div>
+              <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
+              Semeador de Mensagens
+            </Link>
+            <Link to="/jogos/caca-palavras" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Search size={14} strokeWidth={1.5} className="text-violet-500" />
+              Caça-Palavras
+            </Link>
+            <Link
+              to="/jogos/plante-a-semente"
+              className={dropItemCls}
+              onClick={() => setAberto(null)}
+            >
+              <Sprout size={14} strokeWidth={1.5} className="text-emerald-500" />
+              Plante a Semente
+            </Link>
+            <Link
+              to="/jogos/memoria-evangelizacao"
+              className={dropItemCls}
+              onClick={() => setAberto(null)}
+            >
+              <Brain size={14} strokeWidth={1.5} className="text-cyan-500" />
+              Jogo da Memória
+            </Link>
+            <Link to="/jogos/quiz-espirita" className={dropItemCls} onClick={() => setAberto(null)}>
+              <HelpCircle size={14} strokeWidth={1.5} className="text-[#004a8c]" />
+              Quiz Espírita
+            </Link>
+          </GrupoSuspenso>
+
+          <GrupoSuspenso
+            rotulo="Ajuda"
+            aberto={aberto === "ajuda"}
+            ativo={isAnyActive(ROTAS_AJUDA)}
+            aoAlternar={() => alternar("ajuda")}
+            alinhamento="right"
+            largura="w-52"
+          >
+            {isDev && (
+              <Link to="/admin" className={dropItemCls} onClick={() => setAberto(null)}>
+                <LayoutDashboard size={14} strokeWidth={1.5} className="text-violet-500" />
+                Painel do Administrador
+              </Link>
             )}
-          </div>
+            <Link to="/painel" className={dropItemCls} onClick={() => setAberto(null)}>
+              <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
+              Status do Projeto
+            </Link>
+            <Link to="/ajuda" className={dropItemCls} onClick={() => setAberto(null)}>
+              <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
+              FAQ / Dúvidas
+            </Link>
+            {instalavel && (
+              <button
+                type="button"
+                className={dropItemCls}
+                onClick={() => {
+                  setAberto(null);
+                  void instalar();
+                }}
+              >
+                <Download size={14} strokeWidth={1.5} className="text-emerald-500" />
+                Instalar aplicativo
+              </button>
+            )}
+            {isDecisao && (
+              <Link to="/permissoes" className={dropItemCls} onClick={() => setAberto(null)}>
+                <ShieldAlert size={14} strokeWidth={1.5} className="text-amber-500" />
+                Permissões
+              </Link>
+            )}
+          </GrupoSuspenso>
 
           <button
             onClick={() => signOut()}
@@ -759,6 +731,7 @@ function NavBar() {
           <button
             onClick={() => setMenuOpen((o) => !o)}
             aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={menuOpen}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           >
             {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
@@ -773,153 +746,109 @@ function NavBar() {
           style={{ animationDuration: "200ms" }}
         >
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
-            <Link
-              to="/busca"
-              search={{}}
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors flex items-center gap-2"
-            >
+            <Link to="/busca" search={{}} className={`${itemMobileCls} flex items-center gap-2`}>
               <Search size={15} strokeWidth={2} className="text-gray-400" />
               Buscar no site
             </Link>
             <Link
               to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
               params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
+              className={itemMobileCls}
             >
               Minha Casa
             </Link>
-            <Link
-              to="/agenda"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
+            <Link to="/agenda" className={itemMobileCls}>
               Agenda
             </Link>
-            <Link
-              to="/evangelizacao"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
-              Evangelização
-            </Link>
-            <Link
-              to="/feb"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
-              Biblioteca
-            </Link>
-            <Link
-              to="/musicas-cifras"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
-              Músicas
-            </Link>
-            <Link
-              to="/artigos"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
-              Artigos
-            </Link>
-            <Link
-              to="/kanban"
-              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-            >
+            <Link to="/kanban" className={itemMobileCls}>
               Projetos
             </Link>
 
-            {/* Seção Recursos */}
-            <button
-              onClick={() => setRecursosMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
-            >
+            <button onClick={() => alternarMobile("estudo")} className={grupoMobileCls}>
+              Estudo
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                className={`transition-transform ${abertoMobile === "estudo" ? "rotate-180" : ""}`}
+              />
+            </button>
+            {abertoMobile === "estudo" && (
+              <>
+                <Link to="/feb" className={subItemMobileCls}>
+                  Biblioteca
+                </Link>
+                <Link to="/artigos" className={subItemMobileCls}>
+                  Artigos
+                </Link>
+                <Link to="/evangelizacao" className={subItemMobileCls}>
+                  Evangelização
+                </Link>
+                <Link to="/musicas-cifras" className={subItemMobileCls}>
+                  Músicas e Cifras
+                </Link>
+              </>
+            )}
+
+            <button onClick={() => alternarMobile("jogos")} className={grupoMobileCls}>
               Jogos
               <ChevronDown
                 size={14}
                 strokeWidth={2}
-                className={`transition-transform ${recursosMobileOpen ? "rotate-180" : ""}`}
+                className={`transition-transform ${abertoMobile === "jogos" ? "rotate-180" : ""}`}
               />
             </button>
-            {recursosMobileOpen && (
+            {abertoMobile === "jogos" && (
               <>
-                <Link
-                  to="/jogos/semeador-mensagens"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/jogos/semeador-mensagens" className={subItemMobileCls}>
                   Semeador de Mensagens
                 </Link>
-                <Link
-                  to="/jogos/caca-palavras"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/jogos/caca-palavras" className={subItemMobileCls}>
                   Caça-Palavras
                 </Link>
-                <Link
-                  to="/jogos/plante-a-semente"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/jogos/plante-a-semente" className={subItemMobileCls}>
                   Plante a Semente
                 </Link>
-                <Link
-                  to="/jogos/memoria-evangelizacao"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/jogos/memoria-evangelizacao" className={subItemMobileCls}>
                   Jogo da Memória
                 </Link>
-                <Link
-                  to="/jogos/quiz-espirita"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/jogos/quiz-espirita" className={subItemMobileCls}>
                   Quiz Espírita
                 </Link>
               </>
             )}
 
-            {/* Seção Ajuda */}
-            <button
-              onClick={() => setAjudaMobileOpen((o) => !o)}
-              className="flex items-center justify-between py-3 px-2 text-sm font-semibold text-gray-600 border-b border-gray-100 hover:text-[#004a8c] transition-colors"
-            >
+            <button onClick={() => alternarMobile("ajuda")} className={grupoMobileCls}>
               Ajuda
               <ChevronDown
                 size={14}
                 strokeWidth={2}
-                className={`transition-transform ${ajudaMobileOpen ? "rotate-180" : ""}`}
+                className={`transition-transform ${abertoMobile === "ajuda" ? "rotate-180" : ""}`}
               />
             </button>
-            {ajudaMobileOpen && (
+            {abertoMobile === "ajuda" && (
               <>
                 {isDev && (
-                  <Link
-                    to="/admin"
-                    className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                  >
+                  <Link to="/admin" className={subItemMobileCls}>
                     Painel do Administrador
                   </Link>
                 )}
-                <Link
-                  to="/painel"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/painel" className={subItemMobileCls}>
                   Status do Projeto
                 </Link>
-                <Link
-                  to="/ajuda"
-                  className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                >
+                <Link to="/ajuda" className={subItemMobileCls}>
                   FAQ / Dúvidas
                 </Link>
                 {instalavel && (
                   <button
                     type="button"
                     onClick={() => void instalar()}
-                    className="py-3 pl-5 pr-2 text-left text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
+                    className={`${subItemMobileCls} text-left`}
                   >
                     Instalar aplicativo
                   </button>
                 )}
                 {isDecisao && (
-                  <Link
-                    to="/permissoes"
-                    className="py-3 pl-5 pr-2 text-sm text-gray-600 hover:text-[#004a8c] border-b border-gray-100 transition-colors"
-                  >
+                  <Link to="/permissoes" className={subItemMobileCls}>
                     Permissões
                   </Link>
                 )}
@@ -936,6 +865,55 @@ function NavBar() {
         </div>
       )}
     </header>
+  );
+}
+
+/** Botão de menu com a lista que se abre abaixo dele. */
+function GrupoSuspenso({
+  rotulo,
+  aberto,
+  ativo,
+  aoAlternar,
+  alinhamento = "left",
+  largura = "w-56",
+  children,
+}: {
+  rotulo: string;
+  aberto: boolean;
+  ativo: boolean;
+  aoAlternar: () => void;
+  alinhamento?: "left" | "right";
+  largura?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <button
+        onClick={aoAlternar}
+        aria-expanded={aberto}
+        aria-haspopup="menu"
+        className={`flex items-center gap-1 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
+          ativo
+            ? "bg-[#ebf0f9] text-[#004a8c] shadow-sm border border-[#004a8c]/10"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+        }`}
+      >
+        {rotulo}
+        <ChevronDown
+          size={12}
+          strokeWidth={2.5}
+          className={`transition-transform ${aberto ? "rotate-180" : ""}`}
+        />
+      </button>
+      {aberto && (
+        <div
+          className={`absolute top-full ${alinhamento === "right" ? "right-0" : "left-0"} mt-2 ${largura} bg-white/95 backdrop-blur-md border border-gray-100 rounded-2xl shadow-xl py-1.5 z-50 animate-fade-in-up`}
+          style={{ animationDuration: "200ms" }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
