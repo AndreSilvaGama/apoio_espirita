@@ -178,6 +178,46 @@ const FAQ: FaqItem[] = [
     resposta:
       "Sua privacidade é nossa prioridade. Se decidir não utilizar mais a plataforma, vá em 'Perfil', desça até o rodapé da página e clique no botão de exclusão permanente. O sistema removerá imediatamente todas as suas informações pessoais, vínculos com a casa espírita e preferências do banco de dados principal. Essa ação é irreversível.",
   },
+  {
+    pergunta: "O que são os artigos da comunidade?",
+    resposta:
+      "É um espaço de publicação aberto a toda a comunidade: qualquer usuário com e-mail confirmado pode escrever e assinar um artigo espírita com o próprio nome e a casa a que pertence. Os artigos são públicos — qualquer pessoa os lê, mesmo sem conta no site — e aparecem em buscadores como o Google, o que ajuda quem procura conteúdo espírita a encontrar o Apoio Espírita. Depois de publicado, o próprio artigo é avaliado pelos leitores, que podem elogiá-lo ou apontar erros nele.",
+  },
+  {
+    pergunta: "Como publico um artigo?",
+    resposta:
+      "Passo a passo: 1) Faça login. 2) No menu superior, clique em 'Artigos'. 3) Clique no botão 'Escrever artigo'. 4) Preencha o título, o resumo (opcional — aparece na lista de artigos) e o conteúdo do texto. 5) Clique em 'Publicar artigo'. O artigo entra no ar imediatamente, sem espera por aprovação de ninguém. Publicar exige e-mail confirmado: se você ainda não confirmou o seu, a tela avisa e pede que você procure a mensagem de confirmação enviada quando criou a conta e clique no link dela. Sem confirmar o e-mail, não é possível publicar artigos nem avaliar os de outras pessoas.",
+  },
+  {
+    pergunta: "O que significa cada opção de avaliação?",
+    resposta:
+      "Ao ler um artigo, você registra uma entre seis avaliações, uma por pessoa por artigo (é possível trocar o seu voto depois, se mudar de ideia). 'Ótimo', 'Bom' e 'Gostei' são elogios, em ordem decrescente de entusiasmo, e contam a favor do artigo, ajudando a protegê-lo de uma retirada. 'Não gostei' registra que você não concordou com o texto ou não gostou dele, o que é diferente de apontar um erro: essa opção NÃO retira o artigo do ar e nunca conta para isso, porque o Espiritismo tem divergência legítima de interpretação — discordar de uma leitura não é o mesmo que apontar um erro de fato, e se a discordância derrubasse artigos, o mecanismo estaria punindo a opinião minoritária, não a informação falsa. 'Tem erro' serve para um problema pontual, como uma data errada, um nome trocado ou uma citação imprecisa; avisa o autor para corrigir, mas sozinha não retira o artigo do ar. 'Tem erro grave' é para um problema sério, como uma informação falsa ou distorcida sobre a doutrina; é a única avaliação que pode levar à retirada do artigo (veja 'Quando um artigo sai do ar?'). Para 'Tem erro' e 'Tem erro grave', é obrigatório escrever qual é o erro, e o seu nome fica visível para o autor do artigo junto com essa observação — pense nisso antes de marcar, não depois.",
+  },
+  {
+    pergunta: "Por que preciso escrever qual é o erro?",
+    resposta:
+      "Porque uma marcação sem explicação não ajuda ninguém: o autor não sabe o que corrigir, e quem for revisar o caso não tem como julgar se o apontamento procede. Escrever ao menos uma frase também funciona como um filtro natural contra marcações por impulso — é fácil clicar em um botão, mais raro escrever uma justificativa infundada. Por isso o sistema não aceita registrar 'Tem erro' ou 'Tem erro grave' sem uma descrição de pelo menos 10 caracteres. Lembre-se de que essa descrição é lida pelo autor do artigo junto com o seu nome: escreva como faria se estivesse falando diretamente com a pessoa.",
+  },
+  {
+    pergunta: "Quando um artigo sai do ar?",
+    resposta:
+      "Um artigo publicado sai do ar sozinho quando duas condições valem ao mesmo tempo: 1) o número de avaliações 'Tem erro grave' chega a um piso mínimo, e 2) esse número é maior do que a soma de 'Ótimo' mais 'Bom' mais 'Gostei'. O piso é o maior valor entre 3 e 20% dos usuários do site com e-mail confirmado, arredondado para cima. Na prática, isso significa que, numa comunidade pequena — a de hoje, por exemplo —, bastam as três primeiras marcações de 'Tem erro grave' para retirar um artigo recém-publicado, mesmo antes de qualquer elogio ter sido registrado: o piso de 3 é sempre o mínimo, não importa quantas pessoas confirmaram o e-mail. Em comunidades maiores, o piso cresce de forma proporcional: com 9 ou com 15 usuários confirmados, o piso é 3; com 50, é 10; com 100, é 20. A retirada é automática e imediata, no mesmo instante em que o voto que cruza o limite é registrado — e, a partir daí, um revisor humano pode restaurar o artigo se concluir que a retirada não procedia. Além dessas duas condições, o administrador do site ou o Presidente/Vice-presidente da casa do autor também podem retirar um artigo do ar a qualquer momento, por decisão direta. Em nenhum dos dois casos a votação suspende ou bane o autor: ela só tira o texto do ar (veja 'Quem pode suspender ou banir um autor?').",
+  },
+  {
+    pergunta: "Meu artigo foi retirado. E agora?",
+    resposta:
+      "Você não recebe nenhuma notificação — nem e-mail, nem aviso na tela — quando um artigo seu é retirado. Para saber o que houve, acesse 'Artigos' no menu e depois 'Meus artigos'. Ali, cada artigo retirado ou em correção mostra o motivo da retirada e a lista dos erros apontados, cada um com a descrição escrita por quem avaliou. A partir dessa tela, clique em 'Corrigir este artigo', ajuste o texto de acordo com o que foi apontado e reenvie. O artigo não volta ao ar sozinho: o reenvio entra numa fila de revisão, e só um revisor humano pode restaurá-lo à publicação.",
+  },
+  {
+    pergunta: "Quem pode suspender ou banir um autor?",
+    resposta:
+      "Ninguém é suspenso ou banido automaticamente pela votação da comunidade — ela apenas retira o artigo do ar, nunca a pessoa. Suspender ou banir um autor é sempre uma decisão humana, tomada a partir da fila de revisão, e só duas autoridades podem tomá-la: o administrador do site ou o Presidente (ou Vice-presidente) da casa espírita a que o autor pertence. Enquanto isso não acontece, o autor continua podendo usar o site normalmente; o que muda é que os artigos com erro grave reconhecido ficam fora do ar até serem corrigidos e revisados.",
+  },
+  {
+    pergunta: "Artigo retirado some do Google?",
+    resposta:
+      "Sim, mas não instantaneamente, e isso está fora do nosso controle. Assim que um artigo é retirado, ele sai do mapa do site (sitemap) e o endereço dele passa a mostrar um aviso de que o texto não está mais disponível, em vez do conteúdo original. A saída de fato do índice de um buscador, porém, depende de o buscador visitar aquele endereço de novo — o que não é instantâneo —, e cópias já guardadas em cache podem continuar aparecendo por alguns dias depois da retirada. Não há como garantir remoção imediata em nenhum buscador.",
+  },
 ];
 
 function Ajuda() {

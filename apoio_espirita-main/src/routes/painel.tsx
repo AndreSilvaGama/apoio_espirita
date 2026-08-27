@@ -135,11 +135,11 @@ const roadmap: Item[] = [
       "Ao entrar no site, uma passagem dos livros de Kardec é exibida automaticamente, com indicação do livro, capítulo e página · O Presidente pode tornar isso obrigatório ou deixar que cada membro escolha ativar ou desativar",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Artigos escritos pelos membros da comunidade",
     cardTitle: "Artigos e Colunistas",
     descricao:
-      "Espaço para que os membros publiquem artigos espíritas identificados com nome e casa · O Presidente define se todos podem publicar livremente ou se cada artigo precisa da sua aprovação antes de aparecer · Os artigos aparecem na tela principal",
+      "Qualquer membro com e-mail confirmado publica artigos espíritas identificados com nome e casa, sem espera por aprovação · São públicos, indexados em buscadores e avaliados pelos próprios leitores · Um artigo com erro grave reconhecido por gente suficiente sai do ar sozinho; suspender ou banir um autor continua sendo sempre decisão humana",
   },
   {
     status: "planejado",
