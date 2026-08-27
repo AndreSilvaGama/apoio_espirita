@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict YuqwcPUpqWbmAJo5ysNfBTZON8qpjR9Tt3qZxZe9NMhcHOncemPaBxY5YAerCz9
+\restrict ATzWYjKSE1EUjnerGbs3VUrTaFUIFIK5OMP9jXlH4avBfADjApJUVXjnfavBXR7
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -35,6 +35,295 @@ CREATE SCHEMA public;
 --
 
 COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: artigo_avaliacao_carimbar_nome(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_avaliacao_carimbar_nome() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  v_nome text;
+begin
+  if tg_op = 'INSERT' or new.user_id is distinct from old.user_id then
+    select p.nome into v_nome
+      from public.profiles p
+     where p.id = new.user_id;
+
+    new.avaliador_nome := coalesce(nullif(trim(v_nome), ''), 'Um avaliador');
+  end if;
+
+  return new;
+end;
+$$;
+
+
+--
+-- Name: artigo_carimbar_identidade(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_carimbar_identidade() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  v_nome text;
+  v_sigla text;
+begin
+  if tg_op = 'INSERT' or new.autor_id is distinct from old.autor_id then
+    select p.nome, p.sigla_casa into v_nome, v_sigla
+      from public.profiles p
+     where p.id = new.autor_id;
+
+    new.autor_nome := coalesce(nullif(trim(v_nome), ''), 'Membro da comunidade');
+    new.autor_sigla_casa := v_sigla;
+  end if;
+
+  if tg_op = 'UPDATE'
+     and old.autor_id = auth.uid()
+     and not public.pode_revisar_artigo(new.id)
+  then
+    new.retirado_em := old.retirado_em;
+    new.retirado_por := old.retirado_por;
+    new.retirado_por_user_id := old.retirado_por_user_id;
+    new.retirado_motivo := old.retirado_motivo;
+  end if;
+
+  return new;
+end;
+$$;
+
+
+--
+-- Name: artigo_deve_cair(integer, integer, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_deve_cair(erro_grave integer, elogios integer, piso integer) RETURNS boolean
+    LANGUAGE sql IMMUTABLE
+    SET search_path TO ''
+    AS $$
+  select coalesce(erro_grave, 0) >= piso
+     and coalesce(erro_grave, 0) > coalesce(elogios, 0);
+$$;
+
+
+--
+-- Name: artigo_piso_retirada(integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_piso_retirada(verificados integer) RETURNS integer
+    LANGUAGE sql IMMUTABLE
+    SET search_path TO ''
+    AS $$
+  select greatest(3, ceil(coalesce(verificados, 0) * 0.20))::int;
+$$;
+
+
+--
+-- Name: artigo_recontar(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_recontar() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  alvo uuid := coalesce(new.artigo_id, old.artigo_id);
+  reg record;
+  piso int;
+  v_palavra_marcacoes text;
+  v_palavra_aprovacoes text;
+begin
+  update public.artigos a
+     set aval_otimo      = c.otimo,
+         aval_bom        = c.bom,
+         aval_gostei     = c.gostei,
+         aval_nao_gostei = c.nao_gostei,
+         aval_erro       = c.erro,
+         aval_erro_grave = c.erro_grave
+    from (
+      select
+        count(*) filter (where tipo = 'otimo')      as otimo,
+        count(*) filter (where tipo = 'bom')        as bom,
+        count(*) filter (where tipo = 'gostei')     as gostei,
+        count(*) filter (where tipo = 'nao_gostei') as nao_gostei,
+        count(*) filter (where tipo = 'erro')       as erro,
+        count(*) filter (where tipo = 'erro_grave') as erro_grave
+      from public.artigo_avaliacoes where artigo_id = alvo
+    ) c
+   where a.id = alvo
+   returning a.* into reg;
+
+  if reg is null then
+    return coalesce(new, old);
+  end if;
+
+  piso := public.artigo_piso_retirada(public.total_verificados());
+
+  if reg.estado = 'publicado'
+     and public.artigo_deve_cair(
+           reg.aval_erro_grave,
+           reg.aval_otimo + reg.aval_bom + reg.aval_gostei,
+           piso
+         )
+  then
+    v_palavra_marcacoes := case when reg.aval_erro_grave = 1 then 'marcação' else 'marcações' end;
+    v_palavra_aprovacoes := case
+      when (reg.aval_otimo + reg.aval_bom + reg.aval_gostei) = 1 then 'aprovação'
+      else 'aprovações'
+    end;
+
+    update public.artigos
+       set estado = 'retirado',
+           retirado_em = now(),
+           retirado_por = 'comunidade',
+           retirado_motivo = format(
+             'Retirado automaticamente: %s %s de erro grave, piso de %s, contra %s %s.',
+             reg.aval_erro_grave, v_palavra_marcacoes, piso,
+             reg.aval_otimo + reg.aval_bom + reg.aval_gostei, v_palavra_aprovacoes)
+     where id = alvo;
+
+    insert into public.artigo_revisoes (artigo_id, origem)
+    values (alvo, 'comunidade');
+  end if;
+
+  return coalesce(new, old);
+end;
+$$;
+
+
+--
+-- Name: artigo_transicao_valida(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.artigo_transicao_valida() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+begin
+  if new.estado is distinct from old.estado then
+    if public.pode_revisar_artigo(new.id) then
+      return new;
+    end if;
+    if old.estado = 'publicado' and new.estado = 'retirado' then
+      return new;
+    end if;
+    if old.autor_id = auth.uid()
+       and old.estado = 'retirado'
+       and new.estado = 'em_correcao' then
+      return new;
+    end if;
+    raise exception
+      'Transicao de estado nao permitida para este usuario: % -> %',
+      old.estado, new.estado;
+  end if;
+  return new;
+end;
+$$;
+
+
+--
+-- Name: buscar_geral(text, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.buscar_geral(termo text, limite integer DEFAULT 6) RETURNS TABLE(tipo text, titulo text, subtitulo text, referencia text)
+    LANGUAGE sql STABLE
+    SET search_path TO 'public'
+    AS $$
+  with entrada as (
+    select public.sem_acento(coalesce(trim(termo), '')) as q,
+           least(greatest(coalesce(limite, 6), 1), 20) as n
+  ),
+  casas as (
+    select pc.sigla_casa as sigla,
+           coalesce(nullif(trim(pc.nome_completo), ''), nullif(trim(ce.nome), ''), pc.sigla_casa)
+             as nome,
+           coalesce(nullif(trim(pc.cidade), ''), ce.cidade) as cidade,
+           coalesce(nullif(trim(pc.uf), ''), ce.estado) as uf,
+           pc.publicada
+    from public.paginas_casas pc
+    left join lateral (
+      select c.nome, c.cidade, c.estado
+      from public.casas_espirita c
+      where c.sigla = pc.sigla_casa
+      limit 1
+    ) ce on true
+    union all
+    select ce.sigla, ce.nome, ce.cidade, ce.estado, false
+    from public.casas_espirita ce
+    where ce.sigla is null
+       or not exists (
+         select 1 from public.paginas_casas p where p.sigla_casa = ce.sigla
+       )
+  )
+  (
+    select 'artigo'::text,
+           a.titulo,
+           a.autor_nome || coalesce(' · ' || a.autor_sigla_casa, ''),
+           a.slug
+    from public.artigos_publicos a, entrada e
+    where length(e.q) >= 2
+      and (strpos(public.sem_acento(a.titulo), e.q) > 0
+        or strpos(public.sem_acento(coalesce(a.resumo, '')), e.q) > 0
+        or strpos(public.sem_acento(a.autor_nome), e.q) > 0)
+    order by a.publicado_em desc nulls last
+    limit (select n from entrada)
+  )
+  union all
+  (
+    select distinct 'casa'::text,
+           c.nome,
+           coalesce(c.cidade, '') || coalesce(' · ' || c.uf, ''),
+           case when c.publicada then c.sigla end
+    from casas c, entrada e
+    where length(e.q) >= 2
+      and coalesce(trim(c.nome), '') <> ''
+      and (strpos(public.sem_acento(c.nome), e.q) > 0
+        or strpos(public.sem_acento(coalesce(c.sigla, '')), e.q) > 0
+        or strpos(public.sem_acento(coalesce(c.cidade, '')), e.q) > 0)
+    order by c.nome
+    limit (select n from entrada)
+  )
+  union all
+  (
+    select distinct 'membro'::text,
+           p.nome,
+           coalesce(p.cidade, '') || coalesce(' · ' || p.uf, ''),
+           p.sigla_casa
+    from public.profiles_public p, entrada e
+    where length(e.q) >= 2
+      and p.nome is not null
+      and (strpos(public.sem_acento(p.nome), e.q) > 0
+        or strpos(public.sem_acento(coalesce(p.cidade, '')), e.q) > 0)
+    order by p.nome
+    limit (select n from entrada)
+  )
+$$;
+
+
+--
+-- Name: FUNCTION buscar_geral(termo text, limite integer); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.buscar_geral(termo text, limite integer) IS 'Busca artigos publicados, casas ativas e membros visíveis a quem chama.';
+
+
+--
+-- Name: email_verificado(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.email_verificado() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  select exists (
+    select 1 from auth.users
+    where id = auth.uid() and email_confirmed_at is not null
+  );
+$$;
 
 
 --
@@ -176,6 +465,161 @@ $$;
 
 
 --
+-- Name: pode_revisar_artigo(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_revisar_artigo(alvo uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  select exists (
+    select 1
+      from public.artigos a
+      join public.profiles p on p.id = auth.uid()
+     where a.id = alvo
+       and (
+         p.cargo_principal = 'DEV'
+         or (p.sigla_casa = a.autor_sigla_casa
+             and p.cargo_principal in ('Presidente', 'Vice-presidente'))
+       )
+  );
+$$;
+
+
+--
+-- Name: pode_sancionar(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_sancionar(alvo_user uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  select exists (
+    select 1 from public.profiles quem
+     where quem.id = auth.uid()
+       and (
+         quem.cargo_principal = 'DEV'
+         or (
+           quem.cargo_principal in ('Presidente', 'Vice-presidente')
+           and quem.sigla_casa = (
+             select alvo.sigla_casa from public.profiles alvo where alvo.id = alvo_user
+           )
+         )
+       )
+  );
+$$;
+
+
+--
+-- Name: resolver_revisao_artigo(uuid, text, text, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.resolver_revisao_artigo(p_revisao uuid, p_decisao text, p_justificativa text, p_dias_suspensao integer DEFAULT NULL::integer) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+declare
+  v_revisao public.artigo_revisoes%rowtype;
+  v_autor_id uuid;
+  v_ja_vigente boolean;
+begin
+  if p_decisao not in ('restaurar', 'manter_retirado', 'suspender_autor', 'banir_autor') then
+    raise exception 'Decisão inválida: %.', p_decisao;
+  end if;
+
+  select * into v_revisao
+    from public.artigo_revisoes
+   where id = p_revisao
+     for update;
+
+  if not found then
+    raise exception 'Revisão não encontrada.';
+  end if;
+
+  if v_revisao.estado = 'resolvida' then
+    raise exception 'Esta revisão já foi resolvida — recarregue a fila antes de tentar de novo.';
+  end if;
+
+  if p_justificativa is null or length(trim(p_justificativa)) < 10 then
+    raise exception 'A justificativa precisa ter pelo menos 10 caracteres.';
+  end if;
+
+  if not public.pode_revisar_artigo(v_revisao.artigo_id) then
+    raise exception 'Você não tem permissão para revisar este artigo.';
+  end if;
+
+  select autor_id into v_autor_id
+    from public.artigos
+   where id = v_revisao.artigo_id;
+
+  if p_decisao in ('suspender_autor', 'banir_autor')
+     and not public.pode_sancionar(v_autor_id) then
+    raise exception 'Você não tem permissão para sancionar o autor deste artigo.';
+  end if;
+
+  if p_decisao = 'restaurar' then
+    update public.artigos
+       set estado = 'publicado',
+           retirado_em = null,
+           retirado_por = null,
+           retirado_por_user_id = null,
+           retirado_motivo = null
+     where id = v_revisao.artigo_id;
+  end if;
+
+  if p_decisao = 'manter_retirado' then
+    update public.artigos
+       set estado = 'retirado'
+     where id = v_revisao.artigo_id
+       and estado = 'em_correcao';
+  end if;
+
+  if p_decisao = 'suspender_autor' then
+    if p_dias_suspensao is null or p_dias_suspensao < 1 then
+      raise exception 'Informe a quantidade de dias de suspensão (mínimo 1).';
+    end if;
+
+    select exists (
+      select 1 from public.usuarios_sancoes
+       where user_id = v_autor_id
+         and tipo = 'suspensao'
+         and revogada_em is null
+         and (fim is null or fim > now())
+    ) into v_ja_vigente;
+
+    if not v_ja_vigente then
+      insert into public.usuarios_sancoes (user_id, tipo, fim, motivo, aplicada_por)
+      values (v_autor_id, 'suspensao', now() + make_interval(days => p_dias_suspensao),
+              p_justificativa, auth.uid());
+    end if;
+  end if;
+
+  if p_decisao = 'banir_autor' then
+    select exists (
+      select 1 from public.usuarios_sancoes
+       where user_id = v_autor_id
+         and tipo = 'banimento'
+         and revogada_em is null
+    ) into v_ja_vigente;
+
+    if not v_ja_vigente then
+      insert into public.usuarios_sancoes (user_id, tipo, fim, motivo, aplicada_por)
+      values (v_autor_id, 'banimento', null, p_justificativa, auth.uid());
+    end if;
+  end if;
+
+  update public.artigo_revisoes
+     set estado = 'resolvida',
+         decisao = p_decisao,
+         justificativa = p_justificativa,
+         decidida_por = auth.uid(),
+         decidida_em = now()
+   where id = p_revisao;
+end;
+$$;
+
+
+--
 -- Name: rls_auto_enable(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -209,6 +653,25 @@ $$;
 
 
 --
+-- Name: sem_acento(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.sem_acento(texto text) RETURNS text
+    LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE
+    SET search_path TO 'extensions', 'public'
+    AS $$
+  select lower(extensions.unaccent('extensions.unaccent'::regdictionary, texto))
+$$;
+
+
+--
+-- Name: FUNCTION sem_acento(texto text); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.sem_acento(texto text) IS 'Devolve o texto sem acento e em minúsculas, para comparação de busca.';
+
+
+--
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -234,6 +697,35 @@ CREATE FUNCTION public.sou_dev() RETURNS boolean
   SELECT 1 FROM public.profiles
   WHERE id = auth.uid() AND cargo_principal = 'DEV'
 ) $$;
+
+
+--
+-- Name: total_verificados(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.total_verificados() RETURNS integer
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  select count(*)::int from auth.users where email_confirmed_at is not null;
+$$;
+
+
+--
+-- Name: usuario_sancionado(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.usuario_sancionado(uid uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  select exists (
+    select 1 from public.usuarios_sancoes
+    where user_id = uid
+      and revogada_em is null
+      and (fim is null or fim > now())
+  );
+$$;
 
 
 SET default_tablespace = '';
@@ -286,6 +778,132 @@ CREATE TABLE public.agenda_participantes (
     presente boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: artigo_avaliacoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.artigo_avaliacoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    artigo_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    tipo text NOT NULL,
+    descricao_erro text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    editado_em timestamp with time zone,
+    avaliador_nome text,
+    CONSTRAINT artigo_avaliacoes_tipo_check CHECK ((tipo = ANY (ARRAY['otimo'::text, 'bom'::text, 'gostei'::text, 'nao_gostei'::text, 'erro'::text, 'erro_grave'::text]))),
+    CONSTRAINT descricao_obrigatoria_no_erro CHECK (
+CASE
+    WHEN (tipo = ANY (ARRAY['erro'::text, 'erro_grave'::text])) THEN ((descricao_erro IS NOT NULL) AND (length(TRIM(BOTH FROM descricao_erro)) >= 10))
+    ELSE (descricao_erro IS NULL)
+END)
+);
+
+
+--
+-- Name: artigo_revisoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.artigo_revisoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    artigo_id uuid NOT NULL,
+    aberta_em timestamp with time zone DEFAULT now() NOT NULL,
+    origem text NOT NULL,
+    estado text DEFAULT 'aberta'::text NOT NULL,
+    decisao text,
+    justificativa text,
+    decidida_por uuid,
+    decidida_em timestamp with time zone,
+    CONSTRAINT artigo_revisoes_decisao_check CHECK (((decisao IS NULL) OR (decisao = ANY (ARRAY['restaurar'::text, 'manter_retirado'::text, 'suspender_autor'::text, 'banir_autor'::text])))),
+    CONSTRAINT artigo_revisoes_estado_check CHECK ((estado = ANY (ARRAY['aberta'::text, 'resolvida'::text]))),
+    CONSTRAINT artigo_revisoes_origem_check CHECK ((origem = ANY (ARRAY['comunidade'::text, 'humano'::text, 'reenvio'::text]))),
+    CONSTRAINT justificativa_obrigatoria_ao_resolver CHECK (
+CASE
+    WHEN (estado = 'resolvida'::text) THEN ((justificativa IS NOT NULL) AND (length(TRIM(BOTH FROM justificativa)) >= 10))
+    ELSE true
+END)
+);
+
+
+--
+-- Name: artigos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.artigos (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    autor_id uuid NOT NULL,
+    autor_nome text NOT NULL,
+    autor_sigla_casa text,
+    titulo text NOT NULL,
+    slug text NOT NULL,
+    resumo text,
+    conteudo text NOT NULL,
+    estado text DEFAULT 'publicado'::text NOT NULL,
+    aval_otimo integer DEFAULT 0 NOT NULL,
+    aval_bom integer DEFAULT 0 NOT NULL,
+    aval_gostei integer DEFAULT 0 NOT NULL,
+    aval_nao_gostei integer DEFAULT 0 NOT NULL,
+    aval_erro integer DEFAULT 0 NOT NULL,
+    aval_erro_grave integer DEFAULT 0 NOT NULL,
+    retirado_em timestamp with time zone,
+    retirado_por text,
+    retirado_por_user_id uuid,
+    retirado_motivo text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    editado_em timestamp with time zone,
+    publicado_em timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT artigos_conteudo_check CHECK ((length(TRIM(BOTH FROM conteudo)) >= 200)),
+    CONSTRAINT artigos_estado_check CHECK ((estado = ANY (ARRAY['publicado'::text, 'retirado'::text, 'em_correcao'::text]))),
+    CONSTRAINT artigos_resumo_check CHECK (((resumo IS NULL) OR (length(resumo) <= 400))),
+    CONSTRAINT artigos_retirado_por_check CHECK (((retirado_por IS NULL) OR (retirado_por = ANY (ARRAY['comunidade'::text, 'humano'::text])))),
+    CONSTRAINT artigos_titulo_check CHECK (((length(TRIM(BOTH FROM titulo)) >= 5) AND (length(TRIM(BOTH FROM titulo)) <= 160)))
+);
+
+
+--
+-- Name: artigos_avisos; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.artigos_avisos WITH (security_invoker='false') AS
+ SELECT slug,
+    estado,
+    retirado_em
+   FROM public.artigos a
+  WHERE (estado = ANY (ARRAY['retirado'::text, 'em_correcao'::text]));
+
+
+--
+-- Name: artigos_publicos; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.artigos_publicos WITH (security_invoker='true') AS
+ SELECT id,
+    autor_id,
+    autor_nome,
+    autor_sigla_casa,
+    titulo,
+    slug,
+    resumo,
+        CASE
+            WHEN (estado = 'publicado'::text) THEN conteudo
+            ELSE NULL::text
+        END AS conteudo,
+    estado,
+    aval_otimo,
+    aval_bom,
+    aval_gostei,
+    aval_nao_gostei,
+    ((aval_otimo + aval_bom) + aval_gostei) AS aprovacoes,
+    retirado_em,
+    retirado_por,
+    retirado_motivo,
+    created_at,
+    editado_em,
+    publicado_em,
+    public.artigo_piso_retirada(public.total_verificados()) AS piso_atual
+   FROM public.artigos a;
 
 
 --
@@ -711,6 +1329,25 @@ CREATE TABLE public.tesouraria_transacoes (
 
 
 --
+-- Name: usuarios_sancoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.usuarios_sancoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    tipo text NOT NULL,
+    inicio timestamp with time zone DEFAULT now() NOT NULL,
+    fim timestamp with time zone,
+    motivo text NOT NULL,
+    aplicada_por uuid NOT NULL,
+    revogada_em timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT motivo_obrigatorio_na_sancao CHECK ((length(TRIM(BOTH FROM motivo)) >= 10)),
+    CONSTRAINT usuarios_sancoes_tipo_check CHECK ((tipo = ANY (ARRAY['suspensao'::text, 'banimento'::text])))
+);
+
+
+--
 -- Name: administradores_pagina administradores_pagina_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -740,6 +1377,46 @@ ALTER TABLE ONLY public.agenda_participantes
 
 ALTER TABLE ONLY public.agenda_participantes
     ADD CONSTRAINT agenda_participantes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_artigo_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_avaliacoes
+    ADD CONSTRAINT artigo_avaliacoes_artigo_id_user_id_key UNIQUE (artigo_id, user_id);
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_avaliacoes
+    ADD CONSTRAINT artigo_avaliacoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artigo_revisoes artigo_revisoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_revisoes
+    ADD CONSTRAINT artigo_revisoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artigos artigos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigos
+    ADD CONSTRAINT artigos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artigos artigos_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigos
+    ADD CONSTRAINT artigos_slug_key UNIQUE (slug);
 
 
 --
@@ -959,6 +1636,49 @@ ALTER TABLE ONLY public.tesouraria_transacoes
 
 
 --
+-- Name: usuarios_sancoes usuarios_sancoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios_sancoes
+    ADD CONSTRAINT usuarios_sancoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: artigo_avaliacoes_artigo_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artigo_avaliacoes_artigo_idx ON public.artigo_avaliacoes USING btree (artigo_id);
+
+
+--
+-- Name: artigo_revisoes_abertas_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artigo_revisoes_abertas_idx ON public.artigo_revisoes USING btree (estado, aberta_em DESC);
+
+
+--
+-- Name: artigos_autor_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artigos_autor_idx ON public.artigos USING btree (autor_id);
+
+
+--
+-- Name: artigos_estado_publicado_em_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artigos_estado_publicado_em_idx ON public.artigos USING btree (estado, publicado_em DESC);
+
+
+--
+-- Name: artigos_sigla_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX artigos_sigla_idx ON public.artigos USING btree (autor_sigla_casa);
+
+
+--
 -- Name: casas_espirita_nome_cidade_estado_uq; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1005,6 +1725,41 @@ CREATE INDEX idx_memoria_virtudes_sigla ON public.memoria_virtudes_custom USING 
 --
 
 CREATE INDEX idx_tes_autoriz_user ON public.tesouraria_autorizacoes USING btree (user_id);
+
+
+--
+-- Name: usuarios_sancoes_vigentes_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX usuarios_sancoes_vigentes_idx ON public.usuarios_sancoes USING btree (user_id) WHERE (revogada_em IS NULL);
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_carimbo_nome; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER artigo_avaliacoes_carimbo_nome BEFORE INSERT OR UPDATE ON public.artigo_avaliacoes FOR EACH ROW EXECUTE FUNCTION public.artigo_avaliacao_carimbar_nome();
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_reconta; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER artigo_avaliacoes_reconta AFTER INSERT OR DELETE OR UPDATE ON public.artigo_avaliacoes FOR EACH ROW EXECUTE FUNCTION public.artigo_recontar();
+
+
+--
+-- Name: artigos artigos_carimbo_identidade; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER artigos_carimbo_identidade BEFORE INSERT OR UPDATE ON public.artigos FOR EACH ROW EXECUTE FUNCTION public.artigo_carimbar_identidade();
+
+
+--
+-- Name: artigos artigos_transicao; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER artigos_transicao BEFORE UPDATE ON public.artigos FOR EACH ROW EXECUTE FUNCTION public.artigo_transicao_valida();
 
 
 --
@@ -1068,6 +1823,54 @@ ALTER TABLE ONLY public.agenda_participantes
 
 ALTER TABLE ONLY public.agenda_participantes
     ADD CONSTRAINT agenda_participantes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_artigo_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_avaliacoes
+    ADD CONSTRAINT artigo_avaliacoes_artigo_id_fkey FOREIGN KEY (artigo_id) REFERENCES public.artigos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_avaliacoes
+    ADD CONSTRAINT artigo_avaliacoes_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: artigo_revisoes artigo_revisoes_artigo_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_revisoes
+    ADD CONSTRAINT artigo_revisoes_artigo_id_fkey FOREIGN KEY (artigo_id) REFERENCES public.artigos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: artigo_revisoes artigo_revisoes_decidida_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigo_revisoes
+    ADD CONSTRAINT artigo_revisoes_decidida_por_fkey FOREIGN KEY (decidida_por) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: artigos artigos_autor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigos
+    ADD CONSTRAINT artigos_autor_id_fkey FOREIGN KEY (autor_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: artigos artigos_retirado_por_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.artigos
+    ADD CONSTRAINT artigos_retirado_por_user_id_fkey FOREIGN KEY (retirado_por_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -1319,6 +2122,22 @@ ALTER TABLE ONLY public.tesouraria_transacoes
 
 
 --
+-- Name: usuarios_sancoes usuarios_sancoes_aplicada_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios_sancoes
+    ADD CONSTRAINT usuarios_sancoes_aplicada_por_fkey FOREIGN KEY (aplicada_por) REFERENCES auth.users(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: usuarios_sancoes usuarios_sancoes_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios_sancoes
+    ADD CONSTRAINT usuarios_sancoes_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: administradores_pagina; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -1356,6 +2175,109 @@ ALTER TABLE public.agenda_eventos ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.agenda_participantes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: artigo_avaliacoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.artigo_avaliacoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_delete; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_avaliacoes_delete ON public.artigo_avaliacoes FOR DELETE USING ((user_id = auth.uid()));
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_avaliacoes_insert ON public.artigo_avaliacoes FOR INSERT WITH CHECK (((user_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (NOT (EXISTS ( SELECT 1
+   FROM public.artigos a
+  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = auth.uid())))))));
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_avaliacoes_select ON public.artigo_avaliacoes FOR SELECT USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.artigos a
+  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = auth.uid())))) OR public.pode_revisar_artigo(artigo_id)));
+
+
+--
+-- Name: artigo_avaliacoes artigo_avaliacoes_update; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_avaliacoes_update ON public.artigo_avaliacoes FOR UPDATE USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid()))));
+
+
+--
+-- Name: artigo_revisoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.artigo_revisoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: artigo_revisoes artigo_revisoes_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_revisoes_insert ON public.artigo_revisoes FOR INSERT WITH CHECK ((public.pode_revisar_artigo(artigo_id) OR ((origem = 'reenvio'::text) AND (EXISTS ( SELECT 1
+   FROM public.artigos a
+  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = auth.uid()) AND (a.estado = 'em_correcao'::text)))))));
+
+
+--
+-- Name: artigo_revisoes artigo_revisoes_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_revisoes_select ON public.artigo_revisoes FOR SELECT USING ((public.pode_revisar_artigo(artigo_id) OR (EXISTS ( SELECT 1
+   FROM public.artigos a
+  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = auth.uid()))))));
+
+
+--
+-- Name: artigo_revisoes artigo_revisoes_update; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigo_revisoes_update ON public.artigo_revisoes FOR UPDATE USING (public.pode_revisar_artigo(artigo_id)) WITH CHECK (public.pode_revisar_artigo(artigo_id));
+
+
+--
+-- Name: artigos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.artigos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: artigos artigos_delete; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigos_delete ON public.artigos FOR DELETE USING (public.pode_revisar_artigo(id));
+
+
+--
+-- Name: artigos artigos_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigos_insert ON public.artigos FOR INSERT WITH CHECK (((autor_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid()))));
+
+
+--
+-- Name: artigos artigos_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigos_select ON public.artigos FOR SELECT USING (((estado = 'publicado'::text) OR (autor_id = auth.uid()) OR public.pode_revisar_artigo(id)));
+
+
+--
+-- Name: artigos artigos_update; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY artigos_update ON public.artigos FOR UPDATE USING ((((autor_id = auth.uid()) AND (estado = ANY (ARRAY['publicado'::text, 'retirado'::text, 'em_correcao'::text]))) OR public.pode_revisar_artigo(id))) WITH CHECK (((autor_id = auth.uid()) OR public.pode_revisar_artigo(id)));
+
 
 --
 -- Name: casas_espirita authenticated_insert_casa; Type: POLICY; Schema: public; Owner: -
@@ -2117,6 +3039,38 @@ CREATE POLICY tesouraria_update ON public.tesouraria_transacoes FOR UPDATE TO au
 
 
 --
+-- Name: usuarios_sancoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.usuarios_sancoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: usuarios_sancoes usuarios_sancoes_insert; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY usuarios_sancoes_insert ON public.usuarios_sancoes FOR INSERT WITH CHECK (((aplicada_por = auth.uid()) AND public.pode_sancionar(user_id)));
+
+
+--
+-- Name: usuarios_sancoes usuarios_sancoes_select; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY usuarios_sancoes_select ON public.usuarios_sancoes FOR SELECT USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.cargo_principal = 'DEV'::text)))) OR (EXISTS ( SELECT 1
+   FROM (public.profiles p
+     JOIN public.profiles alvo ON ((alvo.id = usuarios_sancoes.user_id)))
+  WHERE ((p.id = auth.uid()) AND (p.sigla_casa = alvo.sigla_casa) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text])))))));
+
+
+--
+-- Name: usuarios_sancoes usuarios_sancoes_update; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY usuarios_sancoes_update ON public.usuarios_sancoes FOR UPDATE USING (public.pode_sancionar(user_id)) WITH CHECK (public.pode_sancionar(user_id));
+
+
+--
 -- Name: solicitacoes_dev ver proprias solicitacoes; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -2155,5 +3109,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict YuqwcPUpqWbmAJo5ysNfBTZON8qpjR9Tt3qZxZe9NMhcHOncemPaBxY5YAerCz9
+\unrestrict ATzWYjKSE1EUjnerGbs3VUrTaFUIFIK5OMP9jXlH4avBfADjApJUVXjnfavBXR7
 
