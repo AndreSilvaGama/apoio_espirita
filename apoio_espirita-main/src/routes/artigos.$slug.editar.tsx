@@ -70,13 +70,18 @@ function ArtigoEditar() {
   const carregarErros = useCallback(async (artigoId: string) => {
     const { data: avaliacoes, error: erroAvaliacoes } = await supabase
       .from("artigo_avaliacoes")
-      .select("tipo, descricao_erro, user_id")
+      .select("tipo, descricao_erro, user_id, avaliador_nome")
       .eq("artigo_id", artigoId)
       .in("tipo", ["erro", "erro_grave"])
       .order("created_at", { ascending: true });
     if (erroAvaliacoes) throw erroAvaliacoes;
 
-    const idsAvaliadores = [...new Set((avaliacoes ?? []).map((a) => a.user_id))];
+    // avaliador_nome vem congelado no voto (mesmo padrão de artigos.autor_nome).
+    // profiles_public só é consultada para avaliações antigas, gravadas antes
+    // da coluna existir.
+    const idsAvaliadores = [
+      ...new Set((avaliacoes ?? []).filter((a) => !a.avaliador_nome).map((a) => a.user_id)),
+    ];
     const { data: perfis, error: erroPerfis } =
       idsAvaliadores.length > 0
         ? await supabase.from("profiles_public").select("id, nome").in("id", idsAvaliadores)
@@ -95,7 +100,7 @@ function ArtigoEditar() {
         .map((a) => ({
           tipo: a.tipo as TipoAvaliacao,
           descricao_erro: a.descricao_erro,
-          autor_nome: nomePorId.get(a.user_id) ?? "Um avaliador",
+          autor_nome: a.avaliador_nome ?? nomePorId.get(a.user_id) ?? "Um avaliador",
         })),
     );
   }, []);

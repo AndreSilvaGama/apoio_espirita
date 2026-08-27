@@ -224,14 +224,19 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
         idsVisiveis.length > 0
           ? await supabase
               .from("artigo_avaliacoes")
-              .select("artigo_id, tipo, descricao_erro, user_id")
+              .select("artigo_id, tipo, descricao_erro, user_id, avaliador_nome")
               .in("artigo_id", idsVisiveis)
               .in("tipo", ["erro", "erro_grave"])
               .order("created_at", { ascending: true })
           : { data: [], error: null };
       if (erroAvaliacoes) throw erroAvaliacoes;
 
-      const idsAvaliadores = [...new Set((avaliacoes ?? []).map((a) => a.user_id))];
+      // avaliador_nome vem congelado no voto (mesmo padrão de artigos.autor_nome).
+      // profiles_public só é consultada para avaliações antigas, gravadas antes
+      // da coluna existir.
+      const idsAvaliadores = [
+        ...new Set((avaliacoes ?? []).filter((a) => !a.avaliador_nome).map((a) => a.user_id)),
+      ];
       const { data: perfis, error: erroPerfis } =
         idsAvaliadores.length > 0
           ? await supabase.from("profiles_public").select("id, nome").in("id", idsAvaliadores)
@@ -250,7 +255,7 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
         (errosPorArtigo[av.artigo_id] ??= []).push({
           tipo: av.tipo as TipoAvaliacao,
           descricao: av.descricao_erro,
-          autorNome: nomePorId.get(av.user_id) ?? "Um avaliador",
+          autorNome: av.avaliador_nome ?? nomePorId.get(av.user_id) ?? "Um avaliador",
         });
       }
 
@@ -299,46 +304,19 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
     atualizarForm(caso.revisaoId, { enviando: true, erro: null });
 
     try {
-      if (acao === "restaurar") {
-        const { error: erroArtigo } = await supabase
-          .from("artigos")
-          .update({
-            estado: "publicado",
-            retirado_em: null,
-            retirado_por: null,
-            retirado_por_user_id: null,
-            retirado_motivo: null,
-          })
-          .eq("id", caso.artigoId);
-        if (erroArtigo) throw erroArtigo;
-      }
-
-      if (acao === "suspender_autor" || acao === "banir_autor") {
-        const fim =
-          acao === "suspender_autor"
-            ? new Date(Date.now() + form.dias * 24 * 60 * 60 * 1000).toISOString()
-            : null;
-        const { error: erroSancao } = await supabase.from("usuarios_sancoes").insert({
-          user_id: caso.autorId,
-          tipo: acao === "suspender_autor" ? "suspensao" : "banimento",
-          fim,
-          motivo: form.justificativa.trim(),
-          aplicada_por: user.id,
-        });
-        if (erroSancao) throw erroSancao;
-      }
-
-      const { error: erroRevisao } = await supabase
-        .from("artigo_revisoes")
-        .update({
-          estado: "resolvida",
-          decisao: acao,
-          justificativa: form.justificativa.trim(),
-          decidida_por: user.id,
-          decidida_em: new Date().toISOString(),
-        })
-        .eq("id", caso.revisaoId);
-      if (erroRevisao) throw erroRevisao;
+      // Uma única chamada atômica: o banco faz o update de artigos, o insert
+      // em usuarios_sancoes e o update de artigo_revisoes dentro da mesma
+      // transação, travando a linha da revisão — um segundo clique nunca cria
+      // uma segunda sanção. As mensagens de erro já vêm prontas em português
+      // (inclusive a de revisão já resolvida) e são mostradas ao revisor sem
+      // alteração, no catch abaixo.
+      const { error } = await supabase.rpc("resolver_revisao_artigo", {
+        p_revisao: caso.revisaoId,
+        p_decisao: acao,
+        p_justificativa: form.justificativa.trim(),
+        p_dias_suspensao: acao === "suspender_autor" ? form.dias : null,
+      });
+      if (error) throw error;
 
       setCasos((cs) => cs.filter((c) => c.revisaoId !== caso.revisaoId));
       cancelarAcao(caso.revisaoId);

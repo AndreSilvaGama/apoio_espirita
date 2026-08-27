@@ -97,7 +97,7 @@ export function AvaliacaoArtigo({
   contagens,
   onAvaliado,
 }: AvaliacaoArtigoProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const ehAutor = !!user && user.id === autorId;
 
   const [elegibilidade, setElegibilidade] = useState<Elegibilidade>("carregando");
@@ -204,12 +204,20 @@ export function AvaliacaoArtigo({
     setEnviando(true);
     setErroEnvio(null);
     try {
-      const { error } = await supabase
-        .from("artigo_avaliacoes")
-        .upsert(
-          { artigo_id: artigoId, user_id: user.id, tipo, descricao_erro: descricao },
-          { onConflict: "artigo_id,user_id" },
-        );
+      const { error } = await supabase.from("artigo_avaliacoes").upsert(
+        {
+          artigo_id: artigoId,
+          user_id: user.id,
+          tipo,
+          descricao_erro: descricao,
+          // Congelado no momento do voto — mesmo padrão de artigos.autor_nome.
+          // Sem isto, a promessa "o autor verá esta observação com o seu nome"
+          // seria falsa para quem avalia de outra casa, já que a política de
+          // `profiles` só libera a própria linha, a mesma casa, ou DEV.
+          avaliador_nome: profile?.nome ?? null,
+        },
+        { onConflict: "artigo_id,user_id" },
+      );
       if (error) throw error;
       setMeuVoto({ tipo, descricao_erro: descricao });
       setPainelAberto(null);

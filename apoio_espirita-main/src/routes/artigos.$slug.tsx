@@ -295,7 +295,7 @@ function ArtigoPage() {
                   <div className="space-y-3">
                     <p className="text-sm leading-relaxed text-muted-foreground">
                       Esta ação tira o artigo do ar imediatamente e abre um caso na fila de revisão.
-                      O autor será avisado do motivo.
+                      O motivo ficará visível para o autor em "Meus artigos".
                     </p>
                     <label className="block text-xs uppercase tracking-widest text-muted-foreground">
                       Motivo da retirada <span className="text-cyan-glow">*</span>
