@@ -284,13 +284,17 @@ revoke execute on function
 grant execute on function
   public.resolver_revisao_artigo(uuid, text, text, int) to authenticated;
 
--- ── Problema 5: acentos no texto que o autor e o revisor leem ───────────────
+-- ── Problema 5: acentos e concordancia no texto que o autor e o revisor leem ─
 --
 -- artigo_recontar gravava o motivo da retirada automatica sem acento
 -- ("marcacoes", "aprovacoes") — texto que aparece ao autor em "Meus artigos"
--- e ao revisor no cartao da fila. Recriada inteira via CREATE OR REPLACE,
--- identica em logica; unica mudanca e a ortografia das duas palavras no
--- format().
+-- e ao revisor no cartao da fila. Corrigido em 20260827130000, mas o plural
+-- ficou fixo: com 1 aprovacao o texto saia "contra 1 aprovações". O piso
+-- minimo de 3 (artigo_piso_retirada) garante que "marcacoes" nunca e 1 hoje,
+-- mas e proporcional — se um dia mudar, "marcacoes" tambem pode ser 1 — e
+-- "aprovacoes" ja pode ser 1 agora. Recriada inteira via CREATE OR REPLACE,
+-- identica em logica; unica mudanca e montar as duas palavras no singular ou
+-- plural certo antes do format(), em vez de escreve-las fixas na string.
 create or replace function public.artigo_recontar()
 returns trigger
 language plpgsql
@@ -301,6 +305,8 @@ declare
   alvo uuid := coalesce(new.artigo_id, old.artigo_id);
   reg record;
   piso int;
+  v_palavra_marcacoes text;
+  v_palavra_aprovacoes text;
 begin
   update public.artigos a
      set aval_otimo      = c.otimo,
@@ -338,14 +344,20 @@ begin
            piso
          )
   then
+    v_palavra_marcacoes := case when reg.aval_erro_grave = 1 then 'marcação' else 'marcações' end;
+    v_palavra_aprovacoes := case
+      when (reg.aval_otimo + reg.aval_bom + reg.aval_gostei) = 1 then 'aprovação'
+      else 'aprovações'
+    end;
+
     update public.artigos
        set estado = 'retirado',
            retirado_em = now(),
            retirado_por = 'comunidade',
            retirado_motivo = format(
-             'Retirado automaticamente: %s marcações de erro grave, piso de %s, contra %s aprovações.',
-             reg.aval_erro_grave, piso,
-             reg.aval_otimo + reg.aval_bom + reg.aval_gostei)
+             'Retirado automaticamente: %s %s de erro grave, piso de %s, contra %s %s.',
+             reg.aval_erro_grave, v_palavra_marcacoes, piso,
+             reg.aval_otimo + reg.aval_bom + reg.aval_gostei, v_palavra_aprovacoes)
      where id = alvo;
 
     insert into public.artigo_revisoes (artigo_id, origem)
