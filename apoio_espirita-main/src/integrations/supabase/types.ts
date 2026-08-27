@@ -187,6 +187,7 @@ export type Database = {
       artigo_avaliacoes: {
         Row: {
           artigo_id: string;
+          avaliador_nome: string | null;
           created_at: string;
           descricao_erro: string | null;
           editado_em: string | null;
@@ -196,6 +197,7 @@ export type Database = {
         };
         Insert: {
           artigo_id: string;
+          avaliador_nome?: string | null;
           created_at?: string;
           descricao_erro?: string | null;
           editado_em?: string | null;
@@ -205,6 +207,7 @@ export type Database = {
         };
         Update: {
           artigo_id?: string;
+          avaliador_nome?: string | null;
           created_at?: string;
           descricao_erro?: string | null;
           editado_em?: string | null;
@@ -1573,6 +1576,15 @@ export type Database = {
       pode_administrar_pagina: { Args: { p_sigla: string }; Returns: boolean };
       pode_revisar_artigo: { Args: { alvo: string }; Returns: boolean };
       pode_sancionar: { Args: { alvo_user: string }; Returns: boolean };
+      resolver_revisao_artigo: {
+        Args: {
+          p_decisao: string;
+          p_dias_suspensao?: number;
+          p_justificativa: string;
+          p_revisao: string;
+        };
+        Returns: undefined;
+      };
       sou_dev: { Args: never; Returns: boolean };
       total_verificados: { Args: never; Returns: number };
       usuario_sancionado: { Args: { uid: string }; Returns: boolean };
