@@ -24,3 +24,6 @@ Thumbs.db
 # Python (o script do sitemap e seus testes)
 __pycache__/
 *.pyc
+
+# TanStack Router (gerado em tempo de desenvolvimento)
+.tanstack/
