@@ -18,16 +18,55 @@
  * antiga. Toda navegação vai à rede primeiro, sempre.
  */
 
-const VERSAO = "apoio-espirita-v1";
+const VERSAO = "apoio-espirita-v2";
 const CACHE_ESTATICOS = `${VERSAO}-estaticos`;
 const CACHE_OFFLINE = `${VERSAO}-offline`;
-const PAGINA_OFFLINE = "/offline.html";
+
+// Chave com que a página de aviso é guardada e procurada.
+const PAGINA_OFFLINE = "/offline";
+// A hospedagem publica o arquivo em /offline e redireciona /offline.html
+// para lá; o servidor de desenvolvimento faz o contrário. Tentamos os dois.
+const ENDERECOS_OFFLINE = ["/offline", "/offline.html"];
+
+/**
+ * Busca a página de aviso e guarda uma cópia limpa.
+ *
+ * A cópia é remontada de propósito: quando a resposta vem de um
+ * redirecionamento, o Cache API recusa guardá-la e derruba a instalação
+ * inteira do service worker — foi o que aconteceu com /offline.html.
+ */
+async function guardarPaginaOffline(cache) {
+  for (const endereco of ENDERECOS_OFFLINE) {
+    try {
+      const resposta = await fetch(endereco, { cache: "reload" });
+      if (!resposta.ok) continue;
+      const html = await resposta.text();
+      await cache.put(
+        PAGINA_OFFLINE,
+        new Response(html, {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        }),
+      );
+      return true;
+    } catch {
+      // Tenta o próximo endereço.
+    }
+  }
+  return false;
+}
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
     (async () => {
-      const cache = await caches.open(CACHE_OFFLINE);
-      await cache.add(new Request(PAGINA_OFFLINE, { cache: "reload" }));
+      // Falhar aqui não pode impedir a instalação: sem a página de aviso o
+      // site continua funcionando, e o cache dos arquivos ainda vale a pena.
+      try {
+        const cache = await caches.open(CACHE_OFFLINE);
+        await guardarPaginaOffline(cache);
+      } catch {
+        // Segue sem a página de aviso.
+      }
       await self.skipWaiting();
     })(),
   );
