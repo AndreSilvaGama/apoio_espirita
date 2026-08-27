@@ -7,11 +7,15 @@ import {
   TITULO_MAX,
   CONTEUDO_MIN,
   RESUMO_MAX,
+  JUSTIFICATIVA_MINIMA,
   exigeDescricao,
   descricaoValida,
   gerarSlug,
   pluralCaracteres,
   validarArtigo,
+  justificativaValida,
+  pluralDias,
+  pluralCasos,
 } from "./artigos";
 
 describe("escala de avaliação", () => {
@@ -118,5 +122,36 @@ describe("validação do formulário de artigo", () => {
     expect(validarArtigo("Título válido", conteudoValido, "r".repeat(RESUMO_MAX + 1))).toContain(
       String(RESUMO_MAX),
     );
+  });
+});
+
+describe("justificativa de decisão de revisão", () => {
+  it("recusa justificativa curta demais ou só com espaços", () => {
+    expect(JUSTIFICATIVA_MINIMA).toBe(10);
+    expect(justificativaValida("curta")).toBe(false);
+    expect(justificativaValida("   ")).toBe(false);
+    expect(justificativaValida("")).toBe(false);
+  });
+
+  it("aceita justificativa com o tamanho mínimo, medindo sem espaços nas pontas", () => {
+    expect(justificativaValida("0123456789")).toBe(true);
+    expect(justificativaValida("  0123456789  ")).toBe(true);
+  });
+});
+
+describe("plural de dias de suspensão", () => {
+  it("usa singular só para 1", () => {
+    expect(pluralDias(1)).toBe("dia");
+    expect(pluralDias(0)).toBe("dias");
+    expect(pluralDias(2)).toBe("dias");
+    expect(pluralDias(30)).toBe("dias");
+  });
+});
+
+describe("plural de casos na fila de revisão", () => {
+  it("usa singular só para 1", () => {
+    expect(pluralCasos(1)).toBe("caso");
+    expect(pluralCasos(0)).toBe("casos");
+    expect(pluralCasos(2)).toBe("casos");
   });
 });

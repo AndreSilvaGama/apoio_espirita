@@ -17,14 +17,23 @@ import {
   CheckCircle2,
   LayoutDashboard,
   PlusCircle,
+  Scale,
 } from "lucide-react";
 import { mensagemDeErro } from "@/lib/erros";
+import { FilaRevisaoArtigos } from "@/components/FilaRevisaoArtigos";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
 });
 
-type Tab = "overview" | "casas" | "usuarios" | "solicitacoes" | "problemas" | "sugestoes";
+type Tab =
+  | "overview"
+  | "casas"
+  | "usuarios"
+  | "solicitacoes"
+  | "problemas"
+  | "sugestoes"
+  | "artigos";
 
 interface StatOverview {
   casasTotal: number;
@@ -477,6 +486,7 @@ function AdminDashboard() {
             { id: "solicitacoes", label: "Solicitações DEV" },
             { id: "problemas", label: "Problemas do Site" },
             { id: "sugestoes", label: "Sugestões" },
+            { id: "artigos", label: "Artigos" },
           ].map((t) => (
             <button
               key={t.id}
@@ -1080,6 +1090,23 @@ function AdminDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 7: ARTIGOS (MODERAÇÃO) */}
+          {activeTab === "artigos" && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Scale size={16} className="text-violet-600" />
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800">Moderação de Artigos</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Fila completa da plataforma — casos retirados pela comunidade, por decisão
+                    humana ou reenviados após correção
+                  </p>
+                </div>
+              </div>
+              <FilaRevisaoArtigos escopo="plataforma" />
             </div>
           )}
         </div>

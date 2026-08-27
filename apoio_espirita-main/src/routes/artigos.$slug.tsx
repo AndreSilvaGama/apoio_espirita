@@ -2,9 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { AlertTriangle, Clock, FileQuestion, User } from "lucide-react";
+import { AlertTriangle, Ban, Clock, FileQuestion, ShieldAlert, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { AvaliacaoArtigo } from "@/components/AvaliacaoArtigo";
+import { JUSTIFICATIVA_MINIMA, justificativaValida } from "@/lib/artigos";
 import { mensagemDeErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/artigos/$slug")({
@@ -70,9 +72,75 @@ function AvisoRetirado() {
 
 function ArtigoPage() {
   const { slug } = Route.useParams();
+  const { user } = useAuth();
   const [situacao, setSituacao] = useState<Situacao>("carregando");
   const [artigo, setArtigo] = useState<ArtigoCompleto | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Área de revisão: só quem pode revisar ESTE artigo específico vê o botão
+  // de retirada. A checagem é a mesma função usada pelas políticas do banco
+  // (pode_revisar_artigo), então a tela nunca oferece uma ação que o banco
+  // recusaria.
+  const [souRevisor, setSouRevisor] = useState(false);
+  const [retirando, setRetirando] = useState(false);
+  const [justificativaRetirada, setJustificativaRetirada] = useState("");
+  const [enviandoRetirada, setEnviandoRetirada] = useState(false);
+  const [erroRetirada, setErroRetirada] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !artigo) {
+      setSouRevisor(false);
+      return;
+    }
+    let cancelado = false;
+    (async () => {
+      const { data, error } = await supabase.rpc("pode_revisar_artigo", { alvo: artigo.id });
+      if (!cancelado && !error) setSouRevisor(!!data);
+    })();
+    return () => {
+      cancelado = true;
+    };
+    // Só o id importa: reagir ao objeto inteiro reexecutaria a checagem a cada
+    // recarga silenciosa que segue uma avaliação.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, artigo?.id]);
+
+  async function confirmarRetirada() {
+    if (!user || !artigo) return;
+    if (!justificativaValida(justificativaRetirada)) {
+      setErroRetirada(`A justificativa precisa ter pelo menos ${JUSTIFICATIVA_MINIMA} caracteres.`);
+      return;
+    }
+    setEnviandoRetirada(true);
+    setErroRetirada(null);
+    try {
+      const { error: erroArtigoUpdate } = await supabase
+        .from("artigos")
+        .update({
+          estado: "retirado",
+          retirado_em: new Date().toISOString(),
+          retirado_por: "humano",
+          retirado_por_user_id: user.id,
+          retirado_motivo: justificativaRetirada.trim(),
+        })
+        .eq("id", artigo.id);
+      if (erroArtigoUpdate) throw erroArtigoUpdate;
+
+      const { error: erroRevisao } = await supabase.from("artigo_revisoes").insert({
+        artigo_id: artigo.id,
+        origem: "humano",
+      });
+      if (erroRevisao) throw erroRevisao;
+
+      setRetirando(false);
+      setJustificativaRetirada("");
+      await carregarArtigo({ mostrarCarregando: false });
+    } catch (e) {
+      setErroRetirada(mensagemDeErro(e, "Não foi possível retirar este artigo."));
+    } finally {
+      setEnviandoRetirada(false);
+    }
+  }
 
   /**
    * Também usado depois de gravar uma avaliação, para recarregar o artigo —
@@ -204,6 +272,76 @@ function ArtigoPage() {
               pisoAtual={artigo.piso_atual ?? 0}
               onAvaliado={() => carregarArtigo({ mostrarCarregando: false })}
             />
+
+            {souRevisor && (
+              <section className="glass rounded-3xl p-6 space-y-4 border border-red-200/40">
+                <div className="flex items-center gap-2.5">
+                  <ShieldAlert size={16} strokeWidth={1.8} className="text-red-600" />
+                  <h2 className="text-xs uppercase tracking-widest text-red-700">
+                    Área de revisão
+                  </h2>
+                </div>
+
+                {!retirando ? (
+                  <button
+                    type="button"
+                    onClick={() => setRetirando(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium uppercase tracking-widest text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
+                  >
+                    <Ban size={14} strokeWidth={1.8} />
+                    Retirar este artigo
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      Esta ação tira o artigo do ar imediatamente e abre um caso na fila de revisão.
+                      O autor será avisado do motivo.
+                    </p>
+                    <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+                      Motivo da retirada <span className="text-cyan-glow">*</span>
+                    </label>
+                    <textarea
+                      value={justificativaRetirada}
+                      onChange={(e) => {
+                        setJustificativaRetirada(e.target.value);
+                        setErroRetirada(null);
+                      }}
+                      rows={3}
+                      placeholder="Explique por que este artigo está sendo retirado do ar"
+                      className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-cyan-glow/40 transition-colors resize-y"
+                    />
+                    <p className="text-xs text-muted-foreground/60">
+                      {justificativaRetirada.trim().length}/{JUSTIFICATIVA_MINIMA} caracteres
+                    </p>
+
+                    {erroRetirada && <p className="text-sm text-red-500">{erroRetirada}</p>}
+
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={confirmarRetirada}
+                        disabled={enviandoRetirada}
+                        className="px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 transition-colors"
+                      >
+                        {enviandoRetirada ? "Retirando…" : "Confirmar retirada"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRetirando(false);
+                          setJustificativaRetirada("");
+                          setErroRetirada(null);
+                        }}
+                        disabled={enviandoRetirada}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
 
             <div className="text-center">
               <Link

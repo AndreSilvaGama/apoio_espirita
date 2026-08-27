@@ -87,3 +87,27 @@ export function validarArtigo(titulo: string, conteudo: string, resumo: string):
   }
   return null;
 }
+
+/**
+ * Mínimo para toda justificativa escrita de decisão de revisão (retirar,
+ * restaurar, manter retirado, suspender ou banir). Campo próprio, sem CHECK
+ * no banco — não é o mesmo mínimo de `DESCRICAO_MINIMA`, que é o da coluna
+ * `descricao_erro` de `artigo_avaliacoes`. Mesma ordem de grandeza, escolhida
+ * à parte, para não fazer o formulário depender de uma restrição que não é a
+ * dele.
+ */
+export const JUSTIFICATIVA_MINIMA = 10;
+
+export function justificativaValida(texto: string): boolean {
+  return texto.trim().length >= JUSTIFICATIVA_MINIMA;
+}
+
+/** "1 dia" / "2 dias" — concordância de número no prazo de suspensão. */
+export function pluralDias(n: number): string {
+  return n === 1 ? "dia" : "dias";
+}
+
+/** "1 caso" / "2 casos" — concordância de número na fila de revisão. */
+export function pluralCasos(n: number): string {
+  return n === 1 ? "caso" : "casos";
+}
