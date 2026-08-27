@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AlertTriangle, Clock, FileQuestion, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { AvaliacaoArtigo } from "@/components/AvaliacaoArtigo";
 import { mensagemDeErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/artigos/$slug")({
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/artigos/$slug")({
 
 interface ArtigoCompleto {
   id: string;
+  autor_id: string;
   titulo: string | null;
   slug: string | null;
   resumo: string | null;
@@ -37,6 +39,7 @@ interface ArtigoCompleto {
   aval_bom: number | null;
   aval_gostei: number | null;
   aval_nao_gostei: number | null;
+  piso_atual: number | null;
 }
 
 type Situacao = "carregando" | "publicado" | "retirado" | "nao_encontrado" | "erro";
@@ -58,8 +61,8 @@ function AvisoRetirado() {
         <h1 className="text-lg font-medium text-foreground">Este artigo foi retirado</h1>
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        A comunidade apontou erro grave neste texto, e ele saiu do ar. O endereço continua aqui para
-        quem chegou por um link antigo saber o que aconteceu.
+        Este texto foi retirado do ar após revisão. O endereço continua aqui para quem chegou por um
+        link antigo saber o que aconteceu.
       </p>
     </div>
   );
@@ -71,13 +74,21 @@ function ArtigoPage() {
   const [artigo, setArtigo] = useState<ArtigoCompleto | null>(null);
   const [erro, setErro] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelado = false;
-    setSituacao("carregando");
-    setArtigo(null);
-    setErro(null);
+  /**
+   * Também usado depois de gravar uma avaliação, para recarregar o artigo —
+   * se o gatilho do banco derrubou o texto, a tela já mostra o aviso de
+   * retirada sozinha. Nesse segundo caso `mostrarCarregando` fica falso: a
+   * recarga é silenciosa, sem apagar o cartão de avaliação da tela.
+   */
+  const carregarArtigo = useCallback(
+    async (opts?: { mostrarCarregando?: boolean }) => {
+      const mostrarCarregando = opts?.mostrarCarregando ?? true;
+      if (mostrarCarregando) {
+        setSituacao("carregando");
+        setArtigo(null);
+        setErro(null);
+      }
 
-    (async () => {
       try {
         const { data: encontrado, error: erroArtigo } = await supabase
           .from("artigos_publicos")
@@ -85,8 +96,6 @@ function ArtigoPage() {
           .eq("slug", slug)
           .maybeSingle();
         if (erroArtigo) throw erroArtigo;
-
-        if (cancelado) return;
 
         if (encontrado) {
           setArtigo(encontrado as ArtigoCompleto);
@@ -101,20 +110,18 @@ function ArtigoPage() {
           .maybeSingle();
         if (erroAviso) throw erroAviso;
 
-        if (cancelado) return;
         setSituacao(aviso ? "retirado" : "nao_encontrado");
       } catch (e) {
-        if (!cancelado) {
-          setErro(mensagemDeErro(e, "Não foi possível carregar este artigo."));
-          setSituacao("erro");
-        }
+        setErro(mensagemDeErro(e, "Não foi possível carregar este artigo."));
+        setSituacao("erro");
       }
-    })();
+    },
+    [slug],
+  );
 
-    return () => {
-      cancelado = true;
-    };
-  }, [slug]);
+  useEffect(() => {
+    carregarArtigo();
+  }, [carregarArtigo]);
 
   return (
     <main className="page-light min-h-screen px-4 pt-20 pb-20">
@@ -185,7 +192,18 @@ function ArtigoPage() {
               ))}
             </div>
 
-            {/* Avaliação (Task 9): espaço reservado, ainda sem os botões de nota. */}
+            <AvaliacaoArtigo
+              artigoId={artigo.id}
+              autorId={artigo.autor_id}
+              contagens={{
+                otimo: artigo.aval_otimo ?? 0,
+                bom: artigo.aval_bom ?? 0,
+                gostei: artigo.aval_gostei ?? 0,
+                nao_gostei: artigo.aval_nao_gostei ?? 0,
+              }}
+              pisoAtual={artigo.piso_atual ?? 0}
+              onAvaliado={() => carregarArtigo({ mostrarCarregando: false })}
+            />
 
             <div className="text-center">
               <Link
