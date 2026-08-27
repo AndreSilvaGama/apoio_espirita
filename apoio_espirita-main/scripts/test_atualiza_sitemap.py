@@ -116,6 +116,23 @@ class EntradasDosArtigosTest(unittest.TestCase):
         ]
         self.assertEqual(entradas_dos_artigos(artigos), [])
 
+    def test_artigo_sem_campo_estado_e_ignorado(self):
+        # Este caso existe porque o workflow ja esqueceu de pedir a coluna
+        # `estado` ao Supabase (o curl so buscava slug/publicado_em/editado_em).
+        # Sem `estado` no registro, artigo.get("estado") devolve None, que e
+        # diferente de "publicado" -- o artigo tem que ser descartado, nunca
+        # tratado como se fosse publicado por omissao do campo. Reproduz
+        # exatamente o formato que a API devolve quando a coluna nao e pedida
+        # no `select`.
+        artigos = [
+            {
+                "slug": "sem-estado-no-select",
+                "editado_em": None,
+                "publicado_em": "2026-08-01T09:00:00+00:00",
+            }
+        ]
+        self.assertEqual(entradas_dos_artigos(artigos), [])
+
     def test_ordena_por_slug(self):
         artigos = [
             {

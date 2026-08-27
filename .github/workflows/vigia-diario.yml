@@ -270,7 +270,7 @@ jobs:
 
           curl -s -m 30             "$SUPABASE_URL/rest/v1/paginas_casas?select=sigla_casa,nome_completo&publicada=eq.true"             -H "apikey: $SUPABASE_ANON_KEY"             -H "Authorization: Bearer $SUPABASE_ANON_KEY"             -o /tmp/casas.json
 
-          curl -s -m 30             "$SUPABASE_URL/rest/v1/artigos_publicos?select=slug,publicado_em,editado_em&estado=eq.publicado"             -H "apikey: $SUPABASE_ANON_KEY"             -H "Authorization: Bearer $SUPABASE_ANON_KEY"             -o /tmp/artigos.json
+          curl -s -m 30             "$SUPABASE_URL/rest/v1/artigos_publicos?select=slug,estado,publicado_em,editado_em&estado=eq.publicado"             -H "apikey: $SUPABASE_ANON_KEY"             -H "Authorization: Bearer $SUPABASE_ANON_KEY"             -o /tmp/artigos.json
 
           python3 apoio_espirita-main/scripts/atualiza-sitemap.py "$SITEMAP" /tmp/casas.json /tmp/artigos.json
 
