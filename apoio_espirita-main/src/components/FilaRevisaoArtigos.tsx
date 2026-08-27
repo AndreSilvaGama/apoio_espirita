@@ -314,7 +314,7 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
         p_revisao: caso.revisaoId,
         p_decisao: acao,
         p_justificativa: form.justificativa.trim(),
-        p_dias_suspensao: acao === "suspender_autor" ? form.dias : null,
+        p_dias_suspensao: acao === "suspender_autor" ? form.dias : undefined,
       });
       if (error) throw error;
 
