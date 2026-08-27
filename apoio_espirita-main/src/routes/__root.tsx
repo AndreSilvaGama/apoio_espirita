@@ -3,6 +3,7 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
+  useNavigate,
   useRouter,
   useRouterState,
   HeadContent,
@@ -453,12 +454,24 @@ function RootComponent() {
 function NavBar() {
   const { user, profile, isDev, isTesoureiro, isDecisao, isEvangelizador, signOut } = useAuth();
   const { location } = useRouterState();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [recursosOpen, setRecursosOpen] = useState(false);
   const [ajudaOpen, setAjudaOpen] = useState(false);
   const [recursosMobileOpen, setRecursosMobileOpen] = useState(false);
   const [ajudaMobileOpen, setAjudaMobileOpen] = useState(false);
   const { instalavel, instalar } = useInstalarApp();
+  const [buscaTopo, setBuscaTopo] = useState("");
+
+  // Enter no campo do cabeçalho leva à tela de busca com o termo já aplicado.
+  // O campo é limpo em seguida: quem chega lá encontra o termo no campo da
+  // própria tela, e dois campos com textos diferentes confundiriam.
+  const enviarBusca = (e: React.FormEvent) => {
+    e.preventDefault();
+    const termo = buscaTopo.trim();
+    setBuscaTopo("");
+    navigate({ to: "/busca", search: termo ? { q: termo } : {} });
+  };
   const recursosRef = useRef<HTMLDivElement>(null);
   const ajudaRef = useRef<HTMLDivElement>(null);
 
@@ -537,20 +550,38 @@ function NavBar() {
           <span className="text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
         </Link>
 
+        {/* Campo de busca — só onde há largura sobrando para ele */}
+        <form
+          role="search"
+          onSubmit={enviarBusca}
+          className="hidden xl:flex flex-1 min-w-0 max-w-[260px]"
+        >
+          <div className="relative w-full">
+            <Search
+              size={15}
+              strokeWidth={2}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
+            <input
+              type="search"
+              value={buscaTopo}
+              onChange={(e) => setBuscaTopo(e.target.value)}
+              placeholder="Buscar..."
+              aria-label="Buscar no site"
+              className="w-full h-9 rounded-xl bg-gray-50 border border-gray-200 pl-9 pr-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-[#004a8c]/40 transition-colors"
+            />
+          </div>
+        </form>
+
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
           <Link
             to="/busca"
             search={{}}
-            aria-label="Buscar no site"
-            title="Buscar no site"
-            className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
-              location.pathname === "/busca"
-                ? "text-[#004a8c] bg-blue-50"
-                : "text-gray-400 hover:text-[#004a8c] hover:bg-gray-50"
-            }`}
+            className={`${linkCls("/busca")} xl:hidden flex items-center gap-1.5`}
           >
-            <Search size={16} strokeWidth={2} />
+            <Search size={14} strokeWidth={2} />
+            Buscar
           </Link>
           <Link
             to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
@@ -721,9 +752,9 @@ function NavBar() {
             search={{}}
             aria-label="Buscar no site"
             onClick={() => setMenuOpen(false)}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
           >
-            <Search size={20} strokeWidth={2} />
+            <Search size={22} strokeWidth={2} />
           </Link>
           <button
             onClick={() => setMenuOpen((o) => !o)}
@@ -742,6 +773,14 @@ function NavBar() {
           style={{ animationDuration: "200ms" }}
         >
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
+            <Link
+              to="/busca"
+              search={{}}
+              className="py-3 px-2 text-sm font-medium text-gray-700 hover:text-[#004a8c] border-b border-gray-100 transition-colors flex items-center gap-2"
+            >
+              <Search size={15} strokeWidth={2} className="text-gray-400" />
+              Buscar no site
+            </Link>
             <Link
               to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
               params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
