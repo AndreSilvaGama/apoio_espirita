@@ -3,9 +3,15 @@ import {
   ROTULOS,
   TIPOS_ERRO,
   DESCRICAO_MINIMA,
+  TITULO_MIN,
+  TITULO_MAX,
+  CONTEUDO_MIN,
+  RESUMO_MAX,
   exigeDescricao,
   descricaoValida,
   gerarSlug,
+  pluralCaracteres,
+  validarArtigo,
 } from "./artigos";
 
 describe("escala de avaliação", () => {
@@ -70,5 +76,47 @@ describe("slug", () => {
     const slug = gerarSlug("palavra ".repeat(30));
     expect(slug.length).toBeLessThanOrEqual(80);
     expect(slug.endsWith("-")).toBe(false);
+  });
+});
+
+describe("plural de caracteres", () => {
+  it("usa singular só para 1", () => {
+    expect(pluralCaracteres(1)).toBe("caractere");
+    expect(pluralCaracteres(0)).toBe("caracteres");
+    expect(pluralCaracteres(2)).toBe("caracteres");
+  });
+});
+
+describe("validação do formulário de artigo", () => {
+  const conteudoValido = "a".repeat(CONTEUDO_MIN);
+
+  it("aceita título, conteúdo e resumo dentro dos limites", () => {
+    expect(validarArtigo("Um título válido", conteudoValido, "Resumo curto")).toBeNull();
+  });
+
+  it("mede o texto sem espaços nas pontas, como o banco faz", () => {
+    expect(validarArtigo(`  ${"a".repeat(TITULO_MIN)}  `, conteudoValido, "")).toBeNull();
+    expect(validarArtigo("a".repeat(TITULO_MIN - 1), conteudoValido, "")).not.toBeNull();
+  });
+
+  it("recusa título fora do intervalo permitido", () => {
+    expect(validarArtigo("abc", conteudoValido, "")).toContain(String(TITULO_MIN));
+    expect(validarArtigo("a".repeat(TITULO_MAX + 1), conteudoValido, "")).toContain(
+      String(TITULO_MAX),
+    );
+  });
+
+  it("recusa conteúdo curto demais e concorda o número de caracteres faltando", () => {
+    const faltaUm = "b".repeat(CONTEUDO_MIN - 1);
+    expect(validarArtigo("Título válido", faltaUm, "")).toMatch(/Falta 1 caractere\.$/);
+
+    const faltamDois = "b".repeat(CONTEUDO_MIN - 2);
+    expect(validarArtigo("Título válido", faltamDois, "")).toMatch(/Faltam 2 caracteres\.$/);
+  });
+
+  it("recusa resumo além do máximo", () => {
+    expect(validarArtigo("Título válido", conteudoValido, "r".repeat(RESUMO_MAX + 1))).toContain(
+      String(RESUMO_MAX),
+    );
   });
 });

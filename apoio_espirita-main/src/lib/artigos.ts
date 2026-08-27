@@ -47,3 +47,43 @@ export function gerarSlug(titulo: string): string {
     .replace(/-+[^-]*$/, "")
     .replace(/-+$/, "");
 }
+
+/**
+ * Mesmos limites das restrições no banco (migração
+ * `20260826100000_artigos_tabelas.sql`). Compartilhados entre a tela de
+ * escrever e a de editar/corrigir para não duplicar a regra.
+ */
+export const TITULO_MIN = 5;
+export const TITULO_MAX = 160;
+export const CONTEUDO_MIN = 200;
+export const RESUMO_MAX = 400;
+
+/** "1 caractere" / "2 caracteres" — concordância de número, não fixo no plural. */
+export function pluralCaracteres(n: number): string {
+  return n === 1 ? "caractere" : "caracteres";
+}
+
+/**
+ * Mesma validação que o banco aplica via CHECK, medindo o texto já sem
+ * espaços nas pontas — para o formulário barrar antes de gastar uma ida ao
+ * servidor. Devolve a mensagem pronta para exibir, ou `null` quando válido.
+ */
+export function validarArtigo(titulo: string, conteudo: string, resumo: string): string | null {
+  const t = titulo.trim();
+  const c = conteudo.trim();
+  const r = resumo.trim();
+
+  if (t.length < TITULO_MIN || t.length > TITULO_MAX) {
+    return `O título deve ter entre ${TITULO_MIN} e ${TITULO_MAX} caracteres.`;
+  }
+  if (c.length < CONTEUDO_MIN) {
+    const faltam = CONTEUDO_MIN - c.length;
+    return `O conteúdo deve ter pelo menos ${CONTEUDO_MIN} caracteres. ${
+      faltam === 1 ? "Falta" : "Faltam"
+    } ${faltam} ${pluralCaracteres(faltam)}.`;
+  }
+  if (r.length > RESUMO_MAX) {
+    return `O resumo pode ter no máximo ${RESUMO_MAX} caracteres.`;
+  }
+  return null;
+}

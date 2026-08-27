@@ -5,7 +5,15 @@ import { ptBR } from "date-fns/locale";
 import { AlertTriangle, Ban, PenLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { gerarSlug } from "@/lib/artigos";
+import {
+  CONTEUDO_MIN,
+  RESUMO_MAX,
+  TITULO_MAX,
+  TITULO_MIN,
+  gerarSlug,
+  pluralCaracteres,
+  validarArtigo,
+} from "@/lib/artigos";
 import { mensagemDeErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/artigos/novo")({
@@ -15,10 +23,6 @@ export const Route = createFileRoute("/artigos/novo")({
   component: ArtigoNovo,
 });
 
-const TITULO_MIN = 5;
-const TITULO_MAX = 160;
-const CONTEUDO_MIN = 200;
-const RESUMO_MAX = 400;
 const MAX_TENTATIVAS_SLUG = 5;
 
 type Elegibilidade = "verificando" | "liberado" | "email_nao_verificado" | "sancionado" | "erro";
@@ -39,11 +43,6 @@ function formatarData(iso: string): string {
 /** Sufixo curto para desempatar slugs colididos, sem poluir a URL. */
 function sufixoCurto(): string {
   return Math.random().toString(36).slice(2, 6);
-}
-
-/** "1 caractere" / "2 caracteres" — concordância de número, não fixo no plural. */
-function pluralCaracteres(n: number): string {
-  return n === 1 ? "caractere" : "caracteres";
 }
 
 function ArtigoNovo() {
@@ -126,30 +125,10 @@ function ArtigoNovo() {
     };
   }, [user]);
 
-  function validar(): string | null {
-    const t = titulo.trim();
-    const c = conteudo.trim();
-    const r = resumo.trim();
-
-    if (t.length < TITULO_MIN || t.length > TITULO_MAX) {
-      return `O título deve ter entre ${TITULO_MIN} e ${TITULO_MAX} caracteres.`;
-    }
-    if (c.length < CONTEUDO_MIN) {
-      const faltam = CONTEUDO_MIN - c.length;
-      return `O conteúdo deve ter pelo menos ${CONTEUDO_MIN} caracteres. ${
-        faltam === 1 ? "Falta" : "Faltam"
-      } ${faltam} ${pluralCaracteres(faltam)}.`;
-    }
-    if (r.length > RESUMO_MAX) {
-      return `O resumo pode ter no máximo ${RESUMO_MAX} caracteres.`;
-    }
-    return null;
-  }
-
   async function handlePublicar() {
     if (!user || !profile) return;
 
-    const mensagemValidacao = validar();
+    const mensagemValidacao = validarArtigo(titulo, conteudo, resumo);
     if (mensagemValidacao) {
       setErroFormulario(mensagemValidacao);
       return;

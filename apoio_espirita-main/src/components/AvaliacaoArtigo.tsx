@@ -337,6 +337,9 @@ export function AvaliacaoArtigo({
               <p className="text-xs text-muted-foreground/60">
                 {descricaoTexto.trim().length}/{DESCRICAO_MINIMA} caracteres
               </p>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                O autor verá esta observação com o seu nome.
+              </p>
 
               {erroEnvio && <p className="text-sm text-red-500">{erroEnvio}</p>}
 

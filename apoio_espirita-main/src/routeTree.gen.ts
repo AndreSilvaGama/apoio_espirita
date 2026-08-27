@@ -40,7 +40,9 @@ import { Route as JogosCaminhoDaLuzRouteImport } from './routes/jogos/caminho-da
 import { Route as JogosCacaPalavrasRouteImport } from './routes/jogos/caca-palavras'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 import { Route as ArtigosNovoRouteImport } from './routes/artigos.novo'
+import { Route as ArtigosMeusRouteImport } from './routes/artigos.meus'
 import { Route as ArtigosSlugRouteImport } from './routes/artigos.$slug'
+import { Route as ArtigosSlugEditarRouteImport } from './routes/artigos.$slug.editar'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
@@ -198,10 +200,20 @@ const ArtigosNovoRoute = ArtigosNovoRouteImport.update({
   path: '/artigos/novo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtigosMeusRoute = ArtigosMeusRouteImport.update({
+  id: '/artigos/meus',
+  path: '/artigos/meus',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtigosSlugRoute = ArtigosSlugRouteImport.update({
   id: '/artigos/$slug',
   path: '/artigos/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ArtigosSlugEditarRoute = ArtigosSlugEditarRouteImport.update({
+  id: '/editar',
+  path: '/editar',
+  getParentRoute: () => ArtigosSlugRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -226,7 +238,8 @@ export interface FileRoutesByFullPath {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
-  '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
+  '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
@@ -237,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/jogos/': typeof JogosIndexRoute
+  '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -260,7 +274,8 @@ export interface FileRoutesByTo {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
-  '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
+  '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
@@ -271,6 +286,7 @@ export interface FileRoutesByTo {
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos': typeof ArtigosIndexRoute
   '/jogos': typeof JogosIndexRoute
+  '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -295,7 +311,8 @@ export interface FileRoutesById {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
-  '/artigos/$slug': typeof ArtigosSlugRoute
+  '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
+  '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
@@ -306,6 +323,7 @@ export interface FileRoutesById {
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/jogos/': typeof JogosIndexRoute
+  '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -332,6 +350,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
@@ -342,6 +361,7 @@ export interface FileRouteTypes {
     | '/jogos/semeador-mensagens'
     | '/artigos/'
     | '/jogos/'
+    | '/artigos/$slug/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -366,6 +386,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
@@ -376,6 +397,7 @@ export interface FileRouteTypes {
     | '/jogos/semeador-mensagens'
     | '/artigos'
     | '/jogos'
+    | '/artigos/$slug/editar'
   id:
     | '__root__'
     | '/'
@@ -400,6 +422,7 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/artigos/$slug'
+    | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
     | '/jogos/caca-palavras'
@@ -410,6 +433,7 @@ export interface FileRouteTypes {
     | '/jogos/semeador-mensagens'
     | '/artigos/'
     | '/jogos/'
+    | '/artigos/$slug/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -434,7 +458,8 @@ export interface RootRouteChildren {
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
-  ArtigosSlugRoute: typeof ArtigosSlugRoute
+  ArtigosSlugRoute: typeof ArtigosSlugRouteWithChildren
+  ArtigosMeusRoute: typeof ArtigosMeusRoute
   ArtigosNovoRoute: typeof ArtigosNovoRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
   JogosCacaPalavrasRoute: typeof JogosCacaPalavrasRoute
@@ -666,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtigosNovoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artigos/meus': {
+      id: '/artigos/meus'
+      path: '/artigos/meus'
+      fullPath: '/artigos/meus'
+      preLoaderRoute: typeof ArtigosMeusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artigos/$slug': {
       id: '/artigos/$slug'
       path: '/artigos/$slug'
@@ -673,8 +705,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtigosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artigos/$slug/editar': {
+      id: '/artigos/$slug/editar'
+      path: '/editar'
+      fullPath: '/artigos/$slug/editar'
+      preLoaderRoute: typeof ArtigosSlugEditarRouteImport
+      parentRoute: typeof ArtigosSlugRoute
+    }
   }
 }
+
+interface ArtigosSlugRouteChildren {
+  ArtigosSlugEditarRoute: typeof ArtigosSlugEditarRoute
+}
+
+const ArtigosSlugRouteChildren: ArtigosSlugRouteChildren = {
+  ArtigosSlugEditarRoute: ArtigosSlugEditarRoute,
+}
+
+const ArtigosSlugRouteWithChildren = ArtigosSlugRoute._addFileChildren(
+  ArtigosSlugRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -698,7 +749,8 @@ const rootRouteChildren: RootRouteChildren = {
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
-  ArtigosSlugRoute: ArtigosSlugRoute,
+  ArtigosSlugRoute: ArtigosSlugRouteWithChildren,
+  ArtigosMeusRoute: ArtigosMeusRoute,
   ArtigosNovoRoute: ArtigosNovoRoute,
   CasaSiglaRoute: CasaSiglaRoute,
   JogosCacaPalavrasRoute: JogosCacaPalavrasRoute,
