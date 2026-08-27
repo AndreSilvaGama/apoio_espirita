@@ -5,6 +5,8 @@ import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
   Ban,
+  ChevronDown,
+  ChevronUp,
   EyeOff,
   RotateCcw,
   RotateCw,
@@ -48,6 +50,7 @@ interface CasoRevisao {
   titulo: string;
   slug: string;
   trecho: string;
+  conteudo: string;
   autorId: string;
   autorNome: string;
   autorSigla: string | null;
@@ -162,6 +165,11 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
   const [carregando, setCarregando] = useState(true);
   const [erroCarga, setErroCarga] = useState<string | null>(null);
   const [forms, setForms] = useState<Record<string, FormEstado>>({});
+  const [textoExpandido, setTextoExpandido] = useState<Record<string, boolean>>({});
+
+  const alternarTextoCompleto = useCallback((id: string) => {
+    setTextoExpandido((e) => ({ ...e, [id]: !e[id] }));
+  }, []);
 
   const obterForm = useCallback((id: string) => forms[id] ?? FORM_VAZIO, [forms]);
 
@@ -271,6 +279,7 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
           titulo: a.titulo,
           slug: a.slug,
           trecho: trechoDoArtigo(a.resumo, a.conteudo),
+          conteudo: a.conteudo,
           autorId: a.autor_id,
           autorNome: a.autor_nome,
           autorSigla: a.autor_sigla_casa,
@@ -421,6 +430,34 @@ export function FilaRevisaoArtigos({ escopo, sigla }: FilaRevisaoArtigosProps) {
                 {caso.trecho}
               </p>
             )}
+
+            <div>
+              <button
+                type="button"
+                onClick={() => alternarTextoCompleto(caso.revisaoId)}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-cyan-glow/80 hover:text-cyan-glow transition-colors"
+              >
+                {textoExpandido[caso.revisaoId] ? (
+                  <>
+                    <ChevronUp size={13} strokeWidth={1.8} />
+                    Recolher
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={13} strokeWidth={1.8} />
+                    Ler o texto completo
+                  </>
+                )}
+              </button>
+
+              {textoExpandido[caso.revisaoId] && (
+                <div className="mt-3 max-h-80 overflow-y-auto rounded-xl bg-white/5 border border-white/10 px-4 py-3">
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {caso.conteudo}
+                  </p>
+                </div>
+              )}
+            </div>
 
             {caso.retiradoMotivo && (
               <p className="text-xs leading-relaxed text-muted-foreground/80 border-l-2 border-amber-400/40 pl-3">

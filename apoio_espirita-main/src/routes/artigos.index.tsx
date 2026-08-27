@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { BookOpen, Clock, PenLine, ThumbsUp, User } from "lucide-react";
+import { BookOpen, Clock, PenLine, ThumbsUp, User, UserCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
@@ -113,13 +113,22 @@ function ArtigosIndex() {
             </p>
           </div>
           {user && (
-            <Link
-              to="/artigos/novo"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors shrink-0"
-            >
-              <PenLine size={14} strokeWidth={1.6} />
-              Escrever artigo
-            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                to="/artigos/meus"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium uppercase tracking-widest text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+              >
+                <UserCircle size={14} strokeWidth={1.6} />
+                Meus artigos
+              </Link>
+              <Link
+                to="/artigos/novo"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors"
+              >
+                <PenLine size={14} strokeWidth={1.6} />
+                Escrever artigo
+              </Link>
+            </div>
           )}
         </div>
 
