@@ -1,25 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import {
-  PenLine,
-  Music,
-  Guitar,
-  Sprout,
-  Sparkles,
-  Gamepad2,
-  MessageCircle,
-  Users,
-  HeartHandshake,
   ShoppingBag,
-  Car,
-  Truck,
   CalendarDays,
-  Cast,
-  Video,
-  Film,
-  MonitorPlay,
   CircleHelp,
-  BarChart3,
   ClipboardList,
   Wallet,
   BookOpen,
@@ -28,15 +12,6 @@ import {
   Footprints,
   Star,
   LayoutDashboard,
-  Flame,
-  UsersRound,
-  CalendarCheck,
-  Wrench,
-  Megaphone,
-  ClipboardCheck,
-  CalendarRange,
-  FileHeart,
-  Cake,
   Clock,
   Building2,
   ThumbsUp,
@@ -44,7 +19,16 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import {
+  FUNCIONALIDADES,
+  FUNCIONALIDADE_STATUS_LABEL,
+  FUNCIONALIDADE_STATUS_STYLE,
+  type FuncionalidadeCategoria,
+  type FuncionalidadeItem,
+  type FuncionalidadeStatus,
+} from "@/data/funcionalidades";
 import { supabase } from "@/integrations/supabase/client";
+import { usePainelVotes, toItemKey, type VoteMap } from "@/hooks/usePainelVotes";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/inicio")({
@@ -141,246 +125,21 @@ const BAZAR: { Icon: LucideIcon; name: string; category: string; price: string; 
   },
 ];
 
-type Status = "disponivel" | "breve" | "beta";
-
-interface FeatureItem {
-  Icon: LucideIcon;
-  title: string;
-  desc: string;
-  status: Status;
-  casa?: boolean;
-  href?: string;
-}
-
-interface FeatureCategory {
-  label: string;
-  SectionIcon: LucideIcon;
-  color: string;
-  iconColor: string;
-  bg: string;
-  border: string;
-  borderB: string;
-  items: FeatureItem[];
-}
-
-const FEATURES: FeatureCategory[] = [
-  {
-    label: "Vida Espiritual",
-    SectionIcon: Flame,
-    color: "text-violet-700",
-    iconColor: "text-violet-600",
-    bg: "bg-violet-50",
-    border: "border-violet-200",
-    borderB: "border-violet-200",
-    items: [
-      {
-        Icon: PenLine,
-        title: "Artigos e Colunistas",
-        desc: "Textos escritos por membros da sua comunidade, com identificação do autor e da casa.",
-        status: "breve",
-      },
-      {
-        Icon: Music,
-        title: "Músicas e Cifras",
-        desc: "Playlists espíritas para passes, estudos, envio de áudios e cifras/partituras com transposição de tom.",
-        status: "disponivel",
-        href: "/musicas-cifras",
-      },
-      {
-        Icon: Sprout,
-        title: "Evangelização Infantil",
-        desc: "Módulo escolar com recursos lúdicos, jogos e atividades para a formação das crianças.",
-        status: "breve",
-      },
-      {
-        Icon: Sparkles,
-        title: "Área de Jovens Espíritas",
-        desc: "Conteúdo, eventos e comunidade exclusivos para jovens trabalhadores da vinha.",
-        status: "breve",
-      },
-      {
-        Icon: Gamepad2,
-        title: "Jogos Educativos",
-        desc: "Jogos sobre os livros da codificação espírita e atividades para todas as idades.",
-        status: "disponivel",
-        href: "/jogos",
-      },
-      {
-        Icon: Cake,
-        title: "Aniversariantes do Mês",
-        desc: "Calendário de aniversários dos membros. Aparece em destaque no topo da home no mês do aniversário.",
-        status: "breve",
-      },
-      {
-        Icon: Clock,
-        title: "Plantão de Orações",
-        desc: "Membros se inscrevem em horários de oração coletiva à distância. Agenda semanal visível para todos.",
-        status: "breve",
-      },
-    ],
-  },
-  {
-    label: "Nossa Comunidade",
-    SectionIcon: UsersRound,
-    color: "text-cyan-700",
-    iconColor: "text-cyan-700",
-    bg: "bg-cyan-50",
-    border: "border-cyan-200",
-    borderB: "border-cyan-200",
-    items: [
-      {
-        Icon: MessageCircle,
-        title: "Fórum de Apoio",
-        desc: "Espaço fraterno de perguntas, respostas e acolhimento espiritual entre membros.",
-        status: "breve",
-      },
-      {
-        Icon: Users,
-        title: "Comunicação em Grupos",
-        desc: "Grupos internos por tipo de atividade, semelhante a grupos de WhatsApp — dentro da plataforma.",
-        status: "breve",
-      },
-      {
-        Icon: HeartHandshake,
-        title: "Localização de Voluntariado",
-        desc: "Matchmaking entre as habilidades dos membros e as necessidades da comunidade.",
-        status: "breve",
-      },
-      {
-        Icon: ShoppingBag,
-        title: "Bazar On-line",
-        desc: "Livros, artesanatos e itens da comunidade com integração PIX para doações.",
-        status: "breve",
-      },
-      {
-        Icon: Car,
-        title: "Carona Solidária",
-        desc: "Membros com carro se disponibilizam para dar carona a quem precisa — da mesma casa ou de outra.",
-        status: "breve",
-      },
-      {
-        Icon: Truck,
-        title: "Entrega Solidária",
-        desc: "Voluntários se oferecem para entregar itens comprados no bazar — com agendamento e confirmação.",
-        status: "breve",
-      },
-      {
-        Icon: Megaphone,
-        title: "Mural de Avisos",
-        desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.",
-        status: "breve",
-      },
-      {
-        Icon: FileHeart,
-        title: "Ficha de Atendimento Fraterno",
-        desc: "Formulário confidencial para registro de pessoas atendidas. Acessível apenas pelo coordenador de assistência.",
-        status: "breve",
-      },
-    ],
-  },
-  {
-    label: "Agenda & Eventos",
-    SectionIcon: CalendarCheck,
-    color: "text-amber-700",
-    iconColor: "text-amber-600",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    borderB: "border-amber-200",
-    items: [
-      {
-        Icon: CalendarDays,
-        title: "Agenda de Eventos e Reuniões",
-        desc: "Calendário completo com confirmação de presença e relatório de presenças por membro.",
-        status: "disponivel",
-        href: "/agenda",
-      },
-      {
-        Icon: Cast,
-        title: "Live Streaming",
-        desc: "Transmissão ao vivo das palestras pelo celular — um transmite, todos acompanham.",
-        status: "breve",
-      },
-      {
-        Icon: Video,
-        title: "Google Meet",
-        desc: "Videoconferências integradas à plataforma para reuniões remotas.",
-        status: "breve",
-      },
-      {
-        Icon: Film,
-        title: "Integração de Vídeos",
-        desc: "Palestras gravadas, arquivos em vídeo e integração com StreamYard.",
-        status: "breve",
-      },
-      {
-        Icon: ClipboardCheck,
-        title: "Caderno de Presença Digital",
-        desc: "Membros marcam presença nas reuniões pelo celular com um toque. Coordenador vê relatório por reunião e por membro.",
-        status: "disponivel",
-        href: "/agenda",
-      },
-      {
-        Icon: CalendarRange,
-        title: "Escala de Trabalho",
-        desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.",
-        status: "breve",
-      },
-    ],
-  },
-  {
-    label: "Recursos & Ferramentas",
-    SectionIcon: Wrench,
-    color: "text-emerald-700",
-    iconColor: "text-emerald-700",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
-    borderB: "border-emerald-200",
-    items: [
-      {
-        Icon: MonitorPlay,
-        title: "Player de PowerPoint",
-        desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.",
-        status: "breve",
-      },
-      {
-        Icon: CircleHelp,
-        title: "FAQ",
-        desc: "Perguntas e respostas detalhadas sobre o uso do site e a doutrina espírita.",
-        status: "disponivel",
-        href: "/ajuda",
-      },
-    ],
-  },
-];
-
-const STATUS_LABEL: Record<Status, string> = {
-  disponivel: "Disponível",
-  breve: "Em breve",
-  beta: "Beta",
-};
-const STATUS_STYLE: Record<Status, string> = {
-  disponivel: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  breve: "bg-amber-50 text-amber-600 border-amber-200",
-  beta: "bg-blue-50 text-blue-600 border-blue-200",
-};
-
-interface VoteMap {
-  [key: string]: { count: number; votedByMe: boolean };
-}
-
-function toItemKey(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "-")
-    .slice(0, 80);
-}
+// A lista de funcionalidades e os rotulos de status vivem em
+// src/data/funcionalidades.ts, compartilhados com a pagina da casa espirita.
+type Status = FuncionalidadeStatus;
+type FeatureItem = FuncionalidadeItem;
+type FeatureCategory = FuncionalidadeCategoria;
+const FEATURES = FUNCIONALIDADES;
+const STATUS_LABEL = FUNCIONALIDADE_STATUS_LABEL;
+const STATUS_STYLE = FUNCIONALIDADE_STATUS_STYLE;
 
 function Inicio() {
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const [todayMsg, setTodayMsg] = useState<TodayMsg | null>(null);
-  const [votes, setVotes] = useState<VoteMap>({});
-  const [votingKey, setVotingKey] = useState<string | null>(null);
+  const [msgExpandida, setMsgExpandida] = useState(false);
+  const { votes, votingKey, toggleVoteByTitle } = usePainelVotes(user);
   const [agendaEventos, setAgendaEventos] = useState<AgendaEvento[]>([]);
 
   useEffect(() => {
@@ -455,39 +214,6 @@ function Inicio() {
       });
   }, [user]);
 
-  const fetchVotes = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase.from("painel_votes").select("item_key, user_id");
-    if (!data) return;
-    const map: VoteMap = {};
-    for (const row of data) {
-      if (!map[row.item_key]) map[row.item_key] = { count: 0, votedByMe: false };
-      map[row.item_key].count++;
-      if (row.user_id === user.id) map[row.item_key].votedByMe = true;
-    }
-    setVotes(map);
-  }, [user]);
-
-  useEffect(() => {
-    if (user) fetchVotes();
-  }, [user, fetchVotes]);
-
-  const handleCardVote = useCallback(
-    async (title: string) => {
-      if (!user) return;
-      const key = toItemKey(title);
-      if (votingKey === key || votes[key]?.votedByMe) return;
-      setVotingKey(key);
-      try {
-        await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
-        setVotes((v) => ({ ...v, [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true } }));
-      } finally {
-        setVotingKey(null);
-      }
-    },
-    [user, votes, votingKey],
-  );
-
   if (loading || !user) return null;
 
   const hour = new Date().getHours();
@@ -496,6 +222,11 @@ function Inicio() {
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
   );
   const fallbackMsg = DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
+  // Mensagem enviada pela casa para hoje ou, na falta dela, uma do acervo.
+  const mensagemDoDia = todayMsg
+    ? { texto: todayMsg.texto, autor: todayMsg.autor_nome, referencia: todayMsg.referencia }
+    : { texto: fallbackMsg.text, autor: fallbackMsg.author, referencia: null as string | null };
+  const mensagemLonga = mensagemDoDia.texto.length > 150;
   return (
     <main className="page-light min-h-screen pt-20 pb-28 px-4 md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -524,74 +255,72 @@ function Inicio() {
           </div>
         </div>
 
-        {/* ── Mensagem do Dia ── */}
+        {/* Mensagem do Dia — bloco compacto, altura previsível */}
         <div
-          className="relative mb-12 rounded-3xl overflow-hidden border border-violet-200/60 shadow-lg"
+          className="relative mb-8 rounded-3xl overflow-hidden border border-violet-200/60 shadow-sm"
           style={{
             background:
               "linear-gradient(135deg, oklch(0.985 0.01 295) 0%, oklch(0.965 0.01 260) 100%)",
           }}
         >
-          {/* Decorative glowing gradient dots in background */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-violet-300/10 to-cyan-300/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-gradient-to-tr from-cyan-300/10 to-violet-300/10 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-violet-300/10 to-cyan-300/10 blur-3xl pointer-events-none" />
 
-          <div className="relative px-8 py-8 md:px-12 md:py-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-            <div className="shrink-0 w-12 h-12 rounded-2xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
-              <Star size={22} strokeWidth={1.5} className="text-violet-600" />
+          <div className="relative px-6 py-5 md:px-8 md:py-6 flex items-start gap-4">
+            <div className="shrink-0 w-10 h-10 rounded-2xl bg-violet-100 border border-violet-200/50 flex items-center justify-center shadow-inner">
+              <Star size={18} strokeWidth={1.5} className="text-violet-600" />
             </div>
-            <div className="flex-1">
-              <p className="text-xs uppercase tracking-[0.35em] text-violet-600 font-semibold mb-3">
-                Mensagem do Dia
-              </p>
-              {todayMsg ? (
-                <>
-                  <blockquote className="text-xl md:text-2xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
-                    "{todayMsg.texto}"
-                  </blockquote>
-                  {todayMsg.referencia && (
-                    <p className="mt-3 text-sm text-gray-500 font-light italic">
-                      — {todayMsg.referencia}
-                    </p>
-                  )}
-                  <div className="mt-4 flex items-center gap-3 flex-wrap">
-                    <span className="text-xs font-medium text-violet-700">
-                      {todayMsg.autor_nome}
-                    </span>
-                    {todayMsg.sigla_casa && (
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 bg-white/80 border border-violet-100/50 px-2.5 py-0.5 rounded-full">
-                        {todayMsg.sigla_casa}
-                      </span>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <blockquote className="text-xl md:text-2xl font-serif font-light text-gray-800 leading-relaxed italic pr-4">
-                    "{fallbackMsg.text}"
-                  </blockquote>
-                  <p className="mt-3 text-sm text-gray-500 font-light italic">
-                    — {fallbackMsg.author}
-                  </p>
-                </>
-              )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-violet-600 font-semibold">
+                  Mensagem do Dia
+                </p>
+                {todayMsg?.sigla_casa && (
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-violet-500/80 bg-white/80 border border-violet-100/50 px-2 py-0.5 rounded-full">
+                    {todayMsg.sigla_casa}
+                  </span>
+                )}
+                <span className="ml-auto flex items-center gap-3">
+                  <Link
+                    to="/mensagem-do-dia"
+                    search={{ tab: "enviar" }}
+                    className="text-[10px] font-bold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
+                  >
+                    Enviar
+                  </Link>
+                  <Link
+                    to="/mensagem-do-dia"
+                    search={{ tab: "fila" }}
+                    className="text-[10px] font-semibold text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
+                  >
+                    Ver fila
+                  </Link>
+                </span>
+              </div>
+              <blockquote
+                className={`font-serif font-light text-gray-800 leading-relaxed italic text-base md:text-lg pr-2 ${
+                  msgExpandida ? "" : "line-clamp-2"
+                }`}
+              >
+                &ldquo;{mensagemDoDia.texto}&rdquo;
+              </blockquote>
+              <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                <span className="text-xs font-semibold text-violet-700">{mensagemDoDia.autor}</span>
+                {mensagemDoDia.referencia && (
+                  <span className="text-xs text-gray-400 font-light italic">
+                    — {mensagemDoDia.referencia}
+                  </span>
+                )}
+                {mensagemLonga && (
+                  <button
+                    type="button"
+                    onClick={() => setMsgExpandida((v) => !v)}
+                    className="ml-auto text-[10px] font-bold uppercase tracking-widest text-violet-700 hover:text-violet-900 transition-colors"
+                  >
+                    {msgExpandida ? "Recolher" : "Ler tudo"}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="px-8 pb-5 md:px-12 flex items-center gap-5 border-t border-violet-100/40 pt-4 bg-white/20">
-            <Link
-              to="/mensagem-do-dia"
-              search={{ tab: "enviar" }}
-              className="text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors uppercase tracking-widest"
-            >
-              Enviar mensagem
-            </Link>
-            <Link
-              to="/mensagem-do-dia"
-              search={{ tab: "fila" }}
-              className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-widest"
-            >
-              Ver fila
-            </Link>
           </div>
         </div>
 
@@ -722,7 +451,7 @@ function Inicio() {
               href="/painel"
               votes={votes}
               votingKey={votingKey}
-              onVote={handleCardVote}
+              onVote={toggleVoteByTitle}
             />
             <DashCard
               Icon={Wallet}
@@ -733,7 +462,7 @@ function Inicio() {
               href="/tesouraria"
               votes={votes}
               votingKey={votingKey}
-              onVote={handleCardVote}
+              onVote={toggleVoteByTitle}
             />
             <DashCard
               Icon={CircleHelp}
@@ -744,7 +473,7 @@ function Inicio() {
               href="/ajuda"
               votes={votes}
               votingKey={votingKey}
-              onVote={handleCardVote}
+              onVote={toggleVoteByTitle}
             />
             {profile?.sigla_casa && (
               <Link
@@ -799,7 +528,7 @@ function Inicio() {
                   cat={cat}
                   votes={votes}
                   votingKey={votingKey}
-                  onVote={handleCardVote}
+                  onVote={toggleVoteByTitle}
                 />
               ))}
             </div>
@@ -890,7 +619,11 @@ function VoteBadge({
           ? "text-cyan-600 border-cyan-300 bg-cyan-50"
           : "text-muted-foreground/40 border-border bg-transparent"
       } ${isVoting ? "opacity-50" : ""}`}
-      title={voted ? "Você já votou neste recurso" : "Clique no card para votar neste recurso"}
+      title={
+        voted
+          ? "Você curtiu este recurso — clique no cartão para retirar a curtida"
+          : "Clique no cartão para curtir este recurso"
+      }
     >
       <ThumbsUp size={10} />
       {count > 0 && <span className="font-medium">{count}</span>}

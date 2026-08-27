@@ -7,6 +7,8 @@
  * pronto da view `artigos_publicos`.
  */
 
+import { validarLinguagem } from "./linguagem";
+
 export type TipoAvaliacao = "otimo" | "bom" | "gostei" | "nao_gostei" | "erro" | "erro_grave";
 
 export const ROTULOS: Record<TipoAvaliacao, string> = {
@@ -85,7 +87,8 @@ export function validarArtigo(titulo: string, conteudo: string, resumo: string):
   if (r.length > RESUMO_MAX) {
     return `O resumo pode ter no máximo ${RESUMO_MAX} caracteres.`;
   }
-  return null;
+  // O artigo é público e indexado por buscadores: linguagem ofensiva não passa.
+  return validarLinguagem(t, r, c);
 }
 
 /**

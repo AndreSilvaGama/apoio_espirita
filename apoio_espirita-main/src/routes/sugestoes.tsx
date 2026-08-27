@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { validarLinguagem } from "@/lib/linguagem";
 import { Particles } from "@/components/Particles";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -45,6 +46,11 @@ function SuggestionsPage() {
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
+      return;
+    }
+    const linguagem = validarLinguagem(parsed.data.name, parsed.data.suggestion);
+    if (linguagem) {
+      setError(linguagem);
       return;
     }
     setStatus("loading");

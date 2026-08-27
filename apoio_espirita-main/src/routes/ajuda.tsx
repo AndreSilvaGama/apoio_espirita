@@ -214,6 +214,21 @@ const FAQ: FaqItem[] = [
       "Ninguém é suspenso ou banido automaticamente pela votação da comunidade — ela apenas retira o artigo do ar, nunca a pessoa. Suspender ou banir um autor é sempre uma decisão humana, tomada a partir da fila de revisão, e só duas autoridades podem tomá-la: o administrador do site ou o Presidente (ou Vice-presidente) da casa espírita a que o autor pertence. Enquanto isso não acontece, o autor continua podendo usar o site normalmente; o que muda é que os artigos com erro grave reconhecido ficam fora do ar até serem corrigidos e revisados.",
   },
   {
+    pergunta: "Por que o site recusou o meu texto por causa de uma palavra?",
+    resposta:
+      "Todo texto que outras pessoas vão ler passa por um filtro automático de linguagem antes de ser gravado: artigos, Mensagem do Dia, publicações no mural da casa, sugestões e solicitações de desenvolvimento. Se o filtro encontrar um palavrão ou um xingamento, o envio é interrompido e a tela mostra exatamente qual palavra precisa ser reescrita — o seu texto não é perdido nem alterado, basta corrigir o trecho e enviar de novo. O filtro reconhece as formas disfarçadas da mesma palavra: com ou sem acento, com letra repetida, com número no lugar de letra e com ponto entre as letras. Ele compara palavras inteiras, e não pedaços, justamente para nunca barrar uma palavra correta que apenas contenha o trecho — 'cuidado' e 'porão', por exemplo, passam normalmente. O filtro cobre os palavrões e xingamentos mais comuns; ele não julga o tom nem a intenção do texto, e por isso não substitui a avaliação dos leitores nem a moderação humana.",
+  },
+  {
+    pergunta: "Como funciona o voto nos itens pendentes do projeto?",
+    resposta:
+      "Passo a passo: 1) No menu superior, abra 'Ajuda' e clique em 'Status do Projeto'. 2) Percorra a lista de itens pendentes — ela já vem ordenada pelos mais votados. 3) Clique no botão com o polegar, à direita do item que você considera mais importante. O número ao lado do polegar sobe e o botão fica destacado, indicando que o seu voto foi registrado. 4) Se mudar de ideia, clique de novo no mesmo botão: a sua curtida é retirada e o número volta a baixar. Cada membro tem um voto por item, e pode votar em quantos itens quiser. Os itens mais votados são desenvolvidos primeiro. Os cartões de recursos da tela inicial e da página da casa também aceitam voto: os que aparecem como 'Em breve' registram a sua curtida quando você clica no cartão, e o voto é o mesmo item do Status do Projeto.",
+  },
+  {
+    pergunta: "A Mensagem do Dia está cortada. Como leio o texto inteiro?",
+    resposta:
+      "O bloco da Mensagem do Dia mostra as duas primeiras linhas do texto para não ocupar a tela inteira e deixar o restante do painel visível sem rolagem. Quando a mensagem é mais longa do que isso, aparece o botão 'Ler tudo' logo abaixo dela, ao lado do nome de quem enviou: clique nele para abrir o texto completo e em 'Recolher' para fechar de novo. Na mesma linha do título ficam os atalhos 'Enviar', para mandar uma mensagem para a fila da sua casa, e 'Ver fila', para acompanhar as mensagens já agendadas.",
+  },
+  {
     pergunta: "Artigo retirado some do Google?",
     resposta:
       "Sim, mas não instantaneamente, e isso está fora do nosso controle. Assim que um artigo é retirado, ele sai do mapa do site (sitemap) e o endereço dele passa a mostrar um aviso de que o texto não está mais disponível, em vez do conteúdo original. A saída de fato do índice de um buscador, porém, depende de o buscador visitar aquele endereço de novo — o que não é instantâneo —, e cópias já guardadas em cache podem continuar aparecendo por alguns dias depois da retirada. Não há como garantir remoção imediata em nenhum buscador.",

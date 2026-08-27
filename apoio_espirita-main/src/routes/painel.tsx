@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Search, X, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { usePainelVotes, toItemKey } from "@/hooks/usePainelVotes";
+import { validarLinguagem } from "@/lib/linguagem";
 import { CasaHero } from "@/components/CasaHero";
 
 export const Route = createFileRoute("/painel")({
@@ -51,10 +53,10 @@ const roadmap: Item[] = [
       "Página da casa espírita integrada como inicial pós-login. Menu principal simplificado em links intuitivos e dropdown de jogos. Cards de funcionalidades copiados para a página da Casa espírita.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Filtro automático de palavras inapropriadas em conteúdo público",
     descricao:
-      "Qualquer texto publicado em área visível ao público (mensagens, comentários, artigos) passa por um filtro automático que bloqueia palavrões e linguagem ofensiva antes de ser exibido",
+      "Todo texto que outras pessoas vão ler passa pelo filtro antes de ser gravado: artigos, Mensagem do Dia, mural da casa, sugestões e solicitações. O filtro reconhece as fugas comuns — acento, letra repetida, número no lugar de letra e ponto entre as letras — e avisa o autor qual palavra precisa reescrever, em vez de recusar sem explicar. A comparação é por palavra inteira, para nunca barrar um texto correto que apenas contenha o trecho.",
   },
   {
     status: "planejado",
@@ -69,10 +71,10 @@ const roadmap: Item[] = [
       "Letras maiores · Contraste adequado para quem tem dificuldade de visão · Botões e áreas de toque maiores para facilitar o uso no celular · Navegação simplificada",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Mensagem do Dia com visual mais compacto",
     descricao:
-      "Reduzir o espaço ocupado pela Mensagem do Dia na tela inicial para que o restante do painel fique mais visível sem precisar rolar a tela",
+      "O bloco passou a ter altura previsível: mostra as duas primeiras linhas com o botão “Ler tudo” para abrir o restante, e os atalhos de enviar mensagem e ver a fila subiram para a mesma linha do título. Uma mensagem longa deixou de empurrar o resto do painel para fora da tela.",
   },
   {
     status: "planejado",
@@ -428,6 +430,51 @@ const roadmap: Item[] = [
       "Apresente arquivos de PowerPoint diretamente no site, sem precisar de instalações ou aplicativos externos · Ideal para palestrantes e coordenadores",
   },
 
+  // ── FEITO — Módulos já disponíveis ───────────────────────────────────────
+
+  {
+    status: "feito",
+    titulo: "Agenda de eventos e reuniões com caderno de presença digital",
+    cardTitle: "Agenda de Eventos e Reuniões",
+    descricao:
+      "Calendário da casa com eventos abertos e fechados, convite a participantes, confirmação de presença pelo celular e relatório por reunião e por membro · Disponível em /agenda",
+  },
+  {
+    status: "feito",
+    titulo: "Tesouraria da casa espírita",
+    descricao:
+      "Registro de receitas e despesas, saldo do mês, exportação em Excel e impressão formatada · O Presidente autoriza quem pode entrar · Disponível em /tesouraria",
+  },
+  {
+    status: "feito",
+    titulo: "Biblioteca de orientações públicas da FEB",
+    descricao:
+      "Documentos e orientações públicas reunidos para consulta e download pelos trabalhadores da casa · Disponível em /feb",
+  },
+  {
+    status: "feito",
+    titulo: "Rádio espírita",
+    descricao:
+      "Programação espírita para ouvir durante o trabalho ou o estudo · Disponível em /radio",
+  },
+  {
+    status: "feito",
+    titulo: "Mensagem do Dia enviada pelos membros",
+    descricao:
+      "Cada membro envia uma mensagem para a fila da sua casa · A mensagem do dia aparece na tela inicial e a fila fica visível a todos · Disponível em /mensagem-do-dia",
+  },
+  {
+    status: "feito",
+    titulo: "Transparência do projeto",
+    descricao:
+      "Prestação de contas aberta: o que é mantido, como é mantido e por quem · Disponível em /transparencia",
+  },
+  {
+    status: "feito",
+    titulo: "Plante a Semente — jogo de palavras da doutrina",
+    descricao: "Jogo de adivinhação de palavras espíritas · Disponível em /jogos/plante-a-semente",
+  },
+
   // ── FEITO — Organização e gestão de eventos ──────────────────────────────
 
   {
@@ -439,10 +486,10 @@ const roadmap: Item[] = [
   },
   {
     status: "feito",
-    titulo: "Grupos de trabalho com Kanban de tarefas",
+    titulo: "Grupos de tarefas dentro dos cartões do Kanban",
     cardTitle: "Kanban de Grupos",
     descricao:
-      "Criação de grupos de trabalho com Kanban individual para gerenciar tarefas · Cada grupo tem sua própria coluna de atividades (Pendente, Em progresso, Concluído) · Membros podem ser atribuídos a tarefas e acompanhar progresso em tempo real · Disponível em /grupos",
+      "Cada cartão do quadro aceita grupos de tarefas com marcação de concluído e acompanhamento do progresso · Fica dentro do próprio cartão, em /kanban",
   },
 ];
 
@@ -461,20 +508,9 @@ const icon: Record<Status, string> = {
   planejado: "○",
 };
 
-// Gera uma chave estável — usa cardTitle quando disponível para compatibilidade com /inicio
-function toItemKey(titulo: string): string {
-  return titulo
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "-")
-    .slice(0, 80);
-}
-
+// Usa cardTitle quando disponível para compartilhar o voto com o cartão de /inicio
 function itemVoteKey(item: Item): string {
   return toItemKey(item.cardTitle ?? item.titulo);
-}
-
-interface VoteMap {
-  [key: string]: { count: number; votedByMe: boolean };
 }
 
 function Painel() {
@@ -488,8 +524,7 @@ function Painel() {
   const [sendingSol, setSendingSol] = useState(false);
   const [solOk, setSolOk] = useState(false);
   const [solError, setSolError] = useState("");
-  const [votes, setVotes] = useState<VoteMap>({});
-  const [votingKey, setVotingKey] = useState<string | null>(null);
+  const { votes, votingKey, toggleVote } = usePainelVotes(user);
 
   const fetchSugestoes = async () => {
     const { data } = await supabase
@@ -535,37 +570,15 @@ function Painel() {
     }
   };
 
-  const fetchVotes = useCallback(async () => {
-    if (!user) return;
-    const { data } = await supabase.from("painel_votes").select("item_key, user_id");
-    if (!data) return;
-
-    const map: VoteMap = {};
-    for (const row of data) {
-      if (!map[row.item_key]) map[row.item_key] = { count: 0, votedByMe: false };
-      map[row.item_key].count++;
-      if (row.user_id === user.id) map[row.item_key].votedByMe = true;
-    }
-    setVotes(map);
-  }, [user]);
-
-  const handleVote = async (key: string) => {
-    if (!user || votes[key]?.votedByMe) return;
-    setVotingKey(key);
-    try {
-      await supabase.from("painel_votes").insert({ item_key: key, user_id: user.id });
-      setVotes((v) => ({
-        ...v,
-        [key]: { count: (v[key]?.count ?? 0) + 1, votedByMe: true },
-      }));
-    } finally {
-      setVotingKey(null);
-    }
-  };
-
   const handleSolicitacao = async () => {
     if (!solTitulo.trim()) {
       setSolError("Informe o título da solicitação.");
+      return;
+    }
+    // A solicitação aparece no Status do Projeto para todos os membros.
+    const linguagem = validarLinguagem(solTitulo, solDesc);
+    if (linguagem) {
+      setSolError(linguagem);
       return;
     }
     if (!user) return;
@@ -616,9 +629,8 @@ function Painel() {
     if (user) {
       fetchSolicitacoes();
       fetchSugestoes();
-      fetchVotes();
     }
-  }, [user, fetchVotes]);
+  }, [user]);
 
   if (loading || !user) return null;
 
@@ -810,9 +822,9 @@ function Painel() {
                       </div>
                       {isPending && (
                         <button
-                          onClick={() => handleVote(itemVoteKey(item))}
-                          disabled={isVoting || voted}
-                          title={voted ? "Você já votou neste item" : "Curtir este item"}
+                          onClick={() => toggleVote(itemVoteKey(item))}
+                          disabled={isVoting}
+                          title={voted ? "Retirar minha curtida" : "Curtir este item"}
                           className={`shrink-0 flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-default ${
                             voted
                               ? "text-cyan-glow border-cyan-glow/40 bg-cyan-glow/10"

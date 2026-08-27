@@ -155,3 +155,21 @@ describe("plural de casos na fila de revisão", () => {
     expect(pluralCasos(2)).toBe("casos");
   });
 });
+
+describe("validarArtigo — linguagem", () => {
+  const conteudoLongo = "Reflexao fraterna sobre a caridade no Evangelho. ".repeat(8);
+
+  it("recusa palavrao no conteudo", () => {
+    const msg = validarArtigo("Titulo valido", conteudoLongo + " que merda", "Resumo");
+    expect(msg).toContain("merda");
+  });
+
+  it("recusa palavrao no titulo", () => {
+    const msg = validarArtigo("Seu otario", conteudoLongo, "Resumo");
+    expect(msg).toContain("otario");
+  });
+
+  it("aceita artigo fraterno", () => {
+    expect(validarArtigo("A pratica da caridade", conteudoLongo, "Resumo sereno")).toBeNull();
+  });
+});

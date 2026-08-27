@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { validarLinguagem } from "@/lib/linguagem";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/mensagem-do-dia")({
@@ -129,6 +130,11 @@ function MensagemDoDia() {
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Dados inválidos");
+      return;
+    }
+    const linguagem = validarLinguagem(parsed.data.texto, parsed.data.referencia);
+    if (linguagem) {
+      setError(linguagem);
       return;
     }
     if (!user || !profile) return;
