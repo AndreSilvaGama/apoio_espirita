@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AlertTriangle, Ban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,7 +61,20 @@ interface MeuVoto {
   descricao_erro: string | null;
 }
 
-type Elegibilidade = "carregando" | "liberado" | "email_nao_verificado" | "erro";
+interface Sancao {
+  motivo: string;
+  fim: string | null;
+}
+
+type Elegibilidade = "carregando" | "liberado" | "email_nao_verificado" | "sancionado" | "erro";
+
+function formatarData(iso: string): string {
+  try {
+    return format(parseISO(iso), "d 'de' MMMM 'de' yyyy", { locale: ptBR });
+  } catch {
+    return "";
+  }
+}
 
 interface AvaliacaoArtigoProps {
   artigoId: string;
@@ -87,6 +102,7 @@ export function AvaliacaoArtigo({
 
   const [elegibilidade, setElegibilidade] = useState<Elegibilidade>("carregando");
   const [erroElegibilidade, setErroElegibilidade] = useState<string | null>(null);
+  const [sancao, setSancao] = useState<Sancao | null>(null);
   const [meuVoto, setMeuVoto] = useState<MeuVoto | null>(null);
 
   const [painelAberto, setPainelAberto] = useState<TipoAvaliacao | null>(null);
@@ -99,13 +115,39 @@ export function AvaliacaoArtigo({
     let cancelado = false;
     setElegibilidade("carregando");
     setErroElegibilidade(null);
+    setSancao(null);
 
     (async () => {
       try {
         const { data: verificado, error: erroVerificado } = await supabase.rpc("email_verificado");
         if (erroVerificado) throw erroVerificado;
         if (cancelado) return;
-        setElegibilidade(verificado ? "liberado" : "email_nao_verificado");
+
+        if (!verificado) {
+          setElegibilidade("email_nao_verificado");
+          return;
+        }
+
+        const { data: sancoes, error: erroSancoes } = await supabase
+          .from("usuarios_sancoes")
+          .select("motivo, fim")
+          .eq("user_id", user.id)
+          .is("revogada_em", null);
+        if (erroSancoes) throw erroSancoes;
+        if (cancelado) return;
+
+        const agora = Date.now();
+        const vigente = (sancoes ?? []).find(
+          (s) => s.fim === null || new Date(s.fim).getTime() > agora,
+        );
+
+        if (vigente) {
+          setSancao({ motivo: vigente.motivo, fim: vigente.fim });
+          setElegibilidade("sancionado");
+          return;
+        }
+
+        setElegibilidade("liberado");
       } catch (e) {
         if (!cancelado) {
           setErroElegibilidade(
@@ -244,6 +286,21 @@ export function AvaliacaoArtigo({
             Para avaliar um artigo é preciso confirmar seu e-mail. Procure a mensagem de confirmação
             que enviamos quando você criou a conta e clique no link.
           </p>
+        </div>
+      )}
+
+      {user && !ehAutor && elegibilidade === "sancionado" && sancao && (
+        <div className="flex items-start gap-2.5">
+          <Ban size={18} strokeWidth={1.6} className="text-red-600 shrink-0 mt-0.5" />
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-foreground">Você não pode avaliar no momento</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{sancao.motivo}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {sancao.fim
+                ? `Esta restrição vale até ${formatarData(sancao.fim)}.`
+                : "Esta restrição não tem data marcada para terminar."}
+            </p>
+          </div>
         </div>
       )}
 
