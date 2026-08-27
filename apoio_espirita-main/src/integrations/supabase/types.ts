@@ -1568,6 +1568,15 @@ export type Database = {
         Returns: boolean;
       };
       artigo_piso_retirada: { Args: { verificados: number }; Returns: number };
+      buscar_geral: {
+        Args: { limite?: number; termo: string };
+        Returns: {
+          referencia: string;
+          subtitulo: string;
+          tipo: string;
+          titulo: string;
+        }[];
+      };
       email_verificado: { Args: never; Returns: boolean };
       get_request_kanban_token: { Args: never; Returns: string };
       has_kanban_access: { Args: { p_sigla_casa: string }; Returns: boolean };
@@ -1585,6 +1594,7 @@ export type Database = {
         };
         Returns: undefined;
       };
+      sem_acento: { Args: { texto: string }; Returns: string };
       sou_dev: { Args: never; Returns: boolean };
       total_verificados: { Args: never; Returns: number };
       usuario_sancionado: { Args: { uid: string }; Returns: boolean };

@@ -26,6 +26,7 @@ import { Route as FebRouteImport } from './routes/feb'
 import { Route as EvangelizacaoRouteImport } from './routes/evangelizacao'
 import { Route as ConfigurarMemoriaRouteImport } from './routes/configurar-memoria'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
+import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -129,6 +130,11 @@ const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
   path: '/completar-perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuscaRoute = BuscaRouteImport.update({
+  id: '/busca',
+  path: '/busca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AjudaRoute = AjudaRouteImport.update({
   id: '/ajuda',
   path: '/ajuda',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/busca': typeof BuscaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/evangelizacao': typeof EvangelizacaoRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/busca': typeof BuscaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/evangelizacao': typeof EvangelizacaoRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/busca': typeof BuscaRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/evangelizacao': typeof EvangelizacaoRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/busca'
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/evangelizacao'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/busca'
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/evangelizacao'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/busca'
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/evangelizacao'
@@ -441,6 +453,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AgendaRoute: typeof AgendaRoute
   AjudaRoute: typeof AjudaRoute
+  BuscaRoute: typeof BuscaRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
   ConfigurarMemoriaRoute: typeof ConfigurarMemoriaRoute
   EvangelizacaoRoute: typeof EvangelizacaoRoute
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompletarPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/busca': {
+      id: '/busca'
+      path: '/busca'
+      fullPath: '/busca'
+      preLoaderRoute: typeof BuscaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ajuda': {
       id: '/ajuda'
       path: '/ajuda'
@@ -732,6 +752,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AgendaRoute: AgendaRoute,
   AjudaRoute: AjudaRoute,
+  BuscaRoute: BuscaRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
   ConfigurarMemoriaRoute: ConfigurarMemoriaRoute,
   EvangelizacaoRoute: EvangelizacaoRoute,

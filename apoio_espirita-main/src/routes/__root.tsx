@@ -540,6 +540,19 @@ function NavBar() {
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
           <Link
+            to="/busca"
+            search={{}}
+            aria-label="Buscar no site"
+            title="Buscar no site"
+            className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
+              location.pathname === "/busca"
+                ? "text-[#004a8c] bg-blue-50"
+                : "text-gray-400 hover:text-[#004a8c] hover:bg-gray-50"
+            }`}
+          >
+            <Search size={16} strokeWidth={2} />
+          </Link>
+          <Link
             to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
             params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
             className={linkCls(homePath)}
@@ -701,14 +714,25 @@ function NavBar() {
           </button>
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
-          className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-        >
-          {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
-        </button>
+        {/* Busca e menu, no celular */}
+        <div className="lg:hidden flex items-center gap-1">
+          <Link
+            to="/busca"
+            search={{}}
+            aria-label="Buscar no site"
+            onClick={() => setMenuOpen(false)}
+            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          >
+            <Search size={20} strokeWidth={2} />
+          </Link>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          >
+            {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile dropdown */}

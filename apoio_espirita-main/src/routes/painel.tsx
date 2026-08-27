@@ -77,10 +77,10 @@ const roadmap: Item[] = [
       "O bloco passou a ter altura previsível: mostra as duas primeiras linhas com o botão “Ler tudo” para abrir o restante, e os atalhos de enviar mensagem e ver a fila subiram para a mesma linha do título. Uma mensagem longa deixou de empurrar o resto do painel para fora da tela.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Campo de busca geral — encontrar conteúdo, membros e casas",
     descricao:
-      "Campo de busca para encontrar conteúdo publicado, membros da plataforma e casas espíritas cadastradas rapidamente, sem precisar navegar pelos menus",
+      "Lupa no menu superior, também no celular, buscando quatro coisas de uma vez: as telas do próprio site (para quem não lembra onde fica cada recurso), artigos publicados, casas espíritas cadastradas e membros. Ignora acento e maiúscula, encontra casa por nome, sigla ou cidade, e coloca na frente a casa que tem página publicada — a que dá para abrir. A busca de membros respeita a regra de privacidade que já existia: mostra apenas quem é da sua própria casa.",
   },
 
   // ── PENDENTE — Perfil e cadastro ─────────────────────────────────────────
