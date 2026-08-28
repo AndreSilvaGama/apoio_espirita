@@ -73,6 +73,7 @@ describe("catálogo de telas", () => {
       "/kanban",
       "/mensagem-do-dia",
       "/musicas-cifras",
+      "/perguntas",
       "/painel",
       "/perfil",
       "/radio",

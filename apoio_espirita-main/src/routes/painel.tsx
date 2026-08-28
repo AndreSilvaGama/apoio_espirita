@@ -367,10 +367,10 @@ const roadmap: Item[] = [
       "Um botão que transforma a mensagem do dia ou o trecho de um artigo em uma imagem bonita, com a fonte e o endereço do site, pronta para enviar no WhatsApp. É o conteúdo que as pessoas já compartilham todos os dias, hoje sem levar ninguém de volta ao portal.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Perguntas e respostas públicas sobre a doutrina espírita",
     descricao:
-      "Respostas curtas e honestas às perguntas que quem está de fora realmente faz — o que é o Espiritismo, o que é mediunidade, o que a doutrina diz sobre o suicídio, sobre a morte de uma criança, sobre obsessão — cada uma com a fonte na obra de Kardec. É conteúdo que responde a busca de quem está sofrendo, no momento em que procura.",
+      "Dez perguntas respondidas em /perguntas, públicas e sem cadastro: o que é o Espiritismo, se é preciso deixar a própria religião, o que acontece depois da morte, reencarnação, por que uma criança morre, o suicídio, mediunidade, obsessão, se a casa espírita cobra alguma coisa e se orar adianta. Cada resposta termina com a citação literal de Kardec e o número da questão ou do item — só a codificação, que é o terreno comum do movimento e está em domínio público. A pergunta sobre suicídio abre com o telefone do CVV, antes de qualquer doutrina. Todas as citações foram conferidas no texto integral das obras antes de publicar.",
   },
   {
     status: "planejado",

@@ -21,6 +21,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { PERGUNTAS_DA_DOUTRINA } from "../src/data/perguntas-doutrina.ts";
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -37,6 +38,7 @@ const FIXAS = [
   { caminho: "/", prioridade: "1.0", frequencia: "weekly" },
   { caminho: "/casas", prioridade: "0.9", frequencia: "weekly" },
   { caminho: "/artigos", prioridade: "0.9", frequencia: "daily" },
+  { caminho: "/perguntas", prioridade: "0.9", frequencia: "weekly" },
   { caminho: "/feb", prioridade: "0.8", frequencia: "weekly" },
   { caminho: "/musicas-cifras", prioridade: "0.8", frequencia: "weekly" },
   { caminho: "/jogos", prioridade: "0.7", frequencia: "weekly" },
@@ -78,7 +80,15 @@ async function main() {
     auth: { persistSession: false },
   });
 
-  const enderecos = [...FIXAS];
+  const enderecos = [
+    ...FIXAS,
+    // Perguntas sobre a doutrina: conteúdo escrito em código, sempre no ar.
+    ...PERGUNTAS_DA_DOUTRINA.map((pergunta) => ({
+      caminho: `/perguntas/${pergunta.slug}`,
+      prioridade: "0.8",
+      frequencia: "monthly",
+    })),
+  ];
 
   // ── Diretório de casas ────────────────────────────────────────────────
   const { data: estados, error: erroEstados } = await supabase.rpc("diretorio_estados");

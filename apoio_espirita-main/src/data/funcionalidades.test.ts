@@ -25,6 +25,7 @@ const ROTAS_EXISTENTES = [
   "/kanban",
   "/mensagem-do-dia",
   "/musicas-cifras",
+  "/perguntas",
   "/painel",
   "/perfil",
   "/radio",

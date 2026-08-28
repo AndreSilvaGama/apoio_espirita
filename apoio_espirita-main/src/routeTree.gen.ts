@@ -31,9 +31,11 @@ import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PerguntasIndexRouteImport } from './routes/perguntas.index'
 import { Route as JogosIndexRouteImport } from './routes/jogos/index'
 import { Route as CasasIndexRouteImport } from './routes/casas.index'
 import { Route as ArtigosIndexRouteImport } from './routes/artigos.index'
+import { Route as PerguntasSlugRouteImport } from './routes/perguntas.$slug'
 import { Route as JogosSemeadorMensagensRouteImport } from './routes/jogos/semeador-mensagens'
 import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
 import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a-semente'
@@ -158,6 +160,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerguntasIndexRoute = PerguntasIndexRouteImport.update({
+  id: '/perguntas/',
+  path: '/perguntas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogosIndexRoute = JogosIndexRouteImport.update({
   id: '/jogos/',
   path: '/jogos/',
@@ -171,6 +178,11 @@ const CasasIndexRoute = CasasIndexRouteImport.update({
 const ArtigosIndexRoute = ArtigosIndexRouteImport.update({
   id: '/artigos/',
   path: '/artigos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerguntasSlugRoute = PerguntasSlugRouteImport.update({
+  id: '/perguntas/$slug',
+  path: '/perguntas/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JogosSemeadorMensagensRoute = JogosSemeadorMensagensRouteImport.update({
@@ -273,9 +285,11 @@ export interface FileRoutesByFullPath {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/perguntas/$slug': typeof PerguntasSlugRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
+  '/perguntas/': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
   '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
   '/casas/$uf/': typeof CasasUfIndexRoute
@@ -313,9 +327,11 @@ export interface FileRoutesByTo {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/perguntas/$slug': typeof PerguntasSlugRoute
   '/artigos': typeof ArtigosIndexRoute
   '/casas': typeof CasasIndexRoute
   '/jogos': typeof JogosIndexRoute
+  '/perguntas': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
   '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
   '/casas/$uf': typeof CasasUfIndexRoute
@@ -354,9 +370,11 @@ export interface FileRoutesById {
   '/jogos/plante-a-semente': typeof JogosPlanteASementeRoute
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
+  '/perguntas/$slug': typeof PerguntasSlugRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
+  '/perguntas/': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
   '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
   '/casas/$uf/': typeof CasasUfIndexRoute
@@ -396,9 +414,11 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/perguntas/$slug'
     | '/artigos/'
     | '/casas/'
     | '/jogos/'
+    | '/perguntas/'
     | '/artigos/$slug/editar'
     | '/casas/$uf/$cidade'
     | '/casas/$uf/'
@@ -436,9 +456,11 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/perguntas/$slug'
     | '/artigos'
     | '/casas'
     | '/jogos'
+    | '/perguntas'
     | '/artigos/$slug/editar'
     | '/casas/$uf/$cidade'
     | '/casas/$uf'
@@ -476,9 +498,11 @@ export interface FileRouteTypes {
     | '/jogos/plante-a-semente'
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
+    | '/perguntas/$slug'
     | '/artigos/'
     | '/casas/'
     | '/jogos/'
+    | '/perguntas/'
     | '/artigos/$slug/editar'
     | '/casas/$uf/$cidade'
     | '/casas/$uf/'
@@ -517,9 +541,11 @@ export interface RootRouteChildren {
   JogosPlanteASementeRoute: typeof JogosPlanteASementeRoute
   JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
   JogosSemeadorMensagensRoute: typeof JogosSemeadorMensagensRoute
+  PerguntasSlugRoute: typeof PerguntasSlugRoute
   ArtigosIndexRoute: typeof ArtigosIndexRoute
   CasasIndexRoute: typeof CasasIndexRoute
   JogosIndexRoute: typeof JogosIndexRoute
+  PerguntasIndexRoute: typeof PerguntasIndexRoute
   CasasUfCidadeRoute: typeof CasasUfCidadeRoute
   CasasUfIndexRoute: typeof CasasUfIndexRoute
 }
@@ -680,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perguntas/': {
+      id: '/perguntas/'
+      path: '/perguntas'
+      fullPath: '/perguntas/'
+      preLoaderRoute: typeof PerguntasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogos/': {
       id: '/jogos/'
       path: '/jogos'
@@ -699,6 +732,13 @@ declare module '@tanstack/react-router' {
       path: '/artigos'
       fullPath: '/artigos/'
       preLoaderRoute: typeof ArtigosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perguntas/$slug': {
+      id: '/perguntas/$slug'
+      path: '/perguntas/$slug'
+      fullPath: '/perguntas/$slug'
+      preLoaderRoute: typeof PerguntasSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jogos/semeador-mensagens': {
@@ -840,9 +880,11 @@ const rootRouteChildren: RootRouteChildren = {
   JogosPlanteASementeRoute: JogosPlanteASementeRoute,
   JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
   JogosSemeadorMensagensRoute: JogosSemeadorMensagensRoute,
+  PerguntasSlugRoute: PerguntasSlugRoute,
   ArtigosIndexRoute: ArtigosIndexRoute,
   CasasIndexRoute: CasasIndexRoute,
   JogosIndexRoute: JogosIndexRoute,
+  PerguntasIndexRoute: PerguntasIndexRoute,
   CasasUfCidadeRoute: CasasUfCidadeRoute,
   CasasUfIndexRoute: CasasUfIndexRoute,
 }

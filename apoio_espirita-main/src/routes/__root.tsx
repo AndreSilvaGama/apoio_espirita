@@ -369,6 +369,8 @@ function AppLayout() {
     location.pathname.startsWith("/casa/") ||
     location.pathname === "/casas" ||
     location.pathname.startsWith("/casas/") ||
+    location.pathname === "/perguntas" ||
+    location.pathname.startsWith("/perguntas/") ||
     location.pathname.startsWith("/artigos");
 
   useEffect(() => {
@@ -539,7 +541,7 @@ function NavBar() {
 
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
-  const ROTAS_ESTUDO = ["/feb", "/artigos", "/evangelizacao", "/musicas-cifras"];
+  const ROTAS_ESTUDO = ["/feb", "/artigos", "/perguntas", "/evangelizacao", "/musicas-cifras"];
   const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
   const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas"];
 
@@ -622,6 +624,10 @@ function NavBar() {
             <Link to="/artigos" className={dropItemCls} onClick={() => setAberto(null)}>
               <MessageCircle size={14} strokeWidth={1.5} className="text-violet-500" />
               Artigos
+            </Link>
+            <Link to="/perguntas" className={dropItemCls} onClick={() => setAberto(null)}>
+              <HelpCircle size={14} strokeWidth={1.5} className="text-amber-500" />
+              Perguntas sobre a doutrina
             </Link>
             <Link to="/evangelizacao" className={dropItemCls} onClick={() => setAberto(null)}>
               <GraduationCap size={14} strokeWidth={1.5} className="text-emerald-500" />
@@ -1041,6 +1047,12 @@ function Footer({ onReportar }: { onReportar: () => void }) {
 
           {/* Links institucionais */}
           <div className="flex items-center gap-4 shrink-0">
+            <Link
+              to="/perguntas"
+              className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap"
+            >
+              Dúvidas sobre a doutrina
+            </Link>
             <Link
               to="/casas"
               className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap"

@@ -35,6 +35,23 @@ const PAGINAS_EXTRAS: PaginaDoSite[] = [
     termos: ["fila", "mensagem", "pensamento"],
   },
   {
+    titulo: "Perguntas sobre a doutrina espírita",
+    descricao:
+      "O que é o Espiritismo, reencarnação, mediunidade e obsessão, com a fonte em Kardec.",
+    href: "/perguntas",
+    termos: [
+      "duvida",
+      "doutrina",
+      "kardec",
+      "reencarnacao",
+      "mediunidade",
+      "obsessao",
+      "morte",
+      "suicidio",
+      "o que e espiritismo",
+    ],
+  },
+  {
     titulo: "Casas espíritas por cidade",
     descricao: "Endereço, telefone e como chegar às casas espíritas de cada cidade.",
     href: "/casas",
