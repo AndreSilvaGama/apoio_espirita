@@ -1273,6 +1273,39 @@ export type Database = {
           },
         ];
       };
+      casas_reivindicacoes: {
+        Row: {
+          casa_id: string;
+          casa_nome: string;
+          created_at: string;
+          desfeita_em: string | null;
+          id: string;
+          sigla: string;
+          user_id: string;
+          user_nome: string | null;
+        };
+        Insert: {
+          casa_id: string;
+          casa_nome: string;
+          created_at?: string;
+          desfeita_em?: string | null;
+          id?: string;
+          sigla: string;
+          user_id: string;
+          user_nome?: string | null;
+        };
+        Update: {
+          casa_id?: string;
+          casa_nome?: string;
+          created_at?: string;
+          desfeita_em?: string | null;
+          id?: string;
+          sigla?: string;
+          user_id?: string;
+          user_nome?: string | null;
+        };
+        Relationships: [];
+      };
       casas_pedidos_remocao: {
         Row: {
           casa_id: string;
@@ -1657,6 +1690,8 @@ export type Database = {
       pode_administrar_pagina: { Args: { p_sigla: string }; Returns: boolean };
       pode_revisar_artigo: { Args: { alvo: string }; Returns: boolean };
       pode_sancionar: { Args: { alvo_user: string }; Returns: boolean };
+      desfazer_reivindicacao: { Args: { p_reivindicacao: string }; Returns: undefined };
+      reivindicar_casa: { Args: { p_casa: string; p_sigla: string }; Returns: string };
       remover_casa_do_diretorio: {
         Args: { p_casa: string; p_contato: string; p_nome: string };
         Returns: undefined;

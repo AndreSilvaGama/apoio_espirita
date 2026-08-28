@@ -355,10 +355,10 @@ const roadmap: Item[] = [
   },
 
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Ligar a casa do diretório público ao cadastro dela no site",
     descricao:
-      "As 714 casas do diretório vieram de cadastro público e a maioria não tem sigla registrada. Quem é da direção de uma delas consegue criar a conta e publicar a página da casa, mas essa página nasce solta: o site não sabe que ela é a mesma casa que já estava listada, e as duas convivem até que alguém as junte à mão. Falta o caminho que reconhece “esta casa listada é a minha” e funde as duas em uma só.",
+      "Na página da cidade, abaixo do nome de cada casa sem página, quem é da direção clica em “É a minha casa”, escolhe a sigla de cinco letras e pronto: a página é criada na hora, já preenchida com o nome, o endereço, o CEP e o telefone que estavam no cadastro público, e a pessoa cai na aba Configurações para revisar. A página nasce privada, como toda página de casa — nada aparece ao público antes de alguém publicar. Assumir exige e-mail confirmado, a mesma trava usada para publicar artigo. Cada casa assumida fica registrada com quem assumiu e quando, e o administrador do site desfaz num clique se não proceder.",
   },
   {
     status: "planejado",

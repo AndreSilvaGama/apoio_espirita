@@ -1,7 +1,8 @@
-import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, ChevronLeft, ExternalLink, MapPin, Phone, X } from "lucide-react";
+import { Building2, ChevronLeft, ExternalLink, MapPin, Phone, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
 import {
   ESTADOS,
@@ -106,7 +107,9 @@ function DiretorioCasasDaCidade() {
   const casas = Route.useLoaderData();
   const { uf } = Route.useParams();
   const router = useRouter();
+  const { user, profile } = useAuth();
   const [pedindoRemocao, setPedindoRemocao] = useState<string | null>(null);
+  const [assumindo, setAssumindo] = useState<string | null>(null);
 
   const cidade = casas[0]?.cidade ?? "";
   const estado = nomeDoEstado(uf);
@@ -189,7 +192,14 @@ function DiretorioCasasDaCidade() {
                     )}
                   </div>
 
-                  {pedindoRemocao === casa.id ? (
+                  {assumindo === casa.id ? (
+                    <FormularioReivindicacao
+                      casa={casa}
+                      siglaSugerida={profile?.sigla_casa ?? ""}
+                      logado={Boolean(user)}
+                      onFechar={() => setAssumindo(null)}
+                    />
+                  ) : pedindoRemocao === casa.id ? (
                     <FormularioRemocao
                       casa={casa}
                       onFechar={() => setPedindoRemocao(null)}
@@ -199,13 +209,30 @@ function DiretorioCasasDaCidade() {
                       }}
                     />
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPedindoRemocao(casa.id)}
-                      className="mt-3 text-[11px] text-muted-foreground/50 hover:text-muted-foreground underline underline-offset-2"
-                    >
-                      É da direção desta casa e quer retirá-la desta lista?
-                    </button>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {!casa.tem_pagina && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPedindoRemocao(null);
+                            setAssumindo(casa.id);
+                          }}
+                          className="text-[11px] text-cyan-glow hover:underline underline-offset-2"
+                        >
+                          É a minha casa — quero cuidar desta página
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssumindo(null);
+                          setPedindoRemocao(casa.id);
+                        }}
+                        className="text-[11px] text-muted-foreground/50 hover:text-muted-foreground underline underline-offset-2"
+                      >
+                        É da direção desta casa e quer retirá-la desta lista?
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -236,6 +263,131 @@ function DiretorioCasasDaCidade() {
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * Assume a página de uma casa listada no diretório.
+ *
+ * A casa é assumida na hora, sem conferência humana — decisão do dono do
+ * projeto. A página nasce privada, como toda página de casa, então nada é dito
+ * em nome da casa até que alguém publique.
+ */
+function FormularioReivindicacao({
+  casa,
+  siglaSugerida,
+  logado,
+  onFechar,
+}: {
+  casa: CasaNoDiretorio;
+  siglaSugerida: string;
+  logado: boolean;
+  onFechar: () => void;
+}) {
+  const navigate = useNavigate();
+  const [sigla, setSigla] = useState(siglaSugerida.toUpperCase());
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState("");
+
+  const assumir = async () => {
+    const escolhida = sigla.trim().toUpperCase();
+    if (!/^[A-Z]{5}$/.test(escolhida)) {
+      setErro("A sigla precisa ter exatamente 5 letras, sem espaços nem números.");
+      return;
+    }
+    setEnviando(true);
+    setErro("");
+    try {
+      const { data, error } = await supabase.rpc("reivindicar_casa", {
+        p_casa: casa.id,
+        p_sigla: escolhida,
+      });
+      if (error) throw error;
+      navigate({
+        to: "/casa/$sigla",
+        params: { sigla: (data as string) ?? escolhida },
+        search: { aba: "configuracoes" },
+      });
+    } catch (e: unknown) {
+      setErro(mensagemDeErro(e));
+      setEnviando(false);
+    }
+  };
+
+  if (!logado) {
+    return (
+      <div className="mt-4 rounded-xl border border-border bg-white/60 p-4 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs text-foreground/80 leading-relaxed">
+            Para cuidar da página desta casa você precisa de uma conta no site. Ela é gratuita, e
+            depois de criada você volta aqui e assume a página em um clique.
+          </p>
+          <button
+            type="button"
+            onClick={onFechar}
+            className="text-muted-foreground/40 hover:text-muted-foreground shrink-0"
+            title="Fechar"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <Link
+          to="/login"
+          className="inline-block px-4 py-2 rounded-lg text-[11px] uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 transition-colors"
+        >
+          Criar conta ou entrar
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-cyan-glow/30 bg-cyan-50/40 p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-2">
+          <Shield size={14} strokeWidth={1.7} className="text-cyan-700 shrink-0 mt-0.5" />
+          <p className="text-xs text-foreground/80 leading-relaxed">
+            Escolha a sigla desta casa: cinco letras que a identificam no site e que os membros vão
+            usar para se vincular a ela. A página é criada com o nome, o endereço e o telefone que
+            já estão no cadastro, e nasce <strong className="font-medium">privada</strong> — nada
+            aparece ao público antes de você conferir e publicar.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onFechar}
+          className="text-muted-foreground/40 hover:text-muted-foreground shrink-0"
+          title="Fechar"
+        >
+          <X size={14} />
+        </button>
+      </div>
+      <input
+        type="text"
+        value={sigla}
+        onChange={(e) => {
+          setSigla(
+            e.target.value
+              .toUpperCase()
+              .replace(/[^A-Z]/g, "")
+              .slice(0, 5),
+          );
+          setErro("");
+        }}
+        placeholder="SIGLA"
+        maxLength={5}
+        className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm tracking-[0.3em] text-center font-medium text-foreground placeholder-muted-foreground/40 focus:outline-none focus:border-cyan-glow/50 transition-colors"
+      />
+      {erro && <p className="text-[11px] text-red-500 leading-relaxed">{erro}</p>}
+      <button
+        type="button"
+        onClick={assumir}
+        disabled={enviando}
+        className="w-full py-2 rounded-lg text-[11px] uppercase tracking-widest text-cyan-glow border border-cyan-glow/40 hover:bg-cyan-glow/10 disabled:opacity-40 transition-colors"
+      >
+        {enviando ? "Criando a página…" : "Assumir esta casa"}
+      </button>
+    </div>
   );
 }
 

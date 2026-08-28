@@ -100,6 +100,24 @@ interface RelatorioProblema {
   user_id: string | null;
 }
 
+interface ReivindicacaoCasa {
+  id: string;
+  casa_nome: string;
+  sigla: string;
+  user_nome: string | null;
+  desfeita_em: string | null;
+  created_at: string;
+}
+
+interface PedidoRemocaoCasa {
+  id: string;
+  casa_nome: string;
+  nome_solicitante: string;
+  contato: string;
+  restaurada_em: string | null;
+  created_at: string;
+}
+
 interface SugestaoSite {
   id: string;
   name: string;
@@ -130,6 +148,8 @@ function AdminDashboard() {
   const [solicitacoes, setSolicitacoes] = useState<SolicitacaoDev[]>([]);
   const [problemas, setProblemas] = useState<RelatorioProblema[]>([]);
   const [sugestoes, setSugestoes] = useState<SugestaoSite[]>([]);
+  const [reivindicacoes, setReivindicacoes] = useState<ReivindicacaoCasa[]>([]);
+  const [remocoes, setRemocoes] = useState<PedidoRemocaoCasa[]>([]);
   // Edicao em curso de cada solicitacao: status escolhido e devolutiva.
   const [edicaoSolicitacao, setEdicaoSolicitacao] = useState<
     Record<string, { status: string; resposta: string }>
@@ -196,6 +216,21 @@ function AdminDashboard() {
         .order("created_at", { ascending: false });
       if (devErr) throw devErr;
       setSolicitacoes(devData || []);
+
+      // 6. Casas assumidas pela direção e pedidos de retirada do diretório
+      const { data: reivData, error: reivErr } = await supabase
+        .from("casas_reivindicacoes")
+        .select("id, casa_nome, sigla, user_nome, desfeita_em, created_at")
+        .order("created_at", { ascending: false });
+      if (reivErr) throw reivErr;
+      setReivindicacoes(reivData || []);
+
+      const { data: remData, error: remErr } = await supabase
+        .from("casas_pedidos_remocao")
+        .select("id, casa_nome, nome_solicitante, contato, restaurada_em, created_at")
+        .order("created_at", { ascending: false });
+      if (remErr) throw remErr;
+      setRemocoes(remData || []);
 
       // Update statistics
       const totalCasas = casasData?.length || 0;
@@ -351,6 +386,39 @@ function AdminDashboard() {
       loadAllData();
     } catch (e: unknown) {
       setErrorMsg("Erro ao remover solicitação: " + mensagemDeErro(e));
+    }
+  };
+
+  // Desfaz uma casa assumida indevidamente: tira o acesso de quem assumiu,
+  // despublica a página e devolve a casa ao diretório sem sigla.
+  const desfazerReivindicacao = async (r: ReivindicacaoCasa) => {
+    if (
+      !window.confirm(
+        `Desfazer a posse da casa "${r.casa_nome}" (${r.sigla}) por ${r.user_nome ?? "membro"}? ` +
+          "A página será despublicada e a casa volta ao diretório sem dono.",
+      )
+    )
+      return;
+    try {
+      const { error } = await supabase.rpc("desfazer_reivindicacao", { p_reivindicacao: r.id });
+      if (error) throw error;
+      setSuccessMsg("Posse desfeita. A casa voltou ao diretório sem página.");
+      loadAllData();
+    } catch (e: unknown) {
+      setErrorMsg("Erro ao desfazer: " + mensagemDeErro(e));
+    }
+  };
+
+  // Devolve ao diretório uma casa retirada por engano ou por má-fé.
+  const restaurarCasa = async (r: PedidoRemocaoCasa) => {
+    if (!window.confirm(`Colocar "${r.casa_nome}" de volta no diretório público?`)) return;
+    try {
+      const { error } = await supabase.rpc("restaurar_casa_no_diretorio", { p_pedido: r.id });
+      if (error) throw error;
+      setSuccessMsg("Casa devolvida ao diretório.");
+      loadAllData();
+    } catch (e: unknown) {
+      setErrorMsg("Erro ao restaurar: " + mensagemDeErro(e));
     }
   };
 
@@ -715,6 +783,92 @@ function AdminDashboard() {
           {/* TAB 2: CASAS ESPÍRITAS */}
           {activeTab === "casas" && (
             <div className="space-y-6">
+              {/* Diretório público: quem assumiu casa e quem pediu para sair.
+                  Assumir uma casa não passa por conferência — a escolha foi
+                  não barrar ninguém —, então este é o lugar de olhar e desfazer
+                  o que estiver errado. */}
+              {(reivindicacoes.length > 0 || remocoes.length > 0) && (
+                <div className="border border-gray-200 rounded-2xl p-5 bg-white space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-800">Diretório público</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Casas assumidas pela direção e casas retiradas a pedido. Nada aqui passou por
+                      conferência: confira e desfaça o que não procede.
+                    </p>
+                  </div>
+
+                  {reivindicacoes.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-widest text-gray-400">
+                        Casas assumidas ({reivindicacoes.filter((r) => !r.desfeita_em).length}{" "}
+                        ativas)
+                      </p>
+                      {reivindicacoes.map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex flex-wrap items-center justify-between gap-3 border border-gray-100 rounded-xl px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-800">
+                              {r.casa_nome}{" "}
+                              <span className="font-normal text-gray-400">· {r.sigla}</span>
+                            </p>
+                            <p className="text-[11px] text-gray-500">
+                              Assumida por {r.user_nome ?? "membro"} em{" "}
+                              {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                              {r.desfeita_em
+                                ? ` · desfeita em ${new Date(r.desfeita_em).toLocaleDateString("pt-BR")}`
+                                : ""}
+                            </p>
+                          </div>
+                          {!r.desfeita_em && (
+                            <button
+                              onClick={() => desfazerReivindicacao(r)}
+                              className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors"
+                            >
+                              Desfazer
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {remocoes.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-widest text-gray-400">
+                        Casas retiradas a pedido
+                      </p>
+                      {remocoes.map((r) => (
+                        <div
+                          key={r.id}
+                          className="flex flex-wrap items-center justify-between gap-3 border border-gray-100 rounded-xl px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-gray-800">{r.casa_nome}</p>
+                            <p className="text-[11px] text-gray-500">
+                              Pedido por {r.nome_solicitante} ({r.contato}) em{" "}
+                              {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                              {r.restaurada_em
+                                ? ` · devolvida em ${new Date(r.restaurada_em).toLocaleDateString("pt-BR")}`
+                                : ""}
+                            </p>
+                          </div>
+                          {!r.restaurada_em && (
+                            <button
+                              onClick={() => restaurarCasa(r)}
+                              className="text-[10px] font-semibold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors"
+                            >
+                              Devolver ao diretório
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-gray-800">Casas Espíritas Cadastradas</h2>
