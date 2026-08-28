@@ -126,10 +126,10 @@ const roadmap: Item[] = [
       "O Presidente cadastra os dados da casa: nome, endereço, telefone, foto e informações de contato · Os membros se vinculam à casa pela sigla",
   },
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Mapa e diretório público das casas espíritas, por cidade e estado",
     descricao:
-      "Mapa de todas as casas cadastradas, com filtro por cidade e estado e rota no Google Maps. E uma página pública para cada cidade, com as casas, os endereços e os horários das atividades: quem procura “centro espírita perto de mim” não encontra nada hoje, e essa é a porta de entrada mais procurada por quem está começando — a única que alcança quem ainda não conhece ninguém no movimento.",
+      "O diretório está no ar em /casas: 714 casas espíritas de 124 cidades, com endereço, CEP, telefone que liga com um toque e rota no mapa, sem exigir conta de ninguém. Cada estado e cada cidade tem página própria, e a casa que já publicou página no site aparece com o botão de abrir. Falta a visualização em mapa, com os alfinetes das casas próximas — o cadastro já guarda a posição de cada uma.",
   },
   {
     status: "feito",
@@ -342,12 +342,18 @@ const roadmap: Item[] = [
   // ── PENDENTE — Alcance público e divulgação da doutrina ──────────────────
 
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Fazer o conteúdo público do site ser encontrado nos buscadores",
     descricao:
-      "Hoje o site pede aos buscadores que não visitem as páginas das casas espíritas, e o mapa do site não lista nenhum artigo — só a página inicial, a biblioteca, as músicas, a transparência, as sugestões e os jogos, doze endereços ao todo. Na prática, os artigos escritos pela comunidade e as páginas que as casas publicaram não chegam a quem procura. Corrigir isso é liberar o caminho para os artigos e para as casas que escolheram publicar, e incluir cada um deles no mapa do site assim que forem publicados. É a mudança de maior alcance da lista, e a que precisa de mais cuidado: uma vez indexada, a página fica visível para qualquer pessoa e sai dos buscadores devagar. Nenhuma casa privada entra — só as que a direção publicou.",
+      "Eram três travas ao mesmo tempo. O site pedia aos buscadores que não visitassem as páginas das casas; o mapa do site listava doze endereços fixos, nenhum deles um artigo ou uma casa; e as páginas públicas entregavam apenas a palavra “Carregando” a quem não estava logado, porque esperavam a autenticação antes de mostrar qualquer coisa. As três foram removidas: o caminho está aberto para o diretório de casas, para as páginas que cada casa publicou e para os artigos; o mapa do site passou a ser montado a partir do banco a cada publicação, com 166 endereços no lugar de doze; e a vitrine pública passou a aparecer sem esperar login. Casa privada continua fora, fechada também pela permissão do banco.",
   },
 
+  {
+    status: "planejado",
+    titulo: "Ligar a casa do diretório público ao cadastro dela no site",
+    descricao:
+      "As 714 casas do diretório vieram de cadastro público e a maioria não tem sigla registrada. Quem é da direção de uma delas consegue criar a conta e publicar a página da casa, mas essa página nasce solta: o site não sabe que ela é a mesma casa que já estava listada, e as duas convivem até que alguém as junte à mão. Falta o caminho que reconhece “esta casa listada é a minha” e funde as duas em uma só.",
+  },
   {
     status: "planejado",
     titulo: "Compartilhar a mensagem do dia e os artigos em imagem",

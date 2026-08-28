@@ -373,6 +373,7 @@ export type Database = {
           nome: string;
           sigla: string | null;
           telefone: string | null;
+          visivel_diretorio: boolean;
         };
         Insert: {
           aceita_doacao_alimentos?: boolean;
@@ -388,6 +389,7 @@ export type Database = {
           nome: string;
           sigla?: string | null;
           telefone?: string | null;
+          visivel_diretorio?: boolean;
         };
         Update: {
           aceita_doacao_alimentos?: boolean;
@@ -403,6 +405,7 @@ export type Database = {
           nome?: string;
           sigla?: string | null;
           telefone?: string | null;
+          visivel_diretorio?: boolean;
         };
         Relationships: [];
       };
@@ -1264,6 +1267,36 @@ export type Database = {
           },
         ];
       };
+      casas_pedidos_remocao: {
+        Row: {
+          casa_id: string;
+          casa_nome: string;
+          contato: string;
+          created_at: string;
+          id: string;
+          nome_solicitante: string;
+          restaurada_em: string | null;
+        };
+        Insert: {
+          casa_id: string;
+          casa_nome: string;
+          contato: string;
+          created_at?: string;
+          id?: string;
+          nome_solicitante: string;
+          restaurada_em?: string | null;
+        };
+        Update: {
+          casa_id?: string;
+          casa_nome?: string;
+          contato?: string;
+          created_at?: string;
+          id?: string;
+          nome_solicitante?: string;
+          restaurada_em?: string | null;
+        };
+        Relationships: [];
+      };
       siglas_casas: {
         Row: {
           created_at: string;
@@ -1586,6 +1619,28 @@ export type Database = {
           titulo: string;
         }[];
       };
+      diretorio_casas: {
+        Args: { p_cidade_slug: string; p_uf: string };
+        Returns: {
+          cep: string;
+          cidade: string;
+          endereco: string;
+          estado: string;
+          id: string;
+          nome: string;
+          sigla: string;
+          telefone: string;
+          tem_pagina: boolean;
+        }[];
+      };
+      diretorio_cidades: {
+        Args: { p_uf: string };
+        Returns: { casas: number; cidade: string; slug: string }[];
+      };
+      diretorio_estados: {
+        Args: never;
+        Returns: { casas: number; cidades: number; estado: string }[];
+      };
       email_verificado: { Args: never; Returns: boolean };
       get_request_kanban_token: { Args: never; Returns: string };
       has_kanban_access: { Args: { p_sigla_casa: string }; Returns: boolean };
@@ -1594,6 +1649,11 @@ export type Database = {
       pode_administrar_pagina: { Args: { p_sigla: string }; Returns: boolean };
       pode_revisar_artigo: { Args: { alvo: string }; Returns: boolean };
       pode_sancionar: { Args: { alvo_user: string }; Returns: boolean };
+      remover_casa_do_diretorio: {
+        Args: { p_casa: string; p_contato: string; p_nome: string };
+        Returns: undefined;
+      };
+      restaurar_casa_no_diretorio: { Args: { p_pedido: string }; Returns: undefined };
       resolver_revisao_artigo: {
         Args: {
           p_decisao: string;

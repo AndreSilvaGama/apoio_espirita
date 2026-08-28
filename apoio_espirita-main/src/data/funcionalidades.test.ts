@@ -18,6 +18,7 @@ const ROTAS_EXISTENTES = [
   "/artigos/meus",
   "/artigos/novo",
   "/busca",
+  "/casas",
   "/evangelizacao",
   "/feb",
   "/jogos",

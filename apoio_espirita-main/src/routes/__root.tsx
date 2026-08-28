@@ -40,6 +40,7 @@ import {
   Sparkles,
   Search,
   Download,
+  MapPin,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -362,10 +363,13 @@ function AppLayout() {
     location.pathname === "/jogos" ||
     location.pathname.startsWith("/jogos/");
   // Paginas publicas que usam o acabamento da area logada. Sao vitrine para quem
-  // chega de fora — a pagina da casa e a lista de artigos — e nao faz sentido
-  // terem aparencia diferente da que o membro ve.
+  // chega de fora — a pagina da casa, o diretorio de casas e a lista de artigos —
+  // e nao faz sentido terem aparencia diferente da que o membro ve.
   const isVitrinePublica =
-    location.pathname.startsWith("/casa/") || location.pathname.startsWith("/artigos");
+    location.pathname.startsWith("/casa/") ||
+    location.pathname === "/casas" ||
+    location.pathname.startsWith("/casas/") ||
+    location.pathname.startsWith("/artigos");
 
   useEffect(() => {
     if (isLightMode) {
@@ -381,7 +385,11 @@ function AppLayout() {
     }
   }, [isLightMode, user, isVitrinePublica]);
 
-  if (loading && !isPublic) {
+  // A vitrine publica nao espera a autenticacao para aparecer. No servidor nao
+  // existe sessao, entao `loading` nasce verdadeiro: com esta tela de espera no
+  // caminho, o HTML entregue ao buscador continha apenas "Carregando..." — e o
+  // conteudo que existe para ser encontrado nunca chegava a ser lido.
+  if (loading && !isPublic && !isVitrinePublica) {
     return (
       <div className="page-light min-h-screen flex flex-col items-center justify-center bg-[#f7f8fc] text-[#111418] px-4">
         <div
@@ -533,7 +541,7 @@ function NavBar() {
 
   const ROTAS_ESTUDO = ["/feb", "/artigos", "/evangelizacao", "/musicas-cifras"];
   const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
-  const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes"];
+  const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas"];
 
   return (
     <header
@@ -682,6 +690,10 @@ function NavBar() {
             <Link to="/painel" className={dropItemCls} onClick={() => setAberto(null)}>
               <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
               Status do Projeto
+            </Link>
+            <Link to="/casas" className={dropItemCls} onClick={() => setAberto(null)}>
+              <MapPin size={14} strokeWidth={1.5} className="text-emerald-500" />
+              Casas espíritas
             </Link>
             <Link to="/ajuda" className={dropItemCls} onClick={() => setAberto(null)}>
               <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
@@ -1029,6 +1041,12 @@ function Footer({ onReportar }: { onReportar: () => void }) {
 
           {/* Links institucionais */}
           <div className="flex items-center gap-4 shrink-0">
+            <Link
+              to="/casas"
+              className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap"
+            >
+              Casas espíritas
+            </Link>
             <Link
               to="/transparencia"
               className="text-xs text-gray-400 hover:text-gray-700 transition-colors whitespace-nowrap"

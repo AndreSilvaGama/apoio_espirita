@@ -1,15 +1,25 @@
+# O que e publico e feito para ser encontrado: o diretorio de casas
+# espiritas, as paginas que cada casa escolheu publicar e os artigos escritos
+# pela comunidade. Uma casa so aparece aqui depois que a direcao dela publicou
+# a pagina; casa privada continua fora, fechada tambem pela permissao do banco.
 User-agent: *
 Allow: /
+Allow: /casas
+Allow: /casa/
+Allow: /artigos
 Allow: /feb
 Allow: /musicas-cifras
 Allow: /transparencia
 Allow: /sugestoes
 Allow: /jogos
 
+# Telas de trabalho interno e de dados pessoais nao entram em buscador.
 Disallow: /admin
 Disallow: /agenda
 Disallow: /ajuda
-Disallow: /casa/
+Disallow: /artigos/meus
+Disallow: /artigos/novo
+Disallow: /busca
 Disallow: /completar-perfil
 Disallow: /configurar-memoria
 Disallow: /evangelizacao

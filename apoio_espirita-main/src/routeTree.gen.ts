@@ -32,6 +32,7 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JogosIndexRouteImport } from './routes/jogos/index'
+import { Route as CasasIndexRouteImport } from './routes/casas.index'
 import { Route as ArtigosIndexRouteImport } from './routes/artigos.index'
 import { Route as JogosSemeadorMensagensRouteImport } from './routes/jogos/semeador-mensagens'
 import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
@@ -43,6 +44,8 @@ import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 import { Route as ArtigosNovoRouteImport } from './routes/artigos.novo'
 import { Route as ArtigosMeusRouteImport } from './routes/artigos.meus'
 import { Route as ArtigosSlugRouteImport } from './routes/artigos.$slug'
+import { Route as CasasUfIndexRouteImport } from './routes/casas.$uf.index'
+import { Route as CasasUfCidadeRouteImport } from './routes/casas.$uf.$cidade'
 import { Route as ArtigosSlugEditarRouteImport } from './routes/artigos.$slug.editar'
 
 const TransparenciaRoute = TransparenciaRouteImport.update({
@@ -160,6 +163,11 @@ const JogosIndexRoute = JogosIndexRouteImport.update({
   path: '/jogos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasasIndexRoute = CasasIndexRouteImport.update({
+  id: '/casas/',
+  path: '/casas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtigosIndexRoute = ArtigosIndexRouteImport.update({
   id: '/artigos/',
   path: '/artigos/',
@@ -216,6 +224,16 @@ const ArtigosSlugRoute = ArtigosSlugRouteImport.update({
   path: '/artigos/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasasUfIndexRoute = CasasUfIndexRouteImport.update({
+  id: '/casas/$uf/',
+  path: '/casas/$uf/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CasasUfCidadeRoute = CasasUfCidadeRouteImport.update({
+  id: '/casas/$uf/$cidade',
+  path: '/casas/$uf/$cidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArtigosSlugEditarRoute = ArtigosSlugEditarRouteImport.update({
   id: '/editar',
   path: '/editar',
@@ -256,8 +274,11 @@ export interface FileRoutesByFullPath {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos/': typeof ArtigosIndexRoute
+  '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
+  '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
+  '/casas/$uf/': typeof CasasUfIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -293,8 +314,11 @@ export interface FileRoutesByTo {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos': typeof ArtigosIndexRoute
+  '/casas': typeof CasasIndexRoute
   '/jogos': typeof JogosIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
+  '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
+  '/casas/$uf': typeof CasasUfIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -331,8 +355,11 @@ export interface FileRoutesById {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/artigos/': typeof ArtigosIndexRoute
+  '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
+  '/casas/$uf/$cidade': typeof CasasUfCidadeRoute
+  '/casas/$uf/': typeof CasasUfIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -370,8 +397,11 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/artigos/'
+    | '/casas/'
     | '/jogos/'
     | '/artigos/$slug/editar'
+    | '/casas/$uf/$cidade'
+    | '/casas/$uf/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -407,8 +437,11 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/artigos'
+    | '/casas'
     | '/jogos'
     | '/artigos/$slug/editar'
+    | '/casas/$uf/$cidade'
+    | '/casas/$uf'
   id:
     | '__root__'
     | '/'
@@ -444,8 +477,11 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/artigos/'
+    | '/casas/'
     | '/jogos/'
     | '/artigos/$slug/editar'
+    | '/casas/$uf/$cidade'
+    | '/casas/$uf/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -482,7 +518,10 @@ export interface RootRouteChildren {
   JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
   JogosSemeadorMensagensRoute: typeof JogosSemeadorMensagensRoute
   ArtigosIndexRoute: typeof ArtigosIndexRoute
+  CasasIndexRoute: typeof CasasIndexRoute
   JogosIndexRoute: typeof JogosIndexRoute
+  CasasUfCidadeRoute: typeof CasasUfCidadeRoute
+  CasasUfIndexRoute: typeof CasasUfIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -648,6 +687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/casas/': {
+      id: '/casas/'
+      path: '/casas'
+      fullPath: '/casas/'
+      preLoaderRoute: typeof CasasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artigos/': {
       id: '/artigos/'
       path: '/artigos'
@@ -725,6 +771,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtigosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/casas/$uf/': {
+      id: '/casas/$uf/'
+      path: '/casas/$uf'
+      fullPath: '/casas/$uf/'
+      preLoaderRoute: typeof CasasUfIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/casas/$uf/$cidade': {
+      id: '/casas/$uf/$cidade'
+      path: '/casas/$uf/$cidade'
+      fullPath: '/casas/$uf/$cidade'
+      preLoaderRoute: typeof CasasUfCidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/artigos/$slug/editar': {
       id: '/artigos/$slug/editar'
       path: '/editar'
@@ -781,7 +841,10 @@ const rootRouteChildren: RootRouteChildren = {
   JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
   JogosSemeadorMensagensRoute: JogosSemeadorMensagensRoute,
   ArtigosIndexRoute: ArtigosIndexRoute,
+  CasasIndexRoute: CasasIndexRoute,
   JogosIndexRoute: JogosIndexRoute,
+  CasasUfCidadeRoute: CasasUfCidadeRoute,
+  CasasUfIndexRoute: CasasUfIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

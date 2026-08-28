@@ -154,6 +154,16 @@ const FAQ: FaqItem[] = [
       "Há dois caminhos, e eles servem a coisas diferentes. O primeiro é o link 'Sugestões' no rodapé de qualquer página: o formulário é curto, não exige login e a mensagem vai direto para o desenvolvedor, que responde por e-mail a quem escreveu — ela não fica exposta no site, justamente porque traz o seu nome e o seu e-mail. O segundo, para quem tem conta, é 'Ajuda' › 'Status do Projeto': ali existe o campo 'Solicitar um desenvolvimento', e o que você pedir passa a aparecer na lista para todos os membros, com o seu nome e a sua casa, podendo receber votos de quem concordar.",
   },
   {
+    pergunta: "Como encontro uma casa espírita perto de mim?",
+    resposta:
+      "Passo a passo: 1) No rodapé de qualquer página, clique em 'Casas espíritas' — quem já tem conta também chega por 'Ajuda' › 'Casas espíritas'. 2) Escolha o seu estado na lista. 3) Escolha a sua cidade. 4) A página mostra as casas daquela cidade com o nome, o endereço e o CEP. Em cada uma, o botão 'Como chegar' abre a rota no mapa e, quando há telefone cadastrado, o número liga com um toque. Nada disso exige conta nem cadastro: a consulta é livre, inclusive para quem nunca entrou num centro espírita. As casas que já publicaram página no site trazem também o botão 'Ver a página da casa', com os horários das atividades e as demais informações. Uma recomendação prática: as atividades públicas são gratuitas e abertas a qualquer pessoa, mas confirme o horário por telefone antes de ir, porque a lista traz o endereço e nem sempre a programação.",
+  },
+  {
+    pergunta: "De onde vieram as casas que aparecem nessa lista?",
+    resposta:
+      "De cadastros públicos de casas espíritas, com nome, endereço, cidade e telefone. Elas estão listadas sem que a direção tenha pedido, e por isso cada casa tem, na própria página da cidade, dois caminhos abertos. O primeiro é assumir a página: quem faz parte da direção cria a conta, informa a sigla da casa e publica a página dela, ganhando descrição, horários, contato e chave PIX. O segundo é sair: logo abaixo do nome da casa há o link 'É da direção desta casa e quer retirá-la desta lista?'. Basta informar o seu nome e um contato, e a casa some da lista na hora — não perguntamos o motivo. Guardamos apenas quem fez o pedido, para poder desfazer caso outra pessoa tenha retirado a casa por engano.",
+  },
+  {
     pergunta: "O que é a página pública da casa espírita?",
     resposta:
       "Cada casa cadastrada tem uma página no endereço apoioespirita.com.br/casa/SIGLA. Por padrão ela é privada: só quem tem conta e pertence à casa consegue vê-la. A direção pode optar por torná-la pública, e então qualquer pessoa passa a encontrá-la, inclusive pelo Google. A finalidade é acolhimento: quem procura um centro espírita na sua cidade encontra o endereço, os horários das atividades e como entrar em contato, sem precisar criar conta nenhuma.",

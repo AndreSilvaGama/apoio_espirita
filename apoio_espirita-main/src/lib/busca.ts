@@ -35,6 +35,21 @@ const PAGINAS_EXTRAS: PaginaDoSite[] = [
     termos: ["fila", "mensagem", "pensamento"],
   },
   {
+    titulo: "Casas espíritas por cidade",
+    descricao: "Endereço, telefone e como chegar às casas espíritas de cada cidade.",
+    href: "/casas",
+    termos: [
+      "casa espirita",
+      "centro espirita",
+      "perto de mim",
+      "endereco",
+      "diretorio",
+      "cidade",
+      "estado",
+      "onde fica",
+    ],
+  },
+  {
     titulo: "Meu perfil",
     descricao: "Nome, casa, cargo, cidade, troca de senha e exclusão da conta.",
     href: "/perfil",
