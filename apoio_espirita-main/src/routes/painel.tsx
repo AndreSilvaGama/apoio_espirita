@@ -343,6 +343,13 @@ const roadmap: Item[] = [
 
   {
     status: "planejado",
+    titulo: "Fazer o conteúdo público do site ser encontrado nos buscadores",
+    descricao:
+      "Hoje o site pede aos buscadores que não visitem as páginas das casas espíritas, e o mapa do site não lista nenhum artigo — só a página inicial, a biblioteca, as músicas, a transparência, as sugestões e os jogos, doze endereços ao todo. Na prática, os artigos escritos pela comunidade e as páginas que as casas publicaram não chegam a quem procura. Corrigir isso é liberar o caminho para os artigos e para as casas que escolheram publicar, e incluir cada um deles no mapa do site assim que forem publicados. É a mudança de maior alcance da lista, e a que precisa de mais cuidado: uma vez indexada, a página fica visível para qualquer pessoa e sai dos buscadores devagar. Nenhuma casa privada entra — só as que a direção publicou.",
+  },
+
+  {
+    status: "planejado",
     titulo: "Compartilhar a mensagem do dia e os artigos em imagem",
     descricao:
       "Um botão que transforma a mensagem do dia ou o trecho de um artigo em uma imagem bonita, com a fonte e o endereço do site, pronta para enviar no WhatsApp. É o conteúdo que as pessoas já compartilham todos os dias, hoje sem levar ninguém de volta ao portal.",
