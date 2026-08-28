@@ -154,6 +154,12 @@ const roadmap: Item[] = [
       "Qualquer membro com e-mail confirmado publica artigos espíritas identificados com nome e casa, sem espera por aprovação · São públicos, indexados em buscadores e avaliados pelos próprios leitores · Um artigo com erro grave reconhecido por gente suficiente sai do ar sozinho; suspender ou banir um autor continua sendo sempre decisão humana",
   },
   {
+    status: "feito",
+    titulo: "O autor decide como assina o artigo e se ele entra nos buscadores",
+    descricao:
+      "Com os artigos passando a ser encontrados no Google, o nome de quem escreve fica pesquisável para sempre — e quem escreve sobre luto, doença ou obsessão precisa poder decidir. Na tela de publicar, e depois na de editar, o autor escolhe assinar com o nome completo ou só com o primeiro nome, e se o texto pode ou não aparecer no resultado das buscas. As duas escolhas nascem como sempre foi: assinado e encontrável. O nome abreviado passa a valer em toda tela de uma vez, porque a regra mora na consulta do banco, e o artigo que pediu para ficar de fora sai do mapa do site e leva o aviso de não indexar.",
+  },
+  {
     status: "planejado",
     titulo: "Fórum de perguntas e respostas sobre a doutrina espírita",
     descricao:

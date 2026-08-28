@@ -56,6 +56,11 @@ function ArtigoNovo() {
   const [titulo, setTitulo] = useState("");
   const [resumo, setResumo] = useState("");
   const [conteudo, setConteudo] = useState("");
+  // Como o artigo será assinado e se pode ser encontrado nos buscadores.
+  // O padrão é o mais aberto — assinado e encontrável —, e é o autor quem
+  // decide diferente, porque é o nome dele que fica pesquisável.
+  const [assinatura, setAssinatura] = useState<"completa" | "primeiro_nome">("completa");
+  const [indexavel, setIndexavel] = useState(true);
   const [erroFormulario, setErroFormulario] = useState<string | null>(null);
   const [publicando, setPublicando] = useState(false);
 
@@ -155,6 +160,8 @@ function ArtigoNovo() {
             resumo: resumoFinal || null,
             conteudo: conteudoFinal,
             slug: slugTentativa,
+            assinatura,
+            indexavel,
           })
           .select("slug")
           .single();
@@ -289,6 +296,59 @@ function ArtigoNovo() {
                 {conteudo.trim().length} {pluralCaracteres(conteudo.trim().length)} (mínimo{" "}
                 {CONTEUDO_MIN})
               </p>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                Como este artigo vai aparecer
+              </p>
+              <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                Artigos publicados são públicos e podem ser encontrados no Google, inclusive por
+                quem não tem conta. Se o assunto for pessoal, você pode assinar só com o primeiro
+                nome ou pedir que o texto fique fora dos buscadores. Você muda isso quando quiser:
+                abra “Meus artigos”, escolha o texto e clique em editar.
+              </p>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={assinatura === "completa"}
+                  onChange={(e) => setAssinatura(e.target.checked ? "completa" : "primeiro_nome")}
+                  className="mt-0.5 accent-cyan-600"
+                />
+                <span className="text-xs text-foreground/80 leading-relaxed">
+                  Assinar com o meu nome completo
+                  {profile?.nome ? (
+                    <span className="text-muted-foreground/70">
+                      {" "}
+                      — aparecerá como{" "}
+                      <strong className="font-medium">
+                        {assinatura === "completa"
+                          ? profile.nome
+                          : profile.nome.trim().split(" ")[0]}
+                      </strong>
+                      {profile.sigla_casa ? ` · ${profile.sigla_casa}` : ""}
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={indexavel}
+                  onChange={(e) => setIndexavel(e.target.checked)}
+                  className="mt-0.5 accent-cyan-600"
+                />
+                <span className="text-xs text-foreground/80 leading-relaxed">
+                  Permitir que buscadores encontrem este artigo
+                  <span className="text-muted-foreground/70">
+                    {" "}
+                    — desmarcado, ele continua público no site e visível a quem tem o endereço, mas
+                    pede aos buscadores que não o listem.
+                  </span>
+                </span>
+              </label>
             </div>
 
             {erroFormulario && <p className="text-sm text-red-500 text-center">{erroFormulario}</p>}

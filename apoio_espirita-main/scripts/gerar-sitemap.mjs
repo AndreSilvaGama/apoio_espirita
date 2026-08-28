@@ -119,10 +119,13 @@ async function main() {
   }
 
   // ── Artigos publicados ────────────────────────────────────────────────
+  // `indexavel` é a escolha do autor: quem pediu para ficar fora dos buscadores
+  // não entra no mapa do site.
   const { data: artigos, error: erroArtigos } = await supabase
     .from("artigos_publicos")
     .select("slug, editado_em, publicado_em")
-    .eq("estado", "publicado");
+    .eq("estado", "publicado")
+    .eq("indexavel", true);
   if (erroArtigos) throw new Error("artigos: " + erroArtigos.message);
 
   for (const artigo of artigos ?? []) {

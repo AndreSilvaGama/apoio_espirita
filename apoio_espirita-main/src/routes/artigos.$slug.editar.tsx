@@ -32,6 +32,8 @@ interface ArtigoEditavel {
   resumo: string | null;
   conteudo: string;
   estado: EstadoArtigo;
+  assinatura: string;
+  indexavel: boolean;
 }
 
 interface ErroApontado {
@@ -55,6 +57,8 @@ function ArtigoEditar() {
   const [titulo, setTitulo] = useState("");
   const [resumo, setResumo] = useState("");
   const [conteudo, setConteudo] = useState("");
+  const [assinatura, setAssinatura] = useState<"completa" | "primeiro_nome">("completa");
+  const [indexavel, setIndexavel] = useState(true);
   const [erroFormulario, setErroFormulario] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
 
@@ -113,7 +117,7 @@ function ArtigoEditar() {
     try {
       const { data: encontrado, error: erroArtigo } = await supabase
         .from("artigos")
-        .select("id, autor_id, titulo, slug, resumo, conteudo, estado")
+        .select("id, autor_id, titulo, slug, resumo, conteudo, estado, assinatura, indexavel")
         .eq("slug", slug)
         .maybeSingle();
       if (erroArtigo) throw erroArtigo;
@@ -146,6 +150,8 @@ function ArtigoEditar() {
       setTitulo(artigoAtual.titulo);
       setResumo(artigoAtual.resumo ?? "");
       setConteudo(artigoAtual.conteudo);
+      setAssinatura(artigoAtual.assinatura === "primeiro_nome" ? "primeiro_nome" : "completa");
+      setIndexavel(artigoAtual.indexavel !== false);
 
       if (artigoAtual.estado === "em_correcao") {
         await carregarErros(artigoAtual.id);
@@ -186,6 +192,8 @@ function ArtigoEditar() {
           titulo: tituloFinal,
           resumo: resumoFinal || null,
           conteudo: conteudoFinal,
+          assinatura,
+          indexavel,
           editado_em: new Date().toISOString(),
         })
         .eq("id", artigo.id);
@@ -363,6 +371,50 @@ function ArtigoEditar() {
                   {conteudo.trim().length} {pluralCaracteres(conteudo.trim().length)} (mínimo{" "}
                   {CONTEUDO_MIN})
                 </p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Como este artigo aparece
+                </p>
+                <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                  Artigos publicados são públicos e podem ser encontrados no Google, inclusive por
+                  quem não tem conta. Você pode mudar estas duas escolhas quando quiser.
+                </p>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={assinatura === "completa"}
+                    onChange={(e) => setAssinatura(e.target.checked ? "completa" : "primeiro_nome")}
+                    className="mt-0.5 accent-cyan-600"
+                  />
+                  <span className="text-xs text-foreground/80 leading-relaxed">
+                    Assinar com o meu nome completo
+                    <span className="text-muted-foreground/70">
+                      {" "}
+                      — desmarcado, o artigo passa a ser assinado só com o primeiro nome.
+                    </span>
+                  </span>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={indexavel}
+                    onChange={(e) => setIndexavel(e.target.checked)}
+                    className="mt-0.5 accent-cyan-600"
+                  />
+                  <span className="text-xs text-foreground/80 leading-relaxed">
+                    Permitir que buscadores encontrem este artigo
+                    <span className="text-muted-foreground/70">
+                      {" "}
+                      — desmarcado, ele continua público no site, mas pede aos buscadores que não o
+                      listem. Um artigo já indexado leva alguns dias para sair do resultado das
+                      buscas.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               {emCorrecao && (

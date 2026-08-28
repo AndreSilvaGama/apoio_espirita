@@ -9,19 +9,51 @@ import { AvaliacaoArtigo } from "@/components/AvaliacaoArtigo";
 import { JUSTIFICATIVA_MINIMA, justificativaValida } from "@/lib/artigos";
 import { mensagemDeErro } from "@/lib/erros";
 
+/**
+ * O artigo é carregado no `loader`, e não só no componente, por dois motivos.
+ * O primeiro é que o texto precisa vir dentro do HTML que o servidor devolve —
+ * antes, o buscador recebia a palavra "Carregando" e um título genérico igual
+ * para todos os artigos. O segundo é o `noindex`: só dá para pedir a um
+ * buscador que ignore a página se a resposta souber, ali mesmo, que o autor
+ * escolheu ficar fora dos buscadores.
+ */
+async function carregarParaOCabecalho(slug: string) {
+  const { data } = await supabase
+    .from("artigos_publicos")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  return (data as ArtigoCompleto | null) ?? null;
+}
+
 export const Route = createFileRoute("/artigos/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: "Artigo — Apoio Espírita" },
-      {
-        name: "description",
-        content: "Leia este artigo da comunidade espírita, avaliado pelos próprios leitores.",
-      },
-      { property: "og:title", content: "Artigo — Apoio Espírita" },
-      { property: "og:url", content: `https://apoioespirita.com.br/artigos/${params.slug}` },
-    ],
-    links: [{ rel: "canonical", href: `https://apoioespirita.com.br/artigos/${params.slug}` }],
-  }),
+  loader: ({ params }) => carregarParaOCabecalho(params.slug),
+  head: ({ params, loaderData }) => {
+    const url = `https://apoioespirita.com.br/artigos/${params.slug}`;
+    const publicado = loaderData?.estado === "publicado";
+    const titulo = publicado && loaderData?.titulo ? loaderData.titulo : "Artigo";
+    const autor = loaderData?.autor_nome ?? "";
+    const descricao =
+      (publicado ? loaderData?.resumo : null) ??
+      "Leia este artigo da comunidade espírita, avaliado pelos próprios leitores.";
+    // Artigo retirado ou que o autor pediu para não indexar sai dos buscadores.
+    const foraDosBuscadores = !publicado || loaderData?.indexavel === false;
+    return {
+      meta: [
+        { title: `${titulo} — Apoio Espírita` },
+        { name: "description", content: descricao },
+        ...(autor ? [{ name: "author", content: autor }] : []),
+        ...(foraDosBuscadores
+          ? [{ name: "robots", content: "noindex, follow" }]
+          : [{ name: "robots", content: "index, follow" }]),
+        { property: "og:title", content: `${titulo} — Apoio Espírita` },
+        { property: "og:description", content: descricao },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: ArtigoPage,
 });
 
@@ -42,6 +74,8 @@ interface ArtigoCompleto {
   aval_gostei: number | null;
   aval_nao_gostei: number | null;
   piso_atual: number | null;
+  assinatura: string | null;
+  indexavel: boolean | null;
 }
 
 type Situacao = "carregando" | "publicado" | "retirado" | "nao_encontrado" | "erro";
@@ -72,9 +106,16 @@ function AvisoRetirado() {
 
 function ArtigoPage() {
   const { slug } = Route.useParams();
+  const carregadoNoServidor = Route.useLoaderData();
   const { user } = useAuth();
-  const [situacao, setSituacao] = useState<Situacao>("carregando");
-  const [artigo, setArtigo] = useState<ArtigoCompleto | null>(null);
+  const [situacao, setSituacao] = useState<Situacao>(
+    carregadoNoServidor
+      ? carregadoNoServidor.estado === "publicado"
+        ? "publicado"
+        : "retirado"
+      : "carregando",
+  );
+  const [artigo, setArtigo] = useState<ArtigoCompleto | null>(carregadoNoServidor);
   const [erro, setErro] = useState<string | null>(null);
 
   // Área de revisão: só quem pode revisar ESTE artigo específico vê o botão
@@ -188,7 +229,10 @@ function ArtigoPage() {
   );
 
   useEffect(() => {
-    carregarArtigo();
+    // O artigo já veio do servidor; esta recarga é só para pegar avaliações
+    // gravadas entre o carregamento e a leitura, sem piscar a tela.
+    carregarArtigo({ mostrarCarregando: !carregadoNoServidor });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [carregarArtigo]);
 
   return (

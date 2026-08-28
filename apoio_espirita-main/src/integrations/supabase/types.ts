@@ -285,6 +285,7 @@ export type Database = {
       };
       artigos: {
         Row: {
+          assinatura: string;
           autor_id: string;
           autor_nome: string;
           autor_sigla_casa: string | null;
@@ -299,6 +300,7 @@ export type Database = {
           editado_em: string | null;
           estado: string;
           id: string;
+          indexavel: boolean;
           publicado_em: string;
           resumo: string | null;
           retirado_em: string | null;
@@ -309,6 +311,7 @@ export type Database = {
           titulo: string;
         };
         Insert: {
+          assinatura?: string;
           autor_id: string;
           autor_nome: string;
           autor_sigla_casa?: string | null;
@@ -323,6 +326,7 @@ export type Database = {
           editado_em?: string | null;
           estado?: string;
           id?: string;
+          indexavel?: boolean;
           publicado_em?: string;
           resumo?: string | null;
           retirado_em?: string | null;
@@ -333,6 +337,7 @@ export type Database = {
           titulo: string;
         };
         Update: {
+          assinatura?: string;
           autor_id?: string;
           autor_nome?: string;
           autor_sigla_casa?: string | null;
@@ -347,6 +352,7 @@ export type Database = {
           editado_em?: string | null;
           estado?: string;
           id?: string;
+          indexavel?: boolean;
           publicado_em?: string;
           resumo?: string | null;
           retirado_em?: string | null;
@@ -1502,6 +1508,7 @@ export type Database = {
       artigos_publicos: {
         Row: {
           aprovacoes: number | null;
+          assinatura: string | null;
           autor_id: string | null;
           autor_nome: string | null;
           autor_sigla_casa: string | null;
@@ -1514,6 +1521,7 @@ export type Database = {
           editado_em: string | null;
           estado: string | null;
           id: string | null;
+          indexavel: boolean | null;
           piso_atual: number | null;
           publicado_em: string | null;
           resumo: string | null;
