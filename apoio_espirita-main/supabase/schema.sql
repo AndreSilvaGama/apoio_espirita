@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ATzWYjKSE1EUjnerGbs3VUrTaFUIFIK5OMP9jXlH4avBfADjApJUVXjnfavBXR7
+\restrict ulzrPgVWVySSExSwUNe3Gj2jOVeLZcqjDpVmIhDitYWaXivBcjDaZa8yoxpfrHf
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -284,7 +284,7 @@ CREATE FUNCTION public.buscar_geral(termo text, limite integer DEFAULT 6) RETURN
       and (strpos(public.sem_acento(c.nome), e.q) > 0
         or strpos(public.sem_acento(coalesce(c.sigla, '')), e.q) > 0
         or strpos(public.sem_acento(coalesce(c.cidade, '')), e.q) > 0)
-    order by c.nome
+    order by 4 nulls last, 2
     limit (select n from entrada)
   )
   union all
@@ -298,7 +298,7 @@ CREATE FUNCTION public.buscar_geral(termo text, limite integer DEFAULT 6) RETURN
       and p.nome is not null
       and (strpos(public.sem_acento(p.nome), e.q) > 0
         or strpos(public.sem_acento(coalesce(p.cidade, '')), e.q) > 0)
-    order by p.nome
+    order by 2
     limit (select n from entrada)
   )
 $$;
@@ -309,6 +309,120 @@ $$;
 --
 
 COMMENT ON FUNCTION public.buscar_geral(termo text, limite integer) IS 'Busca artigos publicados, casas ativas e membros visíveis a quem chama.';
+
+
+--
+-- Name: desfazer_reivindicacao(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.desfazer_reivindicacao(p_reivindicacao uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_reg public.casas_reivindicacoes%rowtype;
+begin
+  if not public.sou_dev() then
+    raise exception 'Apenas o desenvolvedor pode desfazer uma reivindicação.';
+  end if;
+
+  select * into v_reg from public.casas_reivindicacoes where id = p_reivindicacao;
+  if v_reg.id is null then
+    raise exception 'Reivindicação não encontrada.';
+  end if;
+  if v_reg.desfeita_em is not null then
+    raise exception 'Esta reivindicação já foi desfeita.';
+  end if;
+
+  delete from public.administradores_pagina
+  where sigla_casa = v_reg.sigla and user_id = v_reg.user_id;
+
+  update public.paginas_casas set publicada = false where sigla_casa = v_reg.sigla;
+  update public.casas_espirita set sigla = null where id = v_reg.casa_id;
+
+  update public.casas_reivindicacoes set desfeita_em = now() where id = p_reivindicacao;
+end
+$$;
+
+
+--
+-- Name: diretorio_casas(text, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.diretorio_casas(p_uf text, p_cidade_slug text) RETURNS TABLE(id uuid, nome text, sigla text, endereco text, cep text, cidade text, estado text, telefone text, tem_pagina boolean)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select
+    c.id,
+    c.nome,
+    c.sigla,
+    c.endereco,
+    c.cep,
+    c.cidade,
+    c.estado,
+    c.telefone,
+    exists (
+      select 1 from public.paginas_casas p
+      where p.sigla_casa = c.sigla and p.publicada
+    )
+  from public.casas_espirita c
+  where c.ativa
+    and c.visivel_diretorio
+    and upper(c.estado) = upper(p_uf)
+    and public.diretorio_slug(c.cidade) = lower(p_cidade_slug)
+  order by c.nome
+$$;
+
+
+--
+-- Name: diretorio_cidades(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.diretorio_cidades(p_uf text) RETURNS TABLE(cidade text, slug text, casas bigint)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select c.cidade, public.diretorio_slug(c.cidade), count(*)
+  from public.casas_espirita c
+  where c.ativa
+    and c.visivel_diretorio
+    and c.cidade is not null
+    and upper(c.estado) = upper(p_uf)
+  group by c.cidade
+  order by c.cidade
+$$;
+
+
+--
+-- Name: diretorio_estados(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.diretorio_estados() RETURNS TABLE(estado text, casas bigint, cidades bigint)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select c.estado, count(*), count(distinct c.cidade)
+  from public.casas_espirita c
+  where c.ativa
+    and c.visivel_diretorio
+    and c.estado is not null
+    and c.cidade is not null
+  group by c.estado
+  order by c.estado
+$$;
+
+
+--
+-- Name: diretorio_slug(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.diretorio_slug(texto text) RETURNS text
+    LANGUAGE sql IMMUTABLE
+    SET search_path TO 'public'
+    AS $$
+  select trim(both '-' from regexp_replace(public.sem_acento(texto), '[^a-z0-9]+', '-', 'g'))
+$$;
 
 
 --
@@ -511,6 +625,123 @@ $$;
 
 
 --
+-- Name: reivindicar_casa(uuid, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.reivindicar_casa(p_casa uuid, p_sigla text) RETURNS text
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $_$
+declare
+  v_casa public.casas_espirita%rowtype;
+  v_sigla text := upper(btrim(p_sigla));
+  v_dono_da_sigla text;
+  v_nome text;
+begin
+  if auth.uid() is null then
+    raise exception 'Entre na sua conta para assumir a página desta casa.';
+  end if;
+
+  if not public.email_verificado() then
+    raise exception 'Confirme o seu e-mail antes de assumir a página de uma casa. A mensagem de confirmação foi enviada quando você criou a conta.';
+  end if;
+
+  if v_sigla !~ '^[A-Z]{5}$' then
+    raise exception 'A sigla precisa ter exatamente 5 letras, sem espaços nem números.';
+  end if;
+
+  select * into v_casa from public.casas_espirita where id = p_casa;
+  if v_casa.id is null then
+    raise exception 'Casa não encontrada no diretório.';
+  end if;
+  if not v_casa.ativa or not v_casa.visivel_diretorio then
+    raise exception 'Esta casa não está mais no diretório.';
+  end if;
+
+  if v_casa.sigla is not null
+     and exists (select 1 from public.paginas_casas where sigla_casa = v_casa.sigla) then
+    raise exception 'Esta casa já tem página no site. Se ela é sua e você perdeu o acesso, procure o suporte.';
+  end if;
+
+  select c.nome into v_dono_da_sigla
+  from public.casas_espirita c
+  where c.sigla = v_sigla and c.id <> p_casa
+  limit 1;
+  if v_dono_da_sigla is not null then
+    raise exception 'A sigla % já pertence a outra casa (%). Escolha outra.', v_sigla, v_dono_da_sigla;
+  end if;
+
+  if exists (select 1 from public.paginas_casas where sigla_casa = v_sigla) then
+    raise exception 'Já existe uma página com a sigla %. Escolha outra.', v_sigla;
+  end if;
+
+  insert into public.siglas_casas (sigla) values (v_sigla)
+  on conflict (sigla) do nothing;
+
+  update public.casas_espirita set sigla = v_sigla where id = p_casa;
+
+  insert into public.paginas_casas (
+    sigla_casa, nome_completo, endereco, cidade, uf, cep, telefone, publicada
+  )
+  values (
+    v_sigla,
+    v_casa.nome,
+    coalesce(v_casa.endereco, ''),
+    coalesce(v_casa.cidade, ''),
+    coalesce(v_casa.estado, ''),
+    coalesce(v_casa.cep, ''),
+    coalesce(v_casa.telefone, ''),
+    false
+  )
+  on conflict (sigla_casa) do nothing;
+
+  insert into public.administradores_pagina (sigla_casa, user_id, adicionado_por)
+  values (v_sigla, auth.uid(), auth.uid())
+  on conflict do nothing;
+
+  update public.profiles
+  set sigla_casa = v_sigla
+  where id = auth.uid() and coalesce(btrim(sigla_casa), '') = '';
+
+  select nome into v_nome from public.profiles where id = auth.uid();
+
+  insert into public.casas_reivindicacoes (casa_id, casa_nome, sigla, user_id, user_nome)
+  values (p_casa, v_casa.nome, v_sigla, auth.uid(), v_nome);
+
+  return v_sigla;
+end
+$_$;
+
+
+--
+-- Name: remover_casa_do_diretorio(uuid, text, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.remover_casa_do_diretorio(p_casa uuid, p_nome text, p_contato text) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_nome_casa text;
+begin
+  if coalesce(btrim(p_nome), '') = '' or coalesce(btrim(p_contato), '') = '' then
+    raise exception 'Informe o seu nome e um contato para que possamos confirmar a retirada.';
+  end if;
+
+  select c.nome into v_nome_casa from public.casas_espirita c where c.id = p_casa;
+  if v_nome_casa is null then
+    raise exception 'Casa não encontrada.';
+  end if;
+
+  insert into public.casas_pedidos_remocao (casa_id, casa_nome, nome_solicitante, contato)
+  values (p_casa, v_nome_casa, btrim(p_nome), btrim(p_contato));
+
+  update public.casas_espirita set visivel_diretorio = false where id = p_casa;
+end
+$$;
+
+
+--
 -- Name: resolver_revisao_artigo(uuid, text, text, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -616,6 +847,32 @@ begin
          decidida_em = now()
    where id = p_revisao;
 end;
+$$;
+
+
+--
+-- Name: restaurar_casa_no_diretorio(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.restaurar_casa_no_diretorio(p_pedido uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_casa uuid;
+begin
+  if not public.sou_dev() then
+    raise exception 'Apenas o desenvolvedor pode restaurar uma casa no diretório.';
+  end if;
+
+  select casa_id into v_casa from public.casas_pedidos_remocao where id = p_pedido;
+  if v_casa is null then
+    raise exception 'Pedido não encontrado.';
+  end if;
+
+  update public.casas_espirita set visivel_diretorio = true where id = v_casa;
+  update public.casas_pedidos_remocao set restaurada_em = now() where id = p_pedido;
+end
 $$;
 
 
@@ -854,6 +1111,9 @@ CREATE TABLE public.artigos (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     editado_em timestamp with time zone,
     publicado_em timestamp with time zone DEFAULT now() NOT NULL,
+    assinatura text DEFAULT 'completa'::text NOT NULL,
+    indexavel boolean DEFAULT true NOT NULL,
+    CONSTRAINT artigos_assinatura_check CHECK ((assinatura = ANY (ARRAY['completa'::text, 'primeiro_nome'::text]))),
     CONSTRAINT artigos_conteudo_check CHECK ((length(TRIM(BOTH FROM conteudo)) >= 200)),
     CONSTRAINT artigos_estado_check CHECK ((estado = ANY (ARRAY['publicado'::text, 'retirado'::text, 'em_correcao'::text]))),
     CONSTRAINT artigos_resumo_check CHECK (((resumo IS NULL) OR (length(resumo) <= 400))),
@@ -878,10 +1138,13 @@ CREATE VIEW public.artigos_avisos WITH (security_invoker='false') AS
 -- Name: artigos_publicos; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW public.artigos_publicos WITH (security_invoker='true') AS
+CREATE VIEW public.artigos_publicos AS
  SELECT id,
     autor_id,
-    autor_nome,
+        CASE
+            WHEN (assinatura = 'primeiro_nome'::text) THEN split_part(btrim(autor_nome), ' '::text, 1)
+            ELSE autor_nome
+        END AS autor_nome,
     autor_sigla_casa,
     titulo,
     slug,
@@ -902,7 +1165,9 @@ CREATE VIEW public.artigos_publicos WITH (security_invoker='true') AS
     created_at,
     editado_em,
     publicado_em,
-    public.artigo_piso_retirada(public.total_verificados()) AS piso_atual
+    public.artigo_piso_retirada(public.total_verificados()) AS piso_atual,
+    assinatura,
+    indexavel
    FROM public.artigos a;
 
 
@@ -924,8 +1189,40 @@ CREATE TABLE public.casas_espirita (
     ativa boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     sigla text,
+    visivel_diretorio boolean DEFAULT true NOT NULL,
     CONSTRAINT casas_espirita_estado_check CHECK ((char_length(estado) = 2)),
     CONSTRAINT casas_espirita_nome_check CHECK (((char_length(nome) >= 2) AND (char_length(nome) <= 200)))
+);
+
+
+--
+-- Name: casas_pedidos_remocao; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.casas_pedidos_remocao (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    casa_id uuid NOT NULL,
+    casa_nome text NOT NULL,
+    nome_solicitante text NOT NULL,
+    contato text NOT NULL,
+    restaurada_em timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: casas_reivindicacoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.casas_reivindicacoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    casa_id uuid NOT NULL,
+    casa_nome text NOT NULL,
+    sigla text NOT NULL,
+    user_id uuid NOT NULL,
+    user_nome text,
+    desfeita_em timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -1290,7 +1587,11 @@ CREATE TABLE public.solicitacoes_dev (
     user_id uuid,
     titulo text NOT NULL,
     descricao text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    status text DEFAULT 'pendente'::text NOT NULL,
+    resposta_dev text,
+    atualizado_em timestamp with time zone,
+    CONSTRAINT solicitacoes_dev_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'andamento'::text, 'concluida'::text, 'recusada'::text])))
 );
 
 
@@ -1425,6 +1726,22 @@ ALTER TABLE ONLY public.artigos
 
 ALTER TABLE ONLY public.casas_espirita
     ADD CONSTRAINT casas_espirita_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: casas_pedidos_remocao casas_pedidos_remocao_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_pedidos_remocao
+    ADD CONSTRAINT casas_pedidos_remocao_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: casas_reivindicacoes casas_reivindicacoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_reivindicacoes
+    ADD CONSTRAINT casas_reivindicacoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1874,6 +2191,22 @@ ALTER TABLE ONLY public.artigos
 
 
 --
+-- Name: casas_pedidos_remocao casas_pedidos_remocao_casa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_pedidos_remocao
+    ADD CONSTRAINT casas_pedidos_remocao_casa_id_fkey FOREIGN KEY (casa_id) REFERENCES public.casas_espirita(id) ON DELETE CASCADE;
+
+
+--
+-- Name: casas_reivindicacoes casas_reivindicacoes_casa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_reivindicacoes
+    ADD CONSTRAINT casas_reivindicacoes_casa_id_fkey FOREIGN KEY (casa_id) REFERENCES public.casas_espirita(id) ON DELETE CASCADE;
+
+
+--
 -- Name: kanban_comentarios kanban_comentarios_evento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2147,14 +2480,14 @@ ALTER TABLE public.administradores_pagina ENABLE ROW LEVEL SECURITY;
 -- Name: administradores_pagina admins_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY admins_delete ON public.administradores_pagina FOR DELETE TO authenticated USING (true);
+CREATE POLICY admins_delete ON public.administradores_pagina FOR DELETE TO authenticated USING (public.pode_administrar_pagina(sigla_casa));
 
 
 --
 -- Name: administradores_pagina admins_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY admins_insert ON public.administradores_pagina FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY admins_insert ON public.administradores_pagina FOR INSERT TO authenticated WITH CHECK (public.pode_administrar_pagina(sigla_casa));
 
 
 --
@@ -2302,6 +2635,60 @@ CREATE POLICY authenticated_update_own_casa ON public.casas_espirita FOR UPDATE 
 --
 
 ALTER TABLE public.casas_espirita ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: casas_pedidos_remocao; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.casas_pedidos_remocao ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: casas_reivindicacoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.casas_reivindicacoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: solicitacoes_dev dev atualiza solicitacao; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev atualiza solicitacao" ON public.solicitacoes_dev FOR UPDATE TO authenticated USING (public.sou_dev()) WITH CHECK (public.sou_dev());
+
+
+--
+-- Name: solicitacoes_dev dev remove solicitacao; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev remove solicitacao" ON public.solicitacoes_dev FOR DELETE TO authenticated USING (public.sou_dev());
+
+
+--
+-- Name: site_suggestions dev remove sugestao; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev remove sugestao" ON public.site_suggestions FOR DELETE TO authenticated USING (public.sou_dev());
+
+
+--
+-- Name: casas_pedidos_remocao dev ve pedidos de remocao; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev ve pedidos de remocao" ON public.casas_pedidos_remocao FOR SELECT TO authenticated USING (public.sou_dev());
+
+
+--
+-- Name: casas_reivindicacoes dev ve reivindicacoes; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev ve reivindicacoes" ON public.casas_reivindicacoes FOR SELECT TO authenticated USING (public.sou_dev());
+
+
+--
+-- Name: site_suggestions dev ve sugestoes; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "dev ve sugestoes" ON public.site_suggestions FOR SELECT TO authenticated USING (public.sou_dev());
+
 
 --
 -- Name: agenda_eventos eventos_delete; Type: POLICY; Schema: public; Owner: -
@@ -3109,5 +3496,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ATzWYjKSE1EUjnerGbs3VUrTaFUIFIK5OMP9jXlH4avBfADjApJUVXjnfavBXR7
+\unrestrict ulzrPgVWVySSExSwUNe3Gj2jOVeLZcqjDpVmIhDitYWaXivBcjDaZa8yoxpfrHf
 
