@@ -63,16 +63,25 @@ describe("catálogo de telas", () => {
     const rotasConhecidas = [
       "/agenda",
       "/ajuda",
+      "/aniversariantes",
       "/artigos",
       "/artigos/meus",
       "/artigos/novo",
+      "/atendimento-fraterno",
+      "/bazar",
+      "/caronas",
       "/casas",
+      "/entregas",
       "/evangelizacao",
       "/feb",
+      "/forum",
+      "/grupos",
       "/jogos",
+      "/jovens",
       "/kanban",
       "/mensagem-do-dia",
       "/musicas-cifras",
+      "/oracoes",
       "/perguntas",
       "/painel",
       "/perfil",
@@ -80,6 +89,7 @@ describe("catálogo de telas", () => {
       "/sugestoes",
       "/tesouraria",
       "/transparencia",
+      "/voluntariado",
     ];
     for (const pagina of PAGINAS_DO_SITE) {
       expect(rotasConhecidas).toContain(pagina.href);

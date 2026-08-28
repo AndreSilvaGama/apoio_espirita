@@ -68,6 +68,7 @@ import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CasaHero } from "@/components/CasaHero";
+import { AniversariantesDoDia } from "@/components/AniversariantesDoDia";
 import { TesourariaTab } from "@/components/TesourariaTab";
 import { FilaRevisaoArtigos } from "@/components/FilaRevisaoArtigos";
 
@@ -1700,6 +1701,8 @@ function PaginaCasa() {
                 )}
               </div>
             </div>
+
+            <AniversariantesDoDia sigla={sigla} />
 
             {/* Mensagem do Dia — bloco compacto, altura previsível */}
             <div

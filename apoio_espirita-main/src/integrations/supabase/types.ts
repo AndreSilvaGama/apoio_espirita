@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17";
+    PostgrestVersion: "14.5";
   };
   public: {
     Tables: {
@@ -364,6 +364,382 @@ export type Database = {
         };
         Relationships: [];
       };
+      atendimento_acessos: {
+        Row: {
+          created_at: string;
+          ficha_id: string;
+          id: string;
+          sigla_casa: string;
+          user_id: string;
+          user_nome: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          ficha_id: string;
+          id?: string;
+          sigla_casa: string;
+          user_id?: string;
+          user_nome?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          ficha_id?: string;
+          id?: string;
+          sigla_casa?: string;
+          user_id?: string;
+          user_nome?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "atendimento_acessos_ficha_id_fkey";
+            columns: ["ficha_id"];
+            isOneToOne: false;
+            referencedRelation: "atendimento_fichas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      atendimento_autorizados: {
+        Row: {
+          created_at: string;
+          criado_por: string;
+          id: string;
+          nome: string | null;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          nome?: string | null;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          nome?: string | null;
+          sigla_casa?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      atendimento_fichas: {
+        Row: {
+          atendido_contato: string | null;
+          atendido_nome: string;
+          autor_nome: string;
+          concluida: boolean;
+          created_at: string;
+          criado_por: string;
+          data_atendimento: string;
+          encaminhamento: string | null;
+          id: string;
+          relato: string;
+          retorno_em: string | null;
+          sigla_casa: string;
+          tipo: string;
+          updated_at: string;
+        };
+        Insert: {
+          atendido_contato?: string | null;
+          atendido_nome: string;
+          autor_nome: string;
+          concluida?: boolean;
+          created_at?: string;
+          criado_por: string;
+          data_atendimento?: string;
+          encaminhamento?: string | null;
+          id?: string;
+          relato: string;
+          retorno_em?: string | null;
+          sigla_casa: string;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Update: {
+          atendido_contato?: string | null;
+          atendido_nome?: string;
+          autor_nome?: string;
+          concluida?: boolean;
+          created_at?: string;
+          criado_por?: string;
+          data_atendimento?: string;
+          encaminhamento?: string | null;
+          id?: string;
+          relato?: string;
+          retorno_em?: string | null;
+          sigla_casa?: string;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      bazar_contatos: {
+        Row: {
+          contato: string;
+          item_id: string;
+        };
+        Insert: {
+          contato: string;
+          item_id: string;
+        };
+        Update: {
+          contato?: string;
+          item_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bazar_contatos_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: true;
+            referencedRelation: "bazar_itens";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bazar_itens: {
+        Row: {
+          aberto: boolean;
+          autor_nome: string;
+          categoria: string;
+          chave_pix: string | null;
+          created_at: string;
+          criado_por: string;
+          descricao: string;
+          disponivel: boolean;
+          doacao: boolean;
+          estado: string;
+          foto_url: string | null;
+          id: string;
+          pix_cidade: string | null;
+          pix_nome: string | null;
+          sigla_casa: string;
+          titulo: string;
+          updated_at: string;
+          valor: number | null;
+        };
+        Insert: {
+          aberto?: boolean;
+          autor_nome: string;
+          categoria?: string;
+          chave_pix?: string | null;
+          created_at?: string;
+          criado_por: string;
+          descricao: string;
+          disponivel?: boolean;
+          doacao?: boolean;
+          estado?: string;
+          foto_url?: string | null;
+          id?: string;
+          pix_cidade?: string | null;
+          pix_nome?: string | null;
+          sigla_casa: string;
+          titulo: string;
+          updated_at?: string;
+          valor?: number | null;
+        };
+        Update: {
+          aberto?: boolean;
+          autor_nome?: string;
+          categoria?: string;
+          chave_pix?: string | null;
+          created_at?: string;
+          criado_por?: string;
+          descricao?: string;
+          disponivel?: boolean;
+          doacao?: boolean;
+          estado?: string;
+          foto_url?: string | null;
+          id?: string;
+          pix_cidade?: string | null;
+          pix_nome?: string | null;
+          sigla_casa?: string;
+          titulo?: string;
+          updated_at?: string;
+          valor?: number | null;
+        };
+        Relationships: [];
+      };
+      bazar_reservas: {
+        Row: {
+          autor_nome: string;
+          contato: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          item_id: string;
+          mensagem: string | null;
+          sigla_casa: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          autor_nome: string;
+          contato: string;
+          created_at?: string;
+          criado_por: string;
+          id?: string;
+          item_id: string;
+          mensagem?: string | null;
+          sigla_casa: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          contato?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          item_id?: string;
+          mensagem?: string | null;
+          sigla_casa?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bazar_reservas_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "bazar_itens";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      carona_contatos: {
+        Row: {
+          carona_id: string;
+          contato: string;
+        };
+        Insert: {
+          carona_id: string;
+          contato: string;
+        };
+        Update: {
+          carona_id?: string;
+          contato?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "carona_contatos_carona_id_fkey";
+            columns: ["carona_id"];
+            isOneToOne: true;
+            referencedRelation: "caronas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      carona_pedidos: {
+        Row: {
+          autor_nome: string;
+          carona_id: string;
+          contato: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          mensagem: string | null;
+          ponto_encontro: string | null;
+          sigla_casa: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          autor_nome: string;
+          carona_id: string;
+          contato: string;
+          created_at?: string;
+          criado_por: string;
+          id?: string;
+          mensagem?: string | null;
+          ponto_encontro?: string | null;
+          sigla_casa: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          carona_id?: string;
+          contato?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          mensagem?: string | null;
+          ponto_encontro?: string | null;
+          sigla_casa?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "carona_pedidos_carona_id_fkey";
+            columns: ["carona_id"];
+            isOneToOne: false;
+            referencedRelation: "caronas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      caronas: {
+        Row: {
+          aberto: boolean;
+          ativa: boolean;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          data: string;
+          destino: string;
+          hora: string;
+          id: string;
+          observacao: string | null;
+          origem: string;
+          sigla_casa: string;
+          updated_at: string;
+          vagas: number;
+          veiculo: string | null;
+          volta: boolean;
+        };
+        Insert: {
+          aberto?: boolean;
+          ativa?: boolean;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          data: string;
+          destino: string;
+          hora: string;
+          id?: string;
+          observacao?: string | null;
+          origem: string;
+          sigla_casa: string;
+          updated_at?: string;
+          vagas?: number;
+          veiculo?: string | null;
+          volta?: boolean;
+        };
+        Update: {
+          aberto?: boolean;
+          ativa?: boolean;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          data?: string;
+          destino?: string;
+          hora?: string;
+          id?: string;
+          observacao?: string | null;
+          origem?: string;
+          sigla_casa?: string;
+          updated_at?: string;
+          vagas?: number;
+          veiculo?: string | null;
+          volta?: boolean;
+        };
+        Relationships: [];
+      };
       casas_espirita: {
         Row: {
           aceita_doacao_alimentos: boolean;
@@ -412,6 +788,468 @@ export type Database = {
           sigla?: string | null;
           telefone?: string | null;
           visivel_diretorio?: boolean;
+        };
+        Relationships: [];
+      };
+      casas_pedidos_remocao: {
+        Row: {
+          casa_id: string;
+          casa_nome: string;
+          contato: string;
+          created_at: string;
+          id: string;
+          nome_solicitante: string;
+          restaurada_em: string | null;
+        };
+        Insert: {
+          casa_id: string;
+          casa_nome: string;
+          contato: string;
+          created_at?: string;
+          id?: string;
+          nome_solicitante: string;
+          restaurada_em?: string | null;
+        };
+        Update: {
+          casa_id?: string;
+          casa_nome?: string;
+          contato?: string;
+          created_at?: string;
+          id?: string;
+          nome_solicitante?: string;
+          restaurada_em?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "casas_pedidos_remocao_casa_id_fkey";
+            columns: ["casa_id"];
+            isOneToOne: false;
+            referencedRelation: "casas_espirita";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      casas_reivindicacoes: {
+        Row: {
+          casa_id: string;
+          casa_nome: string;
+          created_at: string;
+          desfeita_em: string | null;
+          id: string;
+          sigla: string;
+          user_id: string;
+          user_nome: string | null;
+        };
+        Insert: {
+          casa_id: string;
+          casa_nome: string;
+          created_at?: string;
+          desfeita_em?: string | null;
+          id?: string;
+          sigla: string;
+          user_id: string;
+          user_nome?: string | null;
+        };
+        Update: {
+          casa_id?: string;
+          casa_nome?: string;
+          created_at?: string;
+          desfeita_em?: string | null;
+          id?: string;
+          sigla?: string;
+          user_id?: string;
+          user_nome?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "casas_reivindicacoes_casa_id_fkey";
+            columns: ["casa_id"];
+            isOneToOne: false;
+            referencedRelation: "casas_espirita";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entrega_contatos: {
+        Row: {
+          contato_pedinte: string;
+          contato_voluntario: string | null;
+          entrega_id: string;
+        };
+        Insert: {
+          contato_pedinte: string;
+          contato_voluntario?: string | null;
+          entrega_id: string;
+        };
+        Update: {
+          contato_pedinte?: string;
+          contato_voluntario?: string | null;
+          entrega_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entrega_contatos_entrega_id_fkey";
+            columns: ["entrega_id"];
+            isOneToOne: true;
+            referencedRelation: "entregas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entregas: {
+        Row: {
+          aberto: boolean;
+          agendada_para: string | null;
+          autor_nome: string;
+          bairro: string | null;
+          created_at: string;
+          criado_por: string;
+          descricao: string;
+          id: string;
+          item_id: string | null;
+          referencia: string | null;
+          reserva_id: string | null;
+          sigla_casa: string;
+          status: string;
+          updated_at: string;
+          voluntario: string | null;
+          voluntario_nome: string | null;
+        };
+        Insert: {
+          aberto?: boolean;
+          agendada_para?: string | null;
+          autor_nome: string;
+          bairro?: string | null;
+          created_at?: string;
+          criado_por: string;
+          descricao: string;
+          id?: string;
+          item_id?: string | null;
+          referencia?: string | null;
+          reserva_id?: string | null;
+          sigla_casa: string;
+          status?: string;
+          updated_at?: string;
+          voluntario?: string | null;
+          voluntario_nome?: string | null;
+        };
+        Update: {
+          aberto?: boolean;
+          agendada_para?: string | null;
+          autor_nome?: string;
+          bairro?: string | null;
+          created_at?: string;
+          criado_por?: string;
+          descricao?: string;
+          id?: string;
+          item_id?: string | null;
+          referencia?: string | null;
+          reserva_id?: string | null;
+          sigla_casa?: string;
+          status?: string;
+          updated_at?: string;
+          voluntario?: string | null;
+          voluntario_nome?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entregas_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "bazar_itens";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entregas_reserva_id_fkey";
+            columns: ["reserva_id"];
+            isOneToOne: false;
+            referencedRelation: "bazar_reservas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      forum_respostas: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          sigla_casa: string;
+          texto: string;
+          topico_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          id?: string;
+          sigla_casa: string;
+          texto: string;
+          topico_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          sigla_casa?: string;
+          texto?: string;
+          topico_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "forum_respostas_topico_id_fkey";
+            columns: ["topico_id"];
+            isOneToOne: false;
+            referencedRelation: "forum_topicos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      forum_topicos: {
+        Row: {
+          aberto: boolean;
+          autor_nome: string;
+          categoria: string;
+          created_at: string;
+          criado_por: string;
+          fixado: boolean;
+          id: string;
+          resolvido: boolean;
+          respostas: number;
+          sigla_casa: string;
+          texto: string;
+          titulo: string;
+          ultima_resposta_em: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          aberto?: boolean;
+          autor_nome: string;
+          categoria?: string;
+          created_at?: string;
+          criado_por: string;
+          fixado?: boolean;
+          id?: string;
+          resolvido?: boolean;
+          respostas?: number;
+          sigla_casa: string;
+          texto: string;
+          titulo: string;
+          ultima_resposta_em?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          aberto?: boolean;
+          autor_nome?: string;
+          categoria?: string;
+          created_at?: string;
+          criado_por?: string;
+          fixado?: boolean;
+          id?: string;
+          resolvido?: boolean;
+          respostas?: number;
+          sigla_casa?: string;
+          texto?: string;
+          titulo?: string;
+          ultima_resposta_em?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      grupo_membros: {
+        Row: {
+          adicionado_por: string;
+          created_at: string;
+          grupo_id: string;
+          id: string;
+          nome: string;
+          papel: string;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Insert: {
+          adicionado_por: string;
+          created_at?: string;
+          grupo_id: string;
+          id?: string;
+          nome: string;
+          papel?: string;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Update: {
+          adicionado_por?: string;
+          created_at?: string;
+          grupo_id?: string;
+          id?: string;
+          nome?: string;
+          papel?: string;
+          sigla_casa?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "grupo_membros_grupo_id_fkey";
+            columns: ["grupo_id"];
+            isOneToOne: false;
+            referencedRelation: "grupos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      grupo_mensagens: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          grupo_id: string;
+          id: string;
+          sigla_casa: string;
+          texto: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          grupo_id: string;
+          id?: string;
+          sigla_casa: string;
+          texto: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          grupo_id?: string;
+          id?: string;
+          sigla_casa?: string;
+          texto?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "grupo_mensagens_grupo_id_fkey";
+            columns: ["grupo_id"];
+            isOneToOne: false;
+            referencedRelation: "grupos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      grupos: {
+        Row: {
+          aberto: boolean;
+          atividade: string | null;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          descricao: string | null;
+          id: string;
+          nome: string;
+          privado: boolean;
+          sigla_casa: string;
+          updated_at: string;
+        };
+        Insert: {
+          aberto?: boolean;
+          atividade?: string | null;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          descricao?: string | null;
+          id?: string;
+          nome: string;
+          privado?: boolean;
+          sigla_casa: string;
+          updated_at?: string;
+        };
+        Update: {
+          aberto?: boolean;
+          atividade?: string | null;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          descricao?: string | null;
+          id?: string;
+          nome?: string;
+          privado?: boolean;
+          sigla_casa?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      jovens_membros: {
+        Row: {
+          apresentacao: string | null;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          sigla_casa: string;
+        };
+        Insert: {
+          apresentacao?: string | null;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          id?: string;
+          sigla_casa: string;
+        };
+        Update: {
+          apresentacao?: string | null;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          sigla_casa?: string;
+        };
+        Relationships: [];
+      };
+      jovens_publicacoes: {
+        Row: {
+          aberto: boolean;
+          autor_nome: string;
+          categoria: string;
+          created_at: string;
+          criado_por: string;
+          data_evento: string | null;
+          id: string;
+          link: string | null;
+          sigla_casa: string;
+          texto: string;
+          titulo: string;
+          updated_at: string;
+        };
+        Insert: {
+          aberto?: boolean;
+          autor_nome: string;
+          categoria?: string;
+          created_at?: string;
+          criado_por: string;
+          data_evento?: string | null;
+          id?: string;
+          link?: string | null;
+          sigla_casa: string;
+          texto: string;
+          titulo: string;
+          updated_at?: string;
+        };
+        Update: {
+          aberto?: boolean;
+          autor_nome?: string;
+          categoria?: string;
+          created_at?: string;
+          criado_por?: string;
+          data_evento?: string | null;
+          id?: string;
+          link?: string | null;
+          sigla_casa?: string;
+          texto?: string;
+          titulo?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -913,6 +1751,83 @@ export type Database = {
           },
         ];
       };
+      oracao_horarios: {
+        Row: {
+          aberto: boolean;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          dia_semana: number;
+          hora: number;
+          id: string;
+          intencao: string | null;
+          minuto: number;
+          sigla_casa: string;
+          vagas: number;
+        };
+        Insert: {
+          aberto?: boolean;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          dia_semana: number;
+          hora: number;
+          id?: string;
+          intencao?: string | null;
+          minuto?: number;
+          sigla_casa: string;
+          vagas?: number;
+        };
+        Update: {
+          aberto?: boolean;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          dia_semana?: number;
+          hora?: number;
+          id?: string;
+          intencao?: string | null;
+          minuto?: number;
+          sigla_casa?: string;
+          vagas?: number;
+        };
+        Relationships: [];
+      };
+      oracao_inscricoes: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          horario_id: string;
+          id: string;
+          sigla_casa: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          horario_id: string;
+          id?: string;
+          sigla_casa: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          horario_id?: string;
+          id?: string;
+          sigla_casa?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "oracao_inscricoes_horario_id_fkey";
+            columns: ["horario_id"];
+            isOneToOne: false;
+            referencedRelation: "oracao_horarios";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       paginas_casas: {
         Row: {
           ano_fundacao: number | null;
@@ -1037,6 +1952,8 @@ export type Database = {
       };
       profiles: {
         Row: {
+          aniversario_dia: number | null;
+          aniversario_mes: number | null;
           atividades: string[] | null;
           bairro: string | null;
           cargo_principal: string | null;
@@ -1050,6 +1967,8 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          aniversario_dia?: number | null;
+          aniversario_mes?: number | null;
           atividades?: string[] | null;
           bairro?: string | null;
           cargo_principal?: string | null;
@@ -1063,6 +1982,8 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          aniversario_dia?: number | null;
+          aniversario_mes?: number | null;
           atividades?: string[] | null;
           bairro?: string | null;
           cargo_principal?: string | null;
@@ -1273,69 +2194,6 @@ export type Database = {
           },
         ];
       };
-      casas_reivindicacoes: {
-        Row: {
-          casa_id: string;
-          casa_nome: string;
-          created_at: string;
-          desfeita_em: string | null;
-          id: string;
-          sigla: string;
-          user_id: string;
-          user_nome: string | null;
-        };
-        Insert: {
-          casa_id: string;
-          casa_nome: string;
-          created_at?: string;
-          desfeita_em?: string | null;
-          id?: string;
-          sigla: string;
-          user_id: string;
-          user_nome?: string | null;
-        };
-        Update: {
-          casa_id?: string;
-          casa_nome?: string;
-          created_at?: string;
-          desfeita_em?: string | null;
-          id?: string;
-          sigla?: string;
-          user_id?: string;
-          user_nome?: string | null;
-        };
-        Relationships: [];
-      };
-      casas_pedidos_remocao: {
-        Row: {
-          casa_id: string;
-          casa_nome: string;
-          contato: string;
-          created_at: string;
-          id: string;
-          nome_solicitante: string;
-          restaurada_em: string | null;
-        };
-        Insert: {
-          casa_id: string;
-          casa_nome: string;
-          contato: string;
-          created_at?: string;
-          id?: string;
-          nome_solicitante: string;
-          restaurada_em?: string | null;
-        };
-        Update: {
-          casa_id?: string;
-          casa_nome?: string;
-          contato?: string;
-          created_at?: string;
-          id?: string;
-          nome_solicitante?: string;
-          restaurada_em?: string | null;
-        };
-        Relationships: [];
-      };
       siglas_casas: {
         Row: {
           created_at: string;
@@ -1518,6 +2376,137 @@ export type Database = {
         };
         Relationships: [];
       };
+      voluntariado_candidaturas: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          mensagem: string | null;
+          necessidade_id: string;
+          sigla_casa: string;
+          status: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          id?: string;
+          mensagem?: string | null;
+          necessidade_id: string;
+          sigla_casa: string;
+          status?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          mensagem?: string | null;
+          necessidade_id?: string;
+          sigla_casa?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "voluntariado_candidaturas_necessidade_id_fkey";
+            columns: ["necessidade_id"];
+            isOneToOne: false;
+            referencedRelation: "voluntariado_necessidades";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      voluntariado_necessidades: {
+        Row: {
+          aberto: boolean;
+          atendida: boolean;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          descricao: string;
+          habilidades: string[];
+          id: string;
+          prazo: string | null;
+          sigla_casa: string;
+          titulo: string;
+          updated_at: string;
+          urgencia: string;
+        };
+        Insert: {
+          aberto?: boolean;
+          atendida?: boolean;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          descricao: string;
+          habilidades?: string[];
+          id?: string;
+          prazo?: string | null;
+          sigla_casa: string;
+          titulo: string;
+          updated_at?: string;
+          urgencia?: string;
+        };
+        Update: {
+          aberto?: boolean;
+          atendida?: boolean;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          descricao?: string;
+          habilidades?: string[];
+          id?: string;
+          prazo?: string | null;
+          sigla_casa?: string;
+          titulo?: string;
+          updated_at?: string;
+          urgencia?: string;
+        };
+        Relationships: [];
+      };
+      voluntariado_ofertas: {
+        Row: {
+          aberto: boolean;
+          ativa: boolean;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          disponibilidade: string | null;
+          habilidades: string[];
+          id: string;
+          observacao: string | null;
+          sigla_casa: string;
+          updated_at: string;
+        };
+        Insert: {
+          aberto?: boolean;
+          ativa?: boolean;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          disponibilidade?: string | null;
+          habilidades?: string[];
+          id?: string;
+          observacao?: string | null;
+          sigla_casa: string;
+          updated_at?: string;
+        };
+        Update: {
+          aberto?: boolean;
+          ativa?: boolean;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          disponibilidade?: string | null;
+          habilidades?: string[];
+          id?: string;
+          observacao?: string | null;
+          sigla_casa?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       artigos_avisos: {
@@ -1566,8 +2555,9 @@ export type Database = {
         };
         Insert: {
           aprovacoes?: never;
+          assinatura?: string | null;
           autor_id?: string | null;
-          autor_nome?: string | null;
+          autor_nome?: never;
           autor_sigla_casa?: string | null;
           aval_bom?: number | null;
           aval_gostei?: number | null;
@@ -1578,6 +2568,7 @@ export type Database = {
           editado_em?: string | null;
           estado?: string | null;
           id?: string | null;
+          indexavel?: boolean | null;
           piso_atual?: never;
           publicado_em?: string | null;
           resumo?: string | null;
@@ -1589,8 +2580,9 @@ export type Database = {
         };
         Update: {
           aprovacoes?: never;
+          assinatura?: string | null;
           autor_id?: string | null;
-          autor_nome?: string | null;
+          autor_nome?: never;
           autor_sigla_casa?: string | null;
           aval_bom?: number | null;
           aval_gostei?: number | null;
@@ -1601,6 +2593,7 @@ export type Database = {
           editado_em?: string | null;
           estado?: string | null;
           id?: string | null;
+          indexavel?: boolean | null;
           piso_atual?: never;
           publicado_em?: string | null;
           resumo?: string | null;
@@ -1660,6 +2653,10 @@ export type Database = {
           titulo: string;
         }[];
       };
+      desfazer_reivindicacao: {
+        Args: { p_reivindicacao: string };
+        Returns: undefined;
+      };
       diretorio_casas: {
         Args: { p_cidade_slug: string; p_uf: string };
         Returns: {
@@ -1676,27 +2673,43 @@ export type Database = {
       };
       diretorio_cidades: {
         Args: { p_uf: string };
-        Returns: { casas: number; cidade: string; slug: string }[];
+        Returns: {
+          casas: number;
+          cidade: string;
+          slug: string;
+        }[];
       };
       diretorio_estados: {
         Args: never;
-        Returns: { casas: number; cidades: number; estado: string }[];
+        Returns: {
+          casas: number;
+          cidades: number;
+          estado: string;
+        }[];
       };
+      diretorio_slug: { Args: { texto: string }; Returns: string };
       email_verificado: { Args: never; Returns: boolean };
       get_request_kanban_token: { Args: never; Returns: string };
       has_kanban_access: { Args: { p_sigla_casa: string }; Returns: boolean };
       is_tesouraria_admin: { Args: { p_sigla_casa: string }; Returns: boolean };
       minha_sigla_casa: { Args: never; Returns: string };
       pode_administrar_pagina: { Args: { p_sigla: string }; Returns: boolean };
+      pode_atendimento_fraterno: { Args: { p_sigla: string }; Returns: boolean };
+      pode_publicar_na_casa: { Args: { p_sigla: string }; Returns: boolean };
       pode_revisar_artigo: { Args: { alvo: string }; Returns: boolean };
       pode_sancionar: { Args: { alvo_user: string }; Returns: boolean };
-      desfazer_reivindicacao: { Args: { p_reivindicacao: string }; Returns: undefined };
-      reivindicar_casa: { Args: { p_casa: string; p_sigla: string }; Returns: string };
+      pode_ver_da_casa: {
+        Args: { p_aberto: boolean; p_sigla: string };
+        Returns: boolean;
+      };
+      reivindicar_casa: {
+        Args: { p_casa: string; p_sigla: string };
+        Returns: string;
+      };
       remover_casa_do_diretorio: {
         Args: { p_casa: string; p_contato: string; p_nome: string };
         Returns: undefined;
       };
-      restaurar_casa_no_diretorio: { Args: { p_pedido: string }; Returns: undefined };
       resolver_revisao_artigo: {
         Args: {
           p_decisao: string;
@@ -1706,8 +2719,14 @@ export type Database = {
         };
         Returns: undefined;
       };
+      restaurar_casa_no_diretorio: {
+        Args: { p_pedido: string };
+        Returns: undefined;
+      };
       sem_acento: { Args: { texto: string }; Returns: string };
       sou_dev: { Args: never; Returns: boolean };
+      sou_do_grupo: { Args: { p_grupo: string }; Returns: boolean };
+      sou_moderador_do_grupo: { Args: { p_grupo: string }; Returns: boolean };
       total_verificados: { Args: never; Returns: number };
       usuario_sancionado: { Args: { uid: string }; Returns: boolean };
     };

@@ -41,6 +41,14 @@ import {
   Search,
   Download,
   MapPin,
+  Users,
+  ShoppingBag,
+  Car,
+  Truck,
+  HeartHandshake,
+  Cake,
+  Clock,
+  FileHeart,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -466,7 +474,7 @@ function RootComponent() {
  * usa o site tem dificuldade com tecnologia, e um desenho sem palavra obriga
  * a adivinhar o que há atrás dele.
  */
-type MenuSuspenso = "estudo" | "jogos" | "ajuda";
+type MenuSuspenso = "comunidade" | "estudo" | "jogos" | "ajuda";
 
 function NavBar() {
   const { user, profile, isDev, isDecisao, signOut } = useAuth();
@@ -541,6 +549,18 @@ function NavBar() {
 
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
+  const ROTAS_COMUNIDADE = [
+    "/forum",
+    "/grupos",
+    "/voluntariado",
+    "/bazar",
+    "/caronas",
+    "/entregas",
+    "/aniversariantes",
+    "/oracoes",
+    "/jovens",
+    "/atendimento-fraterno",
+  ];
   const ROTAS_ESTUDO = ["/feb", "/artigos", "/perguntas", "/evangelizacao", "/musicas-cifras"];
   const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
   const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas"];
@@ -610,6 +630,59 @@ function NavBar() {
           <Link to="/kanban" className={linkCls("/kanban")}>
             Projetos
           </Link>
+
+          <GrupoSuspenso
+            rotulo="Comunidade"
+            aberto={aberto === "comunidade"}
+            ativo={isAnyActive(ROTAS_COMUNIDADE)}
+            aoAlternar={() => alternar("comunidade")}
+            largura="w-60"
+          >
+            <Link to="/forum" className={dropItemCls} onClick={() => setAberto(null)}>
+              <MessageCircle size={14} strokeWidth={1.5} className="text-violet-500" />
+              Fórum de Apoio
+            </Link>
+            <Link to="/grupos" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Users size={14} strokeWidth={1.5} className="text-cyan-500" />
+              Grupos
+            </Link>
+            <Link to="/voluntariado" className={dropItemCls} onClick={() => setAberto(null)}>
+              <HeartHandshake size={14} strokeWidth={1.5} className="text-rose-500" />
+              Voluntariado
+            </Link>
+            <Link to="/bazar" className={dropItemCls} onClick={() => setAberto(null)}>
+              <ShoppingBag size={14} strokeWidth={1.5} className="text-amber-500" />
+              Bazar On-line
+            </Link>
+            <Link to="/caronas" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Car size={14} strokeWidth={1.5} className="text-emerald-500" />
+              Carona Solidária
+            </Link>
+            <Link to="/entregas" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Truck size={14} strokeWidth={1.5} className="text-[#004a8c]" />
+              Entrega Solidária
+            </Link>
+            <Link to="/aniversariantes" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Cake size={14} strokeWidth={1.5} className="text-violet-500" />
+              Aniversariantes
+            </Link>
+            <Link to="/oracoes" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Clock size={14} strokeWidth={1.5} className="text-cyan-500" />
+              Plantão de Orações
+            </Link>
+            <Link to="/jovens" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Sparkles size={14} strokeWidth={1.5} className="text-amber-500" />
+              Área de Jovens
+            </Link>
+            <Link
+              to="/atendimento-fraterno"
+              className={dropItemCls}
+              onClick={() => setAberto(null)}
+            >
+              <FileHeart size={14} strokeWidth={1.5} className="text-rose-500" />
+              Atendimento Fraterno
+            </Link>
+          </GrupoSuspenso>
 
           <GrupoSuspenso
             rotulo="Estudo"
@@ -781,6 +854,49 @@ function NavBar() {
             <Link to="/kanban" className={itemMobileCls}>
               Projetos
             </Link>
+
+            <button onClick={() => alternarMobile("comunidade")} className={grupoMobileCls}>
+              Comunidade
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                className={`transition-transform ${abertoMobile === "comunidade" ? "rotate-180" : ""}`}
+              />
+            </button>
+            {abertoMobile === "comunidade" && (
+              <>
+                <Link to="/forum" className={subItemMobileCls}>
+                  Fórum de Apoio
+                </Link>
+                <Link to="/grupos" className={subItemMobileCls}>
+                  Grupos
+                </Link>
+                <Link to="/voluntariado" className={subItemMobileCls}>
+                  Voluntariado
+                </Link>
+                <Link to="/bazar" className={subItemMobileCls}>
+                  Bazar On-line
+                </Link>
+                <Link to="/caronas" className={subItemMobileCls}>
+                  Carona Solidária
+                </Link>
+                <Link to="/entregas" className={subItemMobileCls}>
+                  Entrega Solidária
+                </Link>
+                <Link to="/aniversariantes" className={subItemMobileCls}>
+                  Aniversariantes
+                </Link>
+                <Link to="/oracoes" className={subItemMobileCls}>
+                  Plantão de Orações
+                </Link>
+                <Link to="/jovens" className={subItemMobileCls}>
+                  Área de Jovens
+                </Link>
+                <Link to="/atendimento-fraterno" className={subItemMobileCls}>
+                  Atendimento Fraterno
+                </Link>
+              </>
+            )}
 
             <button onClick={() => alternarMobile("estudo")} className={grupoMobileCls}>
               Estudo

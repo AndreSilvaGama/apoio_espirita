@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VoluntariadoRouteImport } from './routes/voluntariado'
 import { Route as TransparenciaRouteImport } from './routes/transparencia'
 import { Route as TesourariaRouteImport } from './routes/tesouraria'
 import { Route as SugestoesRouteImport } from './routes/sugestoes'
@@ -16,17 +17,26 @@ import { Route as RadioRouteImport } from './routes/radio'
 import { Route as PermissoesRouteImport } from './routes/permissoes'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PainelRouteImport } from './routes/painel'
+import { Route as OracoesRouteImport } from './routes/oracoes'
 import { Route as NovaSenhaRouteImport } from './routes/nova-senha'
 import { Route as MusicasCifrasRouteImport } from './routes/musicas-cifras'
 import { Route as MensagemDoDiaRouteImport } from './routes/mensagem-do-dia'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KanbanRouteImport } from './routes/kanban'
+import { Route as JovensRouteImport } from './routes/jovens'
 import { Route as InicioRouteImport } from './routes/inicio'
+import { Route as GruposRouteImport } from './routes/grupos'
+import { Route as ForumRouteImport } from './routes/forum'
 import { Route as FebRouteImport } from './routes/feb'
 import { Route as EvangelizacaoRouteImport } from './routes/evangelizacao'
+import { Route as EntregasRouteImport } from './routes/entregas'
 import { Route as ConfigurarMemoriaRouteImport } from './routes/configurar-memoria'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
+import { Route as CaronasRouteImport } from './routes/caronas'
 import { Route as BuscaRouteImport } from './routes/busca'
+import { Route as BazarRouteImport } from './routes/bazar'
+import { Route as AtendimentoFraternoRouteImport } from './routes/atendimento-fraterno'
+import { Route as AniversariantesRouteImport } from './routes/aniversariantes'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -50,6 +60,11 @@ import { Route as CasasUfIndexRouteImport } from './routes/casas.$uf.index'
 import { Route as CasasUfCidadeRouteImport } from './routes/casas.$uf.$cidade'
 import { Route as ArtigosSlugEditarRouteImport } from './routes/artigos.$slug.editar'
 
+const VoluntariadoRoute = VoluntariadoRouteImport.update({
+  id: '/voluntariado',
+  path: '/voluntariado',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransparenciaRoute = TransparenciaRouteImport.update({
   id: '/transparencia',
   path: '/transparencia',
@@ -85,6 +100,11 @@ const PainelRoute = PainelRouteImport.update({
   path: '/painel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OracoesRoute = OracoesRouteImport.update({
+  id: '/oracoes',
+  path: '/oracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NovaSenhaRoute = NovaSenhaRouteImport.update({
   id: '/nova-senha',
   path: '/nova-senha',
@@ -110,9 +130,24 @@ const KanbanRoute = KanbanRouteImport.update({
   path: '/kanban',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JovensRoute = JovensRouteImport.update({
+  id: '/jovens',
+  path: '/jovens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InicioRoute = InicioRouteImport.update({
   id: '/inicio',
   path: '/inicio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GruposRoute = GruposRouteImport.update({
+  id: '/grupos',
+  path: '/grupos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForumRoute = ForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FebRoute = FebRouteImport.update({
@@ -125,6 +160,11 @@ const EvangelizacaoRoute = EvangelizacaoRouteImport.update({
   path: '/evangelizacao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntregasRoute = EntregasRouteImport.update({
+  id: '/entregas',
+  path: '/entregas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConfigurarMemoriaRoute = ConfigurarMemoriaRouteImport.update({
   id: '/configurar-memoria',
   path: '/configurar-memoria',
@@ -135,9 +175,29 @@ const CompletarPerfilRoute = CompletarPerfilRouteImport.update({
   path: '/completar-perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CaronasRoute = CaronasRouteImport.update({
+  id: '/caronas',
+  path: '/caronas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BuscaRoute = BuscaRouteImport.update({
   id: '/busca',
   path: '/busca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BazarRoute = BazarRouteImport.update({
+  id: '/bazar',
+  path: '/bazar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtendimentoFraternoRoute = AtendimentoFraternoRouteImport.update({
+  id: '/atendimento-fraterno',
+  path: '/atendimento-fraterno',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AniversariantesRoute = AniversariantesRouteImport.update({
+  id: '/aniversariantes',
+  path: '/aniversariantes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AjudaRoute = AjudaRouteImport.update({
@@ -257,17 +317,26 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/aniversariantes': typeof AniversariantesRoute
+  '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
+  '/caronas': typeof CaronasRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/entregas': typeof EntregasRoute
   '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
+  '/forum': typeof ForumRoute
+  '/grupos': typeof GruposRoute
   '/inicio': typeof InicioRoute
+  '/jovens': typeof JovensRoute
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
   '/nova-senha': typeof NovaSenhaRoute
+  '/oracoes': typeof OracoesRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -275,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/voluntariado': typeof VoluntariadoRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -299,17 +369,26 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/aniversariantes': typeof AniversariantesRoute
+  '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
+  '/caronas': typeof CaronasRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/entregas': typeof EntregasRoute
   '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
+  '/forum': typeof ForumRoute
+  '/grupos': typeof GruposRoute
   '/inicio': typeof InicioRoute
+  '/jovens': typeof JovensRoute
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
   '/nova-senha': typeof NovaSenhaRoute
+  '/oracoes': typeof OracoesRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -317,6 +396,7 @@ export interface FileRoutesByTo {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/voluntariado': typeof VoluntariadoRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -342,17 +422,26 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/agenda': typeof AgendaRoute
   '/ajuda': typeof AjudaRoute
+  '/aniversariantes': typeof AniversariantesRoute
+  '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
+  '/caronas': typeof CaronasRoute
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
+  '/entregas': typeof EntregasRoute
   '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
+  '/forum': typeof ForumRoute
+  '/grupos': typeof GruposRoute
   '/inicio': typeof InicioRoute
+  '/jovens': typeof JovensRoute
   '/kanban': typeof KanbanRoute
   '/login': typeof LoginRoute
   '/mensagem-do-dia': typeof MensagemDoDiaRoute
   '/musicas-cifras': typeof MusicasCifrasRoute
   '/nova-senha': typeof NovaSenhaRoute
+  '/oracoes': typeof OracoesRoute
   '/painel': typeof PainelRoute
   '/perfil': typeof PerfilRoute
   '/permissoes': typeof PermissoesRoute
@@ -360,6 +449,7 @@ export interface FileRoutesById {
   '/sugestoes': typeof SugestoesRoute
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
+  '/voluntariado': typeof VoluntariadoRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -386,17 +476,26 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/aniversariantes'
+    | '/atendimento-fraterno'
+    | '/bazar'
     | '/busca'
+    | '/caronas'
     | '/completar-perfil'
     | '/configurar-memoria'
+    | '/entregas'
     | '/evangelizacao'
     | '/feb'
+    | '/forum'
+    | '/grupos'
     | '/inicio'
+    | '/jovens'
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
     | '/nova-senha'
+    | '/oracoes'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -404,6 +503,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/voluntariado'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -428,17 +528,26 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/aniversariantes'
+    | '/atendimento-fraterno'
+    | '/bazar'
     | '/busca'
+    | '/caronas'
     | '/completar-perfil'
     | '/configurar-memoria'
+    | '/entregas'
     | '/evangelizacao'
     | '/feb'
+    | '/forum'
+    | '/grupos'
     | '/inicio'
+    | '/jovens'
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
     | '/nova-senha'
+    | '/oracoes'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -446,6 +555,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/voluntariado'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -470,17 +580,26 @@ export interface FileRouteTypes {
     | '/admin'
     | '/agenda'
     | '/ajuda'
+    | '/aniversariantes'
+    | '/atendimento-fraterno'
+    | '/bazar'
     | '/busca'
+    | '/caronas'
     | '/completar-perfil'
     | '/configurar-memoria'
+    | '/entregas'
     | '/evangelizacao'
     | '/feb'
+    | '/forum'
+    | '/grupos'
     | '/inicio'
+    | '/jovens'
     | '/kanban'
     | '/login'
     | '/mensagem-do-dia'
     | '/musicas-cifras'
     | '/nova-senha'
+    | '/oracoes'
     | '/painel'
     | '/perfil'
     | '/permissoes'
@@ -488,6 +607,7 @@ export interface FileRouteTypes {
     | '/sugestoes'
     | '/tesouraria'
     | '/transparencia'
+    | '/voluntariado'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -513,17 +633,26 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AgendaRoute: typeof AgendaRoute
   AjudaRoute: typeof AjudaRoute
+  AniversariantesRoute: typeof AniversariantesRoute
+  AtendimentoFraternoRoute: typeof AtendimentoFraternoRoute
+  BazarRoute: typeof BazarRoute
   BuscaRoute: typeof BuscaRoute
+  CaronasRoute: typeof CaronasRoute
   CompletarPerfilRoute: typeof CompletarPerfilRoute
   ConfigurarMemoriaRoute: typeof ConfigurarMemoriaRoute
+  EntregasRoute: typeof EntregasRoute
   EvangelizacaoRoute: typeof EvangelizacaoRoute
   FebRoute: typeof FebRoute
+  ForumRoute: typeof ForumRoute
+  GruposRoute: typeof GruposRoute
   InicioRoute: typeof InicioRoute
+  JovensRoute: typeof JovensRoute
   KanbanRoute: typeof KanbanRoute
   LoginRoute: typeof LoginRoute
   MensagemDoDiaRoute: typeof MensagemDoDiaRoute
   MusicasCifrasRoute: typeof MusicasCifrasRoute
   NovaSenhaRoute: typeof NovaSenhaRoute
+  OracoesRoute: typeof OracoesRoute
   PainelRoute: typeof PainelRoute
   PerfilRoute: typeof PerfilRoute
   PermissoesRoute: typeof PermissoesRoute
@@ -531,6 +660,7 @@ export interface RootRouteChildren {
   SugestoesRoute: typeof SugestoesRoute
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
+  VoluntariadoRoute: typeof VoluntariadoRoute
   ArtigosSlugRoute: typeof ArtigosSlugRouteWithChildren
   ArtigosMeusRoute: typeof ArtigosMeusRoute
   ArtigosNovoRoute: typeof ArtigosNovoRoute
@@ -552,6 +682,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/voluntariado': {
+      id: '/voluntariado'
+      path: '/voluntariado'
+      fullPath: '/voluntariado'
+      preLoaderRoute: typeof VoluntariadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transparencia': {
       id: '/transparencia'
       path: '/transparencia'
@@ -601,6 +738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PainelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oracoes': {
+      id: '/oracoes'
+      path: '/oracoes'
+      fullPath: '/oracoes'
+      preLoaderRoute: typeof OracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nova-senha': {
       id: '/nova-senha'
       path: '/nova-senha'
@@ -636,11 +780,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KanbanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jovens': {
+      id: '/jovens'
+      path: '/jovens'
+      fullPath: '/jovens'
+      preLoaderRoute: typeof JovensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inicio': {
       id: '/inicio'
       path: '/inicio'
       fullPath: '/inicio'
       preLoaderRoute: typeof InicioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grupos': {
+      id: '/grupos'
+      path: '/grupos'
+      fullPath: '/grupos'
+      preLoaderRoute: typeof GruposRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forum': {
+      id: '/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof ForumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feb': {
@@ -657,6 +822,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EvangelizacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entregas': {
+      id: '/entregas'
+      path: '/entregas'
+      fullPath: '/entregas'
+      preLoaderRoute: typeof EntregasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/configurar-memoria': {
       id: '/configurar-memoria'
       path: '/configurar-memoria'
@@ -671,11 +843,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompletarPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/caronas': {
+      id: '/caronas'
+      path: '/caronas'
+      fullPath: '/caronas'
+      preLoaderRoute: typeof CaronasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/busca': {
       id: '/busca'
       path: '/busca'
       fullPath: '/busca'
       preLoaderRoute: typeof BuscaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bazar': {
+      id: '/bazar'
+      path: '/bazar'
+      fullPath: '/bazar'
+      preLoaderRoute: typeof BazarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atendimento-fraterno': {
+      id: '/atendimento-fraterno'
+      path: '/atendimento-fraterno'
+      fullPath: '/atendimento-fraterno'
+      preLoaderRoute: typeof AtendimentoFraternoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aniversariantes': {
+      id: '/aniversariantes'
+      path: '/aniversariantes'
+      fullPath: '/aniversariantes'
+      preLoaderRoute: typeof AniversariantesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ajuda': {
@@ -852,17 +1052,26 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AgendaRoute: AgendaRoute,
   AjudaRoute: AjudaRoute,
+  AniversariantesRoute: AniversariantesRoute,
+  AtendimentoFraternoRoute: AtendimentoFraternoRoute,
+  BazarRoute: BazarRoute,
   BuscaRoute: BuscaRoute,
+  CaronasRoute: CaronasRoute,
   CompletarPerfilRoute: CompletarPerfilRoute,
   ConfigurarMemoriaRoute: ConfigurarMemoriaRoute,
+  EntregasRoute: EntregasRoute,
   EvangelizacaoRoute: EvangelizacaoRoute,
   FebRoute: FebRoute,
+  ForumRoute: ForumRoute,
+  GruposRoute: GruposRoute,
   InicioRoute: InicioRoute,
+  JovensRoute: JovensRoute,
   KanbanRoute: KanbanRoute,
   LoginRoute: LoginRoute,
   MensagemDoDiaRoute: MensagemDoDiaRoute,
   MusicasCifrasRoute: MusicasCifrasRoute,
   NovaSenhaRoute: NovaSenhaRoute,
+  OracoesRoute: OracoesRoute,
   PainelRoute: PainelRoute,
   PerfilRoute: PerfilRoute,
   PermissoesRoute: PermissoesRoute,
@@ -870,6 +1079,7 @@ const rootRouteChildren: RootRouteChildren = {
   SugestoesRoute: SugestoesRoute,
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
+  VoluntariadoRoute: VoluntariadoRoute,
   ArtigosSlugRoute: ArtigosSlugRouteWithChildren,
   ArtigosMeusRoute: ArtigosMeusRoute,
   ArtigosNovoRoute: ArtigosNovoRoute,

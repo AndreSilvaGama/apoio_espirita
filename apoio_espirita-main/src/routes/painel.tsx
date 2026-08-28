@@ -193,27 +193,27 @@ const roadmap: Item[] = [
       "Ampliar a seção de ajuda da página inicial com uma lista de agências de emprego e endereços de outras religiões, para que qualquer pessoa que precise de apoio possa ser encaminhada com fraternidade, independente de crença",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Área de Jovens Espíritas",
     descricao:
-      "Conteúdo, eventos e espaço de comunidade exclusivos para jovens trabalhadores da vinha · Atividades, discussões e recursos adaptados ao jovem espírita",
+      "No ar em /jovens. Quem quer participar entra na área por conta própria — a plataforma não pergunta a idade de ninguém — e passa a publicar conteúdo, eventos e convites, com data e link. Quem não entrou lê tudo, mas não publica. A lista da juventude mostra quem está na frente de trabalho, com uma linha de apresentação.",
   },
 
   // ── PENDENTE — Vida espiritual e comunidade ──────────────────────────────
 
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Calendário de aniversariantes do mês",
     cardTitle: "Aniversariantes do Mês",
     descricao:
-      "Lista dos membros da casa que fazem aniversário no mês atual, exibida em destaque na tela inicial · O coordenador recebe um aviso automático para organizar uma homenagem",
+      "No ar em /aniversariantes: calendário mês a mês da casa, e quem faz aniversário hoje aparece no painel da página da casa. Guardamos apenas dia e mês, nunca o ano — o que não é guardado não vaza —, e preencher é o próprio consentimento de aparecer. Falta o aviso automático ao coordenador para organizar a homenagem: depende do canal de notificação por e-mail, ainda não ligado a este recurso.",
   },
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Plantão de Orações — oração coletiva à distância",
     cardTitle: "Plantão de Orações",
     descricao:
-      "Membros se inscrevem para orar em horários definidos, como um escalonamento de oração · A agenda semanal fica visível para todos · Cada participante confirma presença e o histórico é registrado",
+      "No ar em /oracoes: grade semanal fixa, inscrição em um toque, controle de vagas conferido no banco (duas pessoas não ocupam o mesmo último lugar) e a lista de quem vai orar visível a todos. Falta a confirmação de presença depois de cada plantão e o histórico do que já foi cumprido.",
   },
   {
     status: "feito",
@@ -229,35 +229,35 @@ const roadmap: Item[] = [
       "Para atendimento urgente: o site identifica os voluntários logados naquele momento e envia um alerta automático para eles e para o Presidente. Se não houver ninguém disponível, indica o CVV ou a opção de agendar. Para atendimento agendado: o Presidente ou autorizados recebem a solicitação, escolhem a data e o horário, e o compromisso é criado automaticamente na agenda de todos os envolvidos. O atendimento pode ser identificado ou anônimo. A sala virtual é controlada pelo Presidente, que define quem pode participar.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Ficha de Atendimento Fraterno — registro confidencial",
     cardTitle: "Ficha de Atendimento Fraterno",
     descricao:
-      "Formulário sigiloso para registrar os dados de pessoas que receberam atendimento · Histórico de atendimentos · Acessível apenas pelo coordenador de assistência fraterna",
+      "No ar em /atendimento-fraterno, com o sigilo mais estrito da plataforma: leem apenas o Atendente fraterno, o Coordenador da casa e quem a direção autorizar nominalmente. A presidência não entra pelo cargo, e o desenvolvedor foi excluído de propósito — suporte técnico não é motivo para ler o relato de ninguém. Registra relato, encaminhamento e data de retorno, e cada abertura de ficha fica gravada em um histórico que ninguém apaga.",
   },
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Fórum de apoio fraterno — espaço para quem está passando por dificuldades",
     cardTitle: "Fórum de Apoio",
     descricao:
-      "Um espaço acolhedor onde pessoas que estejam passando por dificuldades podem compartilhar o que estão sentindo. Voluntários cadastrados recebem um aviso e podem interagir com fraternidade, oferecendo apoio emocional e espiritual dentro da plataforma",
+      "No ar em /forum: tópicos por assunto (dúvida, acolhimento, estudo, testemunho), respostas, marcação de resolvido, fixação pela direção e moderação de quem administra a casa. O tópico nasce restrito à casa e o autor decide abri-lo às demais. Falta o aviso aos voluntários quando alguém publica um pedido de acolhimento.",
   },
 
   // ── PENDENTE — Solidariedade e mobilidade ────────────────────────────────
 
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Carona Solidária — ajuda para chegar à casa espírita",
     cardTitle: "Carona Solidária",
     descricao:
-      "Membros que têm carro se cadastram para oferecer carona · Quem precisa solicita uma carona · O sistema registra confirmações e histórico de caronas realizadas",
+      "No ar em /caronas: o motorista publica origem, destino, dia, hora, vagas e se traz de volta; quem precisa pede lugar informando o ponto de encontro. O telefone do motorista só aparece depois do aceite, e o limite de vagas é conferido no banco — não há como aceitar cinco pessoas para quatro lugares. As caronas passadas ficam consultáveis.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Entrega Solidária — levar itens do bazar até quem comprou",
     cardTitle: "Entrega Solidária",
     descricao:
-      "Voluntários se oferecem para entregar itens comprados no bazar on-line · O comprador e o voluntário combinam o horário pela plataforma · Registro e confirmação da entrega",
+      "No ar em /entregas: o pedido nasce de uma reserva aceita no bazar (ou avulso, para levar qualquer doação), um voluntário assume, combina dia e hora e confirma a entrega. Os dois contatos se liberam mutuamente só depois que a entrega é assumida, e o endereço completo é combinado entre as duas pessoas — nunca fica publicado na lista.",
   },
 
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
@@ -276,11 +276,11 @@ const roadmap: Item[] = [
       "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido",
   },
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Cruzamento de habilidades dos membros com as necessidades do centro",
     cardTitle: "Localização de Voluntariado",
     descricao:
-      "O sistema compara as habilidades cadastradas pelos membros com as necessidades da casa e envia alertas para voluntários quando alguém que tem aquela habilidade for necessário",
+      "No ar em /voluntariado: a casa publica o que precisa, o membro marca o que sabe fazer a partir de um vocabulário comum (sem ele, pedreiro e alvenaria nunca se encontrariam), e cada pedido mostra os voluntários com afinidade, dizendo quais habilidades combinaram. Quem se oferece é aceito ou recusado por quem pediu. Falta o alerta automático ao voluntário quando aparece um pedido com o perfil dele.",
   },
   {
     status: "planejado",
@@ -289,11 +289,11 @@ const roadmap: Item[] = [
       "Membros registram sugestões para a casa · Outros podem curtir e comentar · O status de cada sugestão é acompanhado com datas e motivação registrada",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Grupos de comunicação interna por tipo de atividade",
     cardTitle: "Comunicação em Grupos",
     descricao:
-      "Grupos de mensagens dentro da plataforma, semelhantes aos grupos de WhatsApp, organizados por tipo de trabalho (evangelização, mediunidade, tesouraria etc.)",
+      "No ar em /grupos: grupos por frente de trabalho, com conversa que chega na hora, sem recarregar a página. O grupo pode ser da casa, e aí qualquer membro entra, ou fechado — e o fechado nem aparece para quem não é membro. Quem cria modera: adiciona pessoas da casa e remove mensagem imprópria. Ninguém precisa dar o telefone para participar.",
   },
   {
     status: "planejado",
@@ -311,11 +311,11 @@ const roadmap: Item[] = [
   // ── PENDENTE — Tesouraria e financeiro ───────────────────────────────────
 
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Bazar on-line com pagamento por PIX",
     cardTitle: "Bazar On-line",
     descricao:
-      "Publicação de itens com foto, descrição e preço · Pagamento via PIX com QR Code gerado na hora · O administrador controla o estoque e as vendas",
+      "No ar em /bazar: item com foto, preço ou contribuição livre, reserva de quem se interessa, aceite de quem anuncia e código PIX copia e cola gerado na hora, no padrão do Banco Central. O pagamento vai direto para a chave de quem anuncia — a plataforma não recebe, não retém e não cobra nada. Falta a imagem do QR Code para leitura pela câmera: hoje o pagamento é feito colando o código no aplicativo do banco.",
   },
 
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────

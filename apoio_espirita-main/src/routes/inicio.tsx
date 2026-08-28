@@ -6,10 +6,6 @@ import {
   CircleHelp,
   ClipboardList,
   Wallet,
-  BookOpen,
-  BookMarked,
-  Shirt,
-  Footprints,
   Star,
   LayoutDashboard,
   Clock,
@@ -77,51 +73,6 @@ const DAILY_MESSAGES = [
   {
     text: "O verdadeiro espiritismo é aquele que tem por divisa: fora da caridade não há salvação.",
     author: "Allan Kardec · A Gênese",
-  },
-];
-
-const BAZAR: { Icon: LucideIcon; name: string; category: string; price: string; desc: string }[] = [
-  {
-    Icon: BookOpen,
-    name: "O Livro dos Espíritos",
-    category: "Livro",
-    price: "R$ 35,00",
-    desc: "Allan Kardec · Edição FEB",
-  },
-  {
-    Icon: BookMarked,
-    name: "O Evangelho segundo o Espiritismo",
-    category: "Livro",
-    price: "R$ 30,00",
-    desc: "Allan Kardec · Edição FEB",
-  },
-  {
-    Icon: Shirt,
-    name: "Calça",
-    category: "Vestuário",
-    price: "R$ 45,00",
-    desc: "Tamanho M · boa conservação",
-  },
-  {
-    Icon: Shirt,
-    name: "Camisa",
-    category: "Vestuário",
-    price: "R$ 20,00",
-    desc: "Tamanho G · algodão",
-  },
-  {
-    Icon: Shirt,
-    name: "Blusa",
-    category: "Vestuário",
-    price: "R$ 25,00",
-    desc: "Tamanho P · malha",
-  },
-  {
-    Icon: Footprints,
-    name: "Sapato",
-    category: "Calçado",
-    price: "R$ 30,00",
-    desc: "Nº 38 · couro sintético",
   },
 ];
 
@@ -547,19 +498,23 @@ function Inicio() {
             border="border-cyan-200"
             borderB="border-cyan-200"
           >
-            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-              Em breve
+            <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+              Disponível
             </span>
           </SectionHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {BAZAR.map((item) => (
-              <BazarCard key={item.name} item={item} />
-            ))}
+          <div className="glass-premium rounded-2xl p-6 md:p-8 text-center">
+            <p className="text-sm text-gray-600 font-light max-w-xl mx-auto">
+              Livros, artesanatos e itens arrecadados pela sua casa, com foto, reserva e código PIX
+              copia e cola gerado na hora. O pagamento vai direto para a chave de quem anuncia — a
+              plataforma não recebe, não retém e não cobra nada.
+            </p>
+            <Link
+              to="/bazar"
+              className="mt-5 inline-block px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border border-cyan-200 text-cyan-700 hover:bg-cyan-50 transition-colors"
+            >
+              Abrir o bazar da minha casa
+            </Link>
           </div>
-          <p className="mt-4 text-xs text-center text-muted-foreground/50">
-            Demonstração de como o bazar vai funcionar · Os itens e os preços são fictícios e
-            nenhuma compra é feita por aqui
-          </p>
         </section>
       </div>
     </main>
@@ -762,27 +717,4 @@ function FeatureCard({
       </Link>
     );
   return inner;
-}
-
-function BazarCard({ item }: { item: (typeof BAZAR)[0] }) {
-  return (
-    <div className="glass-premium hover-premium rounded-2xl p-4 flex flex-col gap-3">
-      <div className="w-12 h-12 rounded-xl bg-cyan-50/70 border border-cyan-100 flex items-center justify-center mx-auto shadow-sm">
-        <item.Icon size={22} strokeWidth={1.5} className="text-cyan-600" />
-      </div>
-      <div className="text-center flex-1">
-        <p className="text-[10px] font-bold text-cyan-600/70 uppercase tracking-widest mb-0.5">
-          {item.category}
-        </p>
-        <h3 className="text-xs font-semibold text-gray-800 leading-snug mb-1">{item.name}</h3>
-        <p className="text-[10px] text-gray-400 font-light">{item.desc}</p>
-      </div>
-      <div className="text-center mt-2">
-        <p className="text-sm font-semibold text-cyan-600 mb-2.5">{item.price}</p>
-        <button className="w-full text-[10px] font-bold uppercase tracking-widest py-2 rounded-lg border border-cyan-200 text-cyan-600 hover:bg-cyan-50 transition-colors shadow-sm">
-          Consultar
-        </button>
-      </div>
-    </div>
-  );
 }
