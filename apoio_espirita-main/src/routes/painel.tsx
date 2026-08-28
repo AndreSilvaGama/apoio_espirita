@@ -11,7 +11,7 @@ export const Route = createFileRoute("/painel")({
   component: Painel,
 });
 
-type Status = "feito" | "andamento" | "planejado";
+type Status = "feito" | "andamento" | "planejado" | "recusada";
 
 interface Item {
   status: Status;
@@ -22,7 +22,17 @@ interface Item {
   tipo?: "solicitacao" | "sugestao";
   // Título do card em /inicio que gera a chave de voto compartilhada
   cardTitle?: string;
+  /** Devolutiva do desenvolvedor sobre uma solicitação de membro. */
+  resposta?: string;
 }
+
+/** Status gravado em `solicitacoes_dev` → status exibido nesta tela. */
+const STATUS_DA_SOLICITACAO: Record<string, Status> = {
+  pendente: "planejado",
+  andamento: "andamento",
+  concluida: "feito",
+  recusada: "recusada",
+};
 
 const roadmap: Item[] = [
   {
@@ -117,9 +127,9 @@ const roadmap: Item[] = [
   },
   {
     status: "planejado",
-    titulo: "Mapa interativo das casas espíritas cadastradas",
+    titulo: "Mapa e diretório público das casas espíritas, por cidade e estado",
     descricao:
-      "Visualização no mapa de todas as casas cadastradas · Filtros por cidade e estado · Botão para abrir no Google Maps e traçar o caminho",
+      "Mapa de todas as casas cadastradas, com filtro por cidade e estado e rota no Google Maps. E uma página pública para cada cidade, com as casas, os endereços e os horários das atividades: quem procura “centro espírita perto de mim” não encontra nada hoje, e essa é a porta de entrada mais procurada por quem está começando — a única que alcança quem ainda não conhece ninguém no movimento.",
   },
   {
     status: "feito",
@@ -200,11 +210,11 @@ const roadmap: Item[] = [
       "Membros se inscrevem para orar em horários definidos, como um escalonamento de oração · A agenda semanal fica visível para todos · Cada participante confirma presença e o histórico é registrado",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Mural de Avisos da casa espírita",
     cardTitle: "Mural de Avisos",
     descricao:
-      "Quadro de avisos digital da casa · Presidentes e coordenadores publicam comunicados · Cada aviso tem uma data de validade e some automaticamente quando vencer · Os membros veem o mural ao entrar no site",
+      "Quem administra a página da casa publica comunicados com foto e vídeo, fixa no topo o que não pode passar despercebido, edita e apaga. Todos os membros da casa leem na aba Mural; o visitante de fora não vê. O cartão da tela inicial leva direto para lá. Falta ainda a data de validade que faz o aviso sair sozinho quando vencer.",
   },
   {
     status: "planejado",
@@ -247,11 +257,11 @@ const roadmap: Item[] = [
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
   {
-    status: "planejado",
+    status: "andamento",
     titulo: "Escala de Trabalho — quem faz o quê e quando",
     cardTitle: "Escala de Trabalho",
     descricao:
-      "O Presidente ou coordenador monta a escala semanal e mensal dos tarefeiros · Cada membro recebe um aviso com sua escala e pode consultar a qualquer momento pelo celular",
+      "O quadro de palestras e escalas já existe no painel da casa: dia, tema, facilitador, coordenador, passe e recepção, com a escala vencida se arquivando sozinha. Falta a parte que avisa cada tarefeiro da própria escala e a consulta pessoal “o que eu faço nesta semana”.",
   },
   {
     status: "planejado",
@@ -323,10 +333,49 @@ const roadmap: Item[] = [
       "O Presidente pode ativar ou desativar cada funcionalidade do site para a sua casa. Cada recurso tem três opções: desligado, opcional (o membro escolhe) ou obrigatório para todos · Inclui sistema de votação para decisões coletivas da casa",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Gerenciamento de solicitações de desenvolvimento — somente DEV",
     descricao:
-      "Área exclusiva no perfil do DEV para visualizar, organizar e atualizar o status das solicitações de desenvolvimento feitas pelos membros",
+      "Cada solicitação enviada por um membro passa a ter situação — pendente, em andamento, concluída ou não será feito — e uma resposta escrita pelo desenvolvedor. Quem pediu acompanha o andamento e lê a resposta nesta mesma tela, sem precisar perguntar a ninguém; recusa exige motivo escrito. As sugestões enviadas pelo formulário público, que trazem o e-mail de quem escreveu, deixaram de ser listadas aqui e ficam apenas com o desenvolvedor.",
+  },
+
+  // ── PENDENTE — Alcance público e divulgação da doutrina ──────────────────
+
+  {
+    status: "planejado",
+    titulo: "Compartilhar a mensagem do dia e os artigos em imagem",
+    descricao:
+      "Um botão que transforma a mensagem do dia ou o trecho de um artigo em uma imagem bonita, com a fonte e o endereço do site, pronta para enviar no WhatsApp. É o conteúdo que as pessoas já compartilham todos os dias, hoje sem levar ninguém de volta ao portal.",
+  },
+  {
+    status: "planejado",
+    titulo: "Perguntas e respostas públicas sobre a doutrina espírita",
+    descricao:
+      "Respostas curtas e honestas às perguntas que quem está de fora realmente faz — o que é o Espiritismo, o que é mediunidade, o que a doutrina diz sobre o suicídio, sobre a morte de uma criança, sobre obsessão — cada uma com a fonte na obra de Kardec. É conteúdo que responde a busca de quem está sofrendo, no momento em que procura.",
+  },
+  {
+    status: "planejado",
+    titulo: "Estudo guiado de O Livro dos Espíritos, capítulo a capítulo",
+    descricao:
+      "Trilha de estudo com um capítulo por vez, resumo, as questões originais, comentário e um quiz ao fim, guardando onde cada pessoa parou. Serve tanto para quem estuda sozinho quanto para o grupo de estudo da casa acompanhar a turma.",
+  },
+  {
+    status: "planejado",
+    titulo: "Artigos em áudio e boletim semanal por e-mail",
+    descricao:
+      "Cada artigo ganha uma versão em áudio, para quem não lê — no trânsito, no trabalho, ou por dificuldade de visão. E um boletim semanal reúne a mensagem do dia e os artigos novos para quem pedir para receber, trazendo a pessoa de volta sem depender de rede social.",
+  },
+  {
+    status: "planejado",
+    titulo: "Convite pessoal e cartaz com QR Code da casa",
+    descricao:
+      "Cada membro tem um link de convite para trazer alguém, e cada casa imprime um cartaz com o QR Code da sua página para deixar na recepção e nas atividades públicas. É o caminho mais curto entre o visitante que chegou uma vez e o site que o mantém por perto.",
+  },
+  {
+    status: "planejado",
+    titulo: "Portal em espanhol",
+    descricao:
+      "A doutrina espírita tem grande presença na América Latina e quase nada em português alcança quem fala espanhol. Traduzir as telas públicas e permitir que o autor marque o idioma do artigo multiplica o alcance sem precisar de conteúdo novo.",
   },
 
   // ── PENDENTE — Comunicação e transmissão ─────────────────────────────────
@@ -500,12 +549,17 @@ const badge: Record<Status, { label: string; color: string }> = {
     color: "text-amber-400  bg-amber-400/10  border-amber-400/20",
   },
   planejado: { label: "Pendente", color: "text-cyan-glow  bg-cyan-glow/10  border-cyan-glow/20" },
+  recusada: {
+    label: "Não será feito",
+    color: "text-rose-400 bg-rose-400/10 border-rose-400/20",
+  },
 };
 
 const icon: Record<Status, string> = {
   feito: "✓",
   andamento: "◎",
   planejado: "○",
+  recusada: "—",
 };
 
 // Usa cardTitle quando disponível para compartilhar o voto com o cartão de /inicio
@@ -518,7 +572,6 @@ function Painel() {
   const { user, profile, loading } = useAuth();
   const [busca, setBusca] = useState("");
   const [solicitacoes, setSolicitacoes] = useState<Item[]>([]);
-  const [sugestoes, setSugestoes] = useState<Item[]>([]);
   const [solTitulo, setSolTitulo] = useState("");
   const [solDesc, setSolDesc] = useState("");
   const [sendingSol, setSendingSol] = useState(false);
@@ -526,41 +579,23 @@ function Painel() {
   const [solError, setSolError] = useState("");
   const { votes, votingKey, toggleVote } = usePainelVotes(user);
 
-  const fetchSugestoes = async () => {
-    const { data } = await supabase
-      .from("site_suggestions")
-      .select("name, email, suggestion")
-      .order("created_at", { ascending: false });
-    if (data) {
-      setSugestoes(
-        data.map((s) => {
-          const titulo =
-            s.suggestion.length > 120 ? s.suggestion.slice(0, 120).trimEnd() + "…" : s.suggestion;
-          return {
-            status: "planejado" as Status,
-            titulo,
-            solicitante: s.name,
-            sigla_casa: s.email,
-            tipo: "sugestao" as const,
-          };
-        }),
-      );
-    }
-  };
-
+  // As sugestões enviadas pelo formulário público trazem nome e e-mail de quem
+  // escreveu — inclusive de quem não é membro. Não são listadas aqui: ficam
+  // apenas com o desenvolvedor, que responde a quem enviou.
   const fetchSolicitacoes = async () => {
     const { data } = await supabase
       .from("solicitacoes_dev")
-      .select("titulo, descricao, profiles!user_id(nome, sigla_casa)")
+      .select("titulo, descricao, status, resposta_dev, profiles!user_id(nome, sigla_casa)")
       .order("created_at", { ascending: false });
     if (data) {
       setSolicitacoes(
         data.map((s) => {
           const p = s.profiles as { nome?: string; sigla_casa?: string } | null;
           return {
-            status: "planejado" as Status,
+            status: STATUS_DA_SOLICITACAO[s.status] ?? ("planejado" as Status),
             titulo: s.titulo,
             descricao: s.descricao ?? undefined,
+            resposta: s.resposta_dev ?? undefined,
             solicitante: p?.nome ?? "Membro",
             sigla_casa: p?.sigla_casa ?? "",
             tipo: "solicitacao" as const,
@@ -626,15 +661,15 @@ function Painel() {
   }, [user, profile, loading, navigate]);
 
   useEffect(() => {
-    if (user) {
-      fetchSolicitacoes();
-      fetchSugestoes();
-    }
+    if (user) fetchSolicitacoes();
   }, [user]);
 
   if (loading || !user) return null;
 
-  const allItems = [...roadmap.filter((i) => i.status !== "feito"), ...solicitacoes, ...sugestoes];
+  // O roadmap concluído não entra na lista — ela é de pendências. As
+  // solicitações entram sempre, inclusive as já atendidas: quem pediu precisa
+  // ver o que aconteceu com o pedido.
+  const allItems = [...roadmap.filter((i) => i.status !== "feito"), ...solicitacoes];
 
   const termo = busca.trim().toLowerCase();
   const filtered = termo
@@ -679,7 +714,7 @@ function Painel() {
             Acompanhamento do Projeto
           </h2>
           <p style={{ fontFamily: "Inter", fontSize: "0.9rem", color: "#637080", margin: 0 }}>
-            O que está pendente e como solicitar novos recursos.
+            O que está pendente, o que já foi respondido e como solicitar novos recursos.
           </p>
         </div>
 
@@ -748,7 +783,7 @@ function Painel() {
         )}
 
         {/* Items by group */}
-        {(["andamento", "planejado"] as Status[]).map((status) => {
+        {(["andamento", "planejado", "feito", "recusada"] as Status[]).map((status) => {
           const items = getItemsByStatus(status);
           if (items.length === 0) return null;
           return (
@@ -761,6 +796,11 @@ function Painel() {
                 {status === "planejado" && (
                   <span className="text-muted-foreground/40 normal-case tracking-normal font-normal ml-1">
                     — ordenados por votos
+                  </span>
+                )}
+                {(status === "feito" || status === "recusada") && (
+                  <span className="text-muted-foreground/40 normal-case tracking-normal font-normal ml-1">
+                    — pedidos de membros já respondidos
                   </span>
                 )}
               </h2>
@@ -790,13 +830,21 @@ function Painel() {
                             padding: "14px 18px",
                             marginBottom: 8,
                           }
-                        : {
-                            background: "#ffffff",
-                            border: "1px solid rgba(0,20,70,.08)",
-                            borderRadius: 12,
-                            padding: "14px 18px",
-                            marginBottom: 8,
-                          };
+                        : item.status === "recusada"
+                          ? {
+                              background: "#fbf1f2",
+                              border: "1px solid rgba(140,20,40,.15)",
+                              borderRadius: 12,
+                              padding: "14px 18px",
+                              marginBottom: 8,
+                            }
+                          : {
+                              background: "#ffffff",
+                              border: "1px solid rgba(0,20,70,.08)",
+                              borderRadius: 12,
+                              padding: "14px 18px",
+                              marginBottom: 8,
+                            };
 
                   return (
                     <div key={item.titulo} style={cardStyle} className="flex items-start gap-4">
@@ -810,6 +858,11 @@ function Painel() {
                         {item.descricao && (
                           <p className="text-xs text-muted-foreground/60 mt-0.5">
                             {item.descricao}
+                          </p>
+                        )}
+                        {item.resposta && (
+                          <p className="text-xs text-foreground/70 mt-1.5">
+                            <span style={{ fontWeight: 600 }}>Resposta:</span> {item.resposta}
                           </p>
                         )}
                         {item.solicitante && (
@@ -888,7 +941,8 @@ function Painel() {
             {solError && <p className="text-xs text-red-400 text-center">{solError}</p>}
             {solOk && (
               <p className="text-xs text-emerald-400 text-center">
-                Solicitação enviada com gratidão. Analisaremos em breve.
+                Solicitação enviada com gratidão. Ela aparece na lista acima e o status muda
+                conforme for analisada.
               </p>
             )}
             <button

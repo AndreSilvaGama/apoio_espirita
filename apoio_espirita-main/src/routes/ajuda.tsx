@@ -76,17 +76,17 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "Como funciona a Ficha de Atendimento Fraterno?",
     resposta:
-      "Trata-se de um formulário de registro confidencial destinado à assistência espiritual. Somente o Presidente da casa e o Coordenador específico do Atendimento Fraterno possuem autoridade de acesso para visualizar e preencher as fichas de acolhidos. As informações de aconselhamento e passes são armazenadas com criptografia para resguardar a intimidade do atendido.",
+      "Ainda não funciona: a Ficha de Atendimento Fraterno está planejada e nada dela foi construído até agora. Enquanto não existir, nenhuma informação de atendimento deve ser guardada no site. O que está previsto é um formulário sigiloso de registro dos atendimentos, acessível apenas a quem coordena a assistência fraterna da casa. Para acompanhar ou apressar: no menu superior, abra 'Ajuda' e clique em 'Status do Projeto'; o item aparece na lista de pendências e o botão do polegar registra o seu voto. Os itens mais votados são desenvolvidos primeiro.",
   },
   {
     pergunta: "Como funciona a Carona Solidária?",
     resposta:
-      "Um recurso de auxílio mútuo no qual membros que possuem veículo e vão ao centro espírita disponibilizam vagas para dar carona aos tarefeiros e frequentadores que necessitam de transporte. É uma ferramenta de segurança e fraternidade, permitindo visualizar quem oferece a carona, o itinerário, os horários e o número de assentos disponíveis.",
+      "Ainda não funciona: a Carona Solidária está planejada e ainda não foi construída. O que está previsto é que quem tem carro se cadastre oferecendo vagas, com itinerário, horário e número de assentos, e que quem precisa solicite a carona pela plataforma, com registro das confirmações. Por enquanto, a combinação continua sendo feita fora do site. Para votar neste item, abra 'Ajuda' › 'Status do Projeto' e clique no polegar ao lado dele.",
   },
   {
     pergunta: "Como funciona o Bazar On-line e a Entrega Solidária?",
     resposta:
-      "O Bazar permite o cadastro de livros espíritas, vestuários e artesanatos arrecadados pela comunidade para fins de doação. As pessoas interessadas reservam os itens e efetuam a doação diretamente via PIX para a chave do centro. A **Entrega Solidária** é um grupo de voluntários cadastrados que se oferecem para realizar as entregas físicas das mercadorias na residência dos compradores que possuem dificuldades de locomoção.",
+      "Nenhum dos dois funciona ainda. Os itens que aparecem na seção 'Bazar On-line' da tela inicial são uma demonstração de como o bazar vai ficar: os produtos e os preços são fictícios e o botão não realiza compra nenhuma. O que está previsto é o cadastro de livros, roupas e artesanato arrecadados pela casa, com pagamento por PIX na chave da própria casa, e a Entrega Solidária, em que voluntários se oferecem para levar o item até quem tem dificuldade de locomoção. A chave PIX da casa, essa sim, já existe e já pode ser usada para doações — está na aba 'Doações' da página da casa. Para votar no bazar, abra 'Ajuda' › 'Status do Projeto'.",
   },
   {
     pergunta: "Quem tem acesso à Tesouraria e quais recursos ela oferece?",
@@ -101,7 +101,7 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "Como funciona a escala de trabalho de tarefeiros?",
     resposta:
-      "Os coordenadores e a presidência podem criar escalas eletrônicas de serviço (recepção, palestrantes do dia, aplicadores de passe, leitura de mensagens). Cada trabalhador cadastrado recebe um aviso sobre seus dias de plantão e tarefas escaladas diretamente em seu painel pessoal de entrada.",
+      "Funciona em parte, no painel da página da casa. Passo a passo para montar uma escala: 1) abra a página da sua casa — pelo cartão 'Página da Casa' na tela inicial ou em apoioespirita.com.br/casa/SIGLA; 2) clique em 'Administrar', no alto da página (só Presidente, Vice-presidente ou administrador nomeado da casa veem esse botão); 3) na aba 'Painel', desça até 'Palestras Públicas e Escalas de Trabalho'; 4) clique em 'Nova escala' e preencha o dia, o mês, o tema e quem fica responsável por cada função — facilitador, coordenador, passe e recepção; 5) salve. A escala fica visível a todos os membros da casa e, quando a data passa, ela se arquiva sozinha — para rever as antigas, use o botão que mostra as arquivadas. O que ainda não existe: o site não avisa cada tarefeiro da própria escala, e não há uma tela pessoal do tipo 'o que eu faço nesta semana'. Esse pedaço está na lista de pendências e aceita voto em 'Ajuda' › 'Status do Projeto'.",
   },
   {
     pergunta: "Como leio livros pelo site e faço pesquisas no leitor de PDF?",
@@ -131,12 +131,12 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "O que é o Mural de Avisos?",
     resposta:
-      "É o painel de recados digital de cada casa espírita. Coordenadores e presidentes o utilizam para divulgar comunicados importantes de última hora (ex: recesso de feriados, campanhas do agasalho, reuniões gerais de tarefeiros). Esses avisos aparecem em destaque na tela inicial de todos os membros vinculados àquela respectiva casa assim que eles se conectam.",
+      "É o quadro de recados da sua casa espírita, e já está funcionando. Onde fica: na página da casa, na aba 'Mural' — o cartão 'Mural de Avisos' da tela inicial leva direto para lá. Quem lê: todos os membros da casa; quem chega de fora, sem login, não vê o mural. Para publicar um aviso (Presidente, Vice-presidente ou administrador nomeado da casa): 1) abra a página da casa; 2) clique em 'Administrar'; 3) vá à aba 'Mural'; 4) clique em 'Nova publicação no mural'; 5) escreva o comunicado e, se quiser, informe o endereço de uma imagem ou de um vídeo; 6) clique em 'Publicar'. Depois de publicado, o aviso pode ser fixado no topo, editado ou apagado pelos mesmos botões do cartão. O que ainda não existe: o aviso não tem data de validade, então continua no mural até alguém apagá-lo, e ele não aparece automaticamente na tela inicial.",
   },
   {
     pergunta: "Como funciona o Plantão de Orações?",
     resposta:
-      "É uma agenda virtual onde os membros e trabalhadores se voluntariam para realizar vibrações e preces em horários específicos da semana na comodidade de seus lares, criando uma corrente contínua de pensamentos elevados e amparo invisível voltado aos necessitados da casa e do mundo.",
+      "Ainda não funciona: o Plantão de Orações está planejado e ainda não foi construído. O que está previsto é uma agenda semanal em que cada pessoa se inscreve num horário para orar de casa, formando uma corrente contínua, com a escala visível a todos e o registro de quem confirmou. Para votar neste item, abra 'Ajuda' › 'Status do Projeto' e clique no polegar ao lado dele.",
   },
   {
     pergunta: "O site realiza gravação ou repasse de transações financeiras?",
@@ -151,7 +151,7 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "Como posso enviar sugestões de melhoria?",
     resposta:
-      "Suas sugestões e ideias de novos recursos são muito bem-vindas! Você pode registrá-las de forma rápida clicando no link 'Sugestões' no rodapé de qualquer página (ou acessando diretamente `/sugestoes`). O formulário é simplificado e pode ser preenchido até mesmo sem realizar login no sistema.",
+      "Há dois caminhos, e eles servem a coisas diferentes. O primeiro é o link 'Sugestões' no rodapé de qualquer página: o formulário é curto, não exige login e a mensagem vai direto para o desenvolvedor, que responde por e-mail a quem escreveu — ela não fica exposta no site, justamente porque traz o seu nome e o seu e-mail. O segundo, para quem tem conta, é 'Ajuda' › 'Status do Projeto': ali existe o campo 'Solicitar um desenvolvimento', e o que você pedir passa a aparecer na lista para todos os membros, com o seu nome e a sua casa, podendo receber votos de quem concordar.",
   },
   {
     pergunta: "O que é a página pública da casa espírita?",
@@ -231,7 +231,7 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "Como funciona o voto nos itens pendentes do projeto?",
     resposta:
-      "Passo a passo: 1) No menu superior, abra 'Ajuda' e clique em 'Status do Projeto'. 2) Percorra a lista de itens pendentes — ela já vem ordenada pelos mais votados. 3) Clique no botão com o polegar, à direita do item que você considera mais importante. O número ao lado do polegar sobe e o botão fica destacado, indicando que o seu voto foi registrado. 4) Se mudar de ideia, clique de novo no mesmo botão: a sua curtida é retirada e o número volta a baixar. Cada membro tem um voto por item, e pode votar em quantos itens quiser. Os itens mais votados são desenvolvidos primeiro. Os cartões de recursos da tela inicial e da página da casa também aceitam voto: os que aparecem como 'Em breve' registram a sua curtida quando você clica no cartão, e o voto é o mesmo item do Status do Projeto.",
+      "Passo a passo: 1) No menu superior, abra 'Ajuda' e clique em 'Status do Projeto'. 2) Percorra a lista de itens pendentes — ela já vem ordenada pelos mais votados. 3) Clique no botão com o polegar, à direita do item que você considera mais importante. O número ao lado do polegar sobe e o botão fica destacado, indicando que o seu voto foi registrado. 4) Se mudar de ideia, clique de novo no mesmo botão: a sua curtida é retirada e o número volta a baixar. Cada membro tem um voto por item, e pode votar em quantos itens quiser. Os itens mais votados são desenvolvidos primeiro. Os cartões de recursos da tela inicial e da página da casa também aceitam voto: os que aparecem como 'Em breve' registram a sua curtida quando você clica no cartão, e o voto é o mesmo item do Status do Projeto. Na mesma tela, os pedidos enviados pelos membros mostram em que pé estão — 'Pendente', 'Em andamento', 'Feito' ou 'Não será feito' —, e os já respondidos trazem, escrita por baixo do pedido, a resposta do desenvolvedor dizendo o que foi feito, quando entra ou por que não será feito.",
   },
   {
     pergunta: "A Mensagem do Dia está cortada. Como leio o texto inteiro?",

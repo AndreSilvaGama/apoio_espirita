@@ -71,7 +71,25 @@ interface SolicitacaoDev {
   descricao: string | null;
   created_at: string | null;
   user_id: string | null;
+  status: string;
+  resposta_dev: string | null;
+  atualizado_em: string | null;
 }
+
+/**
+ * Situacoes de uma solicitacao de desenvolvimento. O mesmo valor e gravado em
+ * `solicitacoes_dev.status` e lido pelo /painel, onde quem pediu acompanha.
+ */
+const STATUS_SOLICITACAO = [
+  { valor: "pendente", label: "Pendente", cor: "bg-gray-100 text-gray-600 border-gray-200" },
+  { valor: "andamento", label: "Em andamento", cor: "bg-amber-50 text-amber-700 border-amber-200" },
+  {
+    valor: "concluida",
+    label: "Concluída",
+    cor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  { valor: "recusada", label: "Não será feito", cor: "bg-rose-50 text-rose-700 border-rose-200" },
+] as const;
 
 interface RelatorioProblema {
   id: string;
@@ -112,6 +130,11 @@ function AdminDashboard() {
   const [solicitacoes, setSolicitacoes] = useState<SolicitacaoDev[]>([]);
   const [problemas, setProblemas] = useState<RelatorioProblema[]>([]);
   const [sugestoes, setSugestoes] = useState<SugestaoSite[]>([]);
+  // Edicao em curso de cada solicitacao: status escolhido e devolutiva.
+  const [edicaoSolicitacao, setEdicaoSolicitacao] = useState<
+    Record<string, { status: string; resposta: string }>
+  >({});
+  const [salvandoSolicitacao, setSalvandoSolicitacao] = useState<string | null>(null);
 
   // Search/Filters
   const [searchCasa, setSearchCasa] = useState("");
@@ -290,11 +313,21 @@ function AdminDashboard() {
   };
 
   // Delete suggestion
+  //
+  // O `.select()` no fim nao e enfeite: sem ele, uma remocao barrada pela
+  // permissao do banco volta sem erro e com zero linhas, e a tela dizia
+  // "removida com sucesso" sem ter removido nada.
   const deleteSugestao = async (id: string) => {
     if (!window.confirm("Deseja excluir esta sugestão?")) return;
     try {
-      const { error } = await supabase.from("site_suggestions").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("site_suggestions")
+        .delete()
+        .eq("id", id)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0)
+        throw new Error("nenhuma linha foi removida — verifique a permissão do banco");
       setSuccessMsg("Sugestão removida com sucesso.");
       loadAllData();
     } catch (e: unknown) {
@@ -306,12 +339,54 @@ function AdminDashboard() {
   const deleteSolicitacao = async (id: string) => {
     if (!window.confirm("Deseja remover esta solicitação de desenvolvimento?")) return;
     try {
-      const { error } = await supabase.from("solicitacoes_dev").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("solicitacoes_dev")
+        .delete()
+        .eq("id", id)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0)
+        throw new Error("nenhuma linha foi removida — verifique a permissão do banco");
       setSuccessMsg("Solicitação removida com sucesso.");
       loadAllData();
     } catch (e: unknown) {
       setErrorMsg("Erro ao remover solicitação: " + mensagemDeErro(e));
+    }
+  };
+
+  // Atualiza o andamento de uma solicitacao. Quem pediu ve o novo status e a
+  // devolutiva no Status do Projeto, sem precisar perguntar a ninguem.
+  const salvarSolicitacao = async (s: SolicitacaoDev) => {
+    const edicao = edicaoSolicitacao[s.id] ?? {
+      status: s.status,
+      resposta: s.resposta_dev ?? "",
+    };
+    if (edicao.status === "recusada" && !edicao.resposta.trim()) {
+      setErrorMsg('Escreva o motivo antes de marcar como "Não será feito" — quem pediu vai lê-lo.');
+      return;
+    }
+    setSalvandoSolicitacao(s.id);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      const { data, error } = await supabase
+        .from("solicitacoes_dev")
+        .update({
+          status: edicao.status,
+          resposta_dev: edicao.resposta.trim() || null,
+          atualizado_em: new Date().toISOString(),
+        })
+        .eq("id", s.id)
+        .select("id");
+      if (error) throw error;
+      if (!data || data.length === 0)
+        throw new Error("nenhuma linha foi alterada — verifique a permissão do banco");
+      setSuccessMsg("Solicitação atualizada. Quem pediu já vê o novo status no Status do Projeto.");
+      loadAllData();
+    } catch (e: unknown) {
+      setErrorMsg("Erro ao atualizar solicitação: " + mensagemDeErro(e));
+    } finally {
+      setSalvandoSolicitacao(null);
     }
   };
 
@@ -940,41 +1015,107 @@ function AdminDashboard() {
                 <div className="text-center py-12 border border-dashed border-gray-250 rounded-2xl">
                   <LayoutDashboard size={32} className="text-gray-300 mx-auto mb-2" />
                   <p className="text-xs text-gray-400 italic">
-                    Nenhuma solicitação de desenvolvimento pendente.
+                    Nenhuma solicitação de desenvolvimento recebida.
                   </p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-4">
-                  {solicitacoes.map((s) => (
-                    <div
-                      key={s.id}
-                      className="border border-gray-200 rounded-2xl p-5 bg-white space-y-3 flex flex-col justify-between shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-sm transition-shadow"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-4">
-                          <h3 className="font-semibold text-sm text-gray-800 leading-snug">
-                            {s.titulo}
-                          </h3>
-                          <button
-                            onClick={() => deleteSolicitacao(s.id)}
-                            className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                            title="Remover"
+                  {solicitacoes.map((s) => {
+                    const edicao = edicaoSolicitacao[s.id] ?? {
+                      status: s.status,
+                      resposta: s.resposta_dev ?? "",
+                    };
+                    const alterado =
+                      edicao.status !== s.status || edicao.resposta !== (s.resposta_dev ?? "");
+                    const statusAtual =
+                      STATUS_SOLICITACAO.find((op) => op.valor === s.status) ??
+                      STATUS_SOLICITACAO[0];
+                    return (
+                      <div
+                        key={s.id}
+                        className="border border-gray-200 rounded-2xl p-5 bg-white space-y-3 flex flex-col justify-between shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-sm transition-shadow"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-4">
+                            <h3 className="font-semibold text-sm text-gray-800 leading-snug">
+                              {s.titulo}
+                            </h3>
+                            <button
+                              onClick={() => deleteSolicitacao(s.id)}
+                              className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              title="Remover"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 leading-relaxed font-light">
+                            {s.descricao || "Sem detalhes adicionais."}
+                          </p>
+                          <span
+                            className={`inline-block text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full border ${statusAtual.cor}`}
                           >
-                            <Trash2 size={14} />
+                            {statusAtual.label}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 pt-1">
+                          <label className="block text-[10px] uppercase tracking-widest text-gray-400">
+                            Situação
+                          </label>
+                          <select
+                            value={edicao.status}
+                            onChange={(e) =>
+                              setEdicaoSolicitacao((prev) => ({
+                                ...prev,
+                                [s.id]: { ...edicao, status: e.target.value },
+                              }))
+                            }
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-700 focus:outline-none focus:border-gray-400 transition-colors"
+                          >
+                            {STATUS_SOLICITACAO.map((op) => (
+                              <option key={op.valor} value={op.valor}>
+                                {op.label}
+                              </option>
+                            ))}
+                          </select>
+                          <label className="block text-[10px] uppercase tracking-widest text-gray-400 pt-1">
+                            Resposta a quem pediu
+                          </label>
+                          <textarea
+                            value={edicao.resposta}
+                            rows={2}
+                            placeholder="O que foi feito, quando entra ou por que não será feito."
+                            onChange={(e) =>
+                              setEdicaoSolicitacao((prev) => ({
+                                ...prev,
+                                [s.id]: { ...edicao, resposta: e.target.value },
+                              }))
+                            }
+                            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-700 placeholder-gray-300 focus:outline-none focus:border-gray-400 transition-colors resize-none"
+                          />
+                          <button
+                            onClick={() => salvarSolicitacao(s)}
+                            disabled={!alterado || salvandoSolicitacao === s.id}
+                            className="w-full py-2 rounded-xl text-[10px] font-semibold uppercase tracking-widest border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-default transition-colors"
+                          >
+                            {salvandoSolicitacao === s.id ? "Salvando…" : "Salvar situação"}
                           </button>
                         </div>
-                        <p className="text-xs text-gray-500 leading-relaxed font-light">
-                          {s.descricao || "Sem detalhes adicionais."}
-                        </p>
+
+                        <div className="flex items-center justify-between text-[10px] text-gray-400 pt-2 border-t border-gray-50">
+                          <span>
+                            {s.atualizado_em
+                              ? "Respondida em " +
+                                new Date(s.atualizado_em).toLocaleDateString("pt-BR")
+                              : "Sem resposta ainda"}
+                          </span>
+                          <span>
+                            {s.created_at ? new Date(s.created_at).toLocaleDateString("pt-BR") : ""}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 pt-2 border-t border-gray-50">
-                        <span>Fila DEV</span>
-                        <span>
-                          {s.created_at ? new Date(s.created_at).toLocaleDateString("pt-BR") : ""}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

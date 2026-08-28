@@ -24,6 +24,7 @@ import {
   ShoppingBag,
   Sparkles,
   Sprout,
+  Sunrise,
   Trello,
   Truck,
   Users,
@@ -42,8 +43,10 @@ import {
  * "Em breve". Alterar apenas este arquivo mantém as duas telas iguais.
  *
  * Regra para `status`: "disponivel" exige `href` de uma rota que já existe e
- * funciona em produção. Enquanto o recurso não estiver no ar, o correto é
- * "breve" — sem `href`.
+ * funciona em produção, ou `casaAba` de uma aba que já existe na página da
+ * casa. "beta" é para o recurso que já está no ar mas ainda não faz tudo o
+ * que a descrição do roadmap promete — a descrição precisa dizer o que falta.
+ * Enquanto o recurso não estiver no ar, o correto é "breve" — sem `href`.
  */
 export type FuncionalidadeStatus = "disponivel" | "breve" | "beta";
 
@@ -54,6 +57,12 @@ export interface FuncionalidadeItem {
   status: FuncionalidadeStatus;
   casa?: boolean;
   href?: string;
+  /**
+   * Recurso que vive dentro da pagina da casa espirita, na aba indicada.
+   * O cartao leva para `/casa/<sigla do membro>?aba=<casaAba>` — nao existe
+   * rota propria para ele.
+   */
+  casaAba?: "mural" | "painel" | "programacao" | "doacoes" | "tarefeiros";
 }
 
 export interface FuncionalidadeCategoria {
@@ -104,6 +113,13 @@ export const FUNCIONALIDADES: FuncionalidadeCategoria[] = [
         desc: "Documentos e orientações públicas da FEB reunidos para consulta e download pelos trabalhadores.",
         status: "disponivel",
         href: "/feb",
+      },
+      {
+        Icon: Sunrise,
+        title: "Mensagem do Dia",
+        desc: "Cada membro envia uma mensagem para a fila da casa. A mensagem do dia aparece na tela inicial e a fila fica visível a todos.",
+        status: "disponivel",
+        href: "/mensagem-do-dia",
       },
       {
         Icon: Radio,
@@ -187,8 +203,10 @@ export const FUNCIONALIDADES: FuncionalidadeCategoria[] = [
       {
         Icon: Megaphone,
         title: "Mural de Avisos",
-        desc: "Quadro digital da casa. Presidentes e coordenadores publicam comunicados. Membros visualizam ao entrar.",
-        status: "breve",
+        desc: "Quadro digital da casa: quem administra a página publica comunicados com foto e vídeo, fixa o que é importante no topo, edita e apaga. Todos os membros da casa leem — o visitante de fora, não.",
+        status: "disponivel",
+        casa: true,
+        casaAba: "mural",
       },
       {
         Icon: FileHeart,
@@ -249,8 +267,10 @@ export const FUNCIONALIDADES: FuncionalidadeCategoria[] = [
       {
         Icon: CalendarRange,
         title: "Escala de Trabalho",
-        desc: "Presidente ou coordenador monta a escala semanal e mensal de tarefeiros. Cada membro vê sua escala pelo celular.",
-        status: "breve",
+        desc: "Quadro de palestras e escalas da casa: dia, tema, facilitador, coordenador, passe e recepção. Quem administra a página monta, e a escala vencida se arquiva sozinha. Ainda não avisa cada tarefeiro da própria escala.",
+        status: "beta",
+        casa: true,
+        casaAba: "painel",
       },
     ],
   },

@@ -78,18 +78,27 @@ const PAGINAS_EXTRAS: PaginaDoSite[] = [
   },
 ];
 
-/** Todas as telas buscáveis: as dos cartões mais as extras. */
+/** Telas dos cartões de funcionalidade que já estão no ar. */
+const PAGINAS_DE_CARTAO: PaginaDoSite[] = FUNCIONALIDADES.flatMap((categoria) =>
+  categoria.items
+    .filter((item) => item.status === "disponivel" && item.href)
+    .map((item) => ({
+      titulo: item.title,
+      descricao: item.desc,
+      href: item.href as string,
+    })),
+);
+
+/**
+ * Todas as telas buscáveis: as extras primeiro, porque trazem os sinônimos
+ * (`termos`) que fazem a busca encontrar quem não sabe o nome exato da tela.
+ * A mesma tela não entra duas vezes quando aparece nas duas listas.
+ */
 export const PAGINAS_DO_SITE: PaginaDoSite[] = [
-  ...FUNCIONALIDADES.flatMap((categoria) =>
-    categoria.items
-      .filter((item) => item.status === "disponivel" && item.href)
-      .map((item) => ({
-        titulo: item.title,
-        descricao: item.desc,
-        href: item.href as string,
-      })),
-  ),
   ...PAGINAS_EXTRAS,
+  ...PAGINAS_DE_CARTAO.filter(
+    (cartao) => !PAGINAS_EXTRAS.some((extra) => extra.href === cartao.href),
+  ),
 ];
 
 /** Mesma normalização da função `sem_acento` do banco. */

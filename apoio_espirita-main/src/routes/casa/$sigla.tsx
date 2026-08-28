@@ -71,21 +71,39 @@ import { CasaHero } from "@/components/CasaHero";
 import { TesourariaTab } from "@/components/TesourariaTab";
 import { FilaRevisaoArtigos } from "@/components/FilaRevisaoArtigos";
 
+/**
+ * As abas da pagina da casa. Ficam tambem no endereco (`?aba=`) para que um
+ * cartao de funcionalidade — o Mural de Avisos, a Escala de Trabalho — consiga
+ * levar direto ao lugar certo: esses recursos vivem aqui dentro e nao tem rota
+ * propria.
+ */
+const ABAS = [
+  "painel",
+  "mural",
+  "sobre",
+  "programacao",
+  "tesouraria",
+  "doacoes",
+  "configuracoes",
+  "tarefeiros",
+] as const;
+
+/** Abas que um visitante sem login pode abrir; as outras sao internas. */
+const ABAS_PUBLICAS: readonly Aba[] = ["sobre", "doacoes"];
+
 export const Route = createFileRoute("/casa/$sigla")({
   component: PaginaCasa,
+  validateSearch: (search: Record<string, unknown>): { aba?: Aba } => {
+    const aba = search.aba;
+    return typeof aba === "string" && (ABAS as readonly string[]).includes(aba)
+      ? { aba: aba as Aba }
+      : {};
+  },
 });
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
-type Aba =
-  | "painel"
-  | "mural"
-  | "sobre"
-  | "programacao"
-  | "tesouraria"
-  | "doacoes"
-  | "configuracoes"
-  | "tarefeiros";
+type Aba = (typeof ABAS)[number];
 
 interface PaginaData {
   sigla_casa: string;
@@ -473,15 +491,22 @@ function fmtHora(h: string | null) {
 
 function PaginaCasa() {
   const { sigla } = Route.useParams();
+  const { aba: abaDaUrl } = Route.useSearch();
   const { user, profile, loading, isPresident } = useAuth();
   const navigate = useNavigate();
 
   /* UI */
-  const [aba, setAba] = useState<Aba>("mural");
+  const [aba, setAba] = useState<Aba>(abaDaUrl ?? "mural");
   const [modoAdmin, setModoAdmin] = useState(false);
   const [salvandoPublicacao, setSalvandoPublicacao] = useState(false);
 
+  // Quem chegou por um endereco com `?aba=` pediu uma aba especifica: nao pode
+  // ser jogado para outra assim que o perfil carrega.
   useEffect(() => {
+    if (abaDaUrl) {
+      setAba(abaDaUrl);
+      return;
+    }
     if (!loading && user && profile) {
       if (profile.sigla_casa === sigla) {
         setAba("painel");
@@ -489,7 +514,7 @@ function PaginaCasa() {
         setAba("mural");
       }
     }
-  }, [loading, user, profile, sigla]);
+  }, [loading, user, profile, sigla, abaDaUrl]);
 
   /* Data */
   const [pagina, setPagina] = useState<PaginaData | null>(null);
@@ -668,7 +693,7 @@ function PaginaCasa() {
   // correcao ele cai num painel interno vazio, sem nenhuma aba marcada.
   // Atividades e o que ele veio procurar — os horarios da casa.
   useEffect(() => {
-    if (!loading && !user) setAba((a) => (a === "mural" ? "sobre" : a));
+    if (!loading && !user) setAba((a) => (ABAS_PUBLICAS.includes(a) ? a : "sobre"));
   }, [loading, user]);
 
   // Auto-archive expired mural scales in the database
@@ -853,13 +878,9 @@ function PaginaCasa() {
       toast.error("Erro ao publicar.");
       return;
     }
-    setPosts((prev) =>
-      [data as Post, ...prev.filter((p) => !p.fixado)].concat(prev.filter((p) => p.fixado)),
-    );
-    setPosts((prev) => {
-      const n = data as Post;
-      return [n, ...prev.filter((p) => p.fixado)].concat(prev.filter((p) => !p.fixado));
-    });
+    // Uma unica atualizacao da lista: as tres que existiam aqui empilhavam o
+    // mesmo post e ele aparecia em triplicata ate a pagina ser recarregada.
+    // O post novo entra abaixo dos fixados e acima dos demais.
     setPosts((prev) => {
       const novo = data as Post;
       const fixados = prev.filter((p) => p.fixado);
@@ -2391,6 +2412,7 @@ function PaginaCasa() {
                       key={item.title}
                       item={item}
                       cat={cat}
+                      onAbrirAba={setAba}
                       votes={votes}
                       votingKey={votingKey}
                       onVote={toggleVoteByTitle}
@@ -2411,8 +2433,8 @@ function PaginaCasa() {
                 border="border-cyan-200"
                 borderB="border-cyan-200"
               >
-                <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Disponível
+                <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  Em breve
                 </span>
               </DashSectionHeader>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -2421,7 +2443,8 @@ function PaginaCasa() {
                 ))}
               </div>
               <p className="mt-3 text-xs text-center text-muted-foreground/50">
-                Itens de exemplo · Cada casa espírita gerenciará seu próprio bazar
+                Demonstração de como o bazar vai funcionar · Os itens e os preços são fictícios e
+                nenhuma compra é feita por aqui
               </p>
             </section>
           </div>
@@ -4078,23 +4101,34 @@ function DashDashCard({
 function DashFeatureCard({
   item,
   cat,
+  onAbrirAba,
   votes,
   votingKey,
   onVote,
 }: {
   item: DashFeatureItem;
   cat: DashFeatureCategory;
+  onAbrirAba: (aba: Aba) => void;
   votes: Record<string, { count: number; votedByMe: boolean }>;
   votingKey: string | null;
   onVote: (title: string) => void;
 }) {
   const isAvailable = item.status === "disponivel";
   const isPending = item.status === "breve";
+  // O recurso mora nesta mesma pagina, em outra aba: o cartao troca de aba em
+  // vez de recarregar o site.
+  const abaDoCartao = item.casaAba;
 
   const inner = (
     <div
-      className={`group glass-premium hover-premium rounded-2xl p-5 flex flex-col gap-4 h-full ${!isAvailable ? "opacity-80" : ""} ${isPending ? "cursor-pointer" : ""}`}
-      onClick={isPending ? () => onVote(item.title) : undefined}
+      className={`group glass-premium hover-premium rounded-2xl p-5 flex flex-col gap-4 h-full ${!isAvailable ? "opacity-80" : ""} ${isPending || abaDoCartao ? "cursor-pointer" : ""}`}
+      onClick={
+        isPending
+          ? () => onVote(item.title)
+          : abaDoCartao
+            ? () => onAbrirAba(abaDoCartao)
+            : undefined
+      }
     >
       <div
         className={`w-9 h-9 rounded-xl ${cat.bg} border ${cat.border} flex items-center justify-center shrink-0`}

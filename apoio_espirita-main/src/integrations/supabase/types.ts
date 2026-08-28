@@ -1305,23 +1305,32 @@ export type Database = {
       };
       solicitacoes_dev: {
         Row: {
+          atualizado_em: string | null;
           created_at: string | null;
           descricao: string | null;
           id: string;
+          resposta_dev: string | null;
+          status: string;
           titulo: string;
           user_id: string | null;
         };
         Insert: {
+          atualizado_em?: string | null;
           created_at?: string | null;
           descricao?: string | null;
           id?: string;
+          resposta_dev?: string | null;
+          status?: string;
           titulo: string;
           user_id?: string | null;
         };
         Update: {
+          atualizado_em?: string | null;
           created_at?: string | null;
           descricao?: string | null;
           id?: string;
+          resposta_dev?: string | null;
+          status?: string;
           titulo?: string;
           user_id?: string | null;
         };

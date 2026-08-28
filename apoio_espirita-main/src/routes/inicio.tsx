@@ -526,6 +526,7 @@ function Inicio() {
                   key={item.title}
                   item={item}
                   cat={cat}
+                  siglaCasa={profile?.sigla_casa ?? null}
                   votes={votes}
                   votingKey={votingKey}
                   onVote={toggleVoteByTitle}
@@ -546,8 +547,8 @@ function Inicio() {
             border="border-cyan-200"
             borderB="border-cyan-200"
           >
-            <span className="text-xs text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-              Disponível
+            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+              Em breve
             </span>
           </SectionHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -556,7 +557,8 @@ function Inicio() {
             ))}
           </div>
           <p className="mt-4 text-xs text-center text-muted-foreground/50">
-            Itens de exemplo · Cada casa espírita gerenciará seu próprio bazar
+            Demonstração de como o bazar vai funcionar · Os itens e os preços são fictícios e
+            nenhuma compra é feita por aqui
           </p>
         </section>
       </div>
@@ -701,12 +703,14 @@ function DashCard({
 function FeatureCard({
   item,
   cat,
+  siglaCasa,
   votes,
   votingKey,
   onVote,
 }: {
   item: FeatureItem;
   cat: FeatureCategory;
+  siglaCasa: string | null;
   votes: VoteMap;
   votingKey: string | null;
   onVote: (title: string) => void;
@@ -738,6 +742,19 @@ function FeatureCard({
       </div>
     </div>
   );
+  // Recurso que mora dentro da pagina da casa: o cartao leva para a aba certa,
+  // e nao para uma rota propria, que nao existe.
+  if (item.casaAba && siglaCasa)
+    return (
+      <Link
+        to="/casa/$sigla"
+        params={{ sigla: siglaCasa }}
+        search={{ aba: item.casaAba }}
+        className="block h-full"
+      >
+        {inner}
+      </Link>
+    );
   if (item.href)
     return (
       <Link to={item.href} className="block h-full">
