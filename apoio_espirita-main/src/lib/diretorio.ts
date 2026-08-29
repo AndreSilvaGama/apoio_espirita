@@ -1,7 +1,7 @@
 /**
  * Apoio ao diretório público de casas espíritas (`/casas`).
  *
- * O cadastro tem 714 casas gravadas em caixa alta e com o estado em sigla —
+ * O cadastro tem 3.734 casas gravadas em caixa alta e com o estado em sigla —
  * "ABRIGO TEREZA DE JESUS", "RJ". Isso serve ao banco, não a quem lê. Aqui
  * ficam a apresentação desses dados e o endereço de cada página, sempre com a
  * mesma normalização usada pela função `diretorio_slug` do banco: quem clica no

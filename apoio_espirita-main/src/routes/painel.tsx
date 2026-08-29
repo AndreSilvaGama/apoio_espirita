@@ -129,7 +129,7 @@ const roadmap: Item[] = [
     status: "andamento",
     titulo: "Mapa e diretório público das casas espíritas, por cidade e estado",
     descricao:
-      "O diretório está no ar em /casas: 714 casas espíritas de 124 cidades, com endereço, CEP, telefone que liga com um toque e rota no mapa, sem exigir conta de ninguém. Cada estado e cada cidade tem página própria, e a casa que já publicou página no site aparece com o botão de abrir. Falta a visualização em mapa, com os alfinetes das casas próximas — o cadastro já guarda a posição de cada uma.",
+      "O diretório está no ar em /casas: 3.734 casas espíritas de 961 cidades, nos 27 estados, com endereço, CEP e rota no mapa, sem exigir conta de ninguém. Cada estado e cada cidade tem página própria, e a casa que já publicou página no site aparece com o botão de abrir. Onde o cadastro tem telefone, ele liga com um toque. Falta a visualização em mapa, com os alfinetes das casas próximas.",
   },
   {
     status: "feito",
