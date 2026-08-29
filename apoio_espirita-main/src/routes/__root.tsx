@@ -623,7 +623,7 @@ function NavBar() {
             params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
             className={linkCls(homePath)}
           >
-            Minha Casa
+            Casa
           </Link>
           <Link to="/agenda" className={linkCls("/agenda")}>
             Agenda
@@ -851,7 +851,7 @@ function NavBar() {
               params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
               className={itemMobileCls}
             >
-              Minha Casa
+              Casa
             </Link>
             <Link to="/agenda" className={itemMobileCls}>
               Agenda
