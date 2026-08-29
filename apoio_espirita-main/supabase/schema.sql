@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ulzrPgVWVySSExSwUNe3Gj2jOVeLZcqjDpVmIhDitYWaXivBcjDaZa8yoxpfrHf
+\restrict 8YTiq4dfIgwB1zXdowZKastWmUedfp37g8qmOQeEYFc5SZi9vd2bzDvAfXG2kAh
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -35,6 +35,53 @@ CREATE SCHEMA public;
 --
 
 COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- Name: abrir_sessao_apresentacao(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.abrir_sessao_apresentacao(p_apresentacao uuid) RETURNS TABLE(id uuid, codigo text)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_alfabeto constant text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  v_codigo text;
+  v_id uuid;
+  v_tentativa int := 0;
+begin
+  if not exists (
+    select 1 from public.apresentacoes a
+    join public.profiles p on p.id = auth.uid()
+    where a.id = p_apresentacao and a.sigla_casa = p.sigla_casa
+  ) then
+    raise exception 'Esta apresentação não é da sua casa espírita.';
+  end if;
+
+  update public.apresentacao_sessoes
+     set ativa = false, encerrada_em = now()
+   where apresentacao_id = p_apresentacao and ativa;
+
+  loop
+    v_tentativa := v_tentativa + 1;
+    if v_tentativa > 40 then
+      raise exception 'Não foi possível gerar um código livre. Tente de novo.';
+    end if;
+    v_codigo := '';
+    for _ in 1..6 loop
+      v_codigo := v_codigo || substr(v_alfabeto, 1 + floor(random() * length(v_alfabeto))::int, 1);
+    end loop;
+    exit when not exists (select 1 from public.apresentacao_sessoes s where s.codigo = v_codigo);
+  end loop;
+
+  insert into public.apresentacao_sessoes (apresentacao_id, codigo, iniciada_por)
+  values (p_apresentacao, v_codigo, auth.uid())
+  returning apresentacao_sessoes.id into v_id;
+
+  return query select v_id, v_codigo;
+end;
+$$;
 
 
 --
@@ -312,6 +359,133 @@ COMMENT ON FUNCTION public.buscar_geral(termo text, limite integer) IS 'Busca ar
 
 
 --
+-- Name: carimbar_autor(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.carimbar_autor() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_nome text;
+  v_sigla text;
+begin
+  select nome, sigla_casa into v_nome, v_sigla
+  from public.profiles
+  where id = auth.uid();
+
+  if v_sigla is null then
+    raise exception 'Informe a sigla da sua casa espírita no perfil antes de publicar.'
+      using errcode = 'check_violation';
+  end if;
+
+  new.criado_por := auth.uid();
+  new.autor_nome := coalesce(nullif(btrim(v_nome), ''), 'Membro');
+  new.sigla_casa := v_sigla;
+  return new;
+end;
+$$;
+
+
+--
+-- Name: FUNCTION carimbar_autor(); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.carimbar_autor() IS 'Grava autor, nome e casa a partir de auth.uid(). O navegador não escolhe em nome de quem publica.';
+
+
+--
+-- Name: carimbar_membro_grupo(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.carimbar_membro_grupo() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_grupo public.grupos%rowtype;
+  v_nome text;
+begin
+  select * into v_grupo from public.grupos where id = new.grupo_id;
+  if v_grupo.id is null then
+    raise exception 'Grupo não encontrado.' using errcode = 'foreign_key_violation';
+  end if;
+
+  new.adicionado_por := auth.uid();
+  new.sigla_casa := v_grupo.sigla_casa;
+
+  if new.user_id is null then
+    new.user_id := auth.uid();
+  end if;
+
+  if new.user_id <> auth.uid() and not public.sou_moderador_do_grupo(new.grupo_id) then
+    raise exception 'Somente quem modera o grupo adiciona outra pessoa.'
+      using errcode = 'insufficient_privilege';
+  end if;
+
+  select coalesce(nullif(btrim(nome), ''), 'Membro') into v_nome
+  from public.profiles where id = new.user_id;
+  new.nome := coalesce(v_nome, 'Membro');
+
+  if new.user_id = v_grupo.criado_por then
+    new.papel := 'moderador';
+  elsif new.papel = 'moderador' and not public.sou_moderador_do_grupo(new.grupo_id) then
+    new.papel := 'membro';
+  end if;
+
+  return new;
+end;
+$$;
+
+
+--
+-- Name: carona_conferir_vagas(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.carona_conferir_vagas() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_vagas smallint;
+  v_aceitos int;
+begin
+  if new.status <> 'aceito' or (tg_op = 'UPDATE' and old.status = 'aceito') then
+    return new;
+  end if;
+
+  select vagas into v_vagas from public.caronas where id = new.carona_id;
+  select count(*) into v_aceitos
+  from public.carona_pedidos
+  where carona_id = new.carona_id and status = 'aceito' and id <> new.id;
+
+  if v_aceitos >= coalesce(v_vagas, 0) then
+    raise exception 'Todas as vagas desta carona já foram preenchidas.'
+      using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$$;
+
+
+--
+-- Name: convites_pendentes(integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.convites_pendentes(p_limite integer) RETURNS TABLE(convite_id uuid, email text, casa_nome text, cidade text, uf text, slug text)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select v.id, v.email, c.nome, c.cidade, c.estado, public.diretorio_slug(c.cidade)
+  from public.casas_convites v
+  join public.casas_espirita c on c.id = v.casa_id
+  where v.status = 'pendente' and c.ativa and c.visivel_diretorio
+  order by v.created_at, v.id
+  limit greatest(0, least(p_limite, 1000));
+$$;
+
+
+--
 -- Name: desfazer_reivindicacao(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -441,6 +615,83 @@ $$;
 
 
 --
+-- Name: entrega_transicao_valida(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.entrega_transicao_valida() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_dono boolean := old.criado_por = auth.uid() or public.pode_administrar_pagina(old.sigla_casa);
+  v_voluntario boolean := old.voluntario is not null and old.voluntario = auth.uid();
+  v_nome text;
+begin
+  if v_dono then
+    return new;
+  end if;
+
+  if old.status = 'aberta' and new.status = 'assumida' then
+    select coalesce(nullif(btrim(nome), ''), 'Membro') into v_nome
+    from public.profiles where id = auth.uid();
+    new.voluntario := auth.uid();
+    new.voluntario_nome := coalesce(v_nome, 'Membro');
+    new.descricao := old.descricao;
+    new.criado_por := old.criado_por;
+    new.autor_nome := old.autor_nome;
+    new.sigla_casa := old.sigla_casa;
+    return new;
+  end if;
+
+  if v_voluntario then
+    if new.status in ('assumida', 'entregue') then
+      new.voluntario := old.voluntario;
+      new.voluntario_nome := old.voluntario_nome;
+      new.descricao := old.descricao;
+      new.criado_por := old.criado_por;
+      new.autor_nome := old.autor_nome;
+      new.sigla_casa := old.sigla_casa;
+      return new;
+    end if;
+    if new.status = 'aberta' then
+      new.voluntario := null;
+      new.voluntario_nome := null;
+      new.agendada_para := null;
+      new.descricao := old.descricao;
+      new.criado_por := old.criado_por;
+      new.autor_nome := old.autor_nome;
+      new.sigla_casa := old.sigla_casa;
+      return new;
+    end if;
+  end if;
+
+  raise exception 'Esta mudança na entrega não é permitida para você.'
+    using errcode = 'insufficient_privilege';
+end;
+$$;
+
+
+--
+-- Name: forum_recontar(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.forum_recontar() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_topico uuid := coalesce(new.topico_id, old.topico_id);
+begin
+  update public.forum_topicos t
+  set respostas = (select count(*) from public.forum_respostas r where r.topico_id = v_topico),
+      ultima_resposta_em = (select max(created_at) from public.forum_respostas r where r.topico_id = v_topico)
+  where t.id = v_topico;
+  return null;
+end;
+$$;
+
+
+--
 -- Name: get_request_kanban_token(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -555,6 +806,31 @@ CREATE FUNCTION public.minha_sigla_casa() RETURNS text
 
 
 --
+-- Name: oracao_conferir_vagas(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.oracao_conferir_vagas() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_vagas smallint;
+  v_ocupadas int;
+begin
+  select vagas into v_vagas from public.oracao_horarios where id = new.horario_id;
+  if v_vagas is null or v_vagas = 0 then
+    return new;
+  end if;
+  select count(*) into v_ocupadas from public.oracao_inscricoes where horario_id = new.horario_id;
+  if v_ocupadas >= v_vagas then
+    raise exception 'Este horário já preencheu todas as vagas.' using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$$;
+
+
+--
 -- Name: pode_administrar_pagina(text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -575,6 +851,51 @@ CREATE FUNCTION public.pode_administrar_pagina(p_sigla text) RETURNS boolean
     SELECT 1 FROM public.administradores_pagina
     WHERE sigla_casa = p_sigla AND user_id = auth.uid()
   )
+$$;
+
+
+--
+-- Name: pode_atendimento_fraterno(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_atendimento_fraterno(p_sigla text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select p_sigla is not null and (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid()
+        and sigla_casa = p_sigla
+        and cargo_principal in ('Atendente fraterno', 'Coordenador')
+    )
+    or exists (
+      select 1 from public.atendimento_autorizados
+      where sigla_casa = p_sigla and user_id = auth.uid()
+    )
+  )
+$$;
+
+
+--
+-- Name: FUNCTION pode_atendimento_fraterno(p_sigla text); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.pode_atendimento_fraterno(p_sigla text) IS 'Acesso às fichas de atendimento fraterno. De propósito não inclui sou_dev(): ninguém lê o relato de um atendido a título de suporte técnico.';
+
+
+--
+-- Name: pode_publicar_na_casa(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_publicar_na_casa(p_sigla text) RETURNS boolean
+    LANGUAGE sql STABLE
+    SET search_path TO 'public'
+    AS $$
+  select p_sigla is not null
+     and p_sigla = public.minha_sigla_casa()
+     and public.email_verificado()
+     and not public.usuario_sancionado(auth.uid())
 $$;
 
 
@@ -622,6 +943,27 @@ CREATE FUNCTION public.pode_sancionar(alvo_user uuid) RETURNS boolean
        )
   );
 $$;
+
+
+--
+-- Name: pode_ver_da_casa(text, boolean); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_ver_da_casa(p_sigla text, p_aberto boolean) RETURNS boolean
+    LANGUAGE sql STABLE
+    SET search_path TO 'public'
+    AS $$
+  select coalesce(p_aberto, false)
+      or (p_sigla is not null and p_sigla = public.minha_sigla_casa())
+      or public.sou_dev()
+$$;
+
+
+--
+-- Name: FUNCTION pode_ver_da_casa(p_sigla text, p_aberto boolean); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.pode_ver_da_casa(p_sigla text, p_aberto boolean) IS 'Regra única de visibilidade da comunidade: da própria casa, ou aberto a todas.';
 
 
 --
@@ -957,6 +1299,39 @@ CREATE FUNCTION public.sou_dev() RETURNS boolean
 
 
 --
+-- Name: sou_do_grupo(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.sou_do_grupo(p_grupo uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select exists (
+    select 1 from public.grupo_membros
+    where grupo_id = p_grupo and user_id = auth.uid()
+  )
+$$;
+
+
+--
+-- Name: sou_moderador_do_grupo(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.sou_moderador_do_grupo(p_grupo uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select exists (
+    select 1 from public.grupo_membros
+    where grupo_id = p_grupo and user_id = auth.uid() and papel = 'moderador'
+  )
+  or exists (
+    select 1 from public.grupos where id = p_grupo and criado_por = auth.uid()
+  )
+$$;
+
+
+--
 -- Name: total_verificados(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1034,6 +1409,60 @@ CREATE TABLE public.agenda_participantes (
     confirmado boolean,
     presente boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: apresentacao_perguntas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.apresentacao_perguntas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sessao_id uuid NOT NULL,
+    texto text NOT NULL,
+    autor_nome text,
+    respondida boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT apresentacao_perguntas_autor_nome_check CHECK ((length(autor_nome) <= 60)),
+    CONSTRAINT apresentacao_perguntas_texto_check CHECK (((length(btrim(texto)) >= 3) AND (length(btrim(texto)) <= 400)))
+);
+
+
+--
+-- Name: apresentacao_sessoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.apresentacao_sessoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    apresentacao_id uuid NOT NULL,
+    codigo text NOT NULL,
+    slide_atual integer DEFAULT 1 NOT NULL,
+    ativa boolean DEFAULT true NOT NULL,
+    aceita_perguntas boolean DEFAULT true NOT NULL,
+    iniciada_por uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    encerrada_em timestamp with time zone,
+    CONSTRAINT apresentacao_sessoes_slide_atual_check CHECK ((slide_atual >= 1))
+);
+
+
+--
+-- Name: apresentacoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.apresentacoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    titulo text NOT NULL,
+    descricao text,
+    criado_por uuid NOT NULL,
+    autor_nome text,
+    total_slides integer NOT NULL,
+    permite_download boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT apresentacoes_descricao_check CHECK ((length(descricao) <= 600)),
+    CONSTRAINT apresentacoes_titulo_check CHECK (((length(btrim(titulo)) >= 3) AND (length(btrim(titulo)) <= 160))),
+    CONSTRAINT apresentacoes_total_slides_check CHECK (((total_slides >= 1) AND (total_slides <= 150)))
 );
 
 
@@ -1172,6 +1601,255 @@ CREATE VIEW public.artigos_publicos AS
 
 
 --
+-- Name: atendimento_acessos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.atendimento_acessos (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    ficha_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    user_id uuid DEFAULT auth.uid() NOT NULL,
+    user_nome text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: atendimento_autorizados; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.atendimento_autorizados (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    user_id uuid NOT NULL,
+    nome text,
+    criado_por uuid DEFAULT auth.uid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: atendimento_fichas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.atendimento_fichas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    atendido_nome text NOT NULL,
+    atendido_contato text,
+    data_atendimento date DEFAULT CURRENT_DATE NOT NULL,
+    tipo text DEFAULT 'primeira'::text NOT NULL,
+    relato text NOT NULL,
+    encaminhamento text,
+    retorno_em date,
+    concluida boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT atendimento_fichas_atendido_contato_check CHECK (((atendido_contato IS NULL) OR (char_length(btrim(atendido_contato)) <= 120))),
+    CONSTRAINT atendimento_fichas_atendido_nome_check CHECK (((char_length(btrim(atendido_nome)) >= 2) AND (char_length(btrim(atendido_nome)) <= 160))),
+    CONSTRAINT atendimento_fichas_encaminhamento_check CHECK (((encaminhamento IS NULL) OR (char_length(btrim(encaminhamento)) <= 2000))),
+    CONSTRAINT atendimento_fichas_relato_check CHECK (((char_length(btrim(relato)) >= 5) AND (char_length(btrim(relato)) <= 8000))),
+    CONSTRAINT atendimento_fichas_tipo_check CHECK ((tipo = ANY (ARRAY['primeira'::text, 'retorno'::text])))
+);
+
+
+--
+-- Name: avisos_enviados; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.avisos_enviados (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    tipo text NOT NULL,
+    referencia uuid NOT NULL,
+    destinatario uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: avisos_preferencias; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.avisos_preferencias (
+    user_id uuid DEFAULT auth.uid() NOT NULL,
+    meus_avisos boolean DEFAULT true NOT NULL,
+    acolhimento boolean DEFAULT false NOT NULL,
+    voluntariado boolean DEFAULT false NOT NULL,
+    aniversariantes boolean,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: COLUMN avisos_preferencias.aniversariantes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.avisos_preferencias.aniversariantes IS 'Nulo = ainda não decidiu: recebe quem é da direção da casa. Verdadeiro ou falso = decisão do próprio membro.';
+
+
+--
+-- Name: bazar_contatos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bazar_contatos (
+    item_id uuid NOT NULL,
+    contato text NOT NULL,
+    CONSTRAINT bazar_contatos_contato_check CHECK (((char_length(btrim(contato)) >= 5) AND (char_length(btrim(contato)) <= 120)))
+);
+
+
+--
+-- Name: bazar_itens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bazar_itens (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    titulo text NOT NULL,
+    descricao text NOT NULL,
+    categoria text DEFAULT 'outro'::text NOT NULL,
+    estado text DEFAULT 'usado'::text NOT NULL,
+    valor numeric(10,2),
+    doacao boolean DEFAULT false NOT NULL,
+    foto_url text,
+    chave_pix text,
+    pix_nome text,
+    pix_cidade text,
+    disponivel boolean DEFAULT true NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT bazar_itens_categoria_check CHECK ((categoria = ANY (ARRAY['livro'::text, 'artesanato'::text, 'roupa'::text, 'alimento'::text, 'decoracao'::text, 'outro'::text]))),
+    CONSTRAINT bazar_itens_chave_pix_check CHECK (((chave_pix IS NULL) OR ((char_length(btrim(chave_pix)) >= 3) AND (char_length(btrim(chave_pix)) <= 77)))),
+    CONSTRAINT bazar_itens_descricao_check CHECK (((char_length(btrim(descricao)) >= 5) AND (char_length(btrim(descricao)) <= 2000))),
+    CONSTRAINT bazar_itens_estado_check CHECK ((estado = ANY (ARRAY['novo'::text, 'usado'::text]))),
+    CONSTRAINT bazar_itens_pix_cidade_check CHECK (((pix_cidade IS NULL) OR ((char_length(btrim(pix_cidade)) >= 2) AND (char_length(btrim(pix_cidade)) <= 15)))),
+    CONSTRAINT bazar_itens_pix_nome_check CHECK (((pix_nome IS NULL) OR ((char_length(btrim(pix_nome)) >= 2) AND (char_length(btrim(pix_nome)) <= 25)))),
+    CONSTRAINT bazar_itens_titulo_check CHECK (((char_length(btrim(titulo)) >= 3) AND (char_length(btrim(titulo)) <= 120))),
+    CONSTRAINT bazar_itens_valor_check CHECK (((valor IS NULL) OR ((valor >= (0)::numeric) AND (valor <= 99999.99))))
+);
+
+
+--
+-- Name: COLUMN bazar_itens.doacao; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.bazar_itens.doacao IS 'Item oferecido sem preço fixo — quem recebe contribui com o quanto puder.';
+
+
+--
+-- Name: bazar_reservas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.bazar_reservas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    item_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    mensagem text,
+    contato text NOT NULL,
+    status text DEFAULT 'pendente'::text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT bazar_reservas_contato_check CHECK (((char_length(btrim(contato)) >= 5) AND (char_length(btrim(contato)) <= 120))),
+    CONSTRAINT bazar_reservas_mensagem_check CHECK (((mensagem IS NULL) OR (char_length(btrim(mensagem)) <= 600))),
+    CONSTRAINT bazar_reservas_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'aceita'::text, 'recusada'::text, 'concluida'::text])))
+);
+
+
+--
+-- Name: carona_contatos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.carona_contatos (
+    carona_id uuid NOT NULL,
+    contato text NOT NULL,
+    CONSTRAINT carona_contatos_contato_check CHECK (((char_length(btrim(contato)) >= 5) AND (char_length(btrim(contato)) <= 120)))
+);
+
+
+--
+-- Name: carona_pedidos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.carona_pedidos (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    carona_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    ponto_encontro text,
+    mensagem text,
+    contato text NOT NULL,
+    status text DEFAULT 'pendente'::text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT carona_pedidos_contato_check CHECK (((char_length(btrim(contato)) >= 5) AND (char_length(btrim(contato)) <= 120))),
+    CONSTRAINT carona_pedidos_mensagem_check CHECK (((mensagem IS NULL) OR (char_length(btrim(mensagem)) <= 600))),
+    CONSTRAINT carona_pedidos_ponto_encontro_check CHECK (((ponto_encontro IS NULL) OR (char_length(btrim(ponto_encontro)) <= 200))),
+    CONSTRAINT carona_pedidos_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'aceito'::text, 'recusado'::text])))
+);
+
+
+--
+-- Name: caronas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.caronas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    origem text NOT NULL,
+    destino text NOT NULL,
+    data date NOT NULL,
+    hora time without time zone NOT NULL,
+    vagas smallint DEFAULT 1 NOT NULL,
+    volta boolean DEFAULT false NOT NULL,
+    veiculo text,
+    observacao text,
+    ativa boolean DEFAULT true NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT caronas_destino_check CHECK (((char_length(btrim(destino)) >= 3) AND (char_length(btrim(destino)) <= 160))),
+    CONSTRAINT caronas_observacao_check CHECK (((observacao IS NULL) OR (char_length(btrim(observacao)) <= 600))),
+    CONSTRAINT caronas_origem_check CHECK (((char_length(btrim(origem)) >= 3) AND (char_length(btrim(origem)) <= 160))),
+    CONSTRAINT caronas_vagas_check CHECK (((vagas >= 1) AND (vagas <= 8))),
+    CONSTRAINT caronas_veiculo_check CHECK (((veiculo IS NULL) OR (char_length(btrim(veiculo)) <= 80)))
+);
+
+
+--
+-- Name: COLUMN caronas.volta; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.caronas.volta IS 'O motorista também traz de volta depois da reunião.';
+
+
+--
+-- Name: casas_convites; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.casas_convites (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    casa_id uuid NOT NULL,
+    email text NOT NULL,
+    status text DEFAULT 'pendente'::text NOT NULL,
+    enviado_em timestamp with time zone,
+    erro text,
+    tentativas integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT casas_convites_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'enviado'::text, 'falhou'::text])))
+);
+
+
+--
 -- Name: casas_espirita; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1190,9 +1868,20 @@ CREATE TABLE public.casas_espirita (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     sigla text,
     visivel_diretorio boolean DEFAULT true NOT NULL,
+    email text,
+    site text,
+    instagram text,
+    facebook text,
     CONSTRAINT casas_espirita_estado_check CHECK ((char_length(estado) = 2)),
     CONSTRAINT casas_espirita_nome_check CHECK (((char_length(nome) >= 2) AND (char_length(nome) <= 200)))
 );
+
+
+--
+-- Name: COLUMN casas_espirita.email; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.casas_espirita.email IS 'E-mail institucional da casa. Guardado, mas ainda não exibido em nenhuma tela.';
 
 
 --
@@ -1223,6 +1912,190 @@ CREATE TABLE public.casas_reivindicacoes (
     user_nome text,
     desfeita_em timestamp with time zone,
     created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: entrega_contatos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.entrega_contatos (
+    entrega_id uuid NOT NULL,
+    contato_pedinte text NOT NULL,
+    contato_voluntario text,
+    CONSTRAINT entrega_contatos_contato_pedinte_check CHECK (((char_length(btrim(contato_pedinte)) >= 5) AND (char_length(btrim(contato_pedinte)) <= 120))),
+    CONSTRAINT entrega_contatos_contato_voluntario_check CHECK (((contato_voluntario IS NULL) OR ((char_length(btrim(contato_voluntario)) >= 5) AND (char_length(btrim(contato_voluntario)) <= 120))))
+);
+
+
+--
+-- Name: entregas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.entregas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    item_id uuid,
+    reserva_id uuid,
+    descricao text NOT NULL,
+    bairro text,
+    referencia text,
+    status text DEFAULT 'aberta'::text NOT NULL,
+    voluntario uuid,
+    voluntario_nome text,
+    agendada_para timestamp with time zone,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT entregas_bairro_check CHECK (((bairro IS NULL) OR (char_length(btrim(bairro)) <= 120))),
+    CONSTRAINT entregas_descricao_check CHECK (((char_length(btrim(descricao)) >= 5) AND (char_length(btrim(descricao)) <= 600))),
+    CONSTRAINT entregas_referencia_check CHECK (((referencia IS NULL) OR (char_length(btrim(referencia)) <= 300))),
+    CONSTRAINT entregas_status_check CHECK ((status = ANY (ARRAY['aberta'::text, 'assumida'::text, 'entregue'::text, 'cancelada'::text])))
+);
+
+
+--
+-- Name: COLUMN entregas.referencia; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.entregas.referencia IS 'Ponto de referência do endereço. O endereço completo é combinado entre as duas pessoas pelo contato liberado, nunca publicado na lista.';
+
+
+--
+-- Name: forum_respostas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.forum_respostas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    topico_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    texto text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT forum_respostas_texto_check CHECK (((char_length(btrim(texto)) >= 2) AND (char_length(btrim(texto)) <= 5000)))
+);
+
+
+--
+-- Name: forum_topicos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.forum_topicos (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    titulo text NOT NULL,
+    texto text NOT NULL,
+    categoria text DEFAULT 'duvida'::text NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    resolvido boolean DEFAULT false NOT NULL,
+    fixado boolean DEFAULT false NOT NULL,
+    respostas integer DEFAULT 0 NOT NULL,
+    ultima_resposta_em timestamp with time zone,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT forum_topicos_categoria_check CHECK ((categoria = ANY (ARRAY['duvida'::text, 'acolhimento'::text, 'estudo'::text, 'testemunho'::text]))),
+    CONSTRAINT forum_topicos_texto_check CHECK (((char_length(btrim(texto)) >= 10) AND (char_length(btrim(texto)) <= 5000))),
+    CONSTRAINT forum_topicos_titulo_check CHECK (((char_length(btrim(titulo)) >= 5) AND (char_length(btrim(titulo)) <= 160)))
+);
+
+
+--
+-- Name: grupo_membros; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.grupo_membros (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    grupo_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    user_id uuid NOT NULL,
+    nome text NOT NULL,
+    papel text DEFAULT 'membro'::text NOT NULL,
+    adicionado_por uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT grupo_membros_papel_check CHECK ((papel = ANY (ARRAY['membro'::text, 'moderador'::text])))
+);
+
+
+--
+-- Name: grupo_mensagens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.grupo_mensagens (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    grupo_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    texto text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT grupo_mensagens_texto_check CHECK (((char_length(btrim(texto)) >= 1) AND (char_length(btrim(texto)) <= 2000)))
+);
+
+
+--
+-- Name: grupos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.grupos (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    nome text NOT NULL,
+    descricao text,
+    atividade text,
+    privado boolean DEFAULT false NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT grupos_atividade_check CHECK (((atividade IS NULL) OR (char_length(btrim(atividade)) <= 60))),
+    CONSTRAINT grupos_descricao_check CHECK (((descricao IS NULL) OR (char_length(btrim(descricao)) <= 400))),
+    CONSTRAINT grupos_nome_check CHECK (((char_length(btrim(nome)) >= 3) AND (char_length(btrim(nome)) <= 80)))
+);
+
+
+--
+-- Name: jovens_membros; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.jovens_membros (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    apresentacao text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT jovens_membros_apresentacao_check CHECK (((apresentacao IS NULL) OR (char_length(btrim(apresentacao)) <= 300)))
+);
+
+
+--
+-- Name: jovens_publicacoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.jovens_publicacoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    titulo text NOT NULL,
+    texto text NOT NULL,
+    categoria text DEFAULT 'conteudo'::text NOT NULL,
+    link text,
+    data_evento date,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT jovens_publicacoes_categoria_check CHECK ((categoria = ANY (ARRAY['conteudo'::text, 'evento'::text, 'convite'::text]))),
+    CONSTRAINT jovens_publicacoes_link_check CHECK (((link IS NULL) OR (link ~* '^https?://'::text))),
+    CONSTRAINT jovens_publicacoes_texto_check CHECK (((char_length(btrim(texto)) >= 10) AND (char_length(btrim(texto)) <= 5000))),
+    CONSTRAINT jovens_publicacoes_titulo_check CHECK (((char_length(btrim(titulo)) >= 3) AND (char_length(btrim(titulo)) <= 160)))
 );
 
 
@@ -1408,6 +2281,58 @@ CREATE TABLE public.musicas (
 
 
 --
+-- Name: oracao_horarios; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oracao_horarios (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    dia_semana smallint NOT NULL,
+    hora smallint NOT NULL,
+    minuto smallint DEFAULT 0 NOT NULL,
+    intencao text,
+    vagas smallint DEFAULT 0 NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT oracao_horarios_dia_semana_check CHECK (((dia_semana >= 0) AND (dia_semana <= 6))),
+    CONSTRAINT oracao_horarios_hora_check CHECK (((hora >= 0) AND (hora <= 23))),
+    CONSTRAINT oracao_horarios_intencao_check CHECK (((intencao IS NULL) OR (char_length(btrim(intencao)) <= 200))),
+    CONSTRAINT oracao_horarios_minuto_check CHECK ((minuto = ANY (ARRAY[0, 30]))),
+    CONSTRAINT oracao_horarios_vagas_check CHECK ((vagas >= 0))
+);
+
+
+--
+-- Name: COLUMN oracao_horarios.dia_semana; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.oracao_horarios.dia_semana IS '0 = domingo, 6 = sábado.';
+
+
+--
+-- Name: COLUMN oracao_horarios.vagas; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.oracao_horarios.vagas IS 'Zero significa sem limite de participantes.';
+
+
+--
+-- Name: oracao_inscricoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oracao_inscricoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    horario_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: paginas_casas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1476,8 +2401,33 @@ CREATE TABLE public.profiles (
     bairro text,
     cargo_principal text,
     atividades text[] DEFAULT '{}'::text[],
+    aniversario_dia smallint,
+    aniversario_mes smallint,
+    CONSTRAINT profiles_aniversario_completo CHECK ((((aniversario_dia IS NULL) AND (aniversario_mes IS NULL)) OR ((aniversario_dia IS NOT NULL) AND (aniversario_mes IS NOT NULL)))),
+    CONSTRAINT profiles_aniversario_dia_do_mes CHECK (((aniversario_mes IS NULL) OR (aniversario_dia <=
+CASE
+    WHEN (aniversario_mes = ANY (ARRAY[1, 3, 5, 7, 8, 10, 12])) THEN 31
+    WHEN (aniversario_mes = 2) THEN 29
+    ELSE 30
+END))),
+    CONSTRAINT profiles_aniversario_dia_valido CHECK (((aniversario_dia IS NULL) OR ((aniversario_dia >= 1) AND (aniversario_dia <= 31)))),
+    CONSTRAINT profiles_aniversario_mes_valido CHECK (((aniversario_mes IS NULL) OR ((aniversario_mes >= 1) AND (aniversario_mes <= 12)))),
     CONSTRAINT profiles_role_check CHECK ((role = ANY (ARRAY['membro'::text, 'coordenador'::text, 'presidente'::text, 'admin'::text])))
 );
+
+
+--
+-- Name: COLUMN profiles.aniversario_dia; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.profiles.aniversario_dia IS 'Dia do aniversário (1-31). Sem ano, de propósito.';
+
+
+--
+-- Name: COLUMN profiles.aniversario_mes; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.profiles.aniversario_mes IS 'Mês do aniversário (1-12). Preencher é consentir em aparecer no calendário da casa.';
 
 
 --
@@ -1649,6 +2599,69 @@ CREATE TABLE public.usuarios_sancoes (
 
 
 --
+-- Name: voluntariado_candidaturas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.voluntariado_candidaturas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    necessidade_id uuid NOT NULL,
+    sigla_casa text NOT NULL,
+    mensagem text,
+    status text DEFAULT 'pendente'::text NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT voluntariado_candidaturas_mensagem_check CHECK (((mensagem IS NULL) OR (char_length(btrim(mensagem)) <= 600))),
+    CONSTRAINT voluntariado_candidaturas_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'aceita'::text, 'recusada'::text])))
+);
+
+
+--
+-- Name: voluntariado_necessidades; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.voluntariado_necessidades (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    titulo text NOT NULL,
+    descricao text NOT NULL,
+    habilidades text[] DEFAULT '{}'::text[] NOT NULL,
+    urgencia text DEFAULT 'media'::text NOT NULL,
+    prazo date,
+    atendida boolean DEFAULT false NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT voluntariado_necessidades_descricao_check CHECK (((char_length(btrim(descricao)) >= 10) AND (char_length(btrim(descricao)) <= 2000))),
+    CONSTRAINT voluntariado_necessidades_titulo_check CHECK (((char_length(btrim(titulo)) >= 5) AND (char_length(btrim(titulo)) <= 160))),
+    CONSTRAINT voluntariado_necessidades_urgencia_check CHECK ((urgencia = ANY (ARRAY['baixa'::text, 'media'::text, 'alta'::text])))
+);
+
+
+--
+-- Name: voluntariado_ofertas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.voluntariado_ofertas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    habilidades text[] DEFAULT '{}'::text[] NOT NULL,
+    disponibilidade text,
+    observacao text,
+    ativa boolean DEFAULT true NOT NULL,
+    aberto boolean DEFAULT false NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT voluntariado_ofertas_disponibilidade_check CHECK (((disponibilidade IS NULL) OR (char_length(btrim(disponibilidade)) <= 200))),
+    CONSTRAINT voluntariado_ofertas_observacao_check CHECK (((observacao IS NULL) OR (char_length(btrim(observacao)) <= 600)))
+);
+
+
+--
 -- Name: administradores_pagina administradores_pagina_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1678,6 +2691,38 @@ ALTER TABLE ONLY public.agenda_participantes
 
 ALTER TABLE ONLY public.agenda_participantes
     ADD CONSTRAINT agenda_participantes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apresentacao_perguntas apresentacao_perguntas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_perguntas
+    ADD CONSTRAINT apresentacao_perguntas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apresentacao_sessoes apresentacao_sessoes_codigo_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_sessoes
+    ADD CONSTRAINT apresentacao_sessoes_codigo_key UNIQUE (codigo);
+
+
+--
+-- Name: apresentacao_sessoes apresentacao_sessoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_sessoes
+    ADD CONSTRAINT apresentacao_sessoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apresentacoes apresentacoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacoes
+    ADD CONSTRAINT apresentacoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1721,6 +2766,142 @@ ALTER TABLE ONLY public.artigos
 
 
 --
+-- Name: atendimento_acessos atendimento_acessos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.atendimento_acessos
+    ADD CONSTRAINT atendimento_acessos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: atendimento_autorizados atendimento_autorizados_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.atendimento_autorizados
+    ADD CONSTRAINT atendimento_autorizados_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: atendimento_autorizados atendimento_autorizados_sigla_casa_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.atendimento_autorizados
+    ADD CONSTRAINT atendimento_autorizados_sigla_casa_user_id_key UNIQUE (sigla_casa, user_id);
+
+
+--
+-- Name: atendimento_fichas atendimento_fichas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.atendimento_fichas
+    ADD CONSTRAINT atendimento_fichas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: avisos_enviados avisos_enviados_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.avisos_enviados
+    ADD CONSTRAINT avisos_enviados_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: avisos_enviados avisos_enviados_tipo_referencia_destinatario_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.avisos_enviados
+    ADD CONSTRAINT avisos_enviados_tipo_referencia_destinatario_key UNIQUE (tipo, referencia, destinatario);
+
+
+--
+-- Name: avisos_preferencias avisos_preferencias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.avisos_preferencias
+    ADD CONSTRAINT avisos_preferencias_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: bazar_contatos bazar_contatos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_contatos
+    ADD CONSTRAINT bazar_contatos_pkey PRIMARY KEY (item_id);
+
+
+--
+-- Name: bazar_itens bazar_itens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_itens
+    ADD CONSTRAINT bazar_itens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: bazar_reservas bazar_reservas_item_id_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_reservas
+    ADD CONSTRAINT bazar_reservas_item_id_criado_por_key UNIQUE (item_id, criado_por);
+
+
+--
+-- Name: bazar_reservas bazar_reservas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_reservas
+    ADD CONSTRAINT bazar_reservas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: carona_contatos carona_contatos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.carona_contatos
+    ADD CONSTRAINT carona_contatos_pkey PRIMARY KEY (carona_id);
+
+
+--
+-- Name: carona_pedidos carona_pedidos_carona_id_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.carona_pedidos
+    ADD CONSTRAINT carona_pedidos_carona_id_criado_por_key UNIQUE (carona_id, criado_por);
+
+
+--
+-- Name: carona_pedidos carona_pedidos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.carona_pedidos
+    ADD CONSTRAINT carona_pedidos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: caronas caronas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.caronas
+    ADD CONSTRAINT caronas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: casas_convites casas_convites_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_convites
+    ADD CONSTRAINT casas_convites_email_key UNIQUE (email);
+
+
+--
+-- Name: casas_convites casas_convites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_convites
+    ADD CONSTRAINT casas_convites_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: casas_espirita casas_espirita_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1742,6 +2923,94 @@ ALTER TABLE ONLY public.casas_pedidos_remocao
 
 ALTER TABLE ONLY public.casas_reivindicacoes
     ADD CONSTRAINT casas_reivindicacoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: entrega_contatos entrega_contatos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entrega_contatos
+    ADD CONSTRAINT entrega_contatos_pkey PRIMARY KEY (entrega_id);
+
+
+--
+-- Name: entregas entregas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entregas
+    ADD CONSTRAINT entregas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: forum_respostas forum_respostas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.forum_respostas
+    ADD CONSTRAINT forum_respostas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: forum_topicos forum_topicos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.forum_topicos
+    ADD CONSTRAINT forum_topicos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: grupo_membros grupo_membros_grupo_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupo_membros
+    ADD CONSTRAINT grupo_membros_grupo_id_user_id_key UNIQUE (grupo_id, user_id);
+
+
+--
+-- Name: grupo_membros grupo_membros_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupo_membros
+    ADD CONSTRAINT grupo_membros_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: grupo_mensagens grupo_mensagens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupo_mensagens
+    ADD CONSTRAINT grupo_mensagens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: grupos grupos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupos
+    ADD CONSTRAINT grupos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: jovens_membros jovens_membros_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jovens_membros
+    ADD CONSTRAINT jovens_membros_criado_por_key UNIQUE (criado_por);
+
+
+--
+-- Name: jovens_membros jovens_membros_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jovens_membros
+    ADD CONSTRAINT jovens_membros_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.jovens_publicacoes
+    ADD CONSTRAINT jovens_publicacoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1838,6 +3107,38 @@ ALTER TABLE ONLY public.mensagens_do_dia
 
 ALTER TABLE ONLY public.musicas
     ADD CONSTRAINT musicas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oracao_horarios oracao_horarios_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oracao_horarios
+    ADD CONSTRAINT oracao_horarios_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oracao_horarios oracao_horarios_sigla_casa_dia_semana_hora_minuto_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oracao_horarios
+    ADD CONSTRAINT oracao_horarios_sigla_casa_dia_semana_hora_minuto_key UNIQUE (sigla_casa, dia_semana, hora, minuto);
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_horario_id_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oracao_inscricoes
+    ADD CONSTRAINT oracao_inscricoes_horario_id_criado_por_key UNIQUE (horario_id, criado_por);
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oracao_inscricoes
+    ADD CONSTRAINT oracao_inscricoes_pkey PRIMARY KEY (id);
 
 
 --
@@ -1961,6 +3262,53 @@ ALTER TABLE ONLY public.usuarios_sancoes
 
 
 --
+-- Name: voluntariado_candidaturas voluntariado_candidaturas_necessidade_id_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_candidaturas
+    ADD CONSTRAINT voluntariado_candidaturas_necessidade_id_criado_por_key UNIQUE (necessidade_id, criado_por);
+
+
+--
+-- Name: voluntariado_candidaturas voluntariado_candidaturas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_candidaturas
+    ADD CONSTRAINT voluntariado_candidaturas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: voluntariado_necessidades voluntariado_necessidades_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_necessidades
+    ADD CONSTRAINT voluntariado_necessidades_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: voluntariado_ofertas voluntariado_ofertas_criado_por_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_ofertas
+    ADD CONSTRAINT voluntariado_ofertas_criado_por_key UNIQUE (criado_por);
+
+
+--
+-- Name: voluntariado_ofertas voluntariado_ofertas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_ofertas
+    ADD CONSTRAINT voluntariado_ofertas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: apresentacoes_da_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX apresentacoes_da_casa ON public.apresentacoes USING btree (sigla_casa, created_at DESC);
+
+
+--
 -- Name: artigo_avaliacoes_artigo_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1996,6 +3344,55 @@ CREATE INDEX artigos_sigla_idx ON public.artigos USING btree (autor_sigla_casa);
 
 
 --
+-- Name: atendimento_acessos_ficha_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX atendimento_acessos_ficha_idx ON public.atendimento_acessos USING btree (ficha_id, created_at DESC);
+
+
+--
+-- Name: atendimento_fichas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX atendimento_fichas_casa_idx ON public.atendimento_fichas USING btree (sigla_casa, data_atendimento DESC);
+
+
+--
+-- Name: bazar_itens_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX bazar_itens_casa_idx ON public.bazar_itens USING btree (sigla_casa, disponivel, created_at DESC);
+
+
+--
+-- Name: bazar_reservas_item_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX bazar_reservas_item_idx ON public.bazar_reservas USING btree (item_id);
+
+
+--
+-- Name: carona_pedidos_carona_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX carona_pedidos_carona_idx ON public.carona_pedidos USING btree (carona_id);
+
+
+--
+-- Name: caronas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX caronas_casa_idx ON public.caronas USING btree (sigla_casa, data, hora);
+
+
+--
+-- Name: casas_convites_pendentes; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX casas_convites_pendentes ON public.casas_convites USING btree (status) WHERE (status = 'pendente'::text);
+
+
+--
 -- Name: casas_espirita_nome_cidade_estado_uq; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2007,6 +3404,41 @@ CREATE UNIQUE INDEX casas_espirita_nome_cidade_estado_uq ON public.casas_espirit
 --
 
 CREATE UNIQUE INDEX casas_espirita_sigla_cidade_estado_key ON public.casas_espirita USING btree (sigla, cidade, estado) WHERE (sigla IS NOT NULL);
+
+
+--
+-- Name: entregas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX entregas_casa_idx ON public.entregas USING btree (sigla_casa, status, created_at DESC);
+
+
+--
+-- Name: forum_respostas_topico_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX forum_respostas_topico_idx ON public.forum_respostas USING btree (topico_id, created_at);
+
+
+--
+-- Name: forum_topicos_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX forum_topicos_casa_idx ON public.forum_topicos USING btree (sigla_casa, fixado DESC, created_at DESC);
+
+
+--
+-- Name: grupo_membros_usuario_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX grupo_membros_usuario_idx ON public.grupo_membros USING btree (user_id);
+
+
+--
+-- Name: grupo_mensagens_grupo_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX grupo_mensagens_grupo_idx ON public.grupo_mensagens USING btree (grupo_id, created_at);
 
 
 --
@@ -2045,10 +3477,52 @@ CREATE INDEX idx_tes_autoriz_user ON public.tesouraria_autorizacoes USING btree 
 
 
 --
+-- Name: jovens_publicacoes_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX jovens_publicacoes_casa_idx ON public.jovens_publicacoes USING btree (sigla_casa, created_at DESC);
+
+
+--
+-- Name: oracao_inscricoes_horario_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oracao_inscricoes_horario_idx ON public.oracao_inscricoes USING btree (horario_id);
+
+
+--
+-- Name: perguntas_da_sessao; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX perguntas_da_sessao ON public.apresentacao_perguntas USING btree (sessao_id, created_at);
+
+
+--
+-- Name: profiles_aniversario_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX profiles_aniversario_idx ON public.profiles USING btree (sigla_casa, aniversario_mes, aniversario_dia) WHERE (aniversario_mes IS NOT NULL);
+
+
+--
+-- Name: sessoes_ativas; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX sessoes_ativas ON public.apresentacao_sessoes USING btree (codigo) WHERE ativa;
+
+
+--
 -- Name: usuarios_sancoes_vigentes_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX usuarios_sancoes_vigentes_idx ON public.usuarios_sancoes USING btree (user_id) WHERE (revogada_em IS NULL);
+
+
+--
+-- Name: voluntariado_necessidades_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX voluntariado_necessidades_casa_idx ON public.voluntariado_necessidades USING btree (sigla_casa, atendida, created_at DESC);
 
 
 --
@@ -2080,10 +3554,255 @@ CREATE TRIGGER artigos_transicao BEFORE UPDATE ON public.artigos FOR EACH ROW EX
 
 
 --
+-- Name: atendimento_fichas atendimento_fichas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER atendimento_fichas_autor BEFORE INSERT ON public.atendimento_fichas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: atendimento_fichas atendimento_fichas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER atendimento_fichas_updated BEFORE UPDATE ON public.atendimento_fichas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: avisos_preferencias avisos_pref_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER avisos_pref_updated BEFORE UPDATE ON public.avisos_preferencias FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: bazar_itens bazar_itens_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER bazar_itens_autor BEFORE INSERT ON public.bazar_itens FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: bazar_itens bazar_itens_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER bazar_itens_updated BEFORE UPDATE ON public.bazar_itens FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: bazar_reservas bazar_reservas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER bazar_reservas_autor BEFORE INSERT ON public.bazar_reservas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: bazar_reservas bazar_reservas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER bazar_reservas_updated BEFORE UPDATE ON public.bazar_reservas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: carona_pedidos carona_pedidos_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER carona_pedidos_autor BEFORE INSERT ON public.carona_pedidos FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: carona_pedidos carona_pedidos_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER carona_pedidos_updated BEFORE UPDATE ON public.carona_pedidos FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: carona_pedidos carona_pedidos_vagas; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER carona_pedidos_vagas BEFORE INSERT OR UPDATE ON public.carona_pedidos FOR EACH ROW EXECUTE FUNCTION public.carona_conferir_vagas();
+
+
+--
+-- Name: caronas caronas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER caronas_autor BEFORE INSERT ON public.caronas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: caronas caronas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER caronas_updated BEFORE UPDATE ON public.caronas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: entregas entregas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER entregas_autor BEFORE INSERT ON public.entregas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: entregas entregas_transicao; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER entregas_transicao BEFORE UPDATE ON public.entregas FOR EACH ROW EXECUTE FUNCTION public.entrega_transicao_valida();
+
+
+--
+-- Name: entregas entregas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER entregas_updated BEFORE UPDATE ON public.entregas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: forum_respostas forum_respostas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER forum_respostas_autor BEFORE INSERT ON public.forum_respostas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: forum_respostas forum_respostas_recontar; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER forum_respostas_recontar AFTER INSERT OR DELETE ON public.forum_respostas FOR EACH ROW EXECUTE FUNCTION public.forum_recontar();
+
+
+--
+-- Name: forum_respostas forum_respostas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER forum_respostas_updated BEFORE UPDATE ON public.forum_respostas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: forum_topicos forum_topicos_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER forum_topicos_autor BEFORE INSERT ON public.forum_topicos FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: forum_topicos forum_topicos_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER forum_topicos_updated BEFORE UPDATE ON public.forum_topicos FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: grupo_membros grupo_membros_carimbo; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER grupo_membros_carimbo BEFORE INSERT ON public.grupo_membros FOR EACH ROW EXECUTE FUNCTION public.carimbar_membro_grupo();
+
+
+--
+-- Name: grupo_mensagens grupo_mensagens_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER grupo_mensagens_autor BEFORE INSERT ON public.grupo_mensagens FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: grupos grupos_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER grupos_autor BEFORE INSERT ON public.grupos FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: grupos grupos_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER grupos_updated BEFORE UPDATE ON public.grupos FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: jovens_membros jovens_membros_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER jovens_membros_autor BEFORE INSERT ON public.jovens_membros FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER jovens_publicacoes_autor BEFORE INSERT ON public.jovens_publicacoes FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER jovens_publicacoes_updated BEFORE UPDATE ON public.jovens_publicacoes FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: oracao_horarios oracao_horarios_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER oracao_horarios_autor BEFORE INSERT ON public.oracao_horarios FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER oracao_inscricoes_autor BEFORE INSERT ON public.oracao_inscricoes FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_vagas; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER oracao_inscricoes_vagas BEFORE INSERT ON public.oracao_inscricoes FOR EACH ROW EXECUTE FUNCTION public.oracao_conferir_vagas();
+
+
+--
 -- Name: paginas_casas paginas_casas_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER paginas_casas_updated_at BEFORE UPDATE ON public.paginas_casas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: voluntariado_candidaturas voluntariado_candidaturas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER voluntariado_candidaturas_autor BEFORE INSERT ON public.voluntariado_candidaturas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: voluntariado_necessidades voluntariado_necessidades_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER voluntariado_necessidades_autor BEFORE INSERT ON public.voluntariado_necessidades FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: voluntariado_necessidades voluntariado_necessidades_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER voluntariado_necessidades_updated BEFORE UPDATE ON public.voluntariado_necessidades FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: voluntariado_ofertas voluntariado_ofertas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER voluntariado_ofertas_autor BEFORE INSERT ON public.voluntariado_ofertas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: voluntariado_ofertas voluntariado_ofertas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER voluntariado_ofertas_updated BEFORE UPDATE ON public.voluntariado_ofertas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
@@ -2143,6 +3862,38 @@ ALTER TABLE ONLY public.agenda_participantes
 
 
 --
+-- Name: apresentacao_perguntas apresentacao_perguntas_sessao_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_perguntas
+    ADD CONSTRAINT apresentacao_perguntas_sessao_id_fkey FOREIGN KEY (sessao_id) REFERENCES public.apresentacao_sessoes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: apresentacao_sessoes apresentacao_sessoes_apresentacao_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_sessoes
+    ADD CONSTRAINT apresentacao_sessoes_apresentacao_id_fkey FOREIGN KEY (apresentacao_id) REFERENCES public.apresentacoes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: apresentacao_sessoes apresentacao_sessoes_iniciada_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacao_sessoes
+    ADD CONSTRAINT apresentacao_sessoes_iniciada_por_fkey FOREIGN KEY (iniciada_por) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: apresentacoes apresentacoes_criado_por_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.apresentacoes
+    ADD CONSTRAINT apresentacoes_criado_por_fkey FOREIGN KEY (criado_por) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: artigo_avaliacoes artigo_avaliacoes_artigo_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2191,6 +3942,54 @@ ALTER TABLE ONLY public.artigos
 
 
 --
+-- Name: atendimento_acessos atendimento_acessos_ficha_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.atendimento_acessos
+    ADD CONSTRAINT atendimento_acessos_ficha_id_fkey FOREIGN KEY (ficha_id) REFERENCES public.atendimento_fichas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: bazar_contatos bazar_contatos_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_contatos
+    ADD CONSTRAINT bazar_contatos_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.bazar_itens(id) ON DELETE CASCADE;
+
+
+--
+-- Name: bazar_reservas bazar_reservas_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.bazar_reservas
+    ADD CONSTRAINT bazar_reservas_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.bazar_itens(id) ON DELETE CASCADE;
+
+
+--
+-- Name: carona_contatos carona_contatos_carona_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.carona_contatos
+    ADD CONSTRAINT carona_contatos_carona_id_fkey FOREIGN KEY (carona_id) REFERENCES public.caronas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: carona_pedidos carona_pedidos_carona_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.carona_pedidos
+    ADD CONSTRAINT carona_pedidos_carona_id_fkey FOREIGN KEY (carona_id) REFERENCES public.caronas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: casas_convites casas_convites_casa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.casas_convites
+    ADD CONSTRAINT casas_convites_casa_id_fkey FOREIGN KEY (casa_id) REFERENCES public.casas_espirita(id) ON DELETE CASCADE;
+
+
+--
 -- Name: casas_pedidos_remocao casas_pedidos_remocao_casa_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2204,6 +4003,54 @@ ALTER TABLE ONLY public.casas_pedidos_remocao
 
 ALTER TABLE ONLY public.casas_reivindicacoes
     ADD CONSTRAINT casas_reivindicacoes_casa_id_fkey FOREIGN KEY (casa_id) REFERENCES public.casas_espirita(id) ON DELETE CASCADE;
+
+
+--
+-- Name: entrega_contatos entrega_contatos_entrega_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entrega_contatos
+    ADD CONSTRAINT entrega_contatos_entrega_id_fkey FOREIGN KEY (entrega_id) REFERENCES public.entregas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: entregas entregas_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entregas
+    ADD CONSTRAINT entregas_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.bazar_itens(id) ON DELETE SET NULL;
+
+
+--
+-- Name: entregas entregas_reserva_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entregas
+    ADD CONSTRAINT entregas_reserva_id_fkey FOREIGN KEY (reserva_id) REFERENCES public.bazar_reservas(id) ON DELETE SET NULL;
+
+
+--
+-- Name: forum_respostas forum_respostas_topico_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.forum_respostas
+    ADD CONSTRAINT forum_respostas_topico_id_fkey FOREIGN KEY (topico_id) REFERENCES public.forum_topicos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: grupo_membros grupo_membros_grupo_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupo_membros
+    ADD CONSTRAINT grupo_membros_grupo_id_fkey FOREIGN KEY (grupo_id) REFERENCES public.grupos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: grupo_mensagens grupo_mensagens_grupo_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grupo_mensagens
+    ADD CONSTRAINT grupo_mensagens_grupo_id_fkey FOREIGN KEY (grupo_id) REFERENCES public.grupos(id) ON DELETE CASCADE;
 
 
 --
@@ -2324,6 +4171,14 @@ ALTER TABLE ONLY public.musicas
 
 ALTER TABLE ONLY public.musicas
     ADD CONSTRAINT musicas_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_horario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oracao_inscricoes
+    ADD CONSTRAINT oracao_inscricoes_horario_id_fkey FOREIGN KEY (horario_id) REFERENCES public.oracao_horarios(id) ON DELETE CASCADE;
 
 
 --
@@ -2471,6 +4326,14 @@ ALTER TABLE ONLY public.usuarios_sancoes
 
 
 --
+-- Name: voluntariado_candidaturas voluntariado_candidaturas_necessidade_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.voluntariado_candidaturas
+    ADD CONSTRAINT voluntariado_candidaturas_necessidade_id_fkey FOREIGN KEY (necessidade_id) REFERENCES public.voluntariado_necessidades(id) ON DELETE CASCADE;
+
+
+--
 -- Name: administradores_pagina; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -2508,6 +4371,65 @@ ALTER TABLE public.agenda_eventos ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.agenda_participantes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: apresentacao_perguntas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.apresentacao_perguntas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: apresentacao_sessoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.apresentacao_sessoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: apresentacoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.apresentacoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: apresentacoes apresentacoes_apaga_a_propria; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY apresentacoes_apaga_a_propria ON public.apresentacoes FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+
+
+--
+-- Name: apresentacoes apresentacoes_edita_a_propria; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY apresentacoes_edita_a_propria ON public.apresentacoes FOR UPDATE TO authenticated USING ((criado_por = auth.uid()));
+
+
+--
+-- Name: apresentacoes apresentacoes_envio; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY apresentacoes_envio ON public.apresentacoes FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND (sigla_casa = ( SELECT p.sigla_casa
+   FROM public.profiles p
+  WHERE (p.id = auth.uid())))));
+
+
+--
+-- Name: apresentacoes apresentacoes_leitura_da_casa; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY apresentacoes_leitura_da_casa ON public.apresentacoes FOR SELECT TO authenticated USING ((sigla_casa = ( SELECT p.sigla_casa
+   FROM public.profiles p
+  WHERE (p.id = auth.uid()))));
+
+
+--
+-- Name: apresentacoes apresentacoes_leitura_em_sessao; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY apresentacoes_leitura_em_sessao ON public.apresentacoes FOR SELECT TO authenticated, anon USING ((EXISTS ( SELECT 1
+   FROM public.apresentacao_sessoes s
+  WHERE ((s.apresentacao_id = apresentacoes.id) AND s.ativa))));
+
 
 --
 -- Name: artigo_avaliacoes; Type: ROW SECURITY; Schema: public; Owner: -
@@ -2613,6 +4535,87 @@ CREATE POLICY artigos_update ON public.artigos FOR UPDATE USING ((((autor_id = a
 
 
 --
+-- Name: atendimento_acessos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.atendimento_acessos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: atendimento_acessos atendimento_acessos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_acessos_leitura ON public.atendimento_acessos FOR SELECT TO authenticated USING ((public.pode_administrar_pagina(sigla_casa) OR public.pode_atendimento_fraterno(sigla_casa)));
+
+
+--
+-- Name: atendimento_acessos atendimento_acessos_registra; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_acessos_registra ON public.atendimento_acessos FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.pode_atendimento_fraterno(sigla_casa)));
+
+
+--
+-- Name: atendimento_autorizados; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.atendimento_autorizados ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: atendimento_autorizados atendimento_autorizados_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_autorizados_apaga ON public.atendimento_autorizados FOR DELETE TO authenticated USING (public.pode_administrar_pagina(sigla_casa));
+
+
+--
+-- Name: atendimento_autorizados atendimento_autorizados_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_autorizados_insere ON public.atendimento_autorizados FOR INSERT TO authenticated WITH CHECK ((public.pode_administrar_pagina(sigla_casa) AND (criado_por = auth.uid())));
+
+
+--
+-- Name: atendimento_autorizados atendimento_autorizados_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_autorizados_leitura ON public.atendimento_autorizados FOR SELECT TO authenticated USING ((public.pode_administrar_pagina(sigla_casa) OR public.pode_atendimento_fraterno(sigla_casa)));
+
+
+--
+-- Name: atendimento_fichas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.atendimento_fichas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: atendimento_fichas atendimento_fichas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_fichas_apaga ON public.atendimento_fichas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) AND public.pode_atendimento_fraterno(sigla_casa)));
+
+
+--
+-- Name: atendimento_fichas atendimento_fichas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_fichas_edita ON public.atendimento_fichas FOR UPDATE TO authenticated USING (public.pode_atendimento_fraterno(sigla_casa)) WITH CHECK (public.pode_atendimento_fraterno(sigla_casa));
+
+
+--
+-- Name: atendimento_fichas atendimento_fichas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_fichas_insere ON public.atendimento_fichas FOR INSERT TO authenticated WITH CHECK ((public.pode_atendimento_fraterno(sigla_casa) AND (sigla_casa = public.minha_sigla_casa())));
+
+
+--
+-- Name: atendimento_fichas atendimento_fichas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY atendimento_fichas_leitura ON public.atendimento_fichas FOR SELECT TO authenticated USING (public.pode_atendimento_fraterno(sigla_casa));
+
+
+--
 -- Name: casas_espirita authenticated_insert_casa; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -2629,6 +4632,325 @@ CREATE POLICY authenticated_update_own_casa ON public.casas_espirita FOR UPDATE 
    FROM public.profiles
   WHERE ((profiles.id = auth.uid()) AND (profiles.sigla_casa = casas_espirita.sigla) AND (profiles.cidade = casas_espirita.cidade) AND ((profiles.uf)::text = casas_espirita.estado)))));
 
+
+--
+-- Name: avisos_enviados; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.avisos_enviados ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: avisos_preferencias avisos_pref_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY avisos_pref_edita ON public.avisos_preferencias FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: avisos_preferencias avisos_pref_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY avisos_pref_insere ON public.avisos_preferencias FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: avisos_preferencias avisos_pref_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY avisos_pref_leitura ON public.avisos_preferencias FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: avisos_preferencias; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.avisos_preferencias ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: bazar_contatos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.bazar_contatos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: bazar_contatos bazar_contatos_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_contatos_apaga ON public.bazar_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+
+
+--
+-- Name: bazar_contatos bazar_contatos_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_contatos_edita ON public.bazar_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+
+
+--
+-- Name: bazar_contatos bazar_contatos_escreve; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_contatos_escreve ON public.bazar_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+
+
+--
+-- Name: bazar_contatos bazar_contatos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_contatos_leitura ON public.bazar_contatos FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))) OR (EXISTS ( SELECT 1
+   FROM public.bazar_reservas r
+  WHERE ((r.item_id = bazar_contatos.item_id) AND (r.criado_por = auth.uid()) AND (r.status = ANY (ARRAY['aceita'::text, 'concluida'::text])))))));
+
+
+--
+-- Name: bazar_itens; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.bazar_itens ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: bazar_itens bazar_itens_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_itens_apaga ON public.bazar_itens FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: bazar_itens bazar_itens_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_itens_edita ON public.bazar_itens FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: bazar_itens bazar_itens_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_itens_insere ON public.bazar_itens FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: bazar_itens bazar_itens_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_itens_leitura ON public.bazar_itens FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: bazar_reservas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.bazar_reservas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: bazar_reservas bazar_reservas_desiste; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_reservas_desiste ON public.bazar_reservas FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+
+
+--
+-- Name: bazar_reservas bazar_reservas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_reservas_insere ON public.bazar_reservas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_reservas.item_id) AND i.disponivel AND public.pode_ver_da_casa(i.sigla_casa, i.aberto))))));
+
+
+--
+-- Name: bazar_reservas bazar_reservas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_reservas_leitura ON public.bazar_reservas FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid()))))));
+
+
+--
+-- Name: bazar_reservas bazar_reservas_responde; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY bazar_reservas_responde ON public.bazar_reservas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.bazar_itens i
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid())))));
+
+
+--
+-- Name: voluntariado_candidaturas candidaturas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY candidaturas_apaga ON public.voluntariado_candidaturas FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+
+
+--
+-- Name: voluntariado_candidaturas candidaturas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY candidaturas_insere ON public.voluntariado_candidaturas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+   FROM public.voluntariado_necessidades n
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND public.pode_ver_da_casa(n.sigla_casa, n.aberto))))));
+
+
+--
+-- Name: voluntariado_candidaturas candidaturas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY candidaturas_leitura ON public.voluntariado_candidaturas FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.voluntariado_necessidades n
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa)))))));
+
+
+--
+-- Name: voluntariado_candidaturas candidaturas_responde; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY candidaturas_responde ON public.voluntariado_candidaturas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.voluntariado_necessidades n
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa)))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.voluntariado_necessidades n
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa))))));
+
+
+--
+-- Name: carona_contatos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.carona_contatos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: carona_contatos carona_contatos_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_contatos_apaga ON public.carona_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+
+
+--
+-- Name: carona_contatos carona_contatos_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_contatos_edita ON public.carona_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+
+
+--
+-- Name: carona_contatos carona_contatos_escreve; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_contatos_escreve ON public.carona_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+
+
+--
+-- Name: carona_contatos carona_contatos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_contatos_leitura ON public.carona_contatos FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))) OR (EXISTS ( SELECT 1
+   FROM public.carona_pedidos p
+  WHERE ((p.carona_id = carona_contatos.carona_id) AND (p.criado_por = auth.uid()) AND (p.status = 'aceito'::text))))));
+
+
+--
+-- Name: carona_pedidos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.carona_pedidos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: carona_pedidos carona_pedidos_desiste; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_pedidos_desiste ON public.carona_pedidos FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+
+
+--
+-- Name: carona_pedidos carona_pedidos_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_pedidos_insere ON public.carona_pedidos FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_pedidos.carona_id) AND c.ativa AND public.pode_ver_da_casa(c.sigla_casa, c.aberto))))));
+
+
+--
+-- Name: carona_pedidos carona_pedidos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_pedidos_leitura ON public.carona_pedidos FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid()))))));
+
+
+--
+-- Name: carona_pedidos carona_pedidos_responde; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY carona_pedidos_responde ON public.carona_pedidos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.caronas c
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid())))));
+
+
+--
+-- Name: caronas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.caronas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: caronas caronas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY caronas_apaga ON public.caronas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: caronas caronas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY caronas_edita ON public.caronas FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: caronas caronas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY caronas_insere ON public.caronas FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: caronas caronas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY caronas_leitura ON public.caronas FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: casas_convites; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.casas_convites ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: casas_espirita; Type: ROW SECURITY; Schema: public; Owner: -
@@ -2691,6 +5013,84 @@ CREATE POLICY "dev ve sugestoes" ON public.site_suggestions FOR SELECT TO authen
 
 
 --
+-- Name: entrega_contatos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.entrega_contatos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: entrega_contatos entrega_contatos_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entrega_contatos_apaga ON public.entrega_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.entregas e
+  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = auth.uid())))));
+
+
+--
+-- Name: entrega_contatos entrega_contatos_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entrega_contatos_edita ON public.entrega_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.entregas e
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid())))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.entregas e
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid()))))));
+
+
+--
+-- Name: entrega_contatos entrega_contatos_escreve; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entrega_contatos_escreve ON public.entrega_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.entregas e
+  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = auth.uid())))));
+
+
+--
+-- Name: entrega_contatos entrega_contatos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entrega_contatos_leitura ON public.entrega_contatos FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.entregas e
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid()))))));
+
+
+--
+-- Name: entregas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.entregas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: entregas entregas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entregas_apaga ON public.entregas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: entregas entregas_atualiza; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entregas_atualiza ON public.entregas FOR UPDATE TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto)) WITH CHECK (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: entregas entregas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entregas_insere ON public.entregas FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: entregas entregas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY entregas_leitura ON public.entregas FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
 -- Name: agenda_eventos eventos_delete; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -2723,6 +5123,172 @@ CREATE POLICY eventos_update ON public.agenda_eventos FOR UPDATE TO authenticate
 
 
 --
+-- Name: forum_respostas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.forum_respostas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: forum_respostas forum_respostas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_respostas_apaga ON public.forum_respostas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM public.forum_topicos t
+  WHERE ((t.id = forum_respostas.topico_id) AND public.pode_administrar_pagina(t.sigla_casa))))));
+
+
+--
+-- Name: forum_respostas forum_respostas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_respostas_edita ON public.forum_respostas FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+
+
+--
+-- Name: forum_respostas forum_respostas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_respostas_insere ON public.forum_respostas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+   FROM public.forum_topicos t
+  WHERE ((t.id = forum_respostas.topico_id) AND public.pode_ver_da_casa(t.sigla_casa, t.aberto))))));
+
+
+--
+-- Name: forum_respostas forum_respostas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_respostas_leitura ON public.forum_respostas FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.forum_topicos t
+  WHERE ((t.id = forum_respostas.topico_id) AND public.pode_ver_da_casa(t.sigla_casa, t.aberto)))));
+
+
+--
+-- Name: forum_topicos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.forum_topicos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: forum_topicos forum_topicos_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_topicos_apaga ON public.forum_topicos FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: forum_topicos forum_topicos_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_topicos_edita ON public.forum_topicos FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: forum_topicos forum_topicos_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_topicos_insere ON public.forum_topicos FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: forum_topicos forum_topicos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY forum_topicos_leitura ON public.forum_topicos FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: grupo_membros; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.grupo_membros ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: grupo_membros grupo_membros_entra; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_membros_entra ON public.grupo_membros FOR INSERT TO authenticated WITH CHECK ((public.sou_moderador_do_grupo(grupo_id) OR ((user_id = auth.uid()) AND (EXISTS ( SELECT 1
+   FROM public.grupos g
+  WHERE ((g.id = grupo_membros.grupo_id) AND (NOT g.privado) AND public.pode_ver_da_casa(g.sigla_casa, g.aberto)))))));
+
+
+--
+-- Name: grupo_membros grupo_membros_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_membros_leitura ON public.grupo_membros FOR SELECT TO authenticated USING ((public.sou_do_grupo(grupo_id) OR (EXISTS ( SELECT 1
+   FROM public.grupos g
+  WHERE ((g.id = grupo_membros.grupo_id) AND (NOT g.privado) AND public.pode_ver_da_casa(g.sigla_casa, g.aberto))))));
+
+
+--
+-- Name: grupo_membros grupo_membros_sai; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_membros_sai ON public.grupo_membros FOR DELETE TO authenticated USING (((user_id = auth.uid()) OR public.sou_moderador_do_grupo(grupo_id) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: grupo_mensagens; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.grupo_mensagens ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: grupo_mensagens grupo_mensagens_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_mensagens_apaga ON public.grupo_mensagens FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.sou_moderador_do_grupo(grupo_id)));
+
+
+--
+-- Name: grupo_mensagens grupo_mensagens_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_mensagens_insere ON public.grupo_mensagens FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.sou_do_grupo(grupo_id) AND (NOT public.usuario_sancionado(auth.uid()))));
+
+
+--
+-- Name: grupo_mensagens grupo_mensagens_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupo_mensagens_leitura ON public.grupo_mensagens FOR SELECT TO authenticated USING (public.sou_do_grupo(grupo_id));
+
+
+--
+-- Name: grupos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.grupos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: grupos grupos_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupos_apaga ON public.grupos FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: grupos grupos_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupos_edita ON public.grupos FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: grupos grupos_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupos_insere ON public.grupos FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: grupos grupos_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY grupos_leitura ON public.grupos FOR SELECT TO authenticated USING (((public.pode_ver_da_casa(sigla_casa, aberto) AND (NOT privado)) OR public.sou_do_grupo(id)));
+
+
+--
 -- Name: casas_espirita insercao_service_role; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -2734,6 +5300,76 @@ CREATE POLICY insercao_service_role ON public.casas_espirita FOR INSERT WITH CHE
 --
 
 CREATE POLICY "inserir propria solicitacao" ON public.solicitacoes_dev FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: jovens_membros; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.jovens_membros ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: jovens_membros jovens_membros_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_membros_edita ON public.jovens_membros FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+
+
+--
+-- Name: jovens_membros jovens_membros_entra; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_membros_entra ON public.jovens_membros FOR INSERT TO authenticated WITH CHECK ((public.pode_publicar_na_casa(sigla_casa) AND (criado_por = auth.uid())));
+
+
+--
+-- Name: jovens_membros jovens_membros_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_membros_leitura ON public.jovens_membros FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, false));
+
+
+--
+-- Name: jovens_membros jovens_membros_sai; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_membros_sai ON public.jovens_membros FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: jovens_publicacoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.jovens_publicacoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_publicacoes_apaga ON public.jovens_publicacoes FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_publicacoes_edita ON public.jovens_publicacoes FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_publicacoes_insere ON public.jovens_publicacoes FOR INSERT TO authenticated WITH CHECK ((public.pode_publicar_na_casa(sigla_casa) AND (EXISTS ( SELECT 1
+   FROM public.jovens_membros m
+  WHERE (m.criado_por = auth.uid())))));
+
+
+--
+-- Name: jovens_publicacoes jovens_publicacoes_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY jovens_publicacoes_leitura ON public.jovens_publicacoes FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
 
 
 --
@@ -3032,6 +5668,127 @@ CREATE POLICY musicas_update ON public.musicas FOR UPDATE TO authenticated USING
 
 
 --
+-- Name: voluntariado_necessidades necessidades_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY necessidades_apaga ON public.voluntariado_necessidades FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: voluntariado_necessidades necessidades_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY necessidades_edita ON public.voluntariado_necessidades FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: voluntariado_necessidades necessidades_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY necessidades_insere ON public.voluntariado_necessidades FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: voluntariado_necessidades necessidades_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY necessidades_leitura ON public.voluntariado_necessidades FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: voluntariado_ofertas ofertas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY ofertas_apaga ON public.voluntariado_ofertas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: voluntariado_ofertas ofertas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY ofertas_edita ON public.voluntariado_ofertas FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+
+
+--
+-- Name: voluntariado_ofertas ofertas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY ofertas_insere ON public.voluntariado_ofertas FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: voluntariado_ofertas ofertas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY ofertas_leitura ON public.voluntariado_ofertas FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: oracao_horarios; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.oracao_horarios ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: oracao_horarios oracao_horarios_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_horarios_apaga ON public.oracao_horarios FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: oracao_horarios oracao_horarios_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_horarios_edita ON public.oracao_horarios FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: oracao_horarios oracao_horarios_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_horarios_insere ON public.oracao_horarios FOR INSERT TO authenticated WITH CHECK (public.pode_publicar_na_casa(sigla_casa));
+
+
+--
+-- Name: oracao_horarios oracao_horarios_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_horarios_leitura ON public.oracao_horarios FOR SELECT TO authenticated USING (public.pode_ver_da_casa(sigla_casa, aberto));
+
+
+--
+-- Name: oracao_inscricoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.oracao_inscricoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_inscricoes_apaga ON public.oracao_inscricoes FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_inscricoes_insere ON public.oracao_inscricoes FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND (EXISTS ( SELECT 1
+   FROM public.oracao_horarios h
+  WHERE ((h.id = oracao_inscricoes.horario_id) AND public.pode_ver_da_casa(h.sigla_casa, h.aberto))))));
+
+
+--
+-- Name: oracao_inscricoes oracao_inscricoes_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY oracao_inscricoes_leitura ON public.oracao_inscricoes FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.oracao_horarios h
+  WHERE ((h.id = oracao_inscricoes.horario_id) AND public.pode_ver_da_casa(h.sigla_casa, h.aberto)))));
+
+
+--
 -- Name: paginas_casas; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -3109,6 +5866,33 @@ CREATE POLICY participantes_select ON public.agenda_participantes FOR SELECT TO 
 CREATE POLICY participantes_update ON public.agenda_participantes FOR UPDATE TO authenticated USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
    FROM public.agenda_eventos e
   WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = auth.uid()))))));
+
+
+--
+-- Name: apresentacao_perguntas perguntas_envia; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY perguntas_envia ON public.apresentacao_perguntas FOR INSERT TO authenticated, anon WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.apresentacao_sessoes s
+  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND s.ativa AND s.aceita_perguntas))));
+
+
+--
+-- Name: apresentacao_perguntas perguntas_le_quem_apresenta; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY perguntas_le_quem_apresenta ON public.apresentacao_perguntas FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.apresentacao_sessoes s
+  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = auth.uid())))));
+
+
+--
+-- Name: apresentacao_perguntas perguntas_marca_quem_apresenta; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY perguntas_marca_quem_apresenta ON public.apresentacao_perguntas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
+   FROM public.apresentacao_sessoes s
+  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = auth.uid())))));
 
 
 --
@@ -3327,6 +6111,37 @@ CREATE POLICY "qualquer um pode inserir sugestao" ON public.site_suggestions FOR
 
 
 --
+-- Name: apresentacao_sessoes sessoes_comanda_quem_apresenta; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY sessoes_comanda_quem_apresenta ON public.apresentacao_sessoes FOR UPDATE TO authenticated USING ((iniciada_por = auth.uid()));
+
+
+--
+-- Name: apresentacao_sessoes sessoes_cria; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY sessoes_cria ON public.apresentacao_sessoes FOR INSERT TO authenticated WITH CHECK (((iniciada_por = auth.uid()) AND (EXISTS ( SELECT 1
+   FROM (public.apresentacoes a
+     JOIN public.profiles p ON ((p.id = auth.uid())))
+  WHERE ((a.id = apresentacao_sessoes.apresentacao_id) AND (a.sigla_casa = p.sigla_casa))))));
+
+
+--
+-- Name: apresentacao_sessoes sessoes_leitura_do_dono; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY sessoes_leitura_do_dono ON public.apresentacao_sessoes FOR SELECT TO authenticated USING ((iniciada_por = auth.uid()));
+
+
+--
+-- Name: apresentacao_sessoes sessoes_leitura_publica; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY sessoes_leitura_publica ON public.apresentacao_sessoes FOR SELECT TO authenticated, anon USING (ativa);
+
+
+--
 -- Name: siglas_casas; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -3472,6 +6287,24 @@ CREATE POLICY "ver todas as solicitacoes autenticado" ON public.solicitacoes_dev
 
 
 --
+-- Name: voluntariado_candidaturas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.voluntariado_candidaturas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: voluntariado_necessidades; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.voluntariado_necessidades ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: voluntariado_ofertas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.voluntariado_ofertas ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: painel_votes votos_delete; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -3496,5 +6329,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ulzrPgVWVySSExSwUNe3Gj2jOVeLZcqjDpVmIhDitYWaXivBcjDaZa8yoxpfrHf
+\unrestrict 8YTiq4dfIgwB1zXdowZKastWmUedfp37g8qmOQeEYFc5SZi9vd2bzDvAfXG2kAh
 
