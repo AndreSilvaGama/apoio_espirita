@@ -72,6 +72,280 @@ function moeda(valor: number | null): string {
   return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+/**
+ * Cartão de um item do bazar.
+ *
+ * Mora no módulo, e não dentro de `Bazar`, de propósito: um componente
+ * declarado dentro de outro é recriado a cada render, o que faria o React
+ * remontar o cartão inteiro a cada tecla digitada no campo de contato da
+ * reserva — e o cursor sairia do campo.
+ */
+interface CartaoItemProps {
+  item: Item;
+  dono: boolean;
+  reservas: Reserva[];
+  contatos: Record<string, string>;
+  usuarioId: string | undefined;
+  ehDirecao: boolean;
+  ocupado: string | null;
+  copiado: string | null;
+  reservando: string | null;
+  formReserva: { mensagem: string; contato: string };
+  aoMudarReserva: (v: { mensagem: string; contato: string }) => void;
+  aoAbrirReserva: (id: string | null) => void;
+  aoReservar: (id: string) => void;
+  aoResponderReserva: (id: string, status: "aceita" | "recusada" | "concluida") => void;
+  aoAlternarDisponivel: (item: Item) => void;
+  aoApagar: (id: string) => void;
+  aoCopiarPix: (item: Item) => void;
+}
+
+function CartaoItem({
+  item,
+  dono,
+  reservas,
+  contatos,
+  usuarioId,
+  ehDirecao,
+  ocupado,
+  copiado,
+  reservando,
+  formReserva,
+  aoMudarReserva,
+  aoAbrirReserva,
+  aoReservar,
+  aoResponderReserva,
+  aoAlternarDisponivel,
+  aoApagar,
+  aoCopiarPix,
+}: CartaoItemProps) {
+  const minha = reservas.find((r) => r.item_id === item.id && r.criado_por === usuarioId);
+  const doItem = reservas.filter((r) => r.item_id === item.id);
+  const codigoPix = gerarCodigoPix({
+    chave: item.chave_pix ?? "",
+    nome: item.pix_nome ?? "",
+    cidade: item.pix_cidade ?? "",
+    valor: item.valor,
+  });
+  const contatoLiberado = contatos[item.id];
+
+  return (
+    <article className={`glass rounded-2xl overflow-hidden ${item.disponivel ? "" : "opacity-60"}`}>
+      {item.foto_url && (
+        <img
+          src={item.foto_url}
+          alt={item.titulo}
+          loading="lazy"
+          className="w-full h-44 object-cover"
+        />
+      )}
+      <div className="p-5">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
+          <Etiqueta tom="ciano">
+            {CATEGORIAS.find((c) => c.id === item.categoria)?.rotulo ?? "Outro"}
+          </Etiqueta>
+          <Etiqueta>{item.estado === "novo" ? "Novo" : "Usado"}</Etiqueta>
+          <MarcaAlcance aberto={item.aberto} />
+          {!item.disponivel && <Etiqueta tom="neutro">Indisponível</Etiqueta>}
+        </div>
+
+        <h3 className="text-foreground">{item.titulo}</h3>
+        <p className="mt-1 text-sm text-muted-foreground font-light whitespace-pre-wrap">
+          {item.descricao}
+        </p>
+
+        <p className="mt-3 text-lg font-light text-foreground">
+          {item.doacao ? (
+            <span className="text-emerald-600">Contribuição livre</span>
+          ) : item.valor != null ? (
+            moeda(item.valor)
+          ) : (
+            <span className="text-muted-foreground/60 text-sm">A combinar</span>
+          )}
+        </p>
+
+        {codigoPix && (
+          <div className="mt-3 rounded-xl border border-border/60 p-3">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-2">
+              Pagamento por PIX
+            </p>
+            <p className="text-xs text-muted-foreground font-light break-all line-clamp-2">
+              {codigoPix}
+            </p>
+            <button
+              type="button"
+              onClick={() => aoCopiarPix(item)}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-cyan-glow hover:underline"
+            >
+              {copiado === item.id ? (
+                <>
+                  <Check size={12} strokeWidth={2} /> Código copiado
+                </>
+              ) : (
+                <>
+                  <Copy size={12} strokeWidth={2} /> Copiar código PIX
+                </>
+              )}
+            </button>
+            <p className="mt-2 text-[11px] text-muted-foreground/60 font-light">
+              O pagamento vai direto para a chave de quem anunciou. A plataforma não recebe nem
+              retém valor nenhum.
+            </p>
+          </div>
+        )}
+
+        {contatoLiberado && (
+          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <p className="text-[11px] uppercase tracking-widest text-emerald-700">Contato</p>
+            <p className="text-sm text-emerald-800">{contatoLiberado}</p>
+          </div>
+        )}
+
+        {/* Reservas recebidas */}
+        {dono && doItem.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-border/40 space-y-2">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60">
+              Interessados
+            </p>
+            {doItem.map((r) => (
+              <div key={r.id} className="text-sm">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <p className="text-foreground">
+                    {r.autor_nome}
+                    {r.status !== "pendente" && (
+                      <span className="ml-2">
+                        <Etiqueta
+                          tom={
+                            r.status === "aceita"
+                              ? "verde"
+                              : r.status === "concluida"
+                                ? "ciano"
+                                : "neutro"
+                          }
+                        >
+                          {r.status === "aceita"
+                            ? "Aceito"
+                            : r.status === "concluida"
+                              ? "Entregue"
+                              : "Recusado"}
+                        </Etiqueta>
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex gap-2">
+                    {r.status === "pendente" && (
+                      <>
+                        <BotaoDiscreto
+                          onClick={() => aoResponderReserva(r.id, "aceita")}
+                          disabled={ocupado === r.id}
+                        >
+                          <Check size={13} strokeWidth={2} />
+                        </BotaoDiscreto>
+                        <BotaoDiscreto
+                          onClick={() => aoResponderReserva(r.id, "recusada")}
+                          disabled={ocupado === r.id}
+                        >
+                          <X size={13} strokeWidth={2} />
+                        </BotaoDiscreto>
+                      </>
+                    )}
+                    {r.status === "aceita" && (
+                      <BotaoDiscreto
+                        onClick={() => aoResponderReserva(r.id, "concluida")}
+                        disabled={ocupado === r.id}
+                      >
+                        Concluir
+                      </BotaoDiscreto>
+                    )}
+                  </div>
+                </div>
+                {r.mensagem && (
+                  <p className="text-xs text-muted-foreground font-light">{r.mensagem}</p>
+                )}
+                {r.status !== "recusada" && (
+                  <p className="text-xs text-cyan-700">Contato: {r.contato}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-xs text-muted-foreground/60">
+            {item.autor_nome} · {item.sigla_casa} · {quandoFoi(item.created_at)}
+          </p>
+          <div className="flex gap-2">
+            {dono ? (
+              <>
+                <BotaoDiscreto
+                  onClick={() => aoAlternarDisponivel(item)}
+                  disabled={ocupado === item.id}
+                >
+                  {item.disponivel ? "Marcar indisponível" : "Disponibilizar"}
+                </BotaoDiscreto>
+                <BotaoDiscreto onClick={() => aoApagar(item.id)} disabled={ocupado === item.id}>
+                  <Trash2 size={13} strokeWidth={1.8} />
+                </BotaoDiscreto>
+              </>
+            ) : minha ? (
+              <Etiqueta
+                tom={minha.status === "aceita" || minha.status === "concluida" ? "verde" : "neutro"}
+              >
+                {minha.status === "pendente"
+                  ? "Reserva enviada"
+                  : minha.status === "aceita"
+                    ? "Reserva aceita"
+                    : minha.status === "concluida"
+                      ? "Concluída"
+                      : "Não foi desta vez"}
+              </Etiqueta>
+            ) : (
+              item.disponivel && (
+                <BotaoPrimario onClick={() => aoAbrirReserva(item.id)}>
+                  Tenho interesse
+                </BotaoPrimario>
+              )
+            )}
+            {ehDirecao && !dono && (
+              <BotaoDiscreto onClick={() => aoApagar(item.id)} disabled={ocupado === item.id}>
+                <Trash2 size={13} strokeWidth={1.8} />
+              </BotaoDiscreto>
+            )}
+          </div>
+        </div>
+
+        {reservando === item.id && (
+          <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
+            <Rotulo obrigatorio ajuda="telefone ou e-mail — visível só para quem anunciou">
+              Seu contato
+            </Rotulo>
+            <CampoTexto
+              value={formReserva.contato}
+              onChange={(e) => aoMudarReserva({ ...formReserva, contato: e.target.value })}
+              maxLength={120}
+              placeholder="(21) 90000-0000"
+            />
+            <Rotulo ajuda="opcional">Mensagem</Rotulo>
+            <CampoArea
+              rows={2}
+              value={formReserva.mensagem}
+              onChange={(e) => aoMudarReserva({ ...formReserva, mensagem: e.target.value })}
+              maxLength={600}
+              placeholder="Ex.: posso buscar no sábado depois da palestra."
+            />
+            <div className="flex gap-2">
+              <BotaoPrimario onClick={() => aoReservar(item.id)} disabled={ocupado === item.id}>
+                {ocupado === item.id ? "Enviando…" : "Enviar interesse"}
+              </BotaoPrimario>
+              <BotaoDiscreto onClick={() => aoAbrirReserva(null)}>Cancelar</BotaoDiscreto>
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function Bazar() {
   const { user, profile, isPresident } = useAuth();
   const [aba, setAba] = useState<"vitrine" | "meus" | "reservas">("vitrine");
@@ -297,238 +571,6 @@ function Bazar() {
   const minhasReservas = reservas.filter((r) => r.criado_por === user?.id);
   const vitrine = itens.filter((i) => i.disponivel);
 
-  function CartaoItem({ item, dono }: { item: Item; dono: boolean }) {
-    const minha = reservas.find((r) => r.item_id === item.id && r.criado_por === user?.id);
-    const doItem = reservas.filter((r) => r.item_id === item.id);
-    const codigoPix = gerarCodigoPix({
-      chave: item.chave_pix ?? "",
-      nome: item.pix_nome ?? "",
-      cidade: item.pix_cidade ?? "",
-      valor: item.valor,
-    });
-    const contatoLiberado = contatos[item.id];
-
-    return (
-      <article
-        className={`glass rounded-2xl overflow-hidden ${item.disponivel ? "" : "opacity-60"}`}
-      >
-        {item.foto_url && (
-          <img
-            src={item.foto_url}
-            alt={item.titulo}
-            loading="lazy"
-            className="w-full h-44 object-cover"
-          />
-        )}
-        <div className="p-5">
-          <div className="flex items-center gap-2 flex-wrap mb-2">
-            <Etiqueta tom="ciano">
-              {CATEGORIAS.find((c) => c.id === item.categoria)?.rotulo ?? "Outro"}
-            </Etiqueta>
-            <Etiqueta>{item.estado === "novo" ? "Novo" : "Usado"}</Etiqueta>
-            <MarcaAlcance aberto={item.aberto} />
-            {!item.disponivel && <Etiqueta tom="neutro">Indisponível</Etiqueta>}
-          </div>
-
-          <h3 className="text-foreground">{item.titulo}</h3>
-          <p className="mt-1 text-sm text-muted-foreground font-light whitespace-pre-wrap">
-            {item.descricao}
-          </p>
-
-          <p className="mt-3 text-lg font-light text-foreground">
-            {item.doacao ? (
-              <span className="text-emerald-600">Contribuição livre</span>
-            ) : item.valor != null ? (
-              moeda(item.valor)
-            ) : (
-              <span className="text-muted-foreground/60 text-sm">A combinar</span>
-            )}
-          </p>
-
-          {codigoPix && (
-            <div className="mt-3 rounded-xl border border-border/60 p-3">
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-2">
-                Pagamento por PIX
-              </p>
-              <p className="text-xs text-muted-foreground font-light break-all line-clamp-2">
-                {codigoPix}
-              </p>
-              <button
-                type="button"
-                onClick={() => copiarPix(item)}
-                className="mt-2 inline-flex items-center gap-1.5 text-xs text-cyan-glow hover:underline"
-              >
-                {copiado === item.id ? (
-                  <>
-                    <Check size={12} strokeWidth={2} /> Código copiado
-                  </>
-                ) : (
-                  <>
-                    <Copy size={12} strokeWidth={2} /> Copiar código PIX
-                  </>
-                )}
-              </button>
-              <p className="mt-2 text-[11px] text-muted-foreground/60 font-light">
-                O pagamento vai direto para a chave de quem anunciou. A plataforma não recebe nem
-                retém valor nenhum.
-              </p>
-            </div>
-          )}
-
-          {contatoLiberado && (
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
-              <p className="text-[11px] uppercase tracking-widest text-emerald-700">Contato</p>
-              <p className="text-sm text-emerald-800">{contatoLiberado}</p>
-            </div>
-          )}
-
-          {/* Reservas recebidas */}
-          {dono && doItem.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-border/40 space-y-2">
-              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60">
-                Interessados
-              </p>
-              {doItem.map((r) => (
-                <div key={r.id} className="text-sm">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <p className="text-foreground">
-                      {r.autor_nome}
-                      {r.status !== "pendente" && (
-                        <span className="ml-2">
-                          <Etiqueta
-                            tom={
-                              r.status === "aceita"
-                                ? "verde"
-                                : r.status === "concluida"
-                                  ? "ciano"
-                                  : "neutro"
-                            }
-                          >
-                            {r.status === "aceita"
-                              ? "Aceito"
-                              : r.status === "concluida"
-                                ? "Entregue"
-                                : "Recusado"}
-                          </Etiqueta>
-                        </span>
-                      )}
-                    </p>
-                    <div className="flex gap-2">
-                      {r.status === "pendente" && (
-                        <>
-                          <BotaoDiscreto
-                            onClick={() => responderReserva(r.id, "aceita")}
-                            disabled={ocupado === r.id}
-                          >
-                            <Check size={13} strokeWidth={2} />
-                          </BotaoDiscreto>
-                          <BotaoDiscreto
-                            onClick={() => responderReserva(r.id, "recusada")}
-                            disabled={ocupado === r.id}
-                          >
-                            <X size={13} strokeWidth={2} />
-                          </BotaoDiscreto>
-                        </>
-                      )}
-                      {r.status === "aceita" && (
-                        <BotaoDiscreto
-                          onClick={() => responderReserva(r.id, "concluida")}
-                          disabled={ocupado === r.id}
-                        >
-                          Concluir
-                        </BotaoDiscreto>
-                      )}
-                    </div>
-                  </div>
-                  {r.mensagem && (
-                    <p className="text-xs text-muted-foreground font-light">{r.mensagem}</p>
-                  )}
-                  {r.status !== "recusada" && (
-                    <p className="text-xs text-cyan-700">Contato: {r.contato}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs text-muted-foreground/60">
-              {item.autor_nome} · {item.sigla_casa} · {quandoFoi(item.created_at)}
-            </p>
-            <div className="flex gap-2">
-              {dono ? (
-                <>
-                  <BotaoDiscreto
-                    onClick={() => alternarDisponivel(item)}
-                    disabled={ocupado === item.id}
-                  >
-                    {item.disponivel ? "Marcar indisponível" : "Disponibilizar"}
-                  </BotaoDiscreto>
-                  <BotaoDiscreto onClick={() => apagar(item.id)} disabled={ocupado === item.id}>
-                    <Trash2 size={13} strokeWidth={1.8} />
-                  </BotaoDiscreto>
-                </>
-              ) : minha ? (
-                <Etiqueta
-                  tom={
-                    minha.status === "aceita" || minha.status === "concluida" ? "verde" : "neutro"
-                  }
-                >
-                  {minha.status === "pendente"
-                    ? "Reserva enviada"
-                    : minha.status === "aceita"
-                      ? "Reserva aceita"
-                      : minha.status === "concluida"
-                        ? "Concluída"
-                        : "Não foi desta vez"}
-                </Etiqueta>
-              ) : (
-                item.disponivel && (
-                  <BotaoPrimario onClick={() => setReservando(item.id)}>
-                    Tenho interesse
-                  </BotaoPrimario>
-                )
-              )}
-              {isPresident && !dono && (
-                <BotaoDiscreto onClick={() => apagar(item.id)} disabled={ocupado === item.id}>
-                  <Trash2 size={13} strokeWidth={1.8} />
-                </BotaoDiscreto>
-              )}
-            </div>
-          </div>
-
-          {reservando === item.id && (
-            <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
-              <Rotulo obrigatorio ajuda="telefone ou e-mail — visível só para quem anunciou">
-                Seu contato
-              </Rotulo>
-              <CampoTexto
-                value={formReserva.contato}
-                onChange={(e) => setFormReserva({ ...formReserva, contato: e.target.value })}
-                maxLength={120}
-                placeholder="(21) 90000-0000"
-              />
-              <Rotulo ajuda="opcional">Mensagem</Rotulo>
-              <CampoArea
-                rows={2}
-                value={formReserva.mensagem}
-                onChange={(e) => setFormReserva({ ...formReserva, mensagem: e.target.value })}
-                maxLength={600}
-                placeholder="Ex.: posso buscar no sábado depois da palestra."
-              />
-              <div className="flex gap-2">
-                <BotaoPrimario onClick={() => reservar(item.id)} disabled={ocupado === item.id}>
-                  {ocupado === item.id ? "Enviando…" : "Enviar interesse"}
-                </BotaoPrimario>
-                <BotaoDiscreto onClick={() => setReservando(null)}>Cancelar</BotaoDiscreto>
-              </div>
-            </div>
-          )}
-        </div>
-      </article>
-    );
-  }
-
   return (
     <PaginaComunidade
       secao="Nossa comunidade"
@@ -740,7 +782,26 @@ function Bazar() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {vitrine.map((i) => (
-                <CartaoItem key={i.id} item={i} dono={i.criado_por === user?.id} />
+                <CartaoItem
+                  key={i.id}
+                  item={i}
+                  dono={i.criado_por === user?.id}
+                  reservas={reservas}
+                  contatos={contatos}
+                  usuarioId={user?.id}
+                  ehDirecao={isPresident}
+                  ocupado={ocupado}
+                  copiado={copiado}
+                  reservando={reservando}
+                  formReserva={formReserva}
+                  aoMudarReserva={setFormReserva}
+                  aoAbrirReserva={setReservando}
+                  aoReservar={reservar}
+                  aoResponderReserva={responderReserva}
+                  aoAlternarDisponivel={alternarDisponivel}
+                  aoApagar={apagar}
+                  aoCopiarPix={copiarPix}
+                />
               ))}
             </div>
           )
@@ -750,7 +811,26 @@ function Bazar() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {meusItens.map((i) => (
-                <CartaoItem key={i.id} item={i} dono />
+                <CartaoItem
+                  key={i.id}
+                  item={i}
+                  dono
+                  reservas={reservas}
+                  contatos={contatos}
+                  usuarioId={user?.id}
+                  ehDirecao={isPresident}
+                  ocupado={ocupado}
+                  copiado={copiado}
+                  reservando={reservando}
+                  formReserva={formReserva}
+                  aoMudarReserva={setFormReserva}
+                  aoAbrirReserva={setReservando}
+                  aoReservar={reservar}
+                  aoResponderReserva={responderReserva}
+                  aoAlternarDisponivel={alternarDisponivel}
+                  aoApagar={apagar}
+                  aoCopiarPix={copiarPix}
+                />
               ))}
             </div>
           )
