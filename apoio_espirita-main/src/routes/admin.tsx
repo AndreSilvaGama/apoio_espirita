@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { mensagemDeErro } from "@/lib/erros";
 import { FilaRevisaoArtigos } from "@/components/FilaRevisaoArtigos";
+import { ConviteCasas } from "@/components/ConviteCasas";
+import { GerirUsuario } from "@/components/GerirUsuario";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -33,7 +35,8 @@ type Tab =
   | "solicitacoes"
   | "problemas"
   | "sugestoes"
-  | "artigos";
+  | "artigos"
+  | "convite";
 
 interface StatOverview {
   casasTotal: number;
@@ -630,6 +633,7 @@ function AdminDashboard() {
             { id: "problemas", label: "Problemas do Site" },
             { id: "sugestoes", label: "Sugestões" },
             { id: "artigos", label: "Artigos" },
+            { id: "convite", label: "Convite às casas" },
           ].map((t) => (
             <button
               key={t.id}
@@ -1099,13 +1103,14 @@ function AdminDashboard() {
                       <th className="text-left px-4 py-3 w-28">Casa Espírita</th>
                       <th className="text-left px-4 py-3">Cargo Principal</th>
                       <th className="text-left px-4 py-3">Cidade / UF</th>
-                      <th className="text-right px-5 py-3 w-40">Data de Cadastro</th>
+                      <th className="text-left px-4 py-3 w-40">Data de Cadastro</th>
+                      <th className="text-right px-5 py-3 w-28">Conta</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredUsuarios.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-5 py-8 text-center text-gray-400 italic">
+                        <td colSpan={6} className="px-5 py-8 text-center text-gray-400 italic">
                           Nenhum perfil cadastrado ou encontrado.
                         </td>
                       </tr>
@@ -1141,10 +1146,17 @@ function AdminDashboard() {
                           <td className="px-4 py-3 text-gray-500">
                             {u.cidade || "—"} {u.uf ? `- ${u.uf}` : ""}
                           </td>
-                          <td className="px-5 py-3 text-right text-gray-400">
+                          <td className="px-4 py-3 text-gray-400">
                             {u.created_at
                               ? new Date(u.created_at).toLocaleDateString("pt-BR")
                               : "Antigo"}
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <GerirUsuario
+                              usuarioId={u.id}
+                              nome={u.nome || "Não informado"}
+                              onConcluido={loadAllData}
+                            />
                           </td>
                         </tr>
                       ))
@@ -1404,6 +1416,9 @@ function AdminDashboard() {
               <FilaRevisaoArtigos escopo="plataforma" />
             </div>
           )}
+
+          {/* TAB 8: CONVITE ÀS CASAS DO DIRETÓRIO */}
+          {activeTab === "convite" && <ConviteCasas />}
         </div>
       </div>
     </main>

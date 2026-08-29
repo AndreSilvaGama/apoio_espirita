@@ -26,7 +26,7 @@ const FAQ: FaqItem[] = [
   {
     pergunta: "Como completo ou altero meu perfil?",
     resposta:
-      "Acesse a opção 'Perfil' no menu superior. Lá você poderá atualizar suas informações básicas, como nome de exibição, a sigla da casa espírita em que trabalha, sua cidade, cargo principal e áreas de atuação. Pela mesma tela, é possível alterar sua senha de acesso ou efetuar a exclusão definitiva da conta.",
+      "Acesse a opção 'Perfil' no menu superior. Lá você poderá atualizar suas informações básicas, como nome de exibição, a sigla da casa espírita em que trabalha, sua cidade, cargo principal e áreas de atuação. No rodapé dessa mesma tela fica a opção 'Encerrar a minha conta', que apaga a conta e o perfil definitivamente. Para trocar a senha, saia da conta e use 'Esqueci minha senha' na tela de entrada.",
   },
   {
     pergunta: "Como adiciono ou mudo meu cargo e casa espírita?",

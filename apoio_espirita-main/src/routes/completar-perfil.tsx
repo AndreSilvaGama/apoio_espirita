@@ -482,8 +482,97 @@ function CompletarPerfil() {
           >
             {saving ? "Salvando…" : "Confirmar e entrar"}
           </button>
+
+          <ExcluirMinhaConta />
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * Saída da própria conta.
+ *
+ * A tela de ajuda promete, faz tempo, que a pessoa pode encerrar a conta por
+ * aqui — e não havia como. Promessa que não se cumpre é defeito, e esta é a
+ * correção. Fica no rodapé, discreta e com confirmação por digitação: quem
+ * procura encontra, e ninguém tropeça nela por engano.
+ */
+function ExcluirMinhaConta() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [aberto, setAberto] = useState(false);
+  const [confirmacao, setConfirmacao] = useState("");
+  const [saindo, setSaindo] = useState(false);
+  const [erro, setErro] = useState("");
+
+  if (!user) return null;
+
+  const excluir = async () => {
+    setSaindo(true);
+    setErro("");
+    try {
+      const { data, error } = await supabase.functions.invoke("gerir-usuario", {
+        body: { alvo: user.id, acao: "excluir" },
+      });
+      if (error) throw error;
+      if (data?.erro) throw new Error(data.erro);
+      await supabase.auth.signOut();
+      navigate({ to: "/" });
+    } catch (e: unknown) {
+      setErro(mensagemDeErro(e));
+      setSaindo(false);
+    }
+  };
+
+  return (
+    <div className="pt-6 mt-2 border-t border-white/10">
+      {!aberto ? (
+        <button
+          onClick={() => setAberto(true)}
+          className="text-xs text-muted-foreground/70 hover:text-red-400 transition-colors underline underline-offset-4"
+        >
+          Encerrar a minha conta
+        </button>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            A sua conta e o seu perfil serão apagados definitivamente, e não há como desfazer.
+            Eventos que você criou na agenda da casa serão apagados junto. O que você escreveu em
+            espaços coletivos — fórum, grupos, bazar — permanece no site, sem o seu nome.
+          </p>
+          <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+            Para confirmar, digite <strong className="text-foreground">ENCERRAR</strong>
+          </label>
+          <input
+            value={confirmacao}
+            onChange={(e) => setConfirmacao(e.target.value)}
+            className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-foreground placeholder-muted-foreground/50 focus:outline-none focus:border-red-400/40 transition-colors"
+            placeholder="ENCERRAR"
+          />
+          {erro && <p className="text-xs text-red-400">{erro}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={excluir}
+              disabled={saindo || confirmacao.trim().toUpperCase() !== "ENCERRAR"}
+              className="flex-1 py-3 rounded-xl text-sm uppercase tracking-widest text-red-400 border border-red-400/40 hover:bg-red-400/10 disabled:opacity-30 transition-colors"
+            >
+              {saindo ? "Encerrando…" : "Encerrar para sempre"}
+            </button>
+            <button
+              onClick={() => {
+                setAberto(false);
+                setConfirmacao("");
+                setErro("");
+              }}
+              disabled={saindo}
+              className="px-5 py-3 rounded-xl text-sm uppercase tracking-widest text-muted-foreground border border-white/10 hover:bg-white/5 transition-colors"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
