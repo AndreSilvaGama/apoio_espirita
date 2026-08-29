@@ -309,6 +309,21 @@ jobs:
           echo "HTTP $STATUS"
           cat /tmp/resp.json || true
 
+      # 5b) Avisa a direção de cada casa sobre os aniversariantes do dia.
+      #     Mesmo agendador e mesmo segredo do resumo: a função não é chamada
+      #     por tela nenhuma. Em dias sem aniversariante ela não envia nada.
+      - name: Enviar aviso de aniversariantes
+        if: steps.banco.outputs.resultado == 'ok'
+        continue-on-error: true
+        run: |
+          STATUS=$(curl -s -m 60 -o /tmp/aniversarios.json -w "%{http_code}" \
+            -X POST \
+            "$SUPABASE_URL/functions/v1/avisos-diarios" \
+            -H "x-cron-secret: ${{ secrets.DIGEST_CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          echo "HTTP $STATUS"
+          cat /tmp/aniversarios.json || true
+
       # 6) Falha o job para o GitHub avisar por e-mail, além da issue.
       - name: Encerrar com erro se algo caiu
         if: steps.banco.outputs.resultado == 'falhou' || steps.site.outputs.resultado == 'falhou'

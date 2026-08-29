@@ -35,6 +35,7 @@ import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
 import { Route as CaronasRouteImport } from './routes/caronas'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as BazarRouteImport } from './routes/bazar'
+import { Route as AvisosRouteImport } from './routes/avisos'
 import { Route as AtendimentoFraternoRouteImport } from './routes/atendimento-fraterno'
 import { Route as AniversariantesRouteImport } from './routes/aniversariantes'
 import { Route as AjudaRouteImport } from './routes/ajuda'
@@ -190,6 +191,11 @@ const BazarRoute = BazarRouteImport.update({
   path: '/bazar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AvisosRoute = AvisosRouteImport.update({
+  id: '/avisos',
+  path: '/avisos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtendimentoFraternoRoute = AtendimentoFraternoRouteImport.update({
   id: '/atendimento-fraterno',
   path: '/atendimento-fraterno',
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/ajuda': typeof AjudaRoute
   '/aniversariantes': typeof AniversariantesRoute
   '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/avisos': typeof AvisosRoute
   '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
   '/caronas': typeof CaronasRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/ajuda': typeof AjudaRoute
   '/aniversariantes': typeof AniversariantesRoute
   '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/avisos': typeof AvisosRoute
   '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
   '/caronas': typeof CaronasRoute
@@ -424,6 +432,7 @@ export interface FileRoutesById {
   '/ajuda': typeof AjudaRoute
   '/aniversariantes': typeof AniversariantesRoute
   '/atendimento-fraterno': typeof AtendimentoFraternoRoute
+  '/avisos': typeof AvisosRoute
   '/bazar': typeof BazarRoute
   '/busca': typeof BuscaRoute
   '/caronas': typeof CaronasRoute
@@ -478,6 +487,7 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/aniversariantes'
     | '/atendimento-fraterno'
+    | '/avisos'
     | '/bazar'
     | '/busca'
     | '/caronas'
@@ -530,6 +540,7 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/aniversariantes'
     | '/atendimento-fraterno'
+    | '/avisos'
     | '/bazar'
     | '/busca'
     | '/caronas'
@@ -582,6 +593,7 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/aniversariantes'
     | '/atendimento-fraterno'
+    | '/avisos'
     | '/bazar'
     | '/busca'
     | '/caronas'
@@ -635,6 +647,7 @@ export interface RootRouteChildren {
   AjudaRoute: typeof AjudaRoute
   AniversariantesRoute: typeof AniversariantesRoute
   AtendimentoFraternoRoute: typeof AtendimentoFraternoRoute
+  AvisosRoute: typeof AvisosRoute
   BazarRoute: typeof BazarRoute
   BuscaRoute: typeof BuscaRoute
   CaronasRoute: typeof CaronasRoute
@@ -864,6 +877,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BazarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/avisos': {
+      id: '/avisos'
+      path: '/avisos'
+      fullPath: '/avisos'
+      preLoaderRoute: typeof AvisosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/atendimento-fraterno': {
       id: '/atendimento-fraterno'
       path: '/atendimento-fraterno'
@@ -1054,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjudaRoute: AjudaRoute,
   AniversariantesRoute: AniversariantesRoute,
   AtendimentoFraternoRoute: AtendimentoFraternoRoute,
+  AvisosRoute: AvisosRoute,
   BazarRoute: BazarRoute,
   BuscaRoute: BuscaRoute,
   CaronasRoute: CaronasRoute,

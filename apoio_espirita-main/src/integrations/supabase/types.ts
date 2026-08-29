@@ -477,6 +477,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      avisos_enviados: {
+        Row: {
+          created_at: string;
+          destinatario: string;
+          id: string;
+          referencia: string;
+          tipo: string;
+        };
+        Insert: {
+          created_at?: string;
+          destinatario: string;
+          id?: string;
+          referencia: string;
+          tipo: string;
+        };
+        Update: {
+          created_at?: string;
+          destinatario?: string;
+          id?: string;
+          referencia?: string;
+          tipo?: string;
+        };
+        Relationships: [];
+      };
+      avisos_preferencias: {
+        Row: {
+          acolhimento: boolean;
+          aniversariantes: boolean | null;
+          meus_avisos: boolean;
+          updated_at: string;
+          user_id: string;
+          voluntariado: boolean;
+        };
+        Insert: {
+          acolhimento?: boolean;
+          aniversariantes?: boolean | null;
+          meus_avisos?: boolean;
+          updated_at?: string;
+          user_id?: string;
+          voluntariado?: boolean;
+        };
+        Update: {
+          acolhimento?: boolean;
+          aniversariantes?: boolean | null;
+          meus_avisos?: boolean;
+          updated_at?: string;
+          user_id?: string;
+          voluntariado?: boolean;
+        };
+        Relationships: [];
+      };
       bazar_contatos: {
         Row: {
           contato: string;

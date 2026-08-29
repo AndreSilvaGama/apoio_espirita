@@ -4,8 +4,10 @@ import { Check, Copy, ImagePlus, Package, Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { avisar } from "@/lib/avisos";
 import { validarLinguagem } from "@/lib/linguagem";
 import { gerarCodigoPix } from "@/lib/pix";
+import { QrCodePix } from "@/components/QrCodePix";
 import {
   Abas,
   Aviso,
@@ -166,10 +168,14 @@ function CartaoItem({
 
         {codigoPix && (
           <div className="mt-3 rounded-xl border border-border/60 p-3">
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-2">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground/60 mb-3">
               Pagamento por PIX
             </p>
-            <p className="text-xs text-muted-foreground font-light break-all line-clamp-2">
+            <QrCodePix codigo={codigoPix} />
+            <p className="mt-3 text-center text-[11px] text-muted-foreground/70">
+              Aponte a câmera do aplicativo do banco, ou use o código abaixo.
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground font-light break-all line-clamp-2">
               {codigoPix}
             </p>
             <button
@@ -496,19 +502,24 @@ function Bazar() {
       return;
     }
     setOcupado(itemId);
-    const { error } = await supabase.from("bazar_reservas").insert({
-      item_id: itemId,
-      sigla_casa: profile?.sigla_casa ?? "",
-      mensagem: formReserva.mensagem.trim() || null,
-      contato: formReserva.contato.trim(),
-      criado_por: user?.id ?? "",
-      autor_nome: profile?.nome ?? "",
-    });
+    const { data: nova, error } = await supabase
+      .from("bazar_reservas")
+      .insert({
+        item_id: itemId,
+        sigla_casa: profile?.sigla_casa ?? "",
+        mensagem: formReserva.mensagem.trim() || null,
+        contato: formReserva.contato.trim(),
+        criado_por: user?.id ?? "",
+        autor_nome: profile?.nome ?? "",
+      })
+      .select("id")
+      .single();
     setOcupado(null);
     if (error) {
       setErro(mensagemDeErro(error));
       return;
     }
+    avisar("bazar_reserva", nova?.id);
     setReservando(null);
     setFormReserva({ mensagem: "", contato: formReserva.contato });
     await carregar();
@@ -522,6 +533,7 @@ function Bazar() {
       setErro(mensagemDeErro(error));
       return;
     }
+    if (status !== "concluida") avisar("bazar_resposta", id);
     await carregar();
   }
 

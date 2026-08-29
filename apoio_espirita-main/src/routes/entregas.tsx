@@ -4,6 +4,7 @@ import { CalendarClock, MapPin, PackageCheck, Plus, Trash2, Truck } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { avisar } from "@/lib/avisos";
 import { validarLinguagem } from "@/lib/linguagem";
 import {
   Abas,
@@ -208,6 +209,7 @@ function Entregas() {
       setErro(mensagemDeErro(falhaContato));
       return;
     }
+    avisar("entrega_assumida", entrega.id);
     setAssumindo(null);
     setContatoVoluntario("");
     await carregar();

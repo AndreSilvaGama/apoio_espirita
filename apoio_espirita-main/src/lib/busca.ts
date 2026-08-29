@@ -23,6 +23,12 @@ export interface PaginaDoSite {
 /** Telas que não têm cartão de funcionalidade, mas que as pessoas procuram. */
 const PAGINAS_EXTRAS: PaginaDoSite[] = [
   {
+    titulo: "Avisos por e-mail",
+    descricao: "Escolha o que o site avisa no seu e-mail e o que não avisa.",
+    href: "/avisos",
+    termos: ["e-mail", "email", "aviso", "notificação", "receber", "parar de receber"],
+  },
+  {
     titulo: "Tesouraria",
     descricao: "Receitas, despesas, saldo do mês e exportação para Excel.",
     href: "/tesouraria",

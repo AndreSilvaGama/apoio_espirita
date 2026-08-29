@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, MessageCircle, Pin, Plus, Trash2 } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { avisar } from "@/lib/avisos";
 import { validarLinguagem } from "@/lib/linguagem";
 import {
   Aviso,
@@ -135,20 +136,27 @@ function Forum() {
       return;
     }
     setSalvando(true);
-    const { error } = await supabase.from("forum_topicos").insert({
-      sigla_casa: profile?.sigla_casa ?? "",
-      titulo: form.titulo.trim(),
-      texto: form.texto.trim(),
-      categoria: form.categoria,
-      aberto: form.aberto,
-      criado_por: user?.id ?? "",
-      autor_nome: profile?.nome ?? "",
-    });
+    const { data: novo, error } = await supabase
+      .from("forum_topicos")
+      .insert({
+        sigla_casa: profile?.sigla_casa ?? "",
+        titulo: form.titulo.trim(),
+        texto: form.texto.trim(),
+        categoria: form.categoria,
+        aberto: form.aberto,
+        criado_por: user?.id ?? "",
+        autor_nome: profile?.nome ?? "",
+      })
+      .select("id")
+      .single();
     setSalvando(false);
     if (error) {
       setErro(mensagemDeErro(error));
       return;
     }
+    // Só o pedido de acolhimento chama gente: os demais assuntos ficam no
+    // fórum esperando quem quiser ler.
+    if (form.categoria === "acolhimento") avisar("forum_acolhimento", novo?.id);
     setForm({ titulo: "", texto: "", categoria: "duvida", aberto: false });
     setCriando(false);
     await carregar();

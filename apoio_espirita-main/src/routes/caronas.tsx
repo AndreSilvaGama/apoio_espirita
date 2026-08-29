@@ -4,6 +4,7 @@ import { Car, Check, Clock, MapPin, Plus, Trash2, Users, X } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { avisar } from "@/lib/avisos";
 import { validarLinguagem } from "@/lib/linguagem";
 import {
   Aviso,
@@ -167,20 +168,25 @@ function Caronas() {
       return;
     }
     setOcupado(caronaId);
-    const { error } = await supabase.from("carona_pedidos").insert({
-      carona_id: caronaId,
-      sigla_casa: profile?.sigla_casa ?? "",
-      ponto_encontro: formPedido.ponto.trim() || null,
-      mensagem: formPedido.mensagem.trim() || null,
-      contato: formPedido.contato.trim(),
-      criado_por: user?.id ?? "",
-      autor_nome: profile?.nome ?? "",
-    });
+    const { data: novo, error } = await supabase
+      .from("carona_pedidos")
+      .insert({
+        carona_id: caronaId,
+        sigla_casa: profile?.sigla_casa ?? "",
+        ponto_encontro: formPedido.ponto.trim() || null,
+        mensagem: formPedido.mensagem.trim() || null,
+        contato: formPedido.contato.trim(),
+        criado_por: user?.id ?? "",
+        autor_nome: profile?.nome ?? "",
+      })
+      .select("id")
+      .single();
     setOcupado(null);
     if (error) {
       setErro(mensagemDeErro(error));
       return;
     }
+    avisar("carona_pedido", novo?.id);
     setPedindo(null);
     setFormPedido({ ponto: "", mensagem: "", contato: formPedido.contato });
     await carregar();
@@ -194,6 +200,7 @@ function Caronas() {
       setErro(mensagemDeErro(error));
       return;
     }
+    avisar("carona_resposta", id);
     await carregar();
   }
 

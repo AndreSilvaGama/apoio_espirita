@@ -4,6 +4,7 @@ import { Check, HandHeart, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { avisar } from "@/lib/avisos";
 import { validarLinguagem } from "@/lib/linguagem";
 import { HABILIDADES, afinidade, habilidadesEmComum } from "@/data/habilidades";
 import {
@@ -201,22 +202,27 @@ function Voluntariado() {
       return;
     }
     setOcupado("necessidade");
-    const { error } = await supabase.from("voluntariado_necessidades").insert({
-      sigla_casa: profile?.sigla_casa ?? "",
-      titulo: form.titulo.trim(),
-      descricao: form.descricao.trim(),
-      habilidades: form.habilidades,
-      urgencia: form.urgencia,
-      prazo: form.prazo || null,
-      aberto: form.aberto,
-      criado_por: user?.id ?? "",
-      autor_nome: profile?.nome ?? "",
-    });
+    const { data: nova, error } = await supabase
+      .from("voluntariado_necessidades")
+      .insert({
+        sigla_casa: profile?.sigla_casa ?? "",
+        titulo: form.titulo.trim(),
+        descricao: form.descricao.trim(),
+        habilidades: form.habilidades,
+        urgencia: form.urgencia,
+        prazo: form.prazo || null,
+        aberto: form.aberto,
+        criado_por: user?.id ?? "",
+        autor_nome: profile?.nome ?? "",
+      })
+      .select("id")
+      .single();
     setOcupado(null);
     if (error) {
       setErro(mensagemDeErro(error));
       return;
     }
+    avisar("voluntariado_necessidade", nova?.id);
     setForm({
       titulo: "",
       descricao: "",
@@ -265,17 +271,22 @@ function Voluntariado() {
 
   async function candidatar(necessidadeId: string) {
     setOcupado(necessidadeId);
-    const { error } = await supabase.from("voluntariado_candidaturas").insert({
-      necessidade_id: necessidadeId,
-      sigla_casa: profile?.sigla_casa ?? "",
-      criado_por: user?.id ?? "",
-      autor_nome: profile?.nome ?? "",
-    });
+    const { data: nova, error } = await supabase
+      .from("voluntariado_candidaturas")
+      .insert({
+        necessidade_id: necessidadeId,
+        sigla_casa: profile?.sigla_casa ?? "",
+        criado_por: user?.id ?? "",
+        autor_nome: profile?.nome ?? "",
+      })
+      .select("id")
+      .single();
     setOcupado(null);
     if (error) {
       setErro(mensagemDeErro(error));
       return;
     }
+    avisar("voluntariado_candidatura", nova?.id);
     await carregar();
   }
 

@@ -49,6 +49,7 @@ import {
   Cake,
   Clock,
   FileHeart,
+  BellRing,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -563,7 +564,7 @@ function NavBar() {
   ];
   const ROTAS_ESTUDO = ["/feb", "/artigos", "/perguntas", "/evangelizacao", "/musicas-cifras"];
   const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
-  const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas"];
+  const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas", "/avisos"];
 
   return (
     <header
@@ -778,6 +779,10 @@ function NavBar() {
               <MessageCircle size={14} strokeWidth={1.5} className="text-gray-400" />
               FAQ / Dúvidas
             </Link>
+            <Link to="/avisos" className={dropItemCls} onClick={() => setAberto(null)}>
+              <BellRing size={14} strokeWidth={1.5} className="text-amber-500" />
+              Avisos por e-mail
+            </Link>
             {instalavel && (
               <button
                 type="button"
@@ -971,6 +976,9 @@ function NavBar() {
                 </Link>
                 <Link to="/ajuda" className={subItemMobileCls}>
                   FAQ / Dúvidas
+                </Link>
+                <Link to="/avisos" className={subItemMobileCls}>
+                  Avisos por e-mail
                 </Link>
                 {instalavel && (
                   <button

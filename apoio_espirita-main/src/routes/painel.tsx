@@ -202,11 +202,11 @@ const roadmap: Item[] = [
   // ── PENDENTE — Vida espiritual e comunidade ──────────────────────────────
 
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Calendário de aniversariantes do mês",
     cardTitle: "Aniversariantes do Mês",
     descricao:
-      "No ar em /aniversariantes: calendário mês a mês da casa, e quem faz aniversário hoje aparece no painel da página da casa. Guardamos apenas dia e mês, nunca o ano — o que não é guardado não vaza —, e preencher é o próprio consentimento de aparecer. Falta o aviso automático ao coordenador para organizar a homenagem: depende do canal de notificação por e-mail, ainda não ligado a este recurso.",
+      "No ar em /aniversariantes: calendário mês a mês da casa, e quem faz aniversário hoje aparece no painel da página da casa. Guardamos apenas dia e mês, nunca o ano — o que não é guardado não vaza —, e preencher é o próprio consentimento de aparecer. O aviso automático da manhã já sai: quem é da direção da casa recebe a lista do dia por e-mail, e qualquer um liga ou desliga em /avisos.",
   },
   {
     status: "andamento",
@@ -236,11 +236,11 @@ const roadmap: Item[] = [
       "No ar em /atendimento-fraterno, com o sigilo mais estrito da plataforma: leem apenas o Atendente fraterno, o Coordenador da casa e quem a direção autorizar nominalmente. A presidência não entra pelo cargo, e o desenvolvedor foi excluído de propósito — suporte técnico não é motivo para ler o relato de ninguém. Registra relato, encaminhamento e data de retorno, e cada abertura de ficha fica gravada em um histórico que ninguém apaga.",
   },
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Fórum de apoio fraterno — espaço para quem está passando por dificuldades",
     cardTitle: "Fórum de Apoio",
     descricao:
-      "No ar em /forum: tópicos por assunto (dúvida, acolhimento, estudo, testemunho), respostas, marcação de resolvido, fixação pela direção e moderação de quem administra a casa. O tópico nasce restrito à casa e o autor decide abri-lo às demais. Falta o aviso aos voluntários quando alguém publica um pedido de acolhimento.",
+      "No ar em /forum: tópicos por assunto (dúvida, acolhimento, estudo, testemunho), respostas, marcação de resolvido, fixação pela direção e moderação de quem administra a casa. O tópico nasce restrito à casa e o autor decide abri-lo às demais. Quem se dispõe a acolher recebe aviso por e-mail quando alguém abre um pedido de acolhimento — desligado por padrão, para não encher a caixa de quem não pediu.",
   },
 
   // ── PENDENTE — Solidariedade e mobilidade ────────────────────────────────
@@ -276,11 +276,11 @@ const roadmap: Item[] = [
       "Registro de todas as manutenções realizadas ou necessárias na casa: reparos, limpezas, compras e serviços. Com datas, responsáveis e status de cada tarefa, para que nada seja esquecido",
   },
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Cruzamento de habilidades dos membros com as necessidades do centro",
     cardTitle: "Localização de Voluntariado",
     descricao:
-      "No ar em /voluntariado: a casa publica o que precisa, o membro marca o que sabe fazer a partir de um vocabulário comum (sem ele, pedreiro e alvenaria nunca se encontrariam), e cada pedido mostra os voluntários com afinidade, dizendo quais habilidades combinaram. Quem se oferece é aceito ou recusado por quem pediu. Falta o alerta automático ao voluntário quando aparece um pedido com o perfil dele.",
+      "No ar em /voluntariado: a casa publica o que precisa, o membro marca o que sabe fazer a partir de um vocabulário comum (sem ele, pedreiro e alvenaria nunca se encontrariam), e cada pedido mostra os voluntários com afinidade, dizendo quais habilidades combinaram. Quem se oferece é aceito ou recusado por quem pediu. O alerta por e-mail ao voluntário cujas habilidades combinam com um pedido novo já funciona, para quem o ligar em /avisos.",
   },
   {
     status: "planejado",
@@ -315,7 +315,7 @@ const roadmap: Item[] = [
     titulo: "Bazar on-line com pagamento por PIX",
     cardTitle: "Bazar On-line",
     descricao:
-      "No ar em /bazar: item com foto, preço ou contribuição livre, reserva de quem se interessa, aceite de quem anuncia e código PIX copia e cola gerado na hora, no padrão do Banco Central. O pagamento vai direto para a chave de quem anuncia — a plataforma não recebe, não retém e não cobra nada. Falta a imagem do QR Code para leitura pela câmera: hoje o pagamento é feito colando o código no aplicativo do banco.",
+      "No ar em /bazar: item com foto, preço ou contribuição livre, reserva de quem se interessa, aceite de quem anuncia e pagamento por PIX — com QR Code desenhado na hora, a partir da chave informada, mais o código copia e cola. O desenho é gerado no próprio navegador, sem passar a chave de ninguém para serviço de fora, e a correção é conferida por um teste que lê o código de volta. O pagamento vai direto para a chave de quem anuncia: a plataforma não recebe, não retém e não cobra nada.",
   },
 
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────
