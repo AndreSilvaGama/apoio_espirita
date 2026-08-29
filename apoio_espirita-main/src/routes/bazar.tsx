@@ -98,6 +98,7 @@ interface CartaoItemProps {
   aoReservar: (id: string) => void;
   aoResponderReserva: (id: string, status: "aceita" | "recusada" | "concluida") => void;
   aoAlternarDisponivel: (item: Item) => void;
+  aoAlternarAlcance: (item: Item) => void;
   aoApagar: (id: string) => void;
   aoCopiarPix: (item: Item) => void;
 }
@@ -118,6 +119,7 @@ function CartaoItem({
   aoReservar,
   aoResponderReserva,
   aoAlternarDisponivel,
+  aoAlternarAlcance,
   aoApagar,
   aoCopiarPix,
 }: CartaoItemProps) {
@@ -284,6 +286,17 @@ function CartaoItem({
             {dono ? (
               <>
                 <BotaoDiscreto
+                  onClick={() => aoAlternarAlcance(item)}
+                  disabled={ocupado === item.id}
+                  title={
+                    item.aberto
+                      ? "Passar a mostrar somente para a sua casa"
+                      : "Passar a mostrar para todas as casas"
+                  }
+                >
+                  {item.aberto ? "Mostrar só na minha casa" : "Mostrar a todas as casas"}
+                </BotaoDiscreto>
+                <BotaoDiscreto
                   onClick={() => aoAlternarDisponivel(item)}
                   disabled={ocupado === item.id}
                 >
@@ -379,6 +392,7 @@ function Bazar() {
   });
   const [foto, setFoto] = useState<File | null>(null);
 
+  const [alcance, setAlcance] = useState<"casa" | "todas">("casa");
   const [reservando, setReservando] = useState<string | null>(null);
   const [formReserva, setFormReserva] = useState({ mensagem: "", contato: "" });
 
@@ -537,6 +551,26 @@ function Bazar() {
     await carregar();
   }
 
+  /**
+   * Abre o item para as outras casas, ou o recolhe de volta.
+   *
+   * A escolha existia só no momento de anunciar; quem mudasse de ideia depois
+   * ficava sem saída a não ser apagar e publicar de novo.
+   */
+  async function alternarAlcance(item: Item) {
+    setOcupado(item.id);
+    const { error } = await supabase
+      .from("bazar_itens")
+      .update({ aberto: !item.aberto })
+      .eq("id", item.id);
+    setOcupado(null);
+    if (error) {
+      setErro(mensagemDeErro(error));
+      return;
+    }
+    await carregar();
+  }
+
   async function alternarDisponivel(item: Item) {
     setOcupado(item.id);
     const { error } = await supabase
@@ -581,7 +615,11 @@ function Bazar() {
 
   const meusItens = itens.filter((i) => i.criado_por === user?.id);
   const minhasReservas = reservas.filter((r) => r.criado_por === user?.id);
-  const vitrine = itens.filter((i) => i.disponivel);
+  const disponiveis = itens.filter((i) => i.disponivel);
+  const vitrine =
+    alcance === "casa"
+      ? disponiveis.filter((i) => i.sigla_casa === profile?.sigla_casa)
+      : disponiveis;
 
   return (
     <PaginaComunidade
@@ -603,7 +641,32 @@ function Bazar() {
           aoTrocar={setAba}
         />
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {aba === "vitrine" ? (
+            <div className="flex gap-2">
+              {(
+                [
+                  { id: "casa", rotulo: "Da minha casa" },
+                  { id: "todas", rotulo: "De todas as casas" },
+                ] as const
+              ).map((op) => (
+                <button
+                  key={op.id}
+                  type="button"
+                  onClick={() => setAlcance(op.id)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] uppercase tracking-widest border transition-colors ${
+                    alcance === op.id
+                      ? "border-cyan-glow/50 bg-cyan-glow/10 text-cyan-glow"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {op.rotulo}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span />
+          )}
           <BotaoPrimario onClick={() => setCriando((v) => !v)}>
             <span className="inline-flex items-center gap-2">
               <Plus size={13} strokeWidth={2} /> {criando ? "Fechar" : "Anunciar item"}
@@ -790,7 +853,13 @@ function Bazar() {
           <p className="text-center text-muted-foreground/50 py-12 font-light">Carregando…</p>
         ) : aba === "vitrine" ? (
           vitrine.length === 0 ? (
-            <Vazio texto="Nenhum item à venda no momento." />
+            <Vazio
+              texto={
+                alcance === "casa"
+                  ? "Nenhum item à venda na sua casa no momento."
+                  : "Nenhum item à venda, nem na sua casa nem nas que abriram o bazar."
+              }
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {vitrine.map((i) => (
@@ -811,6 +880,7 @@ function Bazar() {
                   aoReservar={reservar}
                   aoResponderReserva={responderReserva}
                   aoAlternarDisponivel={alternarDisponivel}
+                  aoAlternarAlcance={alternarAlcance}
                   aoApagar={apagar}
                   aoCopiarPix={copiarPix}
                 />
@@ -840,6 +910,7 @@ function Bazar() {
                   aoReservar={reservar}
                   aoResponderReserva={responderReserva}
                   aoAlternarDisponivel={alternarDisponivel}
+                  aoAlternarAlcance={alternarAlcance}
                   aoApagar={apagar}
                   aoCopiarPix={copiarPix}
                 />

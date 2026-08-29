@@ -50,6 +50,8 @@ import {
   Clock,
   FileHeart,
   BellRing,
+  CalendarDays,
+  KanbanSquare,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -475,7 +477,7 @@ function RootComponent() {
  * usa o site tem dificuldade com tecnologia, e um desenho sem palavra obriga
  * a adivinhar o que há atrás dele.
  */
-type MenuSuspenso = "comunidade" | "estudo" | "jogos" | "ajuda";
+type MenuSuspenso = "recursos" | "comunidade" | "estudo" | "jogos" | "ajuda";
 
 function NavBar() {
   const { user, profile, isDev, isDecisao, signOut } = useAuth();
@@ -550,6 +552,7 @@ function NavBar() {
 
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
+  const ROTAS_RECURSOS = ["/agenda", "/kanban"];
   const ROTAS_COMUNIDADE = [
     "/forum",
     "/grupos",
@@ -625,12 +628,22 @@ function NavBar() {
           >
             Casa
           </Link>
-          <Link to="/agenda" className={linkCls("/agenda")}>
-            Agenda
-          </Link>
-          <Link to="/kanban" className={linkCls("/kanban")}>
-            Projetos
-          </Link>
+
+          <GrupoSuspenso
+            rotulo="Recursos"
+            aberto={aberto === "recursos"}
+            ativo={isAnyActive(ROTAS_RECURSOS)}
+            aoAlternar={() => alternar("recursos")}
+          >
+            <Link to="/agenda" className={dropItemCls} onClick={() => setAberto(null)}>
+              <CalendarDays size={14} strokeWidth={1.5} className="text-amber-500" />
+              Agenda
+            </Link>
+            <Link to="/kanban" className={dropItemCls} onClick={() => setAberto(null)}>
+              <KanbanSquare size={14} strokeWidth={1.5} className="text-emerald-500" />
+              Projetos
+            </Link>
+          </GrupoSuspenso>
 
           <GrupoSuspenso
             rotulo="Comunidade"
@@ -853,12 +866,25 @@ function NavBar() {
             >
               Casa
             </Link>
-            <Link to="/agenda" className={itemMobileCls}>
-              Agenda
-            </Link>
-            <Link to="/kanban" className={itemMobileCls}>
-              Projetos
-            </Link>
+
+            <button onClick={() => alternarMobile("recursos")} className={grupoMobileCls}>
+              Recursos
+              <ChevronDown
+                size={14}
+                strokeWidth={2}
+                className={`transition-transform ${abertoMobile === "recursos" ? "rotate-180" : ""}`}
+              />
+            </button>
+            {abertoMobile === "recursos" && (
+              <>
+                <Link to="/agenda" className={subItemMobileCls}>
+                  Agenda
+                </Link>
+                <Link to="/kanban" className={subItemMobileCls}>
+                  Projetos
+                </Link>
+              </>
+            )}
 
             <button onClick={() => alternarMobile("comunidade")} className={grupoMobileCls}>
               Comunidade
