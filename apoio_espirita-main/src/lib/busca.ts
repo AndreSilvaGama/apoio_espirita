@@ -58,6 +58,25 @@ const PAGINAS_EXTRAS: PaginaDoSite[] = [
     ],
   },
   {
+    titulo: "Apresentações ao vivo",
+    descricao:
+      "Projete a apresentação da palestra e deixe a plateia acompanhar pelo próprio celular.",
+    href: "/apresentacoes",
+    termos: [
+      "apresentacao",
+      "powerpoint",
+      "power point",
+      "slide",
+      "slides",
+      "projetor",
+      "projetar",
+      "palestra",
+      "pdf",
+      "telao",
+      "ao vivo",
+    ],
+  },
+  {
     titulo: "Casas espíritas por cidade",
     descricao: "Endereço, telefone e como chegar às casas espíritas de cada cidade.",
     href: "/casas",

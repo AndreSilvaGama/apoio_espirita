@@ -491,11 +491,11 @@ const roadmap: Item[] = [
   // ── PENDENTE — Ferramentas de apoio ──────────────────────────────────────
 
   {
-    status: "planejado",
-    titulo: "Player de PowerPoint — apresentações direto na plataforma",
-    cardTitle: "Player de PowerPoint",
+    status: "feito",
+    titulo: "Apresentações ao vivo — projete sem computador e sem projetor",
+    cardTitle: "Apresentações",
     descricao:
-      "Apresente arquivos de PowerPoint diretamente no site, sem precisar de instalações ou aplicativos externos · Ideal para palestrantes e coordenadores",
+      "A casa envia a apresentação em PDF e projeta de qualquer aparelho, inclusive de um celular ligado ao projetor por cabo — a tela não apaga durante a palestra. A plateia acompanha pelo próprio celular com um código de seis letras ou o QR na parede, sem precisar de conta: pode ampliar o slide, navegar sozinha e voltar ao ponto do palestrante, salvar um slide e enviar perguntas que só quem apresenta vê · Disponível em /apresentacoes e /ao-vivo",
   },
 
   // ── FEITO — Módulos já disponíveis ───────────────────────────────────────

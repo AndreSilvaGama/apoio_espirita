@@ -27,3 +27,4 @@ __pycache__/
 
 # TanStack Router (gerado em tempo de desenvolvimento)
 .tanstack/
+supabase/.temp/

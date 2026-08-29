@@ -64,6 +64,7 @@ describe("catálogo de telas", () => {
       "/agenda",
       "/ajuda",
       "/aniversariantes",
+      "/apresentacoes",
       "/artigos",
       "/artigos/meus",
       "/artigos/novo",

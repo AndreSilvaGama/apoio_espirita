@@ -46,6 +46,8 @@ import { Route as PerguntasIndexRouteImport } from './routes/perguntas.index'
 import { Route as JogosIndexRouteImport } from './routes/jogos/index'
 import { Route as CasasIndexRouteImport } from './routes/casas.index'
 import { Route as ArtigosIndexRouteImport } from './routes/artigos.index'
+import { Route as ApresentacoesIndexRouteImport } from './routes/apresentacoes.index'
+import { Route as AoVivoIndexRouteImport } from './routes/ao-vivo.index'
 import { Route as PerguntasSlugRouteImport } from './routes/perguntas.$slug'
 import { Route as JogosSemeadorMensagensRouteImport } from './routes/jogos/semeador-mensagens'
 import { Route as JogosQuizEspiritaRouteImport } from './routes/jogos/quiz-espirita'
@@ -57,6 +59,9 @@ import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 import { Route as ArtigosNovoRouteImport } from './routes/artigos.novo'
 import { Route as ArtigosMeusRouteImport } from './routes/artigos.meus'
 import { Route as ArtigosSlugRouteImport } from './routes/artigos.$slug'
+import { Route as ApresentarIdRouteImport } from './routes/apresentar.$id'
+import { Route as ApresentacoesIdRouteImport } from './routes/apresentacoes.$id'
+import { Route as AoVivoCodigoRouteImport } from './routes/ao-vivo.$codigo'
 import { Route as CasasUfIndexRouteImport } from './routes/casas.$uf.index'
 import { Route as CasasUfCidadeRouteImport } from './routes/casas.$uf.$cidade'
 import { Route as ArtigosSlugEditarRouteImport } from './routes/artigos.$slug.editar'
@@ -246,6 +251,16 @@ const ArtigosIndexRoute = ArtigosIndexRouteImport.update({
   path: '/artigos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApresentacoesIndexRoute = ApresentacoesIndexRouteImport.update({
+  id: '/apresentacoes/',
+  path: '/apresentacoes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AoVivoIndexRoute = AoVivoIndexRouteImport.update({
+  id: '/ao-vivo/',
+  path: '/ao-vivo/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerguntasSlugRoute = PerguntasSlugRouteImport.update({
   id: '/perguntas/$slug',
   path: '/perguntas/$slug',
@@ -302,6 +317,21 @@ const ArtigosSlugRoute = ArtigosSlugRouteImport.update({
   path: '/artigos/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApresentarIdRoute = ApresentarIdRouteImport.update({
+  id: '/apresentar/$id',
+  path: '/apresentar/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApresentacoesIdRoute = ApresentacoesIdRouteImport.update({
+  id: '/apresentacoes/$id',
+  path: '/apresentacoes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AoVivoCodigoRoute = AoVivoCodigoRouteImport.update({
+  id: '/ao-vivo/$codigo',
+  path: '/ao-vivo/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CasasUfIndexRoute = CasasUfIndexRouteImport.update({
   id: '/casas/$uf/',
   path: '/casas/$uf/',
@@ -352,6 +382,9 @@ export interface FileRoutesByFullPath {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/voluntariado': typeof VoluntariadoRoute
+  '/ao-vivo/$codigo': typeof AoVivoCodigoRoute
+  '/apresentacoes/$id': typeof ApresentacoesIdRoute
+  '/apresentar/$id': typeof ApresentarIdRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -363,6 +396,8 @@ export interface FileRoutesByFullPath {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/perguntas/$slug': typeof PerguntasSlugRoute
+  '/ao-vivo/': typeof AoVivoIndexRoute
+  '/apresentacoes/': typeof ApresentacoesIndexRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
@@ -405,6 +440,9 @@ export interface FileRoutesByTo {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/voluntariado': typeof VoluntariadoRoute
+  '/ao-vivo/$codigo': typeof AoVivoCodigoRoute
+  '/apresentacoes/$id': typeof ApresentacoesIdRoute
+  '/apresentar/$id': typeof ApresentarIdRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -416,6 +454,8 @@ export interface FileRoutesByTo {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/perguntas/$slug': typeof PerguntasSlugRoute
+  '/ao-vivo': typeof AoVivoIndexRoute
+  '/apresentacoes': typeof ApresentacoesIndexRoute
   '/artigos': typeof ArtigosIndexRoute
   '/casas': typeof CasasIndexRoute
   '/jogos': typeof JogosIndexRoute
@@ -459,6 +499,9 @@ export interface FileRoutesById {
   '/tesouraria': typeof TesourariaRoute
   '/transparencia': typeof TransparenciaRoute
   '/voluntariado': typeof VoluntariadoRoute
+  '/ao-vivo/$codigo': typeof AoVivoCodigoRoute
+  '/apresentacoes/$id': typeof ApresentacoesIdRoute
+  '/apresentar/$id': typeof ApresentarIdRoute
   '/artigos/$slug': typeof ArtigosSlugRouteWithChildren
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
@@ -470,6 +513,8 @@ export interface FileRoutesById {
   '/jogos/quiz-espirita': typeof JogosQuizEspiritaRoute
   '/jogos/semeador-mensagens': typeof JogosSemeadorMensagensRoute
   '/perguntas/$slug': typeof PerguntasSlugRoute
+  '/ao-vivo/': typeof AoVivoIndexRoute
+  '/apresentacoes/': typeof ApresentacoesIndexRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
   '/jogos/': typeof JogosIndexRoute
@@ -514,6 +559,9 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/voluntariado'
+    | '/ao-vivo/$codigo'
+    | '/apresentacoes/$id'
+    | '/apresentar/$id'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -525,6 +573,8 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/perguntas/$slug'
+    | '/ao-vivo/'
+    | '/apresentacoes/'
     | '/artigos/'
     | '/casas/'
     | '/jogos/'
@@ -567,6 +617,9 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/voluntariado'
+    | '/ao-vivo/$codigo'
+    | '/apresentacoes/$id'
+    | '/apresentar/$id'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -578,6 +631,8 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/perguntas/$slug'
+    | '/ao-vivo'
+    | '/apresentacoes'
     | '/artigos'
     | '/casas'
     | '/jogos'
@@ -620,6 +675,9 @@ export interface FileRouteTypes {
     | '/tesouraria'
     | '/transparencia'
     | '/voluntariado'
+    | '/ao-vivo/$codigo'
+    | '/apresentacoes/$id'
+    | '/apresentar/$id'
     | '/artigos/$slug'
     | '/artigos/meus'
     | '/artigos/novo'
@@ -631,6 +689,8 @@ export interface FileRouteTypes {
     | '/jogos/quiz-espirita'
     | '/jogos/semeador-mensagens'
     | '/perguntas/$slug'
+    | '/ao-vivo/'
+    | '/apresentacoes/'
     | '/artigos/'
     | '/casas/'
     | '/jogos/'
@@ -674,6 +734,9 @@ export interface RootRouteChildren {
   TesourariaRoute: typeof TesourariaRoute
   TransparenciaRoute: typeof TransparenciaRoute
   VoluntariadoRoute: typeof VoluntariadoRoute
+  AoVivoCodigoRoute: typeof AoVivoCodigoRoute
+  ApresentacoesIdRoute: typeof ApresentacoesIdRoute
+  ApresentarIdRoute: typeof ApresentarIdRoute
   ArtigosSlugRoute: typeof ArtigosSlugRouteWithChildren
   ArtigosMeusRoute: typeof ArtigosMeusRoute
   ArtigosNovoRoute: typeof ArtigosNovoRoute
@@ -685,6 +748,8 @@ export interface RootRouteChildren {
   JogosQuizEspiritaRoute: typeof JogosQuizEspiritaRoute
   JogosSemeadorMensagensRoute: typeof JogosSemeadorMensagensRoute
   PerguntasSlugRoute: typeof PerguntasSlugRoute
+  AoVivoIndexRoute: typeof AoVivoIndexRoute
+  ApresentacoesIndexRoute: typeof ApresentacoesIndexRoute
   ArtigosIndexRoute: typeof ArtigosIndexRoute
   CasasIndexRoute: typeof CasasIndexRoute
   JogosIndexRoute: typeof JogosIndexRoute
@@ -954,6 +1019,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtigosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apresentacoes/': {
+      id: '/apresentacoes/'
+      path: '/apresentacoes'
+      fullPath: '/apresentacoes/'
+      preLoaderRoute: typeof ApresentacoesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ao-vivo/': {
+      id: '/ao-vivo/'
+      path: '/ao-vivo'
+      fullPath: '/ao-vivo/'
+      preLoaderRoute: typeof AoVivoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perguntas/$slug': {
       id: '/perguntas/$slug'
       path: '/perguntas/$slug'
@@ -1031,6 +1110,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArtigosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apresentar/$id': {
+      id: '/apresentar/$id'
+      path: '/apresentar/$id'
+      fullPath: '/apresentar/$id'
+      preLoaderRoute: typeof ApresentarIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apresentacoes/$id': {
+      id: '/apresentacoes/$id'
+      path: '/apresentacoes/$id'
+      fullPath: '/apresentacoes/$id'
+      preLoaderRoute: typeof ApresentacoesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ao-vivo/$codigo': {
+      id: '/ao-vivo/$codigo'
+      path: '/ao-vivo/$codigo'
+      fullPath: '/ao-vivo/$codigo'
+      preLoaderRoute: typeof AoVivoCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/casas/$uf/': {
       id: '/casas/$uf/'
       path: '/casas/$uf'
@@ -1101,6 +1201,9 @@ const rootRouteChildren: RootRouteChildren = {
   TesourariaRoute: TesourariaRoute,
   TransparenciaRoute: TransparenciaRoute,
   VoluntariadoRoute: VoluntariadoRoute,
+  AoVivoCodigoRoute: AoVivoCodigoRoute,
+  ApresentacoesIdRoute: ApresentacoesIdRoute,
+  ApresentarIdRoute: ApresentarIdRoute,
   ArtigosSlugRoute: ArtigosSlugRouteWithChildren,
   ArtigosMeusRoute: ArtigosMeusRoute,
   ArtigosNovoRoute: ArtigosNovoRoute,
@@ -1112,6 +1215,8 @@ const rootRouteChildren: RootRouteChildren = {
   JogosQuizEspiritaRoute: JogosQuizEspiritaRoute,
   JogosSemeadorMensagensRoute: JogosSemeadorMensagensRoute,
   PerguntasSlugRoute: PerguntasSlugRoute,
+  AoVivoIndexRoute: AoVivoIndexRoute,
+  ApresentacoesIndexRoute: ApresentacoesIndexRoute,
   ArtigosIndexRoute: ArtigosIndexRoute,
   CasasIndexRoute: CasasIndexRoute,
   JogosIndexRoute: JogosIndexRoute,

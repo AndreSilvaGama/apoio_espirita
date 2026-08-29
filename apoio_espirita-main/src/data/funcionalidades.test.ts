@@ -13,6 +13,7 @@ import { FUNCIONALIDADES } from "./funcionalidades";
 /** Rotas que existem em src/routes. Ao criar uma rota nova, some aqui. */
 const ROTAS_EXISTENTES = [
   "/agenda",
+  "/apresentacoes",
   "/ajuda",
   "/aniversariantes",
   "/artigos",

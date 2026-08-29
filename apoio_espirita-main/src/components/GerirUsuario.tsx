@@ -225,7 +225,8 @@ export function GerirUsuario({
 
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-gray-500 mb-1.5">
-                      Para confirmar, digite o nome: <strong className="text-gray-700">{nome}</strong>
+                      Para confirmar, digite o nome:{" "}
+                      <strong className="text-gray-700">{nome}</strong>
                     </label>
                     <input
                       value={confirmacao}

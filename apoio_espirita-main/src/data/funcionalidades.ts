@@ -302,9 +302,10 @@ export const FUNCIONALIDADES: FuncionalidadeCategoria[] = [
       },
       {
         Icon: MonitorPlay,
-        title: "Player de PowerPoint",
-        desc: "Apresente arquivos de PowerPoint diretamente na plataforma, sem instalações.",
-        status: "breve",
+        title: "Apresentações ao vivo",
+        desc: "Projete de qualquer aparelho, até de um celular ligado ao projetor, e deixe a plateia acompanhar pelo próprio celular.",
+        status: "disponivel",
+        href: "/apresentacoes",
       },
       {
         Icon: CircleHelp,

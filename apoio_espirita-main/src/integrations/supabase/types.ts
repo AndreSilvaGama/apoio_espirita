@@ -8,6 +8,121 @@ export type Database = {
   };
   public: {
     Tables: {
+      apresentacoes: {
+        Row: {
+          autor_nome: string | null;
+          created_at: string;
+          criado_por: string;
+          descricao: string | null;
+          id: string;
+          permite_download: boolean;
+          sigla_casa: string;
+          titulo: string;
+          total_slides: number;
+        };
+        Insert: {
+          autor_nome?: string | null;
+          created_at?: string;
+          criado_por: string;
+          descricao?: string | null;
+          id?: string;
+          permite_download?: boolean;
+          sigla_casa: string;
+          titulo: string;
+          total_slides: number;
+        };
+        Update: {
+          autor_nome?: string | null;
+          created_at?: string;
+          criado_por?: string;
+          descricao?: string | null;
+          id?: string;
+          permite_download?: boolean;
+          sigla_casa?: string;
+          titulo?: string;
+          total_slides?: number;
+        };
+        Relationships: [];
+      };
+      apresentacao_sessoes: {
+        Row: {
+          aceita_perguntas: boolean;
+          apresentacao_id: string;
+          ativa: boolean;
+          codigo: string;
+          created_at: string;
+          encerrada_em: string | null;
+          id: string;
+          iniciada_por: string;
+          slide_atual: number;
+        };
+        Insert: {
+          aceita_perguntas?: boolean;
+          apresentacao_id: string;
+          ativa?: boolean;
+          codigo: string;
+          created_at?: string;
+          encerrada_em?: string | null;
+          id?: string;
+          iniciada_por: string;
+          slide_atual?: number;
+        };
+        Update: {
+          aceita_perguntas?: boolean;
+          apresentacao_id?: string;
+          ativa?: boolean;
+          codigo?: string;
+          created_at?: string;
+          encerrada_em?: string | null;
+          id?: string;
+          iniciada_por?: string;
+          slide_atual?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "apresentacao_sessoes_apresentacao_id_fkey";
+            columns: ["apresentacao_id"];
+            isOneToOne: false;
+            referencedRelation: "apresentacoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      apresentacao_perguntas: {
+        Row: {
+          autor_nome: string | null;
+          created_at: string;
+          id: string;
+          respondida: boolean;
+          sessao_id: string;
+          texto: string;
+        };
+        Insert: {
+          autor_nome?: string | null;
+          created_at?: string;
+          id?: string;
+          respondida?: boolean;
+          sessao_id: string;
+          texto: string;
+        };
+        Update: {
+          autor_nome?: string | null;
+          created_at?: string;
+          id?: string;
+          respondida?: boolean;
+          sessao_id?: string;
+          texto?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "apresentacao_perguntas_sessao_id_fkey";
+            columns: ["sessao_id"];
+            isOneToOne: false;
+            referencedRelation: "apresentacao_sessoes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       administradores_pagina: {
         Row: {
           adicionado_por: string | null;
@@ -2690,6 +2805,10 @@ export type Database = {
       };
     };
     Functions: {
+      abrir_sessao_apresentacao: {
+        Args: { p_apresentacao: string };
+        Returns: { codigo: string; id: string }[];
+      };
       artigo_deve_cair: {
         Args: { elogios: number; erro_grave: number; piso: number };
         Returns: boolean;

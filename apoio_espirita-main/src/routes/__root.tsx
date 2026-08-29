@@ -52,6 +52,7 @@ import {
   BellRing,
   CalendarDays,
   KanbanSquare,
+  Presentation,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -382,6 +383,11 @@ function AppLayout() {
     location.pathname.startsWith("/casas/") ||
     location.pathname === "/perguntas" ||
     location.pathname.startsWith("/perguntas/") ||
+    // A plateia chega pelo QR da parede, sem conta e numa rede fraca. Se esta
+    // tela esperasse a autenticação, quem escaneia veria "Carregando" antes do
+    // slide — no meio de uma palestra, isso é o recurso falhando.
+    location.pathname === "/ao-vivo" ||
+    location.pathname.startsWith("/ao-vivo/") ||
     location.pathname.startsWith("/artigos");
 
   useEffect(() => {
@@ -552,7 +558,7 @@ function NavBar() {
 
   const homePath = profile?.sigla_casa ? `/casa/${profile.sigla_casa}` : "/inicio";
 
-  const ROTAS_RECURSOS = ["/agenda", "/kanban"];
+  const ROTAS_RECURSOS = ["/agenda", "/kanban", "/apresentacoes"];
   const ROTAS_COMUNIDADE = [
     "/forum",
     "/grupos",
@@ -642,6 +648,10 @@ function NavBar() {
             <Link to="/kanban" className={dropItemCls} onClick={() => setAberto(null)}>
               <KanbanSquare size={14} strokeWidth={1.5} className="text-emerald-500" />
               Projetos
+            </Link>
+            <Link to="/apresentacoes" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Presentation size={14} strokeWidth={1.5} className="text-cyan-500" />
+              Apresentações
             </Link>
           </GrupoSuspenso>
 
@@ -882,6 +892,9 @@ function NavBar() {
                 </Link>
                 <Link to="/kanban" className={subItemMobileCls}>
                   Projetos
+                </Link>
+                <Link to="/apresentacoes" className={subItemMobileCls}>
+                  Apresentações
                 </Link>
               </>
             )}
