@@ -75,6 +75,7 @@ describe("catálogo de telas", () => {
       "/casas",
       "/entregas",
       "/evangelizacao",
+      "/evangelizacao/cadastro",
       "/feb",
       "/forum",
       "/grupos",

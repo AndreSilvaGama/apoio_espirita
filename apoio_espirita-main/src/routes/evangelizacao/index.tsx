@@ -11,13 +11,14 @@ import {
   ArrowRight,
   Leaf,
   Settings,
+  ClipboardList,
   HelpCircle,
   Sparkles,
   Search,
 } from "lucide-react";
 import { CasaHero } from "@/components/CasaHero";
 
-export const Route = createFileRoute("/evangelizacao")({
+export const Route = createFileRoute("/evangelizacao/")({
   component: Evangelizacao,
 });
 
@@ -574,7 +575,34 @@ function Evangelizacao() {
           </div>
 
           {isEvangelizador && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-4">
+              <Link
+                to="/evangelizacao/cadastro"
+                className="flex items-center gap-4 p-4 border border-cyan-200 group"
+                style={{
+                  background: "#ffffff",
+                  borderRadius: 20,
+                  boxShadow: "0 1px 4px rgba(0,20,70,.04), 0 3px 14px rgba(0,20,70,.05)",
+                }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center shrink-0 shadow-sm">
+                  <ClipboardList size={20} strokeWidth={1.5} className="text-cyan-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800 group-hover:text-cyan-700 transition-colors">
+                    Cadastro das crianças
+                  </p>
+                  <p className="text-xs text-gray-500 font-light mt-0.5">
+                    Fichas, telefones de emergência, alergias, chamada e acompanhamento
+                  </p>
+                </div>
+                <ArrowRight
+                  size={16}
+                  strokeWidth={1.5}
+                  className="text-cyan-400 group-hover:translate-x-1.5 transition-transform"
+                />
+              </Link>
+
               <Link
                 to="/configurar-memoria"
                 className="flex items-center gap-4 p-4 border border-amber-200 group"

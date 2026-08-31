@@ -28,7 +28,6 @@ import { Route as InicioRouteImport } from './routes/inicio'
 import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as ForumRouteImport } from './routes/forum'
 import { Route as FebRouteImport } from './routes/feb'
-import { Route as EvangelizacaoRouteImport } from './routes/evangelizacao'
 import { Route as EntregasRouteImport } from './routes/entregas'
 import { Route as ConfigurarMemoriaRouteImport } from './routes/configurar-memoria'
 import { Route as CompletarPerfilRouteImport } from './routes/completar-perfil'
@@ -44,6 +43,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerguntasIndexRouteImport } from './routes/perguntas.index'
 import { Route as JogosIndexRouteImport } from './routes/jogos/index'
+import { Route as EvangelizacaoIndexRouteImport } from './routes/evangelizacao/index'
 import { Route as CasasIndexRouteImport } from './routes/casas.index'
 import { Route as ArtigosIndexRouteImport } from './routes/artigos.index'
 import { Route as ApresentacoesIndexRouteImport } from './routes/apresentacoes.index'
@@ -55,6 +55,7 @@ import { Route as JogosPlanteASementeRouteImport } from './routes/jogos/plante-a
 import { Route as JogosMemoriaEvangelizacaoRouteImport } from './routes/jogos/memoria-evangelizacao'
 import { Route as JogosCaminhoDaLuzRouteImport } from './routes/jogos/caminho-da-luz'
 import { Route as JogosCacaPalavrasRouteImport } from './routes/jogos/caca-palavras'
+import { Route as EvangelizacaoCadastroRouteImport } from './routes/evangelizacao/cadastro'
 import { Route as CasaSiglaRouteImport } from './routes/casa/$sigla'
 import { Route as ArtigosNovoRouteImport } from './routes/artigos.novo'
 import { Route as ArtigosMeusRouteImport } from './routes/artigos.meus'
@@ -161,11 +162,6 @@ const FebRoute = FebRouteImport.update({
   path: '/feb',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EvangelizacaoRoute = EvangelizacaoRouteImport.update({
-  id: '/evangelizacao',
-  path: '/evangelizacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const EntregasRoute = EntregasRouteImport.update({
   id: '/entregas',
   path: '/entregas',
@@ -241,6 +237,11 @@ const JogosIndexRoute = JogosIndexRouteImport.update({
   path: '/jogos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EvangelizacaoIndexRoute = EvangelizacaoIndexRouteImport.update({
+  id: '/evangelizacao/',
+  path: '/evangelizacao/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CasasIndexRoute = CasasIndexRouteImport.update({
   id: '/casas/',
   path: '/casas/',
@@ -295,6 +296,11 @@ const JogosCaminhoDaLuzRoute = JogosCaminhoDaLuzRouteImport.update({
 const JogosCacaPalavrasRoute = JogosCacaPalavrasRouteImport.update({
   id: '/jogos/caca-palavras',
   path: '/jogos/caca-palavras',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvangelizacaoCadastroRoute = EvangelizacaoCadastroRouteImport.update({
+  id: '/evangelizacao/cadastro',
+  path: '/evangelizacao/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasaSiglaRoute = CasaSiglaRouteImport.update({
@@ -362,7 +368,6 @@ export interface FileRoutesByFullPath {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/entregas': typeof EntregasRoute
-  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/forum': typeof ForumRoute
   '/grupos': typeof GruposRoute
@@ -389,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/evangelizacao/cadastro': typeof EvangelizacaoCadastroRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
@@ -400,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/apresentacoes/': typeof ApresentacoesIndexRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
+  '/evangelizacao/': typeof EvangelizacaoIndexRoute
   '/jogos/': typeof JogosIndexRoute
   '/perguntas/': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
@@ -420,7 +427,6 @@ export interface FileRoutesByTo {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/entregas': typeof EntregasRoute
-  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/forum': typeof ForumRoute
   '/grupos': typeof GruposRoute
@@ -447,6 +453,7 @@ export interface FileRoutesByTo {
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/evangelizacao/cadastro': typeof EvangelizacaoCadastroRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
@@ -458,6 +465,7 @@ export interface FileRoutesByTo {
   '/apresentacoes': typeof ApresentacoesIndexRoute
   '/artigos': typeof ArtigosIndexRoute
   '/casas': typeof CasasIndexRoute
+  '/evangelizacao': typeof EvangelizacaoIndexRoute
   '/jogos': typeof JogosIndexRoute
   '/perguntas': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
@@ -479,7 +487,6 @@ export interface FileRoutesById {
   '/completar-perfil': typeof CompletarPerfilRoute
   '/configurar-memoria': typeof ConfigurarMemoriaRoute
   '/entregas': typeof EntregasRoute
-  '/evangelizacao': typeof EvangelizacaoRoute
   '/feb': typeof FebRoute
   '/forum': typeof ForumRoute
   '/grupos': typeof GruposRoute
@@ -506,6 +513,7 @@ export interface FileRoutesById {
   '/artigos/meus': typeof ArtigosMeusRoute
   '/artigos/novo': typeof ArtigosNovoRoute
   '/casa/$sigla': typeof CasaSiglaRoute
+  '/evangelizacao/cadastro': typeof EvangelizacaoCadastroRoute
   '/jogos/caca-palavras': typeof JogosCacaPalavrasRoute
   '/jogos/caminho-da-luz': typeof JogosCaminhoDaLuzRoute
   '/jogos/memoria-evangelizacao': typeof JogosMemoriaEvangelizacaoRoute
@@ -517,6 +525,7 @@ export interface FileRoutesById {
   '/apresentacoes/': typeof ApresentacoesIndexRoute
   '/artigos/': typeof ArtigosIndexRoute
   '/casas/': typeof CasasIndexRoute
+  '/evangelizacao/': typeof EvangelizacaoIndexRoute
   '/jogos/': typeof JogosIndexRoute
   '/perguntas/': typeof PerguntasIndexRoute
   '/artigos/$slug/editar': typeof ArtigosSlugEditarRoute
@@ -539,7 +548,6 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/entregas'
-    | '/evangelizacao'
     | '/feb'
     | '/forum'
     | '/grupos'
@@ -566,6 +574,7 @@ export interface FileRouteTypes {
     | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
+    | '/evangelizacao/cadastro'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
@@ -577,6 +586,7 @@ export interface FileRouteTypes {
     | '/apresentacoes/'
     | '/artigos/'
     | '/casas/'
+    | '/evangelizacao/'
     | '/jogos/'
     | '/perguntas/'
     | '/artigos/$slug/editar'
@@ -597,7 +607,6 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/entregas'
-    | '/evangelizacao'
     | '/feb'
     | '/forum'
     | '/grupos'
@@ -624,6 +633,7 @@ export interface FileRouteTypes {
     | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
+    | '/evangelizacao/cadastro'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
@@ -635,6 +645,7 @@ export interface FileRouteTypes {
     | '/apresentacoes'
     | '/artigos'
     | '/casas'
+    | '/evangelizacao'
     | '/jogos'
     | '/perguntas'
     | '/artigos/$slug/editar'
@@ -655,7 +666,6 @@ export interface FileRouteTypes {
     | '/completar-perfil'
     | '/configurar-memoria'
     | '/entregas'
-    | '/evangelizacao'
     | '/feb'
     | '/forum'
     | '/grupos'
@@ -682,6 +692,7 @@ export interface FileRouteTypes {
     | '/artigos/meus'
     | '/artigos/novo'
     | '/casa/$sigla'
+    | '/evangelizacao/cadastro'
     | '/jogos/caca-palavras'
     | '/jogos/caminho-da-luz'
     | '/jogos/memoria-evangelizacao'
@@ -693,6 +704,7 @@ export interface FileRouteTypes {
     | '/apresentacoes/'
     | '/artigos/'
     | '/casas/'
+    | '/evangelizacao/'
     | '/jogos/'
     | '/perguntas/'
     | '/artigos/$slug/editar'
@@ -714,7 +726,6 @@ export interface RootRouteChildren {
   CompletarPerfilRoute: typeof CompletarPerfilRoute
   ConfigurarMemoriaRoute: typeof ConfigurarMemoriaRoute
   EntregasRoute: typeof EntregasRoute
-  EvangelizacaoRoute: typeof EvangelizacaoRoute
   FebRoute: typeof FebRoute
   ForumRoute: typeof ForumRoute
   GruposRoute: typeof GruposRoute
@@ -741,6 +752,7 @@ export interface RootRouteChildren {
   ArtigosMeusRoute: typeof ArtigosMeusRoute
   ArtigosNovoRoute: typeof ArtigosNovoRoute
   CasaSiglaRoute: typeof CasaSiglaRoute
+  EvangelizacaoCadastroRoute: typeof EvangelizacaoCadastroRoute
   JogosCacaPalavrasRoute: typeof JogosCacaPalavrasRoute
   JogosCaminhoDaLuzRoute: typeof JogosCaminhoDaLuzRoute
   JogosMemoriaEvangelizacaoRoute: typeof JogosMemoriaEvangelizacaoRoute
@@ -752,6 +764,7 @@ export interface RootRouteChildren {
   ApresentacoesIndexRoute: typeof ApresentacoesIndexRoute
   ArtigosIndexRoute: typeof ArtigosIndexRoute
   CasasIndexRoute: typeof CasasIndexRoute
+  EvangelizacaoIndexRoute: typeof EvangelizacaoIndexRoute
   JogosIndexRoute: typeof JogosIndexRoute
   PerguntasIndexRoute: typeof PerguntasIndexRoute
   CasasUfCidadeRoute: typeof CasasUfCidadeRoute
@@ -893,13 +906,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FebRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/evangelizacao': {
-      id: '/evangelizacao'
-      path: '/evangelizacao'
-      fullPath: '/evangelizacao'
-      preLoaderRoute: typeof EvangelizacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/entregas': {
       id: '/entregas'
       path: '/entregas'
@@ -1005,6 +1011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JogosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/evangelizacao/': {
+      id: '/evangelizacao/'
+      path: '/evangelizacao'
+      fullPath: '/evangelizacao/'
+      preLoaderRoute: typeof EvangelizacaoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/casas/': {
       id: '/casas/'
       path: '/casas'
@@ -1080,6 +1093,13 @@ declare module '@tanstack/react-router' {
       path: '/jogos/caca-palavras'
       fullPath: '/jogos/caca-palavras'
       preLoaderRoute: typeof JogosCacaPalavrasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evangelizacao/cadastro': {
+      id: '/evangelizacao/cadastro'
+      path: '/evangelizacao/cadastro'
+      fullPath: '/evangelizacao/cadastro'
+      preLoaderRoute: typeof EvangelizacaoCadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/casa/$sigla': {
@@ -1181,7 +1201,6 @@ const rootRouteChildren: RootRouteChildren = {
   CompletarPerfilRoute: CompletarPerfilRoute,
   ConfigurarMemoriaRoute: ConfigurarMemoriaRoute,
   EntregasRoute: EntregasRoute,
-  EvangelizacaoRoute: EvangelizacaoRoute,
   FebRoute: FebRoute,
   ForumRoute: ForumRoute,
   GruposRoute: GruposRoute,
@@ -1208,6 +1227,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArtigosMeusRoute: ArtigosMeusRoute,
   ArtigosNovoRoute: ArtigosNovoRoute,
   CasaSiglaRoute: CasaSiglaRoute,
+  EvangelizacaoCadastroRoute: EvangelizacaoCadastroRoute,
   JogosCacaPalavrasRoute: JogosCacaPalavrasRoute,
   JogosCaminhoDaLuzRoute: JogosCaminhoDaLuzRoute,
   JogosMemoriaEvangelizacaoRoute: JogosMemoriaEvangelizacaoRoute,
@@ -1219,6 +1239,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApresentacoesIndexRoute: ApresentacoesIndexRoute,
   ArtigosIndexRoute: ArtigosIndexRoute,
   CasasIndexRoute: CasasIndexRoute,
+  EvangelizacaoIndexRoute: EvangelizacaoIndexRoute,
   JogosIndexRoute: JogosIndexRoute,
   PerguntasIndexRoute: PerguntasIndexRoute,
   CasasUfCidadeRoute: CasasUfCidadeRoute,

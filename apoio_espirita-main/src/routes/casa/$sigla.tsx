@@ -604,10 +604,16 @@ function PaginaCasa() {
         .eq("sigla_casa", sigla)
         .order("data_evento", { ascending: true })
         .order("hora_inicio", { ascending: true }),
+      // O contador precisa filtrar o perfil DEV pelo mesmo motivo que a lista
+      // de membros o filtra: ele e um cargo tecnico de suporte, nao alguem que
+      // frequenta a casa. Sem isto a vitrine anunciava 5 membros onde havia 4.
+      // O `or` (em vez de um neq simples) preserva quem ainda nao escolheu
+      // cargo: no Postgres, `cargo_principal <> 'DEV'` descarta os nulos.
       supabase
         .from("profiles")
         .select("id", { count: "exact", head: true })
-        .eq("sigla_casa", sigla),
+        .eq("sigla_casa", sigla)
+        .or("cargo_principal.is.null,cargo_principal.neq.DEV"),
       supabase
         .from("programacao_eventos")
         .select("id", { count: "exact", head: true })

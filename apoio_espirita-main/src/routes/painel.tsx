@@ -431,6 +431,13 @@ const roadmap: Item[] = [
   },
   {
     status: "feito",
+    titulo: "Cadastro da evangelização — fichas, emergência e desempenho",
+    cardTitle: "Cadastro da Evangelização",
+    descricao:
+      "Ficha de cada criança com telefones de emergência dos responsáveis, alergias, medicamentos e autorizações · Turmas, chamada por encontro e acompanhamento do desenvolvimento em três eixos · Folha de emergência para imprimir · Restrito a quem evangeliza na casa · Disponível em /evangelizacao/cadastro",
+  },
+  {
+    status: "feito",
     titulo: "Quiz Espírita — perguntas sobre virtudes e doutrina",
     cardTitle: "Quiz Espírita",
     descricao:

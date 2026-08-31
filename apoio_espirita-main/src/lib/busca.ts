@@ -29,6 +29,27 @@ const PAGINAS_EXTRAS: PaginaDoSite[] = [
     termos: ["e-mail", "email", "aviso", "notificação", "receber", "parar de receber"],
   },
   {
+    titulo: "Cadastro da evangelização",
+    descricao:
+      "Fichas das crianças, telefones de emergência dos responsáveis, alergias, chamada e acompanhamento.",
+    href: "/evangelizacao/cadastro",
+    termos: [
+      "crianca",
+      "criancas",
+      "evangelizacao",
+      "ficha",
+      "alergia",
+      "emergencia",
+      "telefone",
+      "responsavel",
+      "turma",
+      "chamada",
+      "presenca",
+      "frequencia",
+      "desempenho",
+    ],
+  },
+  {
     titulo: "Tesouraria",
     descricao: "Receitas, despesas, saldo do mês e exportação para Excel.",
     href: "/tesouraria",

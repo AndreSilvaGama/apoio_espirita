@@ -1134,6 +1134,324 @@ export type Database = {
           },
         ];
       };
+      evangelizacao_autorizados: {
+        Row: {
+          created_at: string;
+          criado_por: string;
+          id: string;
+          nome: string | null;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          nome?: string | null;
+          sigla_casa: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          nome?: string | null;
+          sigla_casa?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      evangelizacao_avaliacoes: {
+        Row: {
+          assimilacao: number | null;
+          autor_nome: string;
+          comentario: string | null;
+          convivencia: number | null;
+          created_at: string;
+          criado_por: string;
+          crianca_id: string;
+          data_avaliacao: string;
+          id: string;
+          participacao: number | null;
+          sigla_casa: string;
+          updated_at: string;
+        };
+        Insert: {
+          assimilacao?: number | null;
+          autor_nome: string;
+          comentario?: string | null;
+          convivencia?: number | null;
+          created_at?: string;
+          criado_por: string;
+          crianca_id: string;
+          data_avaliacao?: string;
+          id?: string;
+          participacao?: number | null;
+          sigla_casa: string;
+          updated_at?: string;
+        };
+        Update: {
+          assimilacao?: number | null;
+          autor_nome?: string;
+          comentario?: string | null;
+          convivencia?: number | null;
+          created_at?: string;
+          criado_por?: string;
+          crianca_id?: string;
+          data_avaliacao?: string;
+          id?: string;
+          participacao?: number | null;
+          sigla_casa?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evangelizacao_avaliacoes_crianca_id_fkey";
+            columns: ["crianca_id"];
+            isOneToOne: false;
+            referencedRelation: "evangelizacao_criancas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evangelizacao_criancas: {
+        Row: {
+          alergias: string | null;
+          ativa: boolean;
+          autor_nome: string;
+          autoriza_imagem: boolean;
+          autoriza_passeio: boolean;
+          condicoes_saude: string | null;
+          created_at: string;
+          criado_por: string;
+          data_nascimento: string;
+          id: string;
+          matriculada_em: string;
+          medicamentos: string | null;
+          nome: string;
+          observacoes: string | null;
+          pode_sair_sozinha: boolean;
+          sigla_casa: string;
+          turma_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          alergias?: string | null;
+          ativa?: boolean;
+          autor_nome: string;
+          autoriza_imagem?: boolean;
+          autoriza_passeio?: boolean;
+          condicoes_saude?: string | null;
+          created_at?: string;
+          criado_por: string;
+          data_nascimento: string;
+          id?: string;
+          matriculada_em?: string;
+          medicamentos?: string | null;
+          nome: string;
+          observacoes?: string | null;
+          pode_sair_sozinha?: boolean;
+          sigla_casa: string;
+          turma_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          alergias?: string | null;
+          ativa?: boolean;
+          autor_nome?: string;
+          autoriza_imagem?: boolean;
+          autoriza_passeio?: boolean;
+          condicoes_saude?: string | null;
+          created_at?: string;
+          criado_por?: string;
+          data_nascimento?: string;
+          id?: string;
+          matriculada_em?: string;
+          medicamentos?: string | null;
+          nome?: string;
+          observacoes?: string | null;
+          pode_sair_sozinha?: boolean;
+          sigla_casa?: string;
+          turma_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evangelizacao_criancas_turma_id_fkey";
+            columns: ["turma_id"];
+            isOneToOne: false;
+            referencedRelation: "evangelizacao_turmas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evangelizacao_presencas: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          crianca_id: string;
+          data_encontro: string;
+          id: string;
+          observacao: string | null;
+          presente: boolean;
+          sigla_casa: string;
+          turma_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          crianca_id: string;
+          data_encontro?: string;
+          id?: string;
+          observacao?: string | null;
+          presente?: boolean;
+          sigla_casa: string;
+          turma_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          crianca_id?: string;
+          data_encontro?: string;
+          id?: string;
+          observacao?: string | null;
+          presente?: boolean;
+          sigla_casa?: string;
+          turma_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evangelizacao_presencas_crianca_id_fkey";
+            columns: ["crianca_id"];
+            isOneToOne: false;
+            referencedRelation: "evangelizacao_criancas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evangelizacao_presencas_turma_id_fkey";
+            columns: ["turma_id"];
+            isOneToOne: false;
+            referencedRelation: "evangelizacao_turmas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evangelizacao_responsaveis: {
+        Row: {
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          crianca_id: string;
+          email: string | null;
+          id: string;
+          nome: string;
+          observacao: string | null;
+          parentesco: string | null;
+          pode_retirar: boolean;
+          principal: boolean;
+          sigla_casa: string;
+          telefone: string;
+          telefone_alternativo: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          crianca_id: string;
+          email?: string | null;
+          id?: string;
+          nome: string;
+          observacao?: string | null;
+          parentesco?: string | null;
+          pode_retirar?: boolean;
+          principal?: boolean;
+          sigla_casa: string;
+          telefone: string;
+          telefone_alternativo?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          crianca_id?: string;
+          email?: string | null;
+          id?: string;
+          nome?: string;
+          observacao?: string | null;
+          parentesco?: string | null;
+          pode_retirar?: boolean;
+          principal?: boolean;
+          sigla_casa?: string;
+          telefone?: string;
+          telefone_alternativo?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evangelizacao_responsaveis_crianca_id_fkey";
+            columns: ["crianca_id"];
+            isOneToOne: false;
+            referencedRelation: "evangelizacao_criancas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evangelizacao_turmas: {
+        Row: {
+          ativa: boolean;
+          autor_nome: string;
+          created_at: string;
+          criado_por: string;
+          dia_semana: number | null;
+          evangelizadores: string | null;
+          faixa_etaria: string;
+          horario: string | null;
+          id: string;
+          nome: string;
+          sala: string | null;
+          sigla_casa: string;
+          updated_at: string;
+        };
+        Insert: {
+          ativa?: boolean;
+          autor_nome: string;
+          created_at?: string;
+          criado_por: string;
+          dia_semana?: number | null;
+          evangelizadores?: string | null;
+          faixa_etaria?: string;
+          horario?: string | null;
+          id?: string;
+          nome: string;
+          sala?: string | null;
+          sigla_casa: string;
+          updated_at?: string;
+        };
+        Update: {
+          ativa?: boolean;
+          autor_nome?: string;
+          created_at?: string;
+          criado_por?: string;
+          dia_semana?: number | null;
+          evangelizadores?: string | null;
+          faixa_etaria?: string;
+          horario?: string | null;
+          id?: string;
+          nome?: string;
+          sala?: string | null;
+          sigla_casa?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       forum_respostas: {
         Row: {
           autor_nome: string;

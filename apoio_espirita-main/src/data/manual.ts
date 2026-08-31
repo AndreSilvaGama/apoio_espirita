@@ -971,7 +971,9 @@ export const MANUAL: ModuloDoManual[] = [
     grupo: "Estudo e conteúdo",
     ondeFica: "Menu superior › Estudo › Evangelização",
     href: "/evangelizacao",
-    resumo: "Planos de aula e jogos para o trabalho com as crianças da casa.",
+    tambemCobre: ["/evangelizacao/cadastro"],
+    resumo:
+      "Planos de aula, jogos e o cadastro das crianças — fichas, telefones de emergência, chamada e acompanhamento.",
     tarefas: [
       {
         titulo: "Usar um plano de aula",
@@ -981,6 +983,89 @@ export const MANUAL: ModuloDoManual[] = [
           "Use os jogos indicados para fixar o conteúdo com a turma.",
         ],
       },
+      {
+        titulo: "Criar as turmas da evangelização",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Abra 'Evangelização' e clique em 'Cadastro das crianças'.",
+          "Escolha a aba 'Turmas' e clique em 'Nova turma'.",
+          "Dê um nome à turma e escolha a faixa etária.",
+          "Informe o dia da semana, o horário e a sala em que a turma se reúne.",
+          "Escreva no campo 'Evangelizadores' quem conduz os encontros.",
+          "Clique em 'Criar turma'. Comece pelas turmas: a ficha da criança pergunta a qual delas ela pertence.",
+        ],
+      },
+      {
+        titulo: "Cadastrar uma criança com o telefone de emergência",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Em 'Cadastro das crianças', na aba 'Crianças', clique em 'Nova criança'.",
+          "Preencha o nome completo e a data de nascimento; a idade é calculada sozinha.",
+          "Escolha a turma da criança, ou deixe 'Sem turma por enquanto'.",
+          "Preencha 'Alergias', 'Medicamentos' e 'Condições de saúde' — a alergia aparece na lista e na chamada, para ser vista antes de alguém oferecer um lanche.",
+          "Escreva em 'Outras observações' o que ajuda quem for cuidar da criança.",
+          "Marque as autorizações que o responsável deu por escrito: uso de imagem, passeios e saída sozinha.",
+          "Preencha o responsável: nome, parentesco, telefone com DDD e, se houver, um segundo telefone.",
+          "Clique em 'Cadastrar'. Outros responsáveis podem ser acrescentados depois, abrindo a ficha.",
+        ],
+      },
+      {
+        titulo: "Acrescentar outro responsável a uma criança",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Na aba 'Crianças', clique em 'Abrir ficha' na criança desejada.",
+          "Clique em 'Acrescentar responsável'.",
+          "Preencha nome, parentesco e telefone com DDD.",
+          "Marque 'Pode retirar a criança' apenas se essa pessoa estiver autorizada a levá-la embora.",
+          "Clique em 'Salvar responsável'.",
+        ],
+      },
+      {
+        titulo: "Fazer a chamada de um encontro",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Em 'Cadastro das crianças', abra a aba 'Chamada'.",
+          "Escolha a turma e confira a data do encontro, que já vem no dia de hoje.",
+          "Toque em 'Presente' ou 'Faltou' ao lado de cada criança; cada toque é salvo na hora.",
+          "Se quase todos vieram, use 'Marcar os que faltam como presentes' e ajuste as exceções.",
+          "Para corrigir uma chamada antiga, volte a esta aba e escolha a data daquele encontro.",
+        ],
+      },
+      {
+        titulo: "Acompanhar o desenvolvimento de uma criança",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Na aba 'Crianças', clique em 'Abrir ficha' na criança desejada.",
+          "Veja em 'Acompanhamento' quantas presenças ela tem e a frequência em porcentagem.",
+          "Em 'Registrar acompanhamento', confira a data e dê a nota de 1 a 5 em participação, convivência e assimilação.",
+          "Escreva no comentário o que a próxima pessoa que assumir a turma precisa saber.",
+          "Clique em 'Registrar'. O registro entra no histórico com o seu nome e a data.",
+        ],
+      },
+      {
+        titulo: "Imprimir a lista de emergência da sala",
+        quem: "Evangelizador, Coordenador ou quem a direção autorizar",
+        passos: [
+          "Na aba 'Crianças', clique em 'Imprimir emergência'.",
+          "Confira a folha: ela traz criança, turma, alergias e os telefones de cada responsável.",
+          "Imprima e deixe a folha na sala — numa emergência ninguém abre ficha por ficha no celular.",
+        ],
+      },
+      {
+        titulo: "Autorizar alguém a ver as fichas das crianças",
+        quem: "Presidente ou Vice-presidente",
+        passos: [
+          "Abra 'Cadastro das crianças' e escolha a aba 'Quem tem acesso'.",
+          "Em 'Autorizar alguém da casa', clique no nome do membro.",
+          "Para retirar o acesso, clique em 'Retirar acesso' ao lado do nome.",
+        ],
+      },
+    ],
+    observacoes: [
+      "A ficha das crianças fica restrita à sua casa espírita: nenhuma outra casa a enxerga.",
+      "Leem as fichas quem tem o cargo de Evangelizador ou de Coordenador na casa e quem a direção autorizar nominalmente. O desenvolvedor da plataforma não lê.",
+      "Guarde apenas o necessário para cuidar bem da criança. Dado de saúde de menor de idade exige esse cuidado.",
+      "'Arquivar' tira a criança das listas e da chamada, preservando o histórico. Apagar remove também responsáveis, presenças e avaliações, e não tem volta.",
     ],
   },
   {
