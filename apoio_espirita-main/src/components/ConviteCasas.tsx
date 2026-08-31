@@ -21,6 +21,8 @@ import {
   Play,
   Pause,
   CalendarClock,
+  Activity,
+  Copy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { mensagemDeErro } from "@/lib/erros";
@@ -32,10 +34,27 @@ interface Config {
   motivo: string | null;
 }
 
+/** O caminho do convite, do envio até a casa chegar ao site. */
+interface Funil {
+  total: number;
+  pendentes: number;
+  enviados: number;
+  falharam: number;
+  entregues: number;
+  abertos: number;
+  clicados: number;
+  devolvidos: number;
+  chegaram: number;
+  visitas: number;
+}
+
 interface RespostaConta {
   plano: unknown;
   credito_de_envio: number | null;
   restantes: number;
+  funil?: Funil | null;
+  /** Endereço a colar no painel do provedor. Só chega para o responsável. */
+  webhook?: string | null;
   config: Config;
 }
 
@@ -151,6 +170,79 @@ export function ConviteCasas() {
               </p>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Como o convite está indo. Só aparece depois de consultar. */}
+      {conta?.funil && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-gray-400" />
+            <h3 className="text-xs uppercase font-bold tracking-widest text-gray-500">
+              Como o convite está indo
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[
+              { rotulo: "Enviados", valor: conta.funil.enviados },
+              { rotulo: "Entregues", valor: conta.funil.entregues },
+              { rotulo: "Abriram", valor: conta.funil.abertos },
+              { rotulo: "Clicaram", valor: conta.funil.clicados },
+              { rotulo: "Chegaram ao site", valor: conta.funil.chegaram, destaque: true },
+              { rotulo: "Devolvidos", valor: conta.funil.devolvidos },
+            ].map((n) => (
+              <div
+                key={n.rotulo}
+                className={`rounded-xl border p-3 ${
+                  n.destaque ? "border-emerald-200 bg-emerald-50/60" : "border-gray-150 bg-gray-50"
+                }`}
+              >
+                <p className="text-2xl font-light text-gray-800">{n.valor}</p>
+                <p className="text-[11px] uppercase tracking-widest text-gray-500 mt-0.5">
+                  {n.rotulo}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs text-gray-500 leading-relaxed">
+            <strong className="text-gray-700">Chegaram ao site</strong> é o número que mede
+            resultado; os outros medem intenção. Ele vem da marcação no link do convite e não
+            depende do provedor de e-mail relatar nada.{" "}
+            <strong className="text-gray-700">Abriram</strong> é sempre um piso, nunca um número
+            exato: leitor de e-mail que bloqueia imagens não gera abertura, e a pessoa pode ter
+            lido assim mesmo.
+          </p>
+
+          {conta.webhook && (
+            <div className="rounded-xl border border-gray-150 bg-gray-50 p-3 space-y-2">
+              <p className="text-xs text-gray-600">
+                Para os números de entrega, abertura e clique começarem a chegar, cole este
+                endereço no painel do provedor de e-mail, na configuração de webhook, marcando os
+                eventos de entrega, abertura, clique e devolução. Enquanto isso não for feito,
+                essas quatro colunas ficam em zero — e “Chegaram ao site” continua funcionando.
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 text-[11px] bg-white border border-gray-200 rounded-lg px-2 py-1.5 overflow-x-auto text-gray-700 whitespace-nowrap">
+                  {conta.webhook}
+                </code>
+                <button
+                  type="button"
+                  onClick={() => void navigator.clipboard?.writeText(conta.webhook ?? "")}
+                  className="shrink-0 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                >
+                  <Copy size={12} />
+                  Copiar
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-500">
+                Este endereço carrega um segredo: quem o tiver consegue escrever nestes números.
+                Não o publique nem o mande por mensagem — ele existe para ser colado no painel do
+                provedor, e em nenhum outro lugar.
+              </p>
+            </div>
+          )}
         </div>
       )}
 

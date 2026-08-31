@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, ChevronLeft, ExternalLink, MapPin, Phone, Shield, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -110,6 +110,21 @@ function DiretorioCasasDaCidade() {
   const { user, profile } = useAuth();
   const [pedindoRemocao, setPedindoRemocao] = useState<string | null>(null);
   const [assumindo, setAssumindo] = useState<string | null>(null);
+
+  // Quem chegou por um convite traz `?c=` no endereço. Registrar isso é o que
+  // responde se o convite deu resultado — abertura de e-mail mede intenção,
+  // chegada mede resultado.
+  //
+  // Lido de `window.location` e não dos parâmetros da rota de propósito: assim
+  // esta página, que é pública e indexada, não muda de contrato por causa de
+  // uma medição. O efeito só roda no navegador, e falhar aqui não pode
+  // atrapalhar quem veio ler — por isso o erro é engolido de propósito: a
+  // visitante veio ver as casas da cidade dela, não alimentar o nosso número.
+  useEffect(() => {
+    const convite = new URLSearchParams(window.location.search).get("c");
+    if (!convite || !/^[0-9a-f-]{36}$/i.test(convite)) return;
+    void supabase.rpc("registrar_chegada_convite", { p_convite: convite }).then(() => {});
+  }, []);
 
   const cidade = casas[0]?.cidade ?? "";
   const estado = nomeDoEstado(uf);

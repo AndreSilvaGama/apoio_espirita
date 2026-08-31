@@ -95,7 +95,13 @@ const RECURSOS = [
 ];
 
 function montarHtml(c: Convite): string {
+  // A marcacao `?c=` e o que permite saber quantas casas de fato CHEGARAM ao
+  // site — o unico numero do funil que nao depende do provedor de e-mail
+  // relatar nada. Vai nos dois enderecos, inclusive no da saida do diretorio:
+  // quem clica para sair tambem chegou, e esconder isso do numero seria
+  // enganar a nos mesmos.
   const pagina = `${SITE}/casas/${c.uf.toLowerCase()}/${c.slug}`;
+  const paginaMarcada = `${pagina}?c=${c.convite_id}`;
   const itens = RECURSOS.map((r) => `<li style="margin:0 0 7px">${escapar(r)}</li>`).join("");
   return `
   <div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;line-height:1.6">
@@ -109,7 +115,7 @@ function montarHtml(c: Convite): string {
     <p style="margin:0 0 12px">Reunimos um diretório aberto com <strong>3.734 casas espíritas de 961 cidades</strong>, nos 27 estados. Quem procura um centro espírita na sua cidade encontra a sua casa &mdash; com endereço, CEP e caminho no mapa &mdash; sem precisar criar conta nenhuma.</p>
 
     <p style="margin:24px 0">
-      <a href="${pagina}" style="display:inline-block;padding:12px 22px;border-radius:999px;border:1px solid #0e7490;color:#0e7490;text-decoration:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase">Ver a página da minha cidade</a>
+      <a href="${paginaMarcada}" style="display:inline-block;padding:12px 22px;border-radius:999px;border:1px solid #0e7490;color:#0e7490;text-decoration:none;font-size:13px;letter-spacing:.12em;text-transform:uppercase">Ver a página da minha cidade</a>
     </p>
 
     <p style="margin:0 0 12px">Se alguém da direção quiser, pode <strong>assumir a página da casa</strong>: basta criar uma conta gratuita, confirmar o e-mail e reivindicá-la. A página nasce privada, e a casa publica quando achar que está pronta.</p>
@@ -127,14 +133,14 @@ function montarHtml(c: Convite): string {
       Você recebeu esta mensagem porque a sua casa consta em cadastro público de casas
       espíritas e está listada no diretório do Apoio Espírita. Para sair do diretório,
       use o botão &ldquo;Sair do diretório&rdquo; na
-      <a href="${pagina}" style="color:#0e7490">página da sua cidade</a> &mdash; não é
+      <a href="${paginaMarcada}" style="color:#0e7490">página da sua cidade</a> &mdash; não é
       preciso conta nem justificativa.
     </p>
   </div>`;
 }
 
 /** Envia um convite e devolve o erro do provedor, ou nulo se deu certo. */
-async function enviar(c: Convite): Promise<string | null> {
+async function enviar(c: Convite): Promise<{ erro: string | null; provedorId: string | null }> {
   try {
     const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -146,14 +152,30 @@ async function enviar(c: Convite): Promise<string | null> {
         htmlContent: montarHtml(c),
       }),
     });
-    if (res.ok) return null;
-    return `${res.status}: ${(await res.text()).slice(0, 300)}`;
+    if (!res.ok) return { erro: `${res.status}: ${(await res.text()).slice(0, 300)}`, provedorId: null };
+
+    // O identificador da mensagem é o que liga o evento que o provedor mandar
+    // depois — entregue, aberto, clicado — de volta a ESTE convite. Sem ele o
+    // webhook teria de adivinhar pelo endereço, e a mesma casa pode receber
+    // mais de um convite ao longo do tempo.
+    //
+    // Não conseguir ler o identificador NÃO é falha de envio: o e-mail saiu.
+    // Só significa que este convite ficará sem os números do provedor, e a
+    // marcação no link continua respondendo se a casa chegou.
+    const corpo = await res.json().catch(() => null);
+    const id = corpo?.messageId ?? corpo?.messageIds?.[0] ?? null;
+    return { erro: null, provedorId: typeof id === "string" ? id : null };
   } catch (e) {
-    return String(e).slice(0, 300);
+    return { erro: String(e).slice(0, 300), provedorId: null };
   }
 }
 
-async function marcar(c: Convite, erro: string | null, tentativa: number) {
+async function marcar(
+  c: Convite,
+  erro: string | null,
+  tentativa: number,
+  provedorId: string | null,
+) {
   await admin
     .from("casas_convites")
     .update({
@@ -161,6 +183,7 @@ async function marcar(c: Convite, erro: string | null, tentativa: number) {
       enviado_em: new Date().toISOString(),
       erro,
       tentativas: tentativa,
+      provedor_id: provedorId,
     })
     .eq("id", c.convite_id);
 }
@@ -239,12 +262,14 @@ Deno.serve(async (req) => {
     pausado_em: null,
     motivo: null,
     segredo: null,
+    segredo_webhook: null,
   }) as {
     automatico: boolean;
     por_dia: number;
     pausado_em: string | null;
     motivo: string | null;
     segredo: string | null;
+    segredo_webhook: string | null;
   };
 
   // Duas identidades aceitas: o responsável pelo site, com sessão, e o
@@ -273,10 +298,17 @@ Deno.serve(async (req) => {
   /* ── Consultar, sem enviar nada ─────────────────────────────────────── */
   if (acao === "conta") {
     const conta = await contaDoProvedor();
+    const { data: funil } = await admin.rpc("convites_funil");
     return responde({
       plano: conta.bruto,
       credito_de_envio: conta.credito,
       restantes: await restantes(),
+      funil: Array.isArray(funil) ? funil[0] : funil,
+      // O endereço que precisa ser colado no painel do provedor de e-mail para
+      // os eventos começarem a chegar. Vai só para o responsável, que já se
+      // identificou acima — o segredo dentro dele é o que autoriza a escrita
+      // no funil, e não pode circular.
+      webhook: ehAgendamento ? null : `${SUPABASE_URL}/functions/v1/convite-eventos?s=${config.segredo_webhook ?? ""}`,
       // Sem o segredo: ele autoriza o disparo e não tem por que chegar ao
       // navegador, nem mesmo ao do responsável.
       config: {
@@ -372,7 +404,7 @@ Deno.serve(async (req) => {
 
     await Promise.all(
       convites.slice(i, i + SIMULTANEOS).map(async (c) => {
-        const erro = await enviar(c);
+        const { erro, provedorId } = await enviar(c);
         if (erro && ERRO_DO_PROVEDOR.test(erro)) {
           problemaNoProvedor ??= erro;
           // Devolve à fila sem gastar tentativa: a casa não tem culpa.
@@ -382,7 +414,7 @@ Deno.serve(async (req) => {
             .eq("id", c.convite_id);
           return;
         }
-        await marcar(c, erro, (jaTentado.get(c.convite_id) ?? 0) + 1);
+        await marcar(c, erro, (jaTentado.get(c.convite_id) ?? 0) + 1, provedorId);
         if (erro) falhas.push({ email: c.email, erro });
         else enviados++;
       }),

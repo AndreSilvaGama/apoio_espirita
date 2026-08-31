@@ -3190,6 +3190,10 @@ export type Database = {
         Args: { p_aberto: boolean; p_sigla: string };
         Returns: boolean;
       };
+      registrar_chegada_convite: {
+        Args: { p_convite: string };
+        Returns: undefined;
+      };
       reivindicar_casa: {
         Args: { p_casa: string; p_sigla: string };
         Returns: string;
