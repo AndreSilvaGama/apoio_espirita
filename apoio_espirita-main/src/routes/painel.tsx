@@ -36,6 +36,12 @@ const STATUS_DA_SOLICITACAO: Record<string, Status> = {
 
 const roadmap: Item[] = [
   {
+    status: "planejado",
+    titulo: "Página inicial não leva ao diretório de casas nem às perguntas — depende de autorização",
+    descricao:
+      "A página inicial é a de maior autoridade no Google e a primeira que todo visitante vê. Hoje ela leva a FEB, Jogos, Músicas e cifras, Transparência e Sugestões — e não leva ao diretório de casas espíritas (3.734 casas, 989 páginas indexadas) nem às Perguntas sobre o Espiritismo, que são justamente os dois conteúdos capazes de aparecer numa busca. Quem chega procurando “centro espírita perto de mim” não encontra o caminho, e o Google recebe pouco sinal interno para percorrer as páginas de cidade. A correção é acrescentar dois links no menu e uma chamada no corpo da página. Não foi feita porque src/routes/index.tsx está formalmente protegido e nenhuma alteração ali pode ser feita sem autorização explícita — inclusive esta. Aguarda a decisão de Andre.",
+  },
+  {
     status: "feito",
     titulo: "Divulgação: cartão de compartilhamento, botão de enviar e sinal certo ao Google",
     descricao:
