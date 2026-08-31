@@ -1,0 +1,23 @@
+-- Complemento de 20260831150000: revogar de `anon` e `authenticated` nao bastou.
+--
+-- Ao criar uma funcao, o Postgres concede EXECUTE ao papel PUBLIC — o papel do
+-- qual TODOS os outros herdam. Enquanto essa concessao existir, tirar a permissao
+-- de `anon` nao muda nada: ele continua chegando na funcao por heranca.
+--
+-- Constatado depois de aplicar a migracao anterior:
+--   has_function_privilege('anon', 'handle_new_user()', 'execute')  ->  ainda true
+--
+-- A prova esta na propria lista de permissoes da funcao. A entrada `=X/postgres`,
+-- sem nome de papel antes do igual, E a concessao a PUBLIC:
+--
+--   handle_new_user   =X/postgres postgres=X/postgres service_role=X/postgres
+--   forum_recontar               postgres=X/postgres service_role=X/postgres
+--
+-- Das oito funcoes internas, so estas duas ainda tinham a entrada de PUBLIC; as
+-- outras seis ja haviam sido limpas em migracoes anteriores, e por isso o revoke
+-- de `authenticated` funcionou nelas.
+--
+-- Isto nao tira o acesso do servico: `service_role` aparece com concessao propria
+-- (`service_role=X/postgres`) nas oito, e concessao propria nao vem de PUBLIC.
+revoke all on function public.handle_new_user() from public;
+revoke all on function public.rls_auto_enable() from public;

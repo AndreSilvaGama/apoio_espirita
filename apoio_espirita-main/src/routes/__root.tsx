@@ -53,6 +53,10 @@ import {
   CalendarDays,
   KanbanSquare,
   Presentation,
+  Compass,
+  Wallet,
+  Gamepad2,
+  User,
 } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -486,7 +490,7 @@ function RootComponent() {
 type MenuSuspenso = "recursos" | "comunidade" | "estudo" | "jogos" | "ajuda";
 
 function NavBar() {
-  const { user, profile, isDev, isDecisao, signOut } = useAuth();
+  const { user, profile, isDev, isDecisao, canTesouraria, signOut } = useAuth();
   const { location } = useRouterState();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -571,7 +575,14 @@ function NavBar() {
     "/jovens",
     "/atendimento-fraterno",
   ];
-  const ROTAS_ESTUDO = ["/feb", "/artigos", "/perguntas", "/evangelizacao", "/musicas-cifras"];
+  const ROTAS_ESTUDO = [
+    "/feb",
+    "/artigos",
+    "/perguntas",
+    "/evangelizacao",
+    "/musicas-cifras",
+    "/radio",
+  ];
   const ROTAS_JOGOS = ["/jogos", "/configurar-memoria"];
   const ROTAS_AJUDA = ["/painel", "/ajuda", "/admin", "/permissoes", "/casas", "/avisos"];
 
@@ -734,6 +745,10 @@ function NavBar() {
               <Sparkles size={14} strokeWidth={1.5} className="text-rose-500" />
               Músicas e Cifras
             </Link>
+            <Link to="/radio" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Radio size={14} strokeWidth={1.5} className="text-sky-500" />
+              Rádio
+            </Link>
           </GrupoSuspenso>
 
           <GrupoSuspenso
@@ -742,6 +757,18 @@ function NavBar() {
             ativo={isAnyActive(ROTAS_JOGOS)}
             aoAlternar={() => alternar("jogos")}
           >
+            <Link to="/jogos" className={dropItemCls} onClick={() => setAberto(null)}>
+              <Gamepad2 size={14} strokeWidth={1.5} className="text-gray-400" />
+              Todos os jogos
+            </Link>
+            <Link
+              to="/jogos/caminho-da-luz"
+              className={dropItemCls}
+              onClick={() => setAberto(null)}
+            >
+              <Compass size={14} strokeWidth={1.5} className="text-indigo-500" />
+              Caminho da Luz
+            </Link>
             <Link
               to="/jogos/semeador-mensagens"
               className={dropItemCls}
@@ -790,6 +817,12 @@ function NavBar() {
                 Painel do Administrador
               </Link>
             )}
+            {canTesouraria && (
+              <Link to="/tesouraria" className={dropItemCls} onClick={() => setAberto(null)}>
+                <Wallet size={14} strokeWidth={1.5} className="text-emerald-600" />
+                Tesouraria
+              </Link>
+            )}
             <Link to="/painel" className={dropItemCls} onClick={() => setAberto(null)}>
               <BarChart2 size={14} strokeWidth={1.5} className="text-cyan-500" />
               Status do Projeto
@@ -826,6 +859,14 @@ function NavBar() {
               </Link>
             )}
           </GrupoSuspenso>
+
+          <Link
+            to="/perfil"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-xl transition-all duration-300"
+          >
+            <User size={14} strokeWidth={1.5} />
+            Perfil
+          </Link>
 
           <button
             onClick={() => signOut()}
@@ -958,11 +999,17 @@ function NavBar() {
                 <Link to="/artigos" className={subItemMobileCls}>
                   Artigos
                 </Link>
+                <Link to="/perguntas" className={subItemMobileCls}>
+                  Perguntas sobre a doutrina
+                </Link>
                 <Link to="/evangelizacao" className={subItemMobileCls}>
                   Evangelização
                 </Link>
                 <Link to="/musicas-cifras" className={subItemMobileCls}>
                   Músicas e Cifras
+                </Link>
+                <Link to="/radio" className={subItemMobileCls}>
+                  Rádio
                 </Link>
               </>
             )}
@@ -977,6 +1024,12 @@ function NavBar() {
             </button>
             {abertoMobile === "jogos" && (
               <>
+                <Link to="/jogos" className={subItemMobileCls}>
+                  Todos os jogos
+                </Link>
+                <Link to="/jogos/caminho-da-luz" className={subItemMobileCls}>
+                  Caminho da Luz
+                </Link>
                 <Link to="/jogos/semeador-mensagens" className={subItemMobileCls}>
                   Semeador de Mensagens
                 </Link>
@@ -1010,8 +1063,16 @@ function NavBar() {
                     Painel do Administrador
                   </Link>
                 )}
+                {canTesouraria && (
+                  <Link to="/tesouraria" className={subItemMobileCls}>
+                    Tesouraria
+                  </Link>
+                )}
                 <Link to="/painel" className={subItemMobileCls}>
                   Status do Projeto
+                </Link>
+                <Link to="/casas" className={subItemMobileCls}>
+                  Casas espíritas
                 </Link>
                 <Link to="/ajuda" className={subItemMobileCls}>
                   FAQ / Dúvidas
@@ -1035,6 +1096,10 @@ function NavBar() {
                 )}
               </>
             )}
+
+            <Link to="/perfil" className={itemMobileCls}>
+              Perfil
+            </Link>
 
             <button
               onClick={() => signOut()}

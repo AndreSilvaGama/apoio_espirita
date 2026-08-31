@@ -378,7 +378,7 @@ export const MANUAL: ModuloDoManual[] = [
     id: "tesouraria",
     titulo: "Tesouraria",
     grupo: "A sua casa espírita",
-    ondeFica: "Menu superior › Tesouraria",
+    ondeFica: "Menu superior › Ajuda › Tesouraria",
     href: "/tesouraria",
     resumo:
       "Registro de receitas e despesas da casa, saldo do mês, gráficos e relatórios prontos para impressão ou planilha.",
@@ -387,7 +387,7 @@ export const MANUAL: ModuloDoManual[] = [
         titulo: "Lançar uma receita ou despesa",
         quem: "Presidente e Tesoureiro",
         passos: [
-          "No menu superior, clique em 'Tesouraria'.",
+          "No menu superior, abra 'Ajuda' e clique em 'Tesouraria'.",
           "Escolha se é receita ou despesa.",
           "Informe o valor, a data e a descrição do lançamento.",
           "Salve.",
@@ -902,7 +902,7 @@ export const MANUAL: ModuloDoManual[] = [
     id: "mensagem-do-dia",
     titulo: "Mensagem do dia",
     grupo: "Estudo e conteúdo",
-    ondeFica: "Menu superior › Estudo › Mensagem do Dia",
+    ondeFica: "Página inicial › bloco da Mensagem do Dia",
     href: "/mensagem-do-dia",
     resumo:
       "Fila de mensagens edificantes agendadas por dia. A do dia aparece no topo da tela de todos os membros.",
@@ -1272,13 +1272,13 @@ export const MANUAL: ModuloDoManual[] = [
     id: "transparencia",
     titulo: "Transparência do projeto",
     grupo: "Avisos, ajuda e suporte",
-    ondeFica: "Menu superior › Ajuda › Transparência",
+    ondeFica: "Rodapé › Transparência",
     href: "/transparencia",
     resumo: "O que o projeto é, como se mantém e o que faz com os dados de quem o usa.",
     tarefas: [
       {
         titulo: "Consultar",
-        passos: ["No menu superior, abra 'Ajuda' e clique em 'Transparência'."],
+        passos: ["Desça até o rodapé de qualquer página e clique em 'Transparência'."],
       },
     ],
   },

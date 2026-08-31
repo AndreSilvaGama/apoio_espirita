@@ -93,6 +93,25 @@ const roadmap: Item[] = [
       "Lupa no menu superior, também no celular, buscando quatro coisas de uma vez: as telas do próprio site (para quem não lembra onde fica cada recurso), artigos publicados, casas espíritas cadastradas e membros. Ignora acento e maiúscula, encontra casa por nome, sigla ou cidade, e coloca na frente a casa que tem página publicada — a que dá para abrir. A busca de membros respeita a regra de privacidade que já existia: mostra apenas quem é da sua própria casa.",
   },
 
+  {
+    status: "feito",
+    titulo: "Telas que existiam mas não apareciam no menu",
+    descricao:
+      "Seis telas prontas só eram alcançadas por quem já sabia o endereço ou usava a lupa. O Perfil não era ligado por tela nenhuma do site; a Tesouraria também não, e ela é o trabalho diário de um cargo inteiro. No celular faltavam ainda as Perguntas sobre a doutrina e o diretório de Casas espíritas, que existiam só no computador. A Rádio aparecia apenas no rodapé, e o jogo Caminho da Luz, o mais recente, não estava em nenhum menu — em todos esses casos o manual já ensinava um caminho que não existia. Agora o Perfil fica ao lado de Sair, a Tesouraria em Ajuda (visível só para quem tem acesso a ela), e os dois menus mostram a mesma coisa. Um teste passou a comparar o menu do computador com o do celular, conferir se todo jogo publicado tem link e cobrar do menu todo caminho que o manual promete — o build quebra em vez de a tela sumir em silêncio.",
+  },
+  {
+    status: "feito",
+    titulo: "Revisão de segurança e de velocidade do banco de dados",
+    descricao:
+      "A listagem pública de artigos havia deixado de aplicar as regras de privacidade: uma alteração anterior apagou sem avisar a opção que manda a consulta respeitar quem está lendo, e um visitante sem conta passaria a ver título, resumo e autor de artigos ainda não publicados. Nenhum artigo existia no site quando isso foi corrigido, então nada foi exposto. Junto disso, oito rotinas internas do banco — que devem rodar sozinhas, nunca ser chamadas de fora — deixaram de aceitar chamada pela internet. E, pensando no dia em que houver movimento: toda ligação entre tabelas ganhou índice e as 149 regras de acesso pararam de reconferir a identidade de quem consulta a cada linha lida, passando a conferir uma vez por consulta.",
+  },
+  {
+    status: "planejado",
+    titulo: "Bloquear senhas que já vazaram na internet",
+    descricao:
+      "No cadastro e na troca de senha, comparar a senha escolhida com a base pública de senhas já vazadas em ataques a outros sites e recusar as que aparecerem lá, explicando o motivo. Depende de ligar a verificação no provedor de contas.",
+  },
+
   // ── PENDENTE — Perfil e cadastro ─────────────────────────────────────────
 
   {
