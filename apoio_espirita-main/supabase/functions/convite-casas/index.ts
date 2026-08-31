@@ -43,6 +43,20 @@ const FALHA_TOLERADA = 0.3;
 /** Abaixo disto a amostra é pequena demais para concluir qualquer coisa. */
 const AMOSTRA_MINIMA = 5;
 
+/**
+ * Erros que são do PROVEDOR, e não do destinatário.
+ *
+ * 401 e 403 dizem que a conta de envio recusou a chamada — chave revogada,
+ * restrição por IP, conta suspensa. 429 é excesso de chamadas. Nenhum deles
+ * fala do endereço de quem ia receber, e por isso nenhum deles pode gastar uma
+ * das duas tentativas daquela casa: seria puni-la por um problema nosso.
+ *
+ * Aconteceu de verdade em 31/08/2026: a conta do provedor estava com restrição
+ * por IP ligada, e as dez primeiras casas foram marcadas como falha. Num lote
+ * de 300, teriam sido 300.
+ */
+const ERRO_DO_PROVEDOR = /^(401|403|429)/;
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -348,16 +362,46 @@ Deno.serve(async (req) => {
 
   let enviados = 0;
   const falhas: Array<{ email: string; erro: string }> = [];
+  let problemaNoProvedor: string | null = null;
 
   for (let i = 0; i < convites.length; i += SIMULTANEOS) {
+    // Provedor recusando a conta: parar imediatamente. Insistir só produziria
+    // o mesmo erro centenas de vezes e faria a fila parecer cheia de endereços
+    // ruins quando o problema é nosso.
+    if (problemaNoProvedor) break;
+
     await Promise.all(
       convites.slice(i, i + SIMULTANEOS).map(async (c) => {
         const erro = await enviar(c);
+        if (erro && ERRO_DO_PROVEDOR.test(erro)) {
+          problemaNoProvedor ??= erro;
+          // Devolve à fila sem gastar tentativa: a casa não tem culpa.
+          await admin
+            .from("casas_convites")
+            .update({ status: "pendente", erro })
+            .eq("id", c.convite_id);
+          return;
+        }
         await marcar(c, erro, (jaTentado.get(c.convite_id) ?? 0) + 1);
         if (erro) falhas.push({ email: c.email, erro });
         else enviados++;
       }),
     );
+  }
+
+  if (problemaNoProvedor) {
+    if (config.automatico) {
+      await desligar(`O provedor de e-mail recusou a conta: ${problemaNoProvedor.slice(0, 200)}`);
+    }
+    return responde({
+      enviados,
+      falharam: 0,
+      restam: await restantes(),
+      problema_no_provedor: problemaNoProvedor,
+      recado:
+        "O provedor recusou a conta, não os endereços. Nenhuma casa perdeu tentativa e a fila " +
+        "continua intacta. Resolva no painel do provedor e mande o lote de novo.",
+    });
   }
 
   const restam = await restantes();

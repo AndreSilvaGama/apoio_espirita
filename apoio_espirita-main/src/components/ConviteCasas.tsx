@@ -44,7 +44,10 @@ interface RespostaEnvio {
   falharam: number;
   restam: number;
   desligada: string | null;
-  amostra_de_falhas: Array<{ email: string; erro: string }>;
+  /** Preenchido quando o provedor recusou a CONTA, e não os endereços. */
+  problema_no_provedor?: string;
+  recado?: string;
+  amostra_de_falhas?: Array<{ email: string; erro: string }>;
 }
 
 const TAMANHOS = [10, 100, 300, 500];
@@ -226,26 +229,40 @@ export function ConviteCasas() {
 
         {envio && (
           <div className="space-y-3">
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-2">
-              <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-px" />
-              <span>
-                <strong>{envio.enviados}</strong> enviados
-                {envio.falharam > 0 && (
-                  <>
-                    {" · "}
-                    <strong>{envio.falharam}</strong> falharam
-                  </>
-                )}
-                {" · "}
-                <strong>{envio.restam}</strong> ainda na fila
-              </span>
-            </div>
+            {/* Recusa da CONTA: a mensagem precisa dizer que o problema não é
+                da lista, senão a leitura natural é "os endereços são ruins". */}
+            {envio.problema_no_provedor ? (
+              <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 space-y-2">
+                <p className="font-semibold flex items-center gap-1.5">
+                  <AlertTriangle size={14} />O provedor de e-mail recusou a conta
+                </p>
+                <p className="leading-relaxed">{envio.recado}</p>
+                <pre className="text-[11px] bg-white/60 border border-amber-200 rounded-lg p-2.5 overflow-x-auto">
+                  {envio.problema_no_provedor}
+                </pre>
+              </div>
+            ) : (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-start gap-2">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-px" />
+                <span>
+                  <strong>{envio.enviados}</strong> enviados
+                  {envio.falharam > 0 && (
+                    <>
+                      {" · "}
+                      <strong>{envio.falharam}</strong> falharam
+                    </>
+                  )}
+                  {" · "}
+                  <strong>{envio.restam}</strong> ainda na fila
+                </span>
+              </div>
+            )}
             {envio.desligada && (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
                 A rotina foi desligada automaticamente: {envio.desligada}
               </div>
             )}
-            {envio.amostra_de_falhas.length > 0 && (
+            {(envio.amostra_de_falhas?.length ?? 0) > 0 && (
               <pre className="text-[11px] bg-red-50 border border-red-150 rounded-xl p-3 overflow-x-auto text-red-800">
                 {JSON.stringify(envio.amostra_de_falhas, null, 2)}
               </pre>
