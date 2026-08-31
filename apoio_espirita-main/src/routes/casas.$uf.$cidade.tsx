@@ -4,6 +4,8 @@ import { Building2, ChevronLeft, ExternalLink, MapPin, Phone, Shield, X } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { mensagemDeErro } from "@/lib/erros";
+import { ConviteParaCompartilhar } from "@/components/Compartilhar";
+import { SITE, migalhas } from "@/lib/seo";
 import {
   ESTADOS,
   nomeDoEstado,
@@ -96,6 +98,13 @@ export const Route = createFileRoute("/casas/$uf/$cidade")({
                 })),
               }),
             },
+            // A trilha faz o Google trocar, no resultado da busca, a linha de
+            // endereco por "Apoio Espirita > Casas espiritas > SP > Campinas".
+            migalhas([
+              { nome: "Casas espíritas", caminho: "/casas" },
+              { nome: params.uf.toUpperCase(), caminho: `/casas/${params.uf.toLowerCase()}` },
+              { nome: cidade, caminho: `/casas/${params.uf.toLowerCase()}/${params.cidade.toLowerCase()}` },
+            ]),
           ]
         : [],
     };
@@ -105,7 +114,7 @@ export const Route = createFileRoute("/casas/$uf/$cidade")({
 
 function DiretorioCasasDaCidade() {
   const casas = Route.useLoaderData();
-  const { uf } = Route.useParams();
+  const { uf, cidade: cidadeSlug } = Route.useParams();
   const router = useRouter();
   const { user, profile } = useAuth();
   const [pedindoRemocao, setPedindoRemocao] = useState<string | null>(null);
@@ -254,6 +263,16 @@ function DiretorioCasasDaCidade() {
             </div>
           ))}
         </div>
+
+        {/* Quem acha a casa que procurava costuma conhecer mais alguem
+            procurando a mesma coisa. Este e o momento de pedir a indicacao. */}
+        <ConviteParaCompartilhar
+          titulo={`Casas espíritas em ${cidade}, ${uf.toUpperCase()}`}
+          contexto="Endereço, telefone e como chegar — consulta livre, sem cadastro."
+          url={`${SITE}/casas/${uf.toLowerCase()}/${cidadeSlug.toLowerCase()}`}
+          chamada="Conhece alguém procurando uma casa espírita?"
+          explicacao="Envie esta lista por WhatsApp. Ela abre sem cadastro, mostra endereço e telefone de cada casa e o caminho até a porta."
+        />
 
         <div className="mt-10 glass rounded-2xl p-6 space-y-3">
           <h2 className="text-sm font-medium text-foreground">

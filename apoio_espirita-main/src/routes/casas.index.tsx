@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MapPin, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ESTADOS, nomeDoEstado, caminhoDoEstado } from "@/lib/diretorio";
+import { ConviteParaCompartilhar } from "@/components/Compartilhar";
+import { SITE, migalhas } from "@/lib/seo";
 
 /**
  * Índice nacional do diretório de casas espíritas.
@@ -46,7 +48,8 @@ export const Route = createFileRoute("/casas/")({
       },
       { property: "og:url", content: "https://apoioespirita.com.br/casas" },
     ],
-    links: [{ rel: "canonical", href: "https://apoioespirita.com.br/casas" }],
+    links: [{ rel: "canonical", href: `${SITE}/casas` }],
+    scripts: [migalhas([{ nome: "Casas espíritas", caminho: "/casas" }])],
   }),
   component: DiretorioEstados,
 });
@@ -122,6 +125,14 @@ function DiretorioEstados() {
             Estados atendidos: {Object.keys(ESTADOS).length} unidades da federação.
           </p>
         </div>
+
+        <ConviteParaCompartilhar
+          titulo="Diretório nacional de casas espíritas"
+          contexto={`${totalCasas.toLocaleString("pt-BR")} casas em ${totalCidades.toLocaleString("pt-BR")} cidades do Brasil, com endereço e telefone.`}
+          url={`${SITE}/casas`}
+          chamada="Divulgue o diretório"
+          explicacao="É a lista mais completa que conseguimos reunir, aberta a qualquer pessoa e sem cadastro. Compartilhar é o que faz uma casa que ainda não está aqui ser encontrada."
+        />
       </div>
     </main>
   );

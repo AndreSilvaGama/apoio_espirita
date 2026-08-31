@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronLeft, LifeBuoy, Quote } from "lucide-react";
 import { PERGUNTAS_DA_DOUTRINA, perguntaPorSlug } from "@/data/perguntas-doutrina";
+import { ConviteParaCompartilhar } from "@/components/Compartilhar";
+import { SITE, migalhas } from "@/lib/seo";
 
 /** Uma pergunta sobre a doutrina, com a resposta e a fonte de cada afirmação. */
 
@@ -45,6 +47,10 @@ export const Route = createFileRoute("/perguntas/$slug")({
                 },
               }),
             },
+            migalhas([
+              { nome: "Perguntas sobre o Espiritismo", caminho: "/perguntas" },
+              { nome: loaderData.pergunta, caminho: `/perguntas/${params.slug}` },
+            ]),
           ]
         : [],
     };
@@ -134,6 +140,14 @@ function PerguntaPage() {
             Encontrar uma casa perto de mim
           </Link>
         </section>
+
+        <ConviteParaCompartilhar
+          titulo={pergunta.pergunta}
+          contexto="Resposta com a fonte citada, no Apoio Espírita."
+          url={`${SITE}/perguntas/${pergunta.slug}`}
+          chamada="Alguém já lhe fez esta pergunta?"
+          explicacao="Envie a resposta por WhatsApp. A página abre sem cadastro e cita a obra e o item de onde cada afirmação saiu."
+        />
 
         {outras.length > 0 && (
           <section className="mt-10">

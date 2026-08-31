@@ -57,6 +57,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { usePainelVotes, toItemKey } from "@/hooks/usePainelVotes";
 import { validarLinguagem } from "@/lib/linguagem";
+import { SITE, paginaPublica, migalhas, resumir } from "@/lib/seo";
+import { Compartilhar } from "@/components/Compartilhar";
 import { toast } from "sonner";
 import { format, parseISO, isAfter, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -85,7 +87,133 @@ const ABAS = [
 /** Abas que um visitante sem login pode abrir; as outras sao internas. */
 const ABAS_PUBLICAS: readonly Aba[] = ["sobre", "doacoes"];
 
+/**
+ * Os poucos campos que o cabeçalho da página precisa, lidos ANTES de a tela
+ * desenhar.
+ *
+ * O componente já buscava tudo por conta própria, mas depois de a página abrir
+ * — e isso não serve para duas coisas que decidem se alguém chega até aqui:
+ *
+ *   · o robô do WhatsApp e o do Facebook não executam JavaScript. Sem estes
+ *     campos vindos do servidor, um link desta página compartilhado num grupo
+ *     aparecia com o título genérico da página inicial, sem dizer de que casa
+ *     se tratava;
+ *   · o Google indexava um documento cujo título era o da inicial. Nenhuma
+ *     busca pelo nome da casa chegava aqui.
+ *
+ * Só campos que qualquer visitante já pode ler. `chave_pix` fica fora de
+ * propósito: ela é pública na tela para quem quer doar, mas não tem por que
+ * viajar no cabeçalho de todo carregamento.
+ */
+interface CabecalhoDaCasa {
+  nome_completo: string | null;
+  descricao: string | null;
+  missao: string | null;
+  cidade: string | null;
+  uf: string | null;
+  bairro: string | null;
+  endereco: string | null;
+  telefone: string | null;
+  site: string | null;
+  ano_fundacao: number | null;
+  updated_at: string | null;
+}
+
 export const Route = createFileRoute("/casa/$sigla")({
+  /**
+   * Só a página que a direção PUBLICOU tem cabeçalho próprio: a leitura usa a
+   * chave pública, e a permissão do banco (`publicada = true`) é que decide.
+   * Casa que não publicou continua invisível aqui — e a tela segue funcionando
+   * normalmente para os administradores dela, que carregam os dados com a
+   * própria sessão, depois.
+   *
+   * Falha de rede não derruba a página: sem cabeçalho é pior do que com, mas é
+   * muito melhor do que uma tela de erro no lugar da casa.
+   */
+  loader: async ({ params }): Promise<CabecalhoDaCasa | null> => {
+    const { data } = await supabase
+      .from("paginas_casas")
+      .select(
+        "nome_completo, descricao, missao, cidade, uf, bairro, endereco, telefone, site, ano_fundacao, updated_at",
+      )
+      .eq("sigla_casa", params.sigla)
+      .eq("publicada", true)
+      .maybeSingle();
+    return (data as CabecalhoDaCasa | null) ?? null;
+  },
+
+  head: ({ params, loaderData }) => {
+    const sigla = params.sigla.toUpperCase();
+    const url = `${SITE}/casa/${sigla}`;
+
+    // Casa sem página publicada: a tela existe para os administradores dela, e
+    // não deve entrar em buscador nem virar cartão de compartilhamento.
+    if (!loaderData) {
+      return paginaPublica({
+        titulo: `Página da casa ${sigla}`,
+        descricao:
+          "Página de casa espírita no Apoio Espírita. Esta casa ainda não publicou a página dela.",
+        url,
+        indexavel: false,
+      });
+    }
+
+    const nome = loaderData.nome_completo?.trim() || `Casa espírita ${sigla}`;
+    const lugar = [loaderData.cidade, loaderData.uf].filter(Boolean).join(", ");
+    const titulo = lugar ? `${nome} — ${lugar}` : nome;
+
+    // A descrição sai do que a própria casa escreveu. Só quando ela não
+    // escreveu nada é que o site monta uma frase — e a monta com fato, nunca
+    // com elogio genérico que o buscador trata como enchimento.
+    const proprio = loaderData.descricao?.trim() || loaderData.missao?.trim();
+    const descricao = resumir(
+      proprio ||
+        [
+          `${nome}${lugar ? ` fica em ${lugar}` : ""}.`,
+          loaderData.ano_fundacao ? `Em atividade desde ${loaderData.ano_fundacao}.` : "",
+          "Endereço, horários das reuniões, programação e contato.",
+        ]
+          .filter(Boolean)
+          .join(" "),
+    );
+
+    const cabecalho = paginaPublica({ titulo, descricao, url });
+
+    return {
+      ...cabecalho,
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "PlaceOfWorship",
+            name: nome,
+            alternateName: sigla,
+            url,
+            description: descricao,
+            foundingDate: loaderData.ano_fundacao ? String(loaderData.ano_fundacao) : undefined,
+            telephone: loaderData.telefone ?? undefined,
+            sameAs: loaderData.site ?? undefined,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: loaderData.endereco ?? undefined,
+              addressLocality: loaderData.cidade ?? undefined,
+              addressRegion: loaderData.uf ?? undefined,
+              addressCountry: "BR",
+            },
+          }),
+        },
+        migalhas([
+          { nome: "Casas espíritas", caminho: "/casas" },
+          ...(loaderData.uf
+            ? [{ nome: loaderData.uf.toUpperCase(), caminho: `/casas/${loaderData.uf.toLowerCase()}` }]
+            : []),
+          { nome, caminho: `/casa/${sigla}` },
+        ]),
+      ],
+    };
+  },
+
   component: PaginaCasa,
   validateSearch: (search: Record<string, unknown>): { aba?: Aba } => {
     const aba = search.aba;
@@ -1563,6 +1691,49 @@ function PaginaCasa() {
             email={pagina.email_contato}
             site={pagina.site}
           />
+        )}
+
+        {/* Divulgacao da propria casa.
+            Aparece para TODO MUNDO, nao so para o visitante de fora: quem mais
+            tem motivo para enviar esta pagina no grupo da casa e quem frequenta
+            a casa. Era exatamente essa ponte que faltava — a pagina existia e
+            nao tinha como sair daqui.
+
+            Quando a pagina ainda nao esta publicada o botao nao aparece: enviar
+            um endereco que o outro lado nao consegue abrir e pior do que nao
+            enviar nada. No lugar dele, quem administra ve o que falta fazer. */}
+        {pagina.publicada ? (
+          <div className="mt-6 glass rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">Divulgue esta página</p>
+              <p className="text-xs text-muted-foreground/80 leading-relaxed mt-0.5">
+                Envie no grupo da casa ou a quem estiver procurando. Abre sem cadastro.
+              </p>
+            </div>
+            <Compartilhar
+              titulo={pagina.nome_completo || `Casa espírita ${sigla}`}
+              contexto={
+                [pagina.cidade, pagina.uf].filter(Boolean).join(", ")
+                  ? `${[pagina.cidade, pagina.uf].filter(Boolean).join(", ")} — endereço, horários e contato.`
+                  : "Endereço, horários e contato."
+              }
+              url={`${SITE}/casa/${sigla}`}
+              className="shrink-0"
+            />
+          </div>
+        ) : (
+          isAdmin && (
+            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+              <p className="text-sm font-semibold text-amber-900">
+                Esta página ainda não está publicada
+              </p>
+              <p className="text-xs text-amber-800/90 leading-relaxed mt-1">
+                Enquanto não estiver, ela não abre para quem não faz parte da casa, não aparece na
+                lista da cidade e não pode ser compartilhada. Publique pela aba Configurações — leva
+                um clique e não expõe nada além do que a casa escreveu aqui.
+              </p>
+            </div>
+          )
         )}
 
         {/* Option to toggle administration mode */}

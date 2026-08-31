@@ -2,6 +2,8 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Building2, ChevronLeft, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ESTADOS, nomeDoEstado, caminhoDaCidade } from "@/lib/diretorio";
+import { ConviteParaCompartilhar } from "@/components/Compartilhar";
+import { SITE, paginaPublica, migalhas } from "@/lib/seo";
 
 /** Cidades de um estado que têm casa espírita no diretório. */
 
@@ -25,20 +27,32 @@ export const Route = createFileRoute("/casas/$uf/")({
     if (!ESTADOS[uf]) throw notFound();
     return carregarCidades(uf);
   },
-  head: ({ params }) => {
+  head: ({ params, loaderData }) => {
+    const uf = params.uf.toUpperCase();
     const estado = nomeDoEstado(params.uf);
-    const url = `https://apoioespirita.com.br/casas/${params.uf.toLowerCase()}`;
+    const url = `${SITE}/casas/${params.uf.toLowerCase()}`;
+    const cidades = loaderData?.length ?? 0;
+    const casas = (loaderData ?? []).reduce((soma, c) => soma + Number(c.casas), 0);
+
+    // Numero na descricao porque numero e o que distingue esta pagina das
+    // outras 26: "1.204 casas em 189 cidades" e informacao, "casas espiritas
+    // de Sao Paulo" e so o titulo repetido.
+    const descricao = casas
+      ? `${casas.toLocaleString("pt-BR")} ${casas === 1 ? "casa espírita" : "casas espíritas"} em ${cidades.toLocaleString("pt-BR")} ${cidades === 1 ? "cidade" : "cidades"}${estado ? " de " + estado : ""}: endereço, telefone e como chegar. Consulta livre, sem cadastro.`
+      : `Casas espíritas${estado ? " de " + estado : ""} por cidade: endereço, telefone e como chegar. Consulta livre, sem cadastro.`;
+
     return {
-      meta: [
-        { title: `Casas espíritas ${estado ? "em " + estado : ""} — Apoio Espírita` },
-        {
-          name: "description",
-          content: `Casas espíritas ${estado ? "de " + estado : ""} por cidade: endereço, telefone e como chegar. Consulta livre, sem cadastro.`,
-        },
-        { property: "og:title", content: `Casas espíritas em ${estado} — Apoio Espírita` },
-        { property: "og:url", content: url },
+      ...paginaPublica({
+        titulo: `Casas espíritas${estado ? " em " + estado : ""}`,
+        descricao,
+        url,
+      }),
+      scripts: [
+        migalhas([
+          { nome: "Casas espíritas", caminho: "/casas" },
+          { nome: estado || uf, caminho: `/casas/${params.uf.toLowerCase()}` },
+        ]),
       ],
-      links: [{ rel: "canonical", href: url }],
     };
   },
   component: DiretorioCidades,
@@ -107,6 +121,14 @@ function DiretorioCidades() {
             ))}
           </div>
         )}
+
+        <ConviteParaCompartilhar
+          titulo={`Casas espíritas em ${estado}`}
+          contexto={`${totalCasas.toLocaleString("pt-BR")} casas em ${cidades.length.toLocaleString("pt-BR")} cidades, com endereço e telefone.`}
+          url={`${SITE}/casas/${uf.toLowerCase()}`}
+          chamada="Ajude alguém a encontrar a casa mais perto"
+          explicacao="Envie esta lista por WhatsApp para o grupo da sua casa ou para quem acabou de se mudar de cidade. Abre sem cadastro."
+        />
       </div>
     </main>
   );

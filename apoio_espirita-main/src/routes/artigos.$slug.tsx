@@ -8,6 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AvaliacaoArtigo } from "@/components/AvaliacaoArtigo";
 import { JUSTIFICATIVA_MINIMA, justificativaValida } from "@/lib/artigos";
 import { mensagemDeErro } from "@/lib/erros";
+import { ConviteParaCompartilhar } from "@/components/Compartilhar";
+import { SITE, migalhas } from "@/lib/seo";
 
 /**
  * O artigo é carregado no `loader`, e não só no componente, por dois motivos.
@@ -52,6 +54,38 @@ export const Route = createFileRoute("/artigos/$slug")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
+      // Artigo retirado, ou que o autor pediu para ficar fora dos buscadores,
+      // nao ganha ficha estruturada: seria descrever para o Google um texto que
+      // ele nao deve mostrar.
+      scripts:
+        !foraDosBuscadores && loaderData
+          ? [
+              {
+                type: "application/ld+json",
+                children: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Article",
+                  headline: titulo,
+                  description: descricao,
+                  url,
+                  inLanguage: "pt-BR",
+                  author: autor ? { "@type": "Person", name: autor } : undefined,
+                  publisher: {
+                    "@type": "Organization",
+                    name: "Apoio Espírita",
+                    url: SITE,
+                  },
+                  datePublished: loaderData.publicado_em ?? undefined,
+                  dateModified: loaderData.editado_em ?? loaderData.publicado_em ?? undefined,
+                  mainEntityOfPage: url,
+                }),
+              },
+              migalhas([
+                { nome: "Artigos", caminho: "/artigos" },
+                { nome: titulo, caminho: `/artigos/${params.slug}` },
+              ]),
+            ]
+          : [],
     };
   },
   component: ArtigoPage,
@@ -385,6 +419,18 @@ function ArtigoPage() {
                   </div>
                 )}
               </section>
+            )}
+
+            {situacao === "publicado" && artigo.slug && (
+              <ConviteParaCompartilhar
+                titulo={artigo.titulo ?? "Artigo"}
+                contexto={
+                  artigo.autor_nome ? `Por ${artigo.autor_nome}, no Apoio Espírita.` : undefined
+                }
+                url={`${SITE}/artigos/${artigo.slug}`}
+                chamada="Este texto ajudou?"
+                explicacao="Envie a quem também vai gostar de ler. A página abre sem cadastro, e quem escreveu fica sabendo pelo número de leituras."
+              />
             )}
 
             <div className="text-center">

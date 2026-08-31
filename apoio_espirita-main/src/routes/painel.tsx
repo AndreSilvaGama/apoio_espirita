@@ -37,6 +37,12 @@ const STATUS_DA_SOLICITACAO: Record<string, Status> = {
 const roadmap: Item[] = [
   {
     status: "feito",
+    titulo: "Divulgação: cartão de compartilhamento, botão de enviar e sinal certo ao Google",
+    descricao:
+      "Três defeitos mediados em 31/08/2026 desperdiçavam a divulgação já feita. 1) A imagem anunciada em og:image nunca existiu — respondia HTTP 404 —, então todo link do site enviado no WhatsApp aparecia sem imagem; agora existe uma imagem de 1200×630 com a marca, gerada por script versionado. 2) Cada página que não fosse a inicial saía com duas etiquetas canônicas em conflito, porque a raiz declarava a sua e a página declarava outra; o Google descarta as duas nesse caso, e as 989 páginas de cidade ficaram sem o sinal. A da raiz foi removida. 3) A página que cada casa publica não declarava título, descrição nem ficha estruturada: era indexada e compartilhada com o título da página inicial. Passou a ler os dados no servidor e a trazer ficha PlaceOfWorship, trilha de navegação e cartão próprio. Somam-se: botão Compartilhar com WhatsApp, copiar link e a lista do aparelho no celular — que não existia em nenhuma página do site — nas páginas de casa, de cidade, de estado, do diretório, de artigo e de pergunta; trilha de navegação em JSON-LD no diretório e nas perguntas; ficha Article nos artigos, com autor e datas; e o robots.txt fechando as onze telas da comunidade que gastavam rastreio devolvendo a parede de login. Um teste com 50 verificações impede os três defeitos de voltarem em silêncio.",
+  },
+  {
+    status: "feito",
     titulo: "Redesign Serene Wisdom — páginas autenticadas",
     descricao:
       "Novo design system premium com foco em acessibilidade para idosos: CasaHero com nome do centro em destaque, Libre Caslon Text + Inter, BottomNav mobile, tokens de cor Serene Wisdom em todas as páginas autenticadas",

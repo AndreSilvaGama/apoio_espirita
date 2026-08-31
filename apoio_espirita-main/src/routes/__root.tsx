@@ -168,7 +168,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
-      { rel: "canonical", href: "https://apoioespirita.com.br/" },
+      // Sem canônico aqui, de propósito. O que a raiz declara vale para TODAS as
+      // páginas, e cada página pública já declara o seu — o resultado eram duas
+      // etiquetas canônicas conflitantes no mesmo documento, uma apontando para a
+      // página certa e a da raiz apontando para a inicial. O Google descarta as
+      // duas quando isso acontece, e o site ficou sem canônico nenhum onde mais
+      // importava: as 989 páginas de cidade do diretório. Cada rota pública
+      // declara o seu próprio (ver `paginaPublica` em `src/lib/seo.ts`).
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

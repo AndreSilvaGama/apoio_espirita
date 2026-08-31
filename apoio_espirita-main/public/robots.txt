@@ -12,8 +12,15 @@ Allow: /musicas-cifras
 Allow: /transparencia
 Allow: /sugestoes
 Allow: /jogos
+Allow: /perguntas
 
 # Telas de trabalho interno e de dados pessoais nao entram em buscador.
+#
+# Alem do sigilo, ha um motivo pratico de divulgacao: o robo do Google tem um
+# limite de paginas que percorre por visita. Cada tela que exige conta gasta
+# esse limite para devolver a mesma parede de login, e o que sobra e menos
+# rastreio para as ~990 paginas de cidade do diretorio, que sao as unicas que
+# podem aparecer numa busca por "centro espirita perto de mim".
 Disallow: /admin
 Disallow: /agenda
 Disallow: /ajuda
@@ -33,5 +40,26 @@ Disallow: /perfil
 Disallow: /permissoes
 Disallow: /radio
 Disallow: /tesouraria
+
+# Telas da comunidade: abrem so para quem tem conta e mostram dados de pessoas
+# (aniversarios, pedidos de oracao, caronas, doacoes, escalas de trabalho).
+Disallow: /aniversariantes
+Disallow: /apresentacoes
+Disallow: /apresentar
+Disallow: /atendimento-fraterno
+Disallow: /avisos
+Disallow: /bazar
+Disallow: /caronas
+Disallow: /entregas
+Disallow: /forum
+Disallow: /grupos
+Disallow: /jovens
+Disallow: /oracoes
+Disallow: /voluntariado
+
+# A plateia de uma apresentacao chega pelo QR projetado na parede, nao por
+# busca. A tela existe enquanto a palestra acontece, e um resultado de busca
+# levando a uma sessao ja encerrada seria so um endereco morto no indice.
+Disallow: /ao-vivo/
 
 Sitemap: https://apoioespirita.com.br/sitemap.xml
