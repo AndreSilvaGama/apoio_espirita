@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Qj4y44hdHbefIS9EDzCi23q8haU6Znr4gu6vyTqNR20GnEBWWrZGiOVWgsEEpqd
+\restrict ZWDLJhmqjY5MzWRHXcfPPB2XVdebjgPWhsbRttuwyhD3mN6TU4M68OOM8WNElCW
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -469,6 +469,29 @@ $$;
 
 
 --
+-- Name: convites_funil(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.convites_funil() RETURNS TABLE(total bigint, pendentes bigint, enviados bigint, falharam bigint, entregues bigint, abertos bigint, clicados bigint, devolvidos bigint, chegaram bigint, visitas bigint)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select
+    count(*),
+    count(*) filter (where status = 'pendente'),
+    count(*) filter (where enviado_em is not null),
+    count(*) filter (where status = 'falhou'),
+    count(*) filter (where entregue_em is not null),
+    count(*) filter (where aberto_em is not null),
+    count(*) filter (where clicado_em is not null),
+    count(*) filter (where devolvido_em is not null),
+    count(*) filter (where chegou_em is not null),
+    coalesce(sum(visitas), 0)
+  from public.casas_convites;
+$$;
+
+
+--
 -- Name: convites_pendentes(integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -479,9 +502,29 @@ CREATE FUNCTION public.convites_pendentes(p_limite integer) RETURNS TABLE(convit
   select v.id, v.email, c.nome, c.cidade, c.estado, public.diretorio_slug(c.cidade)
   from public.casas_convites v
   join public.casas_espirita c on c.id = v.casa_id
-  where v.status = 'pendente' and c.ativa and c.visivel_diretorio
-  order by v.created_at, v.id
+  where c.ativa and c.visivel_diretorio
+    and (
+      v.status = 'pendente'
+      or (v.status = 'falhou' and v.tentativas < 2)
+    )
+  order by (v.status = 'falhou'), v.created_at, v.id
   limit greatest(0, least(p_limite, 1000));
+$$;
+
+
+--
+-- Name: convites_restantes(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.convites_restantes() RETURNS integer
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select count(*)::int
+  from public.casas_convites v
+  join public.casas_espirita c on c.id = v.casa_id
+  where c.ativa and c.visivel_diretorio
+    and (v.status = 'pendente' or (v.status = 'falhou' and v.tentativas < 2));
 $$;
 
 
@@ -596,6 +639,36 @@ CREATE FUNCTION public.diretorio_slug(texto text) RETURNS text
     SET search_path TO 'public'
     AS $$
   select trim(both '-' from regexp_replace(public.sem_acento(texto), '[^a-z0-9]+', '-', 'g'))
+$$;
+
+
+--
+-- Name: disparar_convites_agendados(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.disparar_convites_agendados() RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_segredo text;
+begin
+  select segredo into v_segredo from public.convite_config where id = 1;
+  if v_segredo is null then
+    raise warning 'Convite às casas: segredo do agendamento ausente.';
+    return;
+  end if;
+
+  perform net.http_post(
+    url := 'https://kitmwxfwwujygcmdjngm.supabase.co/functions/v1/convite-casas',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-segredo', v_segredo
+    ),
+    body := jsonb_build_object('acao', 'enviar'),
+    timeout_milliseconds := 120000
+  );
+end;
 $$;
 
 
@@ -885,6 +958,36 @@ COMMENT ON FUNCTION public.pode_atendimento_fraterno(p_sigla text) IS 'Acesso à
 
 
 --
+-- Name: pode_evangelizacao(text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.pode_evangelizacao(p_sigla text) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select p_sigla is not null and (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid()
+        and sigla_casa = p_sigla
+        and cargo_principal in ('Evangelizador', 'Coordenador')
+    )
+    or exists (
+      select 1 from public.evangelizacao_autorizados
+      where sigla_casa = p_sigla and user_id = auth.uid()
+    )
+  )
+$$;
+
+
+--
+-- Name: FUNCTION pode_evangelizacao(p_sigla text); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION public.pode_evangelizacao(p_sigla text) IS 'Acesso às fichas da evangelização. De propósito não inclui sou_dev(): ninguém lê a ficha de uma criança a título de suporte técnico.';
+
+
+--
 -- Name: pode_publicar_na_casa(text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -964,6 +1067,21 @@ $$;
 --
 
 COMMENT ON FUNCTION public.pode_ver_da_casa(p_sigla text, p_aberto boolean) IS 'Regra única de visibilidade da comunidade: da própria casa, ou aberto a todas.';
+
+
+--
+-- Name: registrar_chegada_convite(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.registrar_chegada_convite(p_convite uuid) RETURNS void
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  update public.casas_convites
+     set chegou_em = coalesce(chegou_em, now()),
+         visitas   = visitas + 1
+   where id = p_convite;
+$$;
 
 
 --
@@ -1564,10 +1682,17 @@ CREATE VIEW public.artigos_avisos WITH (security_invoker='false') AS
 
 
 --
+-- Name: VIEW artigos_avisos; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.artigos_avisos IS 'DELIBERADAMENTE security definer. Existe para o endereco de um artigo retirado continuar respondendo com um aviso em vez de nao-encontrado — o que exige enxergar linhas que as politicas escondem. Por isso e minima: so slug, estado e data. Nao le conteudo, nem titulo, nem o motivo da retirada. Nao vaza o que nao enxerga.';
+
+
+--
 -- Name: artigos_publicos; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW public.artigos_publicos AS
+CREATE VIEW public.artigos_publicos WITH (security_invoker='true') AS
  SELECT id,
     autor_id,
         CASE
@@ -1598,6 +1723,13 @@ CREATE VIEW public.artigos_publicos AS
     assinatura,
     indexavel
    FROM public.artigos a;
+
+
+--
+-- Name: VIEW artigos_publicos; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON VIEW public.artigos_publicos IS 'Leitura publica de artigos. Mascara o conteudo fora do estado publicado e roda com security_invoker: as linhas visiveis sao as que a politica artigos_select libera para quem consulta. Ao recriar esta view, REPETIR a clausula with (security_invoker = true) — create or replace view apaga a opcao sem avisar.';
 
 
 --
@@ -1845,8 +1977,37 @@ CREATE TABLE public.casas_convites (
     erro text,
     tentativas integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    provedor_id text,
+    entregue_em timestamp with time zone,
+    aberto_em timestamp with time zone,
+    clicado_em timestamp with time zone,
+    devolvido_em timestamp with time zone,
+    devolvido_motivo text,
+    chegou_em timestamp with time zone,
+    visitas integer DEFAULT 0 NOT NULL,
     CONSTRAINT casas_convites_status_check CHECK ((status = ANY (ARRAY['pendente'::text, 'enviado'::text, 'falhou'::text])))
 );
+
+
+--
+-- Name: COLUMN casas_convites.provedor_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.casas_convites.provedor_id IS 'Identificador da mensagem no provedor de e-mail. E por ele que o webhook reencontra o convite; o e-mail sozinho nao serve, porque a mesma casa pode receber mais de um convite ao longo do tempo.';
+
+
+--
+-- Name: COLUMN casas_convites.aberto_em; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.casas_convites.aberto_em IS 'Primeira abertura relatada pelo provedor. E sempre um PISO: leitor de e-mail que bloqueia imagens nao gera abertura, e a pessoa pode ter lido.';
+
+
+--
+-- Name: COLUMN casas_convites.chegou_em; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.casas_convites.chegou_em IS 'Primeira visita a pagina da cidade vinda do link deste convite. Este e o numero que mede resultado — os outros medem intencao.';
 
 
 --
@@ -1916,6 +2077,24 @@ CREATE TABLE public.casas_reivindicacoes (
 
 
 --
+-- Name: convite_config; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.convite_config (
+    id integer DEFAULT 1 NOT NULL,
+    automatico boolean DEFAULT false NOT NULL,
+    por_dia integer DEFAULT 300 NOT NULL,
+    pausado_em timestamp with time zone,
+    motivo text,
+    atualizado_em timestamp with time zone DEFAULT now() NOT NULL,
+    segredo text NOT NULL,
+    segredo_webhook text,
+    CONSTRAINT convite_config_id_check CHECK ((id = 1)),
+    CONSTRAINT convite_config_por_dia_check CHECK (((por_dia >= 1) AND (por_dia <= 500)))
+);
+
+
+--
 -- Name: entrega_contatos; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1961,6 +2140,152 @@ CREATE TABLE public.entregas (
 --
 
 COMMENT ON COLUMN public.entregas.referencia IS 'Ponto de referência do endereço. O endereço completo é combinado entre as duas pessoas pelo contato liberado, nunca publicado na lista.';
+
+
+--
+-- Name: evangelizacao_autorizados; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_autorizados (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    user_id uuid NOT NULL,
+    nome text,
+    criado_por uuid DEFAULT auth.uid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: evangelizacao_avaliacoes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_avaliacoes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    crianca_id uuid NOT NULL,
+    data_avaliacao date DEFAULT CURRENT_DATE NOT NULL,
+    participacao smallint,
+    convivencia smallint,
+    assimilacao smallint,
+    comentario text,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT evangelizacao_avaliacoes_assimilacao_check CHECK (((assimilacao >= 1) AND (assimilacao <= 5))),
+    CONSTRAINT evangelizacao_avaliacoes_comentario_check CHECK (((comentario IS NULL) OR (char_length(btrim(comentario)) <= 2000))),
+    CONSTRAINT evangelizacao_avaliacoes_convivencia_check CHECK (((convivencia >= 1) AND (convivencia <= 5))),
+    CONSTRAINT evangelizacao_avaliacoes_participacao_check CHECK (((participacao >= 1) AND (participacao <= 5)))
+);
+
+
+--
+-- Name: evangelizacao_criancas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_criancas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    turma_id uuid,
+    nome text NOT NULL,
+    data_nascimento date NOT NULL,
+    alergias text,
+    medicamentos text,
+    condicoes_saude text,
+    observacoes text,
+    autoriza_imagem boolean DEFAULT false NOT NULL,
+    autoriza_passeio boolean DEFAULT false NOT NULL,
+    pode_sair_sozinha boolean DEFAULT false NOT NULL,
+    matriculada_em date DEFAULT CURRENT_DATE NOT NULL,
+    ativa boolean DEFAULT true NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT evangelizacao_criancas_alergias_check CHECK (((alergias IS NULL) OR (char_length(btrim(alergias)) <= 1000))),
+    CONSTRAINT evangelizacao_criancas_condicoes_saude_check CHECK (((condicoes_saude IS NULL) OR (char_length(btrim(condicoes_saude)) <= 1000))),
+    CONSTRAINT evangelizacao_criancas_data_nascimento_check CHECK ((data_nascimento > '1950-01-01'::date)),
+    CONSTRAINT evangelizacao_criancas_medicamentos_check CHECK (((medicamentos IS NULL) OR (char_length(btrim(medicamentos)) <= 1000))),
+    CONSTRAINT evangelizacao_criancas_nome_check CHECK (((char_length(btrim(nome)) >= 2) AND (char_length(btrim(nome)) <= 160))),
+    CONSTRAINT evangelizacao_criancas_observacoes_check CHECK (((observacoes IS NULL) OR (char_length(btrim(observacoes)) <= 2000)))
+);
+
+
+--
+-- Name: evangelizacao_presencas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_presencas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    crianca_id uuid NOT NULL,
+    turma_id uuid,
+    data_encontro date DEFAULT CURRENT_DATE NOT NULL,
+    presente boolean DEFAULT true NOT NULL,
+    observacao text,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT evangelizacao_presencas_observacao_check CHECK (((observacao IS NULL) OR (char_length(btrim(observacao)) <= 500)))
+);
+
+
+--
+-- Name: evangelizacao_responsaveis; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_responsaveis (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    crianca_id uuid NOT NULL,
+    nome text NOT NULL,
+    parentesco text,
+    telefone text NOT NULL,
+    telefone_alternativo text,
+    email text,
+    principal boolean DEFAULT false NOT NULL,
+    pode_retirar boolean DEFAULT true NOT NULL,
+    observacao text,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT evangelizacao_responsaveis_email_check CHECK (((email IS NULL) OR (char_length(btrim(email)) <= 160))),
+    CONSTRAINT evangelizacao_responsaveis_nome_check CHECK (((char_length(btrim(nome)) >= 2) AND (char_length(btrim(nome)) <= 160))),
+    CONSTRAINT evangelizacao_responsaveis_observacao_check CHECK (((observacao IS NULL) OR (char_length(btrim(observacao)) <= 500))),
+    CONSTRAINT evangelizacao_responsaveis_parentesco_check CHECK (((parentesco IS NULL) OR (char_length(btrim(parentesco)) <= 40))),
+    CONSTRAINT evangelizacao_responsaveis_telefone_alternativo_check CHECK (((telefone_alternativo IS NULL) OR (char_length(btrim(telefone_alternativo)) <= 40))),
+    CONSTRAINT evangelizacao_responsaveis_telefone_check CHECK (((char_length(btrim(telefone)) >= 8) AND (char_length(btrim(telefone)) <= 40)))
+);
+
+
+--
+-- Name: evangelizacao_turmas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.evangelizacao_turmas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    sigla_casa text NOT NULL,
+    nome text NOT NULL,
+    faixa_etaria text DEFAULT 'mista'::text NOT NULL,
+    dia_semana smallint,
+    horario text,
+    sala text,
+    evangelizadores text,
+    ativa boolean DEFAULT true NOT NULL,
+    criado_por uuid NOT NULL,
+    autor_nome text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT evangelizacao_turmas_dia_semana_check CHECK (((dia_semana >= 0) AND (dia_semana <= 6))),
+    CONSTRAINT evangelizacao_turmas_evangelizadores_check CHECK (((evangelizadores IS NULL) OR (char_length(btrim(evangelizadores)) <= 200))),
+    CONSTRAINT evangelizacao_turmas_faixa_etaria_check CHECK ((faixa_etaria = ANY (ARRAY['0-2'::text, '3-5'::text, '6-8'::text, '9-11'::text, '12-14'::text, '15-17'::text, 'mista'::text]))),
+    CONSTRAINT evangelizacao_turmas_horario_check CHECK (((horario IS NULL) OR (char_length(btrim(horario)) <= 40))),
+    CONSTRAINT evangelizacao_turmas_nome_check CHECK (((char_length(btrim(nome)) >= 2) AND (char_length(btrim(nome)) <= 80))),
+    CONSTRAINT evangelizacao_turmas_sala_check CHECK (((sala IS NULL) OR (char_length(btrim(sala)) <= 60)))
+);
 
 
 --
@@ -2926,6 +3251,14 @@ ALTER TABLE ONLY public.casas_reivindicacoes
 
 
 --
+-- Name: convite_config convite_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.convite_config
+    ADD CONSTRAINT convite_config_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: entrega_contatos entrega_contatos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2939,6 +3272,70 @@ ALTER TABLE ONLY public.entrega_contatos
 
 ALTER TABLE ONLY public.entregas
     ADD CONSTRAINT entregas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_autorizados evangelizacao_autorizados_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_autorizados
+    ADD CONSTRAINT evangelizacao_autorizados_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_autorizados evangelizacao_autorizados_sigla_casa_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_autorizados
+    ADD CONSTRAINT evangelizacao_autorizados_sigla_casa_user_id_key UNIQUE (sigla_casa, user_id);
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_avaliacoes
+    ADD CONSTRAINT evangelizacao_avaliacoes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_criancas
+    ADD CONSTRAINT evangelizacao_criancas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_crianca_id_data_encontro_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_presencas
+    ADD CONSTRAINT evangelizacao_presencas_crianca_id_data_encontro_key UNIQUE (crianca_id, data_encontro);
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_presencas
+    ADD CONSTRAINT evangelizacao_presencas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_responsaveis
+    ADD CONSTRAINT evangelizacao_responsaveis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_turmas
+    ADD CONSTRAINT evangelizacao_turmas_pkey PRIMARY KEY (id);
 
 
 --
@@ -3414,6 +3811,48 @@ CREATE INDEX entregas_casa_idx ON public.entregas USING btree (sigla_casa, statu
 
 
 --
+-- Name: evangelizacao_avaliacoes_crianca_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_avaliacoes_crianca_idx ON public.evangelizacao_avaliacoes USING btree (crianca_id, data_avaliacao DESC);
+
+
+--
+-- Name: evangelizacao_criancas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_criancas_casa_idx ON public.evangelizacao_criancas USING btree (sigla_casa, ativa, nome);
+
+
+--
+-- Name: evangelizacao_criancas_turma_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_criancas_turma_idx ON public.evangelizacao_criancas USING btree (turma_id);
+
+
+--
+-- Name: evangelizacao_presencas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_presencas_casa_idx ON public.evangelizacao_presencas USING btree (sigla_casa, data_encontro DESC);
+
+
+--
+-- Name: evangelizacao_responsaveis_crianca_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_responsaveis_crianca_idx ON public.evangelizacao_responsaveis USING btree (crianca_id, principal DESC);
+
+
+--
+-- Name: evangelizacao_turmas_casa_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX evangelizacao_turmas_casa_idx ON public.evangelizacao_turmas USING btree (sigla_casa, ativa, nome);
+
+
+--
 -- Name: forum_respostas_topico_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3442,10 +3881,178 @@ CREATE INDEX grupo_mensagens_grupo_idx ON public.grupo_mensagens USING btree (gr
 
 
 --
+-- Name: idx_administradores_pagina_adicionado_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_administradores_pagina_adicionado_por ON public.administradores_pagina USING btree (adicionado_por);
+
+
+--
+-- Name: idx_administradores_pagina_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_administradores_pagina_user_id ON public.administradores_pagina USING btree (user_id);
+
+
+--
+-- Name: idx_agenda_eventos_criador_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_agenda_eventos_criador_id ON public.agenda_eventos USING btree (criador_id);
+
+
+--
+-- Name: idx_agenda_eventos_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_agenda_eventos_sigla_casa ON public.agenda_eventos USING btree (sigla_casa);
+
+
+--
+-- Name: idx_agenda_participantes_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_agenda_participantes_user_id ON public.agenda_participantes USING btree (user_id);
+
+
+--
+-- Name: idx_apresentacao_sessoes_apresentacao_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_apresentacao_sessoes_apresentacao_id ON public.apresentacao_sessoes USING btree (apresentacao_id);
+
+
+--
+-- Name: idx_apresentacao_sessoes_iniciada_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_apresentacao_sessoes_iniciada_por ON public.apresentacao_sessoes USING btree (iniciada_por);
+
+
+--
+-- Name: idx_apresentacoes_criado_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_apresentacoes_criado_por ON public.apresentacoes USING btree (criado_por);
+
+
+--
+-- Name: idx_artigo_avaliacoes_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_artigo_avaliacoes_user_id ON public.artigo_avaliacoes USING btree (user_id);
+
+
+--
+-- Name: idx_artigo_revisoes_artigo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_artigo_revisoes_artigo_id ON public.artigo_revisoes USING btree (artigo_id);
+
+
+--
+-- Name: idx_artigo_revisoes_decidida_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_artigo_revisoes_decidida_por ON public.artigo_revisoes USING btree (decidida_por);
+
+
+--
+-- Name: idx_artigos_retirado_por_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_artigos_retirado_por_user_id ON public.artigos USING btree (retirado_por_user_id);
+
+
+--
+-- Name: idx_casas_convites_casa_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_casas_convites_casa_id ON public.casas_convites USING btree (casa_id);
+
+
+--
+-- Name: idx_casas_convites_provedor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_casas_convites_provedor_id ON public.casas_convites USING btree (provedor_id);
+
+
+--
+-- Name: idx_casas_pedidos_remocao_casa_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_casas_pedidos_remocao_casa_id ON public.casas_pedidos_remocao USING btree (casa_id);
+
+
+--
+-- Name: idx_casas_reivindicacoes_casa_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_casas_reivindicacoes_casa_id ON public.casas_reivindicacoes USING btree (casa_id);
+
+
+--
+-- Name: idx_entregas_item_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_entregas_item_id ON public.entregas USING btree (item_id);
+
+
+--
+-- Name: idx_entregas_reserva_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_entregas_reserva_id ON public.entregas USING btree (reserva_id);
+
+
+--
+-- Name: idx_evangelizacao_presencas_turma_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_evangelizacao_presencas_turma_id ON public.evangelizacao_presencas USING btree (turma_id);
+
+
+--
+-- Name: idx_kanban_comentarios_evento_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_comentarios_evento_id ON public.kanban_comentarios USING btree (evento_id);
+
+
+--
+-- Name: idx_kanban_comentarios_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_comentarios_user_id ON public.kanban_comentarios USING btree (user_id);
+
+
+--
+-- Name: idx_kanban_eventos_criador_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_eventos_criador_id ON public.kanban_eventos USING btree (criador_id);
+
+
+--
+-- Name: idx_kanban_eventos_lista_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_eventos_lista_id ON public.kanban_eventos USING btree (lista_id);
+
+
+--
 -- Name: idx_kanban_frentes_board; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_kanban_frentes_board ON public.kanban_frentes USING btree (board_id);
+
+
+--
+-- Name: idx_kanban_grupos_evento_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_grupos_evento_id ON public.kanban_grupos USING btree (evento_id);
 
 
 --
@@ -3463,6 +4070,20 @@ CREATE INDEX idx_kanban_listas_frente ON public.kanban_listas USING btree (frent
 
 
 --
+-- Name: idx_kanban_listas_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_listas_sigla_casa ON public.kanban_listas USING btree (sigla_casa);
+
+
+--
+-- Name: idx_kanban_tarefas_grupo_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_kanban_tarefas_grupo_id ON public.kanban_tarefas USING btree (grupo_id);
+
+
+--
 -- Name: idx_memoria_virtudes_sigla; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3470,10 +4091,115 @@ CREATE INDEX idx_memoria_virtudes_sigla ON public.memoria_virtudes_custom USING 
 
 
 --
+-- Name: idx_mensagens_do_dia_autor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_mensagens_do_dia_autor_id ON public.mensagens_do_dia USING btree (autor_id);
+
+
+--
+-- Name: idx_musicas_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_musicas_sigla_casa ON public.musicas USING btree (sigla_casa);
+
+
+--
+-- Name: idx_musicas_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_musicas_user_id ON public.musicas USING btree (user_id);
+
+
+--
+-- Name: idx_painel_votes_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_painel_votes_user_id ON public.painel_votes USING btree (user_id);
+
+
+--
+-- Name: idx_problem_reports_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_problem_reports_user_id ON public.problem_reports USING btree (user_id);
+
+
+--
+-- Name: idx_programacao_eventos_criado_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_programacao_eventos_criado_por ON public.programacao_eventos USING btree (criado_por);
+
+
+--
+-- Name: idx_programacao_eventos_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_programacao_eventos_sigla_casa ON public.programacao_eventos USING btree (sigla_casa);
+
+
+--
+-- Name: idx_programacao_participantes_adicionado_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_programacao_participantes_adicionado_por ON public.programacao_participantes USING btree (adicionado_por);
+
+
+--
+-- Name: idx_programacao_participantes_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_programacao_participantes_user_id ON public.programacao_participantes USING btree (user_id);
+
+
+--
+-- Name: idx_publicacoes_casa_autor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_publicacoes_casa_autor_id ON public.publicacoes_casa USING btree (autor_id);
+
+
+--
+-- Name: idx_publicacoes_casa_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_publicacoes_casa_sigla_casa ON public.publicacoes_casa USING btree (sigla_casa);
+
+
+--
+-- Name: idx_solicitacoes_dev_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_solicitacoes_dev_user_id ON public.solicitacoes_dev USING btree (user_id);
+
+
+--
 -- Name: idx_tes_autoriz_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_tes_autoriz_user ON public.tesouraria_autorizacoes USING btree (user_id);
+
+
+--
+-- Name: idx_tesouraria_transacoes_criador_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_tesouraria_transacoes_criador_id ON public.tesouraria_transacoes USING btree (criador_id);
+
+
+--
+-- Name: idx_tesouraria_transacoes_sigla_casa; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_tesouraria_transacoes_sigla_casa ON public.tesouraria_transacoes USING btree (sigla_casa);
+
+
+--
+-- Name: idx_usuarios_sancoes_aplicada_por; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_usuarios_sancoes_aplicada_por ON public.usuarios_sancoes USING btree (aplicada_por);
 
 
 --
@@ -3656,6 +4382,76 @@ CREATE TRIGGER entregas_transicao BEFORE UPDATE ON public.entregas FOR EACH ROW 
 --
 
 CREATE TRIGGER entregas_updated BEFORE UPDATE ON public.entregas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_avaliacoes_autor BEFORE INSERT ON public.evangelizacao_avaliacoes FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_avaliacoes_updated BEFORE UPDATE ON public.evangelizacao_avaliacoes FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_criancas_autor BEFORE INSERT ON public.evangelizacao_criancas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_criancas_updated BEFORE UPDATE ON public.evangelizacao_criancas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_presencas_autor BEFORE INSERT ON public.evangelizacao_presencas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_presencas_updated BEFORE UPDATE ON public.evangelizacao_presencas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_responsaveis_autor BEFORE INSERT ON public.evangelizacao_responsaveis FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_responsaveis_updated BEFORE UPDATE ON public.evangelizacao_responsaveis FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_autor; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_turmas_autor BEFORE INSERT ON public.evangelizacao_turmas FOR EACH ROW EXECUTE FUNCTION public.carimbar_autor();
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_updated; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER evangelizacao_turmas_updated BEFORE UPDATE ON public.evangelizacao_turmas FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
@@ -4030,6 +4826,46 @@ ALTER TABLE ONLY public.entregas
 
 
 --
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_crianca_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_avaliacoes
+    ADD CONSTRAINT evangelizacao_avaliacoes_crianca_id_fkey FOREIGN KEY (crianca_id) REFERENCES public.evangelizacao_criancas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_turma_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_criancas
+    ADD CONSTRAINT evangelizacao_criancas_turma_id_fkey FOREIGN KEY (turma_id) REFERENCES public.evangelizacao_turmas(id) ON DELETE SET NULL;
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_crianca_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_presencas
+    ADD CONSTRAINT evangelizacao_presencas_crianca_id_fkey FOREIGN KEY (crianca_id) REFERENCES public.evangelizacao_criancas(id) ON DELETE CASCADE;
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_turma_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_presencas
+    ADD CONSTRAINT evangelizacao_presencas_turma_id_fkey FOREIGN KEY (turma_id) REFERENCES public.evangelizacao_turmas(id) ON DELETE SET NULL;
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_crianca_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.evangelizacao_responsaveis
+    ADD CONSTRAINT evangelizacao_responsaveis_crianca_id_fkey FOREIGN KEY (crianca_id) REFERENCES public.evangelizacao_criancas(id) ON DELETE CASCADE;
+
+
+--
 -- Name: forum_respostas forum_respostas_topico_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4394,23 +5230,23 @@ ALTER TABLE public.apresentacoes ENABLE ROW LEVEL SECURITY;
 -- Name: apresentacoes apresentacoes_apaga_a_propria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY apresentacoes_apaga_a_propria ON public.apresentacoes FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+CREATE POLICY apresentacoes_apaga_a_propria ON public.apresentacoes FOR DELETE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: apresentacoes apresentacoes_edita_a_propria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY apresentacoes_edita_a_propria ON public.apresentacoes FOR UPDATE TO authenticated USING ((criado_por = auth.uid()));
+CREATE POLICY apresentacoes_edita_a_propria ON public.apresentacoes FOR UPDATE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: apresentacoes apresentacoes_envio; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY apresentacoes_envio ON public.apresentacoes FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND (sigla_casa = ( SELECT p.sigla_casa
+CREATE POLICY apresentacoes_envio ON public.apresentacoes FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND (sigla_casa = ( SELECT p.sigla_casa
    FROM public.profiles p
-  WHERE (p.id = auth.uid())))));
+  WHERE (p.id = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4419,7 +5255,7 @@ CREATE POLICY apresentacoes_envio ON public.apresentacoes FOR INSERT TO authenti
 
 CREATE POLICY apresentacoes_leitura_da_casa ON public.apresentacoes FOR SELECT TO authenticated USING ((sigla_casa = ( SELECT p.sigla_casa
    FROM public.profiles p
-  WHERE (p.id = auth.uid()))));
+  WHERE (p.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -4441,32 +5277,32 @@ ALTER TABLE public.artigo_avaliacoes ENABLE ROW LEVEL SECURITY;
 -- Name: artigo_avaliacoes artigo_avaliacoes_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigo_avaliacoes_delete ON public.artigo_avaliacoes FOR DELETE USING ((user_id = auth.uid()));
+CREATE POLICY artigo_avaliacoes_delete ON public.artigo_avaliacoes FOR DELETE USING ((user_id = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: artigo_avaliacoes artigo_avaliacoes_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigo_avaliacoes_insert ON public.artigo_avaliacoes FOR INSERT WITH CHECK (((user_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (NOT (EXISTS ( SELECT 1
+CREATE POLICY artigo_avaliacoes_insert ON public.artigo_avaliacoes FOR INSERT WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid))) AND (NOT (EXISTS ( SELECT 1
    FROM public.artigos a
-  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = auth.uid())))))));
+  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = ( SELECT auth.uid() AS uid))))))));
 
 
 --
 -- Name: artigo_avaliacoes artigo_avaliacoes_select; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigo_avaliacoes_select ON public.artigo_avaliacoes FOR SELECT USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY artigo_avaliacoes_select ON public.artigo_avaliacoes FOR SELECT USING (((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.artigos a
-  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = auth.uid())))) OR public.pode_revisar_artigo(artigo_id)));
+  WHERE ((a.id = artigo_avaliacoes.artigo_id) AND (a.autor_id = ( SELECT auth.uid() AS uid))))) OR public.pode_revisar_artigo(artigo_id)));
 
 
 --
 -- Name: artigo_avaliacoes artigo_avaliacoes_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigo_avaliacoes_update ON public.artigo_avaliacoes FOR UPDATE USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid()))));
+CREATE POLICY artigo_avaliacoes_update ON public.artigo_avaliacoes FOR UPDATE USING ((user_id = ( SELECT auth.uid() AS uid))) WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -4481,7 +5317,7 @@ ALTER TABLE public.artigo_revisoes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY artigo_revisoes_insert ON public.artigo_revisoes FOR INSERT WITH CHECK ((public.pode_revisar_artigo(artigo_id) OR ((origem = 'reenvio'::text) AND (EXISTS ( SELECT 1
    FROM public.artigos a
-  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = auth.uid()) AND (a.estado = 'em_correcao'::text)))))));
+  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = ( SELECT auth.uid() AS uid)) AND (a.estado = 'em_correcao'::text)))))));
 
 
 --
@@ -4490,7 +5326,7 @@ CREATE POLICY artigo_revisoes_insert ON public.artigo_revisoes FOR INSERT WITH C
 
 CREATE POLICY artigo_revisoes_select ON public.artigo_revisoes FOR SELECT USING ((public.pode_revisar_artigo(artigo_id) OR (EXISTS ( SELECT 1
    FROM public.artigos a
-  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = auth.uid()))))));
+  WHERE ((a.id = artigo_revisoes.artigo_id) AND (a.autor_id = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -4517,21 +5353,21 @@ CREATE POLICY artigos_delete ON public.artigos FOR DELETE USING (public.pode_rev
 -- Name: artigos artigos_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigos_insert ON public.artigos FOR INSERT WITH CHECK (((autor_id = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid()))));
+CREATE POLICY artigos_insert ON public.artigos FOR INSERT WITH CHECK (((autor_id = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid)))));
 
 
 --
 -- Name: artigos artigos_select; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigos_select ON public.artigos FOR SELECT USING (((estado = 'publicado'::text) OR (autor_id = auth.uid()) OR public.pode_revisar_artigo(id)));
+CREATE POLICY artigos_select ON public.artigos FOR SELECT USING (((estado = 'publicado'::text) OR (autor_id = ( SELECT auth.uid() AS uid)) OR public.pode_revisar_artigo(id)));
 
 
 --
 -- Name: artigos artigos_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY artigos_update ON public.artigos FOR UPDATE USING ((((autor_id = auth.uid()) AND (estado = ANY (ARRAY['publicado'::text, 'retirado'::text, 'em_correcao'::text]))) OR public.pode_revisar_artigo(id))) WITH CHECK (((autor_id = auth.uid()) OR public.pode_revisar_artigo(id)));
+CREATE POLICY artigos_update ON public.artigos FOR UPDATE USING ((((autor_id = ( SELECT auth.uid() AS uid)) AND (estado = ANY (ARRAY['publicado'::text, 'retirado'::text, 'em_correcao'::text]))) OR public.pode_revisar_artigo(id))) WITH CHECK (((autor_id = ( SELECT auth.uid() AS uid)) OR public.pode_revisar_artigo(id)));
 
 
 --
@@ -4551,7 +5387,7 @@ CREATE POLICY atendimento_acessos_leitura ON public.atendimento_acessos FOR SELE
 -- Name: atendimento_acessos atendimento_acessos_registra; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY atendimento_acessos_registra ON public.atendimento_acessos FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.pode_atendimento_fraterno(sigla_casa)));
+CREATE POLICY atendimento_acessos_registra ON public.atendimento_acessos FOR INSERT TO authenticated WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) AND public.pode_atendimento_fraterno(sigla_casa)));
 
 
 --
@@ -4571,7 +5407,7 @@ CREATE POLICY atendimento_autorizados_apaga ON public.atendimento_autorizados FO
 -- Name: atendimento_autorizados atendimento_autorizados_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY atendimento_autorizados_insere ON public.atendimento_autorizados FOR INSERT TO authenticated WITH CHECK ((public.pode_administrar_pagina(sigla_casa) AND (criado_por = auth.uid())));
+CREATE POLICY atendimento_autorizados_insere ON public.atendimento_autorizados FOR INSERT TO authenticated WITH CHECK ((public.pode_administrar_pagina(sigla_casa) AND (criado_por = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -4591,7 +5427,7 @@ ALTER TABLE public.atendimento_fichas ENABLE ROW LEVEL SECURITY;
 -- Name: atendimento_fichas atendimento_fichas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY atendimento_fichas_apaga ON public.atendimento_fichas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) AND public.pode_atendimento_fraterno(sigla_casa)));
+CREATE POLICY atendimento_fichas_apaga ON public.atendimento_fichas FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) AND public.pode_atendimento_fraterno(sigla_casa)));
 
 
 --
@@ -4605,7 +5441,7 @@ CREATE POLICY atendimento_fichas_edita ON public.atendimento_fichas FOR UPDATE T
 -- Name: atendimento_fichas atendimento_fichas_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY atendimento_fichas_insere ON public.atendimento_fichas FOR INSERT TO authenticated WITH CHECK ((public.pode_atendimento_fraterno(sigla_casa) AND (sigla_casa = public.minha_sigla_casa())));
+CREATE POLICY atendimento_fichas_insere ON public.atendimento_fichas FOR INSERT TO authenticated WITH CHECK ((public.pode_atendimento_fraterno(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
 
 
 --
@@ -4628,9 +5464,9 @@ CREATE POLICY authenticated_insert_casa ON public.casas_espirita FOR INSERT TO a
 
 CREATE POLICY authenticated_update_own_casa ON public.casas_espirita FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.profiles
-  WHERE ((profiles.id = auth.uid()) AND (profiles.sigla_casa = casas_espirita.sigla) AND (profiles.cidade = casas_espirita.cidade) AND ((profiles.uf)::text = casas_espirita.estado))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.sigla_casa = casas_espirita.sigla) AND (profiles.cidade = casas_espirita.cidade) AND ((profiles.uf)::text = casas_espirita.estado))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.profiles
-  WHERE ((profiles.id = auth.uid()) AND (profiles.sigla_casa = casas_espirita.sigla) AND (profiles.cidade = casas_espirita.cidade) AND ((profiles.uf)::text = casas_espirita.estado)))));
+  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.sigla_casa = casas_espirita.sigla) AND (profiles.cidade = casas_espirita.cidade) AND ((profiles.uf)::text = casas_espirita.estado)))));
 
 
 --
@@ -4643,21 +5479,21 @@ ALTER TABLE public.avisos_enviados ENABLE ROW LEVEL SECURITY;
 -- Name: avisos_preferencias avisos_pref_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY avisos_pref_edita ON public.avisos_preferencias FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY avisos_pref_edita ON public.avisos_preferencias FOR UPDATE TO authenticated USING ((user_id = ( SELECT auth.uid() AS uid))) WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: avisos_preferencias avisos_pref_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY avisos_pref_insere ON public.avisos_preferencias FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY avisos_pref_insere ON public.avisos_preferencias FOR INSERT TO authenticated WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: avisos_preferencias avisos_pref_leitura; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY avisos_pref_leitura ON public.avisos_preferencias FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY avisos_pref_leitura ON public.avisos_preferencias FOR SELECT TO authenticated USING ((user_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -4678,7 +5514,7 @@ ALTER TABLE public.bazar_contatos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY bazar_contatos_apaga ON public.bazar_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4687,9 +5523,9 @@ CREATE POLICY bazar_contatos_apaga ON public.bazar_contatos FOR DELETE TO authen
 
 CREATE POLICY bazar_contatos_edita ON public.bazar_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid)))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4698,7 +5534,7 @@ CREATE POLICY bazar_contatos_edita ON public.bazar_contatos FOR UPDATE TO authen
 
 CREATE POLICY bazar_contatos_escreve ON public.bazar_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))));
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4707,9 +5543,9 @@ CREATE POLICY bazar_contatos_escreve ON public.bazar_contatos FOR INSERT TO auth
 
 CREATE POLICY bazar_contatos_leitura ON public.bazar_contatos FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = auth.uid())))) OR (EXISTS ( SELECT 1
+  WHERE ((i.id = bazar_contatos.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid))))) OR (EXISTS ( SELECT 1
    FROM public.bazar_reservas r
-  WHERE ((r.item_id = bazar_contatos.item_id) AND (r.criado_por = auth.uid()) AND (r.status = ANY (ARRAY['aceita'::text, 'concluida'::text])))))));
+  WHERE ((r.item_id = bazar_contatos.item_id) AND (r.criado_por = ( SELECT auth.uid() AS uid)) AND (r.status = ANY (ARRAY['aceita'::text, 'concluida'::text])))))));
 
 
 --
@@ -4722,14 +5558,14 @@ ALTER TABLE public.bazar_itens ENABLE ROW LEVEL SECURITY;
 -- Name: bazar_itens bazar_itens_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY bazar_itens_apaga ON public.bazar_itens FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY bazar_itens_apaga ON public.bazar_itens FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: bazar_itens bazar_itens_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY bazar_itens_edita ON public.bazar_itens FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY bazar_itens_edita ON public.bazar_itens FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -4756,14 +5592,14 @@ ALTER TABLE public.bazar_reservas ENABLE ROW LEVEL SECURITY;
 -- Name: bazar_reservas bazar_reservas_desiste; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY bazar_reservas_desiste ON public.bazar_reservas FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+CREATE POLICY bazar_reservas_desiste ON public.bazar_reservas FOR DELETE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: bazar_reservas bazar_reservas_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY bazar_reservas_insere ON public.bazar_reservas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+CREATE POLICY bazar_reservas_insere ON public.bazar_reservas FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid))) AND (EXISTS ( SELECT 1
    FROM public.bazar_itens i
   WHERE ((i.id = bazar_reservas.item_id) AND i.disponivel AND public.pode_ver_da_casa(i.sigla_casa, i.aberto))))));
 
@@ -4772,9 +5608,9 @@ CREATE POLICY bazar_reservas_insere ON public.bazar_reservas FOR INSERT TO authe
 -- Name: bazar_reservas bazar_reservas_leitura; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY bazar_reservas_leitura ON public.bazar_reservas FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY bazar_reservas_leitura ON public.bazar_reservas FOR SELECT TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid()))))));
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -4783,23 +5619,23 @@ CREATE POLICY bazar_reservas_leitura ON public.bazar_reservas FOR SELECT TO auth
 
 CREATE POLICY bazar_reservas_responde ON public.bazar_reservas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid)))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.bazar_itens i
-  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = auth.uid())))));
+  WHERE ((i.id = bazar_reservas.item_id) AND (i.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
 -- Name: voluntariado_candidaturas candidaturas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY candidaturas_apaga ON public.voluntariado_candidaturas FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+CREATE POLICY candidaturas_apaga ON public.voluntariado_candidaturas FOR DELETE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: voluntariado_candidaturas candidaturas_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY candidaturas_insere ON public.voluntariado_candidaturas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+CREATE POLICY candidaturas_insere ON public.voluntariado_candidaturas FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid))) AND (EXISTS ( SELECT 1
    FROM public.voluntariado_necessidades n
   WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND public.pode_ver_da_casa(n.sigla_casa, n.aberto))))));
 
@@ -4808,9 +5644,9 @@ CREATE POLICY candidaturas_insere ON public.voluntariado_candidaturas FOR INSERT
 -- Name: voluntariado_candidaturas candidaturas_leitura; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY candidaturas_leitura ON public.voluntariado_candidaturas FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY candidaturas_leitura ON public.voluntariado_candidaturas FOR SELECT TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.voluntariado_necessidades n
-  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa)))))));
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(n.sigla_casa)))))));
 
 
 --
@@ -4819,9 +5655,9 @@ CREATE POLICY candidaturas_leitura ON public.voluntariado_candidaturas FOR SELEC
 
 CREATE POLICY candidaturas_responde ON public.voluntariado_candidaturas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.voluntariado_necessidades n
-  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa)))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(n.sigla_casa)))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.voluntariado_necessidades n
-  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = auth.uid()) OR public.pode_administrar_pagina(n.sigla_casa))))));
+  WHERE ((n.id = voluntariado_candidaturas.necessidade_id) AND ((n.criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(n.sigla_casa))))));
 
 
 --
@@ -4836,7 +5672,7 @@ ALTER TABLE public.carona_contatos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY carona_contatos_apaga ON public.carona_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4845,9 +5681,9 @@ CREATE POLICY carona_contatos_apaga ON public.carona_contatos FOR DELETE TO auth
 
 CREATE POLICY carona_contatos_edita ON public.carona_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid)))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4856,7 +5692,7 @@ CREATE POLICY carona_contatos_edita ON public.carona_contatos FOR UPDATE TO auth
 
 CREATE POLICY carona_contatos_escreve ON public.carona_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))));
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4865,9 +5701,9 @@ CREATE POLICY carona_contatos_escreve ON public.carona_contatos FOR INSERT TO au
 
 CREATE POLICY carona_contatos_leitura ON public.carona_contatos FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = auth.uid())))) OR (EXISTS ( SELECT 1
+  WHERE ((c.id = carona_contatos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid))))) OR (EXISTS ( SELECT 1
    FROM public.carona_pedidos p
-  WHERE ((p.carona_id = carona_contatos.carona_id) AND (p.criado_por = auth.uid()) AND (p.status = 'aceito'::text))))));
+  WHERE ((p.carona_id = carona_contatos.carona_id) AND (p.criado_por = ( SELECT auth.uid() AS uid)) AND (p.status = 'aceito'::text))))));
 
 
 --
@@ -4880,14 +5716,14 @@ ALTER TABLE public.carona_pedidos ENABLE ROW LEVEL SECURITY;
 -- Name: carona_pedidos carona_pedidos_desiste; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY carona_pedidos_desiste ON public.carona_pedidos FOR DELETE TO authenticated USING ((criado_por = auth.uid()));
+CREATE POLICY carona_pedidos_desiste ON public.carona_pedidos FOR DELETE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: carona_pedidos carona_pedidos_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY carona_pedidos_insere ON public.carona_pedidos FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+CREATE POLICY carona_pedidos_insere ON public.carona_pedidos FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid))) AND (EXISTS ( SELECT 1
    FROM public.caronas c
   WHERE ((c.id = carona_pedidos.carona_id) AND c.ativa AND public.pode_ver_da_casa(c.sigla_casa, c.aberto))))));
 
@@ -4896,9 +5732,9 @@ CREATE POLICY carona_pedidos_insere ON public.carona_pedidos FOR INSERT TO authe
 -- Name: carona_pedidos carona_pedidos_leitura; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY carona_pedidos_leitura ON public.carona_pedidos FOR SELECT TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY carona_pedidos_leitura ON public.carona_pedidos FOR SELECT TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid()))))));
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -4907,9 +5743,9 @@ CREATE POLICY carona_pedidos_leitura ON public.carona_pedidos FOR SELECT TO auth
 
 CREATE POLICY carona_pedidos_responde ON public.carona_pedidos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid()))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid)))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.caronas c
-  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = auth.uid())))));
+  WHERE ((c.id = carona_pedidos.carona_id) AND (c.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -4922,14 +5758,14 @@ ALTER TABLE public.caronas ENABLE ROW LEVEL SECURITY;
 -- Name: caronas caronas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY caronas_apaga ON public.caronas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY caronas_apaga ON public.caronas FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: caronas caronas_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY caronas_edita ON public.caronas FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY caronas_edita ON public.caronas FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -4971,45 +5807,51 @@ ALTER TABLE public.casas_pedidos_remocao ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.casas_reivindicacoes ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: convite_config; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.convite_config ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: solicitacoes_dev dev atualiza solicitacao; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev atualiza solicitacao" ON public.solicitacoes_dev FOR UPDATE TO authenticated USING (public.sou_dev()) WITH CHECK (public.sou_dev());
+CREATE POLICY "dev atualiza solicitacao" ON public.solicitacoes_dev FOR UPDATE TO authenticated USING (( SELECT public.sou_dev() AS sou_dev)) WITH CHECK (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: solicitacoes_dev dev remove solicitacao; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev remove solicitacao" ON public.solicitacoes_dev FOR DELETE TO authenticated USING (public.sou_dev());
+CREATE POLICY "dev remove solicitacao" ON public.solicitacoes_dev FOR DELETE TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: site_suggestions dev remove sugestao; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev remove sugestao" ON public.site_suggestions FOR DELETE TO authenticated USING (public.sou_dev());
+CREATE POLICY "dev remove sugestao" ON public.site_suggestions FOR DELETE TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: casas_pedidos_remocao dev ve pedidos de remocao; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev ve pedidos de remocao" ON public.casas_pedidos_remocao FOR SELECT TO authenticated USING (public.sou_dev());
+CREATE POLICY "dev ve pedidos de remocao" ON public.casas_pedidos_remocao FOR SELECT TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: casas_reivindicacoes dev ve reivindicacoes; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev ve reivindicacoes" ON public.casas_reivindicacoes FOR SELECT TO authenticated USING (public.sou_dev());
+CREATE POLICY "dev ve reivindicacoes" ON public.casas_reivindicacoes FOR SELECT TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: site_suggestions dev ve sugestoes; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "dev ve sugestoes" ON public.site_suggestions FOR SELECT TO authenticated USING (public.sou_dev());
+CREATE POLICY "dev ve sugestoes" ON public.site_suggestions FOR SELECT TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
@@ -5024,7 +5866,7 @@ ALTER TABLE public.entrega_contatos ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY entrega_contatos_apaga ON public.entrega_contatos FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.entregas e
-  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = auth.uid())))));
+  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5033,9 +5875,9 @@ CREATE POLICY entrega_contatos_apaga ON public.entrega_contatos FOR DELETE TO au
 
 CREATE POLICY entrega_contatos_edita ON public.entrega_contatos FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.entregas e
-  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid())))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = ( SELECT auth.uid() AS uid)) OR (e.voluntario = ( SELECT auth.uid() AS uid))))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM public.entregas e
-  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid()))))));
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = ( SELECT auth.uid() AS uid)) OR (e.voluntario = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -5044,7 +5886,7 @@ CREATE POLICY entrega_contatos_edita ON public.entrega_contatos FOR UPDATE TO au
 
 CREATE POLICY entrega_contatos_escreve ON public.entrega_contatos FOR INSERT TO authenticated WITH CHECK ((EXISTS ( SELECT 1
    FROM public.entregas e
-  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = auth.uid())))));
+  WHERE ((e.id = entrega_contatos.entrega_id) AND (e.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5053,7 +5895,7 @@ CREATE POLICY entrega_contatos_escreve ON public.entrega_contatos FOR INSERT TO 
 
 CREATE POLICY entrega_contatos_leitura ON public.entrega_contatos FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.entregas e
-  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = auth.uid()) OR (e.voluntario = auth.uid()))))));
+  WHERE ((e.id = entrega_contatos.entrega_id) AND ((e.criado_por = ( SELECT auth.uid() AS uid)) OR (e.voluntario = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -5066,7 +5908,7 @@ ALTER TABLE public.entregas ENABLE ROW LEVEL SECURITY;
 -- Name: entregas entregas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY entregas_apaga ON public.entregas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY entregas_apaga ON public.entregas FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5091,19 +5933,216 @@ CREATE POLICY entregas_leitura ON public.entregas FOR SELECT TO authenticated US
 
 
 --
+-- Name: evangelizacao_autorizados; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_autorizados ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_autorizados evangelizacao_autorizados_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_autorizados_apaga ON public.evangelizacao_autorizados FOR DELETE TO authenticated USING (public.pode_administrar_pagina(sigla_casa));
+
+
+--
+-- Name: evangelizacao_autorizados evangelizacao_autorizados_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_autorizados_insere ON public.evangelizacao_autorizados FOR INSERT TO authenticated WITH CHECK ((public.pode_administrar_pagina(sigla_casa) AND (criado_por = ( SELECT auth.uid() AS uid))));
+
+
+--
+-- Name: evangelizacao_autorizados evangelizacao_autorizados_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_autorizados_leitura ON public.evangelizacao_autorizados FOR SELECT TO authenticated USING ((public.pode_administrar_pagina(sigla_casa) OR public.pode_evangelizacao(sigla_casa)));
+
+
+--
+-- Name: evangelizacao_avaliacoes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_avaliacoes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_avaliacoes_apaga ON public.evangelizacao_avaliacoes FOR DELETE TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_avaliacoes_edita ON public.evangelizacao_avaliacoes FOR UPDATE TO authenticated USING (public.pode_evangelizacao(sigla_casa)) WITH CHECK (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_avaliacoes_insere ON public.evangelizacao_avaliacoes FOR INSERT TO authenticated WITH CHECK ((public.pode_evangelizacao(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
+
+
+--
+-- Name: evangelizacao_avaliacoes evangelizacao_avaliacoes_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_avaliacoes_leitura ON public.evangelizacao_avaliacoes FOR SELECT TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_criancas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_criancas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_criancas_apaga ON public.evangelizacao_criancas FOR DELETE TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_criancas_edita ON public.evangelizacao_criancas FOR UPDATE TO authenticated USING (public.pode_evangelizacao(sigla_casa)) WITH CHECK (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_criancas_insere ON public.evangelizacao_criancas FOR INSERT TO authenticated WITH CHECK ((public.pode_evangelizacao(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
+
+
+--
+-- Name: evangelizacao_criancas evangelizacao_criancas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_criancas_leitura ON public.evangelizacao_criancas FOR SELECT TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_presencas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_presencas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_presencas_apaga ON public.evangelizacao_presencas FOR DELETE TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_presencas_edita ON public.evangelizacao_presencas FOR UPDATE TO authenticated USING (public.pode_evangelizacao(sigla_casa)) WITH CHECK (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_presencas_insere ON public.evangelizacao_presencas FOR INSERT TO authenticated WITH CHECK ((public.pode_evangelizacao(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
+
+
+--
+-- Name: evangelizacao_presencas evangelizacao_presencas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_presencas_leitura ON public.evangelizacao_presencas FOR SELECT TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_responsaveis; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_responsaveis ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_responsaveis_apaga ON public.evangelizacao_responsaveis FOR DELETE TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_responsaveis_edita ON public.evangelizacao_responsaveis FOR UPDATE TO authenticated USING (public.pode_evangelizacao(sigla_casa)) WITH CHECK (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_responsaveis_insere ON public.evangelizacao_responsaveis FOR INSERT TO authenticated WITH CHECK ((public.pode_evangelizacao(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
+
+
+--
+-- Name: evangelizacao_responsaveis evangelizacao_responsaveis_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_responsaveis_leitura ON public.evangelizacao_responsaveis FOR SELECT TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_turmas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.evangelizacao_turmas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_apaga; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_turmas_apaga ON public.evangelizacao_turmas FOR DELETE TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_edita; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_turmas_edita ON public.evangelizacao_turmas FOR UPDATE TO authenticated USING (public.pode_evangelizacao(sigla_casa)) WITH CHECK (public.pode_evangelizacao(sigla_casa));
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_insere; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_turmas_insere ON public.evangelizacao_turmas FOR INSERT TO authenticated WITH CHECK ((public.pode_evangelizacao(sigla_casa) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
+
+
+--
+-- Name: evangelizacao_turmas evangelizacao_turmas_leitura; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY evangelizacao_turmas_leitura ON public.evangelizacao_turmas FOR SELECT TO authenticated USING (public.pode_evangelizacao(sigla_casa));
+
+
+--
 -- Name: agenda_eventos eventos_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY eventos_delete ON public.agenda_eventos FOR DELETE TO authenticated USING ((criador_id = auth.uid()));
+CREATE POLICY eventos_delete ON public.agenda_eventos FOR DELETE TO authenticated USING ((criador_id = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: agenda_eventos eventos_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY eventos_insert ON public.agenda_eventos FOR INSERT TO authenticated WITH CHECK (((criador_id = auth.uid()) AND (sigla_casa = ( SELECT profiles.sigla_casa
+CREATE POLICY eventos_insert ON public.agenda_eventos FOR INSERT TO authenticated WITH CHECK (((criador_id = ( SELECT auth.uid() AS uid)) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5112,14 +6151,14 @@ CREATE POLICY eventos_insert ON public.agenda_eventos FOR INSERT TO authenticate
 
 CREATE POLICY eventos_select ON public.agenda_eventos FOR SELECT TO authenticated USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
 -- Name: agenda_eventos eventos_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY eventos_update ON public.agenda_eventos FOR UPDATE TO authenticated USING ((criador_id = auth.uid()));
+CREATE POLICY eventos_update ON public.agenda_eventos FOR UPDATE TO authenticated USING ((criador_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -5132,7 +6171,7 @@ ALTER TABLE public.forum_respostas ENABLE ROW LEVEL SECURITY;
 -- Name: forum_respostas forum_respostas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY forum_respostas_apaga ON public.forum_respostas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY forum_respostas_apaga ON public.forum_respostas FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.forum_topicos t
   WHERE ((t.id = forum_respostas.topico_id) AND public.pode_administrar_pagina(t.sigla_casa))))));
 
@@ -5141,14 +6180,14 @@ CREATE POLICY forum_respostas_apaga ON public.forum_respostas FOR DELETE TO auth
 -- Name: forum_respostas forum_respostas_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY forum_respostas_edita ON public.forum_respostas FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+CREATE POLICY forum_respostas_edita ON public.forum_respostas FOR UPDATE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid))) WITH CHECK ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: forum_respostas forum_respostas_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY forum_respostas_insere ON public.forum_respostas FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.email_verificado() AND (NOT public.usuario_sancionado(auth.uid())) AND (EXISTS ( SELECT 1
+CREATE POLICY forum_respostas_insere ON public.forum_respostas FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND ( SELECT public.email_verificado() AS email_verificado) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid))) AND (EXISTS ( SELECT 1
    FROM public.forum_topicos t
   WHERE ((t.id = forum_respostas.topico_id) AND public.pode_ver_da_casa(t.sigla_casa, t.aberto))))));
 
@@ -5172,14 +6211,14 @@ ALTER TABLE public.forum_topicos ENABLE ROW LEVEL SECURITY;
 -- Name: forum_topicos forum_topicos_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY forum_topicos_apaga ON public.forum_topicos FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY forum_topicos_apaga ON public.forum_topicos FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: forum_topicos forum_topicos_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY forum_topicos_edita ON public.forum_topicos FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY forum_topicos_edita ON public.forum_topicos FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5206,7 +6245,7 @@ ALTER TABLE public.grupo_membros ENABLE ROW LEVEL SECURITY;
 -- Name: grupo_membros grupo_membros_entra; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupo_membros_entra ON public.grupo_membros FOR INSERT TO authenticated WITH CHECK ((public.sou_moderador_do_grupo(grupo_id) OR ((user_id = auth.uid()) AND (EXISTS ( SELECT 1
+CREATE POLICY grupo_membros_entra ON public.grupo_membros FOR INSERT TO authenticated WITH CHECK ((public.sou_moderador_do_grupo(grupo_id) OR ((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
    FROM public.grupos g
   WHERE ((g.id = grupo_membros.grupo_id) AND (NOT g.privado) AND public.pode_ver_da_casa(g.sigla_casa, g.aberto)))))));
 
@@ -5224,7 +6263,7 @@ CREATE POLICY grupo_membros_leitura ON public.grupo_membros FOR SELECT TO authen
 -- Name: grupo_membros grupo_membros_sai; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupo_membros_sai ON public.grupo_membros FOR DELETE TO authenticated USING (((user_id = auth.uid()) OR public.sou_moderador_do_grupo(grupo_id) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY grupo_membros_sai ON public.grupo_membros FOR DELETE TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.sou_moderador_do_grupo(grupo_id) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5237,14 +6276,14 @@ ALTER TABLE public.grupo_mensagens ENABLE ROW LEVEL SECURITY;
 -- Name: grupo_mensagens grupo_mensagens_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupo_mensagens_apaga ON public.grupo_mensagens FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.sou_moderador_do_grupo(grupo_id)));
+CREATE POLICY grupo_mensagens_apaga ON public.grupo_mensagens FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.sou_moderador_do_grupo(grupo_id)));
 
 
 --
 -- Name: grupo_mensagens grupo_mensagens_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupo_mensagens_insere ON public.grupo_mensagens FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND public.sou_do_grupo(grupo_id) AND (NOT public.usuario_sancionado(auth.uid()))));
+CREATE POLICY grupo_mensagens_insere ON public.grupo_mensagens FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND public.sou_do_grupo(grupo_id) AND (NOT public.usuario_sancionado(( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5264,14 +6303,14 @@ ALTER TABLE public.grupos ENABLE ROW LEVEL SECURITY;
 -- Name: grupos grupos_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupos_apaga ON public.grupos FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY grupos_apaga ON public.grupos FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: grupos grupos_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY grupos_edita ON public.grupos FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY grupos_edita ON public.grupos FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5299,7 +6338,7 @@ CREATE POLICY insercao_service_role ON public.casas_espirita FOR INSERT WITH CHE
 -- Name: solicitacoes_dev inserir propria solicitacao; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "inserir propria solicitacao" ON public.solicitacoes_dev FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY "inserir propria solicitacao" ON public.solicitacoes_dev FOR INSERT TO authenticated WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -5312,14 +6351,14 @@ ALTER TABLE public.jovens_membros ENABLE ROW LEVEL SECURITY;
 -- Name: jovens_membros jovens_membros_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY jovens_membros_edita ON public.jovens_membros FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+CREATE POLICY jovens_membros_edita ON public.jovens_membros FOR UPDATE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid))) WITH CHECK ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: jovens_membros jovens_membros_entra; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY jovens_membros_entra ON public.jovens_membros FOR INSERT TO authenticated WITH CHECK ((public.pode_publicar_na_casa(sigla_casa) AND (criado_por = auth.uid())));
+CREATE POLICY jovens_membros_entra ON public.jovens_membros FOR INSERT TO authenticated WITH CHECK ((public.pode_publicar_na_casa(sigla_casa) AND (criado_por = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -5333,7 +6372,7 @@ CREATE POLICY jovens_membros_leitura ON public.jovens_membros FOR SELECT TO auth
 -- Name: jovens_membros jovens_membros_sai; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY jovens_membros_sai ON public.jovens_membros FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY jovens_membros_sai ON public.jovens_membros FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5346,14 +6385,14 @@ ALTER TABLE public.jovens_publicacoes ENABLE ROW LEVEL SECURITY;
 -- Name: jovens_publicacoes jovens_publicacoes_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY jovens_publicacoes_apaga ON public.jovens_publicacoes FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY jovens_publicacoes_apaga ON public.jovens_publicacoes FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: jovens_publicacoes jovens_publicacoes_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY jovens_publicacoes_edita ON public.jovens_publicacoes FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY jovens_publicacoes_edita ON public.jovens_publicacoes FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5362,7 +6401,7 @@ CREATE POLICY jovens_publicacoes_edita ON public.jovens_publicacoes FOR UPDATE T
 
 CREATE POLICY jovens_publicacoes_insere ON public.jovens_publicacoes FOR INSERT TO authenticated WITH CHECK ((public.pode_publicar_na_casa(sigla_casa) AND (EXISTS ( SELECT 1
    FROM public.jovens_membros m
-  WHERE (m.criado_por = auth.uid())))));
+  WHERE (m.criado_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5414,9 +6453,9 @@ ALTER TABLE public.kanban_config ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY kanban_config_insert_delete ON public.kanban_config TO authenticated USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())))) WITH CHECK ((sigla_casa = ( SELECT profiles.sigla_casa
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))))) WITH CHECK ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5425,7 +6464,7 @@ CREATE POLICY kanban_config_insert_delete ON public.kanban_config TO authenticat
 
 CREATE POLICY kanban_config_select ON public.kanban_config FOR SELECT USING ((((auth.role() = 'authenticated'::text) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())))) OR (public.get_request_kanban_token() = (share_token)::text)));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))))) OR (public.get_request_kanban_token() = (share_token)::text)));
 
 
 --
@@ -5434,7 +6473,7 @@ CREATE POLICY kanban_config_select ON public.kanban_config FOR SELECT USING ((((
 
 CREATE POLICY kanban_config_update ON public.kanban_config FOR UPDATE USING ((((auth.role() = 'authenticated'::text) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())))) OR (public.get_request_kanban_token() = (share_token)::text)));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))))) OR (public.get_request_kanban_token() = (share_token)::text)));
 
 
 --
@@ -5513,19 +6552,19 @@ CREATE POLICY leitura_publica ON public.casas_espirita FOR SELECT USING ((ativa 
 -- Name: memoria_virtudes_custom mem_virt_read; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY mem_virt_read ON public.memoria_virtudes_custom FOR SELECT USING ((auth.uid() IS NOT NULL));
+CREATE POLICY mem_virt_read ON public.memoria_virtudes_custom FOR SELECT USING ((( SELECT auth.uid() AS uid) IS NOT NULL));
 
 
 --
 -- Name: memoria_virtudes_custom mem_virt_write; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY mem_virt_write ON public.memoria_virtudes_custom USING (((auth.uid() IS NOT NULL) AND (sigla_casa = ( SELECT profiles.sigla_casa
+CREATE POLICY mem_virt_write ON public.memoria_virtudes_custom USING (((( SELECT auth.uid() AS uid) IS NOT NULL) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())
- LIMIT 1)))) WITH CHECK (((auth.uid() IS NOT NULL) AND (sigla_casa = ( SELECT profiles.sigla_casa
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))
+ LIMIT 1)))) WITH CHECK (((( SELECT auth.uid() AS uid) IS NOT NULL) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid())
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid))
  LIMIT 1))));
 
 
@@ -5535,7 +6574,7 @@ CREATE POLICY mem_virt_write ON public.memoria_virtudes_custom USING (((auth.uid
 
 CREATE POLICY "membros criam eventos" ON public.kanban_eventos FOR INSERT WITH CHECK ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5544,7 +6583,7 @@ CREATE POLICY "membros criam eventos" ON public.kanban_eventos FOR INSERT WITH C
 
 CREATE POLICY "membros criam grupos" ON public.kanban_grupos FOR INSERT WITH CHECK ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5553,7 +6592,7 @@ CREATE POLICY "membros criam grupos" ON public.kanban_grupos FOR INSERT WITH CHE
 
 CREATE POLICY "membros criam tarefas" ON public.kanban_tarefas FOR INSERT WITH CHECK ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5562,7 +6601,7 @@ CREATE POLICY "membros criam tarefas" ON public.kanban_tarefas FOR INSERT WITH C
 
 CREATE POLICY "membros leem eventos da casa" ON public.kanban_eventos FOR SELECT USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5571,7 +6610,7 @@ CREATE POLICY "membros leem eventos da casa" ON public.kanban_eventos FOR SELECT
 
 CREATE POLICY "membros leem grupos da casa" ON public.kanban_grupos FOR SELECT USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5580,7 +6619,7 @@ CREATE POLICY "membros leem grupos da casa" ON public.kanban_grupos FOR SELECT U
 
 CREATE POLICY "membros leem tarefas da casa" ON public.kanban_tarefas FOR SELECT USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -5593,7 +6632,7 @@ ALTER TABLE public.memoria_virtudes_custom ENABLE ROW LEVEL SECURITY;
 -- Name: mensagens_do_dia mensagens_delete_own; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY mensagens_delete_own ON public.mensagens_do_dia FOR DELETE TO authenticated USING (((auth.uid() = autor_id) AND (data_exibicao IS NULL)));
+CREATE POLICY mensagens_delete_own ON public.mensagens_do_dia FOR DELETE TO authenticated USING (((( SELECT auth.uid() AS uid) = autor_id) AND (data_exibicao IS NULL)));
 
 
 --
@@ -5606,7 +6645,7 @@ ALTER TABLE public.mensagens_do_dia ENABLE ROW LEVEL SECURITY;
 -- Name: mensagens_do_dia mensagens_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY mensagens_insert ON public.mensagens_do_dia FOR INSERT TO authenticated WITH CHECK ((auth.uid() = autor_id));
+CREATE POLICY mensagens_insert ON public.mensagens_do_dia FOR INSERT TO authenticated WITH CHECK ((( SELECT auth.uid() AS uid) = autor_id));
 
 
 --
@@ -5633,18 +6672,18 @@ ALTER TABLE public.musicas ENABLE ROW LEVEL SECURITY;
 -- Name: musicas musicas_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY musicas_delete ON public.musicas FOR DELETE TO authenticated USING (((auth.uid() = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY musicas_delete ON public.musicas FOR DELETE TO authenticated USING (((( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.profiles p
-  WHERE ((p.id = auth.uid()) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text])))))));
+  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text])))))));
 
 
 --
 -- Name: musicas musicas_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY musicas_insert ON public.musicas FOR INSERT TO authenticated WITH CHECK (((auth.uid() = user_id) AND (NOT (sigla_casa IS DISTINCT FROM ( SELECT profiles.sigla_casa
+CREATE POLICY musicas_insert ON public.musicas FOR INSERT TO authenticated WITH CHECK (((( SELECT auth.uid() AS uid) = user_id) AND (NOT (sigla_casa IS DISTINCT FROM ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -5653,32 +6692,32 @@ CREATE POLICY musicas_insert ON public.musicas FOR INSERT TO authenticated WITH 
 
 CREATE POLICY musicas_select ON public.musicas FOR SELECT USING (((is_exclusive = false) OR ((auth.role() = 'authenticated'::text) AND (sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))))));
 
 
 --
 -- Name: musicas musicas_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY musicas_update ON public.musicas FOR UPDATE TO authenticated USING (((auth.uid() = user_id) OR (EXISTS ( SELECT 1
+CREATE POLICY musicas_update ON public.musicas FOR UPDATE TO authenticated USING (((( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.profiles p
-  WHERE ((p.id = auth.uid()) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text]))))))) WITH CHECK (((auth.uid() = user_id) OR (EXISTS ( SELECT 1
+  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text]))))))) WITH CHECK (((( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM public.profiles p
-  WHERE ((p.id = auth.uid()) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text])))))));
+  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text, 'DEV'::text])))))));
 
 
 --
 -- Name: voluntariado_necessidades necessidades_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY necessidades_apaga ON public.voluntariado_necessidades FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY necessidades_apaga ON public.voluntariado_necessidades FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: voluntariado_necessidades necessidades_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY necessidades_edita ON public.voluntariado_necessidades FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY necessidades_edita ON public.voluntariado_necessidades FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5699,14 +6738,14 @@ CREATE POLICY necessidades_leitura ON public.voluntariado_necessidades FOR SELEC
 -- Name: voluntariado_ofertas ofertas_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY ofertas_apaga ON public.voluntariado_ofertas FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY ofertas_apaga ON public.voluntariado_ofertas FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: voluntariado_ofertas ofertas_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY ofertas_edita ON public.voluntariado_ofertas FOR UPDATE TO authenticated USING ((criado_por = auth.uid())) WITH CHECK ((criado_por = auth.uid()));
+CREATE POLICY ofertas_edita ON public.voluntariado_ofertas FOR UPDATE TO authenticated USING ((criado_por = ( SELECT auth.uid() AS uid))) WITH CHECK ((criado_por = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -5733,14 +6772,14 @@ ALTER TABLE public.oracao_horarios ENABLE ROW LEVEL SECURITY;
 -- Name: oracao_horarios oracao_horarios_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY oracao_horarios_apaga ON public.oracao_horarios FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY oracao_horarios_apaga ON public.oracao_horarios FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: oracao_horarios oracao_horarios_edita; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY oracao_horarios_edita ON public.oracao_horarios FOR UPDATE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY oracao_horarios_edita ON public.oracao_horarios FOR UPDATE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa))) WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
@@ -5767,14 +6806,14 @@ ALTER TABLE public.oracao_inscricoes ENABLE ROW LEVEL SECURITY;
 -- Name: oracao_inscricoes oracao_inscricoes_apaga; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY oracao_inscricoes_apaga ON public.oracao_inscricoes FOR DELETE TO authenticated USING (((criado_por = auth.uid()) OR public.pode_administrar_pagina(sigla_casa)));
+CREATE POLICY oracao_inscricoes_apaga ON public.oracao_inscricoes FOR DELETE TO authenticated USING (((criado_por = ( SELECT auth.uid() AS uid)) OR public.pode_administrar_pagina(sigla_casa)));
 
 
 --
 -- Name: oracao_inscricoes oracao_inscricoes_insere; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY oracao_inscricoes_insere ON public.oracao_inscricoes FOR INSERT TO authenticated WITH CHECK (((criado_por = auth.uid()) AND (EXISTS ( SELECT 1
+CREATE POLICY oracao_inscricoes_insere ON public.oracao_inscricoes FOR INSERT TO authenticated WITH CHECK (((criado_por = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
    FROM public.oracao_horarios h
   WHERE ((h.id = oracao_inscricoes.horario_id) AND public.pode_ver_da_casa(h.sigla_casa, h.aberto))))));
 
@@ -5834,7 +6873,7 @@ ALTER TABLE public.painel_votes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY participantes_delete ON public.agenda_participantes FOR DELETE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.agenda_eventos e
-  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = auth.uid())))));
+  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5843,7 +6882,7 @@ CREATE POLICY participantes_delete ON public.agenda_participantes FOR DELETE TO 
 
 CREATE POLICY participantes_insert ON public.agenda_participantes FOR INSERT TO authenticated WITH CHECK (((EXISTS ( SELECT 1
    FROM public.agenda_eventos e
-  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = auth.uid())))) OR ((user_id = auth.uid()) AND (EXISTS ( SELECT 1
+  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = ( SELECT auth.uid() AS uid))))) OR ((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
    FROM public.agenda_eventos e
   WHERE ((e.id = agenda_participantes.evento_id) AND (e.tipo = 'aberto'::text)))))));
 
@@ -5856,16 +6895,16 @@ CREATE POLICY participantes_select ON public.agenda_participantes FOR SELECT TO 
    FROM public.agenda_eventos e
   WHERE ((e.id = agenda_participantes.evento_id) AND (e.sigla_casa = ( SELECT profiles.sigla_casa
            FROM public.profiles
-          WHERE (profiles.id = auth.uid())))))));
+          WHERE (profiles.id = ( SELECT auth.uid() AS uid))))))));
 
 
 --
 -- Name: agenda_participantes participantes_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY participantes_update ON public.agenda_participantes FOR UPDATE TO authenticated USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY participantes_update ON public.agenda_participantes FOR UPDATE TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.agenda_eventos e
-  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = auth.uid()))))));
+  WHERE ((e.id = agenda_participantes.evento_id) AND (e.criador_id = ( SELECT auth.uid() AS uid)))))));
 
 
 --
@@ -5883,7 +6922,7 @@ CREATE POLICY perguntas_envia ON public.apresentacao_perguntas FOR INSERT TO aut
 
 CREATE POLICY perguntas_le_quem_apresenta ON public.apresentacao_perguntas FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.apresentacao_sessoes s
-  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = auth.uid())))));
+  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5892,7 +6931,7 @@ CREATE POLICY perguntas_le_quem_apresenta ON public.apresentacao_perguntas FOR S
 
 CREATE POLICY perguntas_marca_quem_apresenta ON public.apresentacao_perguntas FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.apresentacao_sessoes s
-  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = auth.uid())))));
+  WHERE ((s.id = apresentacao_perguntas.sessao_id) AND (s.iniciada_por = ( SELECT auth.uid() AS uid))))));
 
 
 --
@@ -5905,7 +6944,7 @@ ALTER TABLE public.problem_reports ENABLE ROW LEVEL SECURITY;
 -- Name: problem_reports problem_reports_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY problem_reports_insert ON public.problem_reports FOR INSERT WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY problem_reports_insert ON public.problem_reports FOR INSERT WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -5925,35 +6964,35 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 -- Name: profiles profiles_atualizacao_propria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY profiles_atualizacao_propria ON public.profiles FOR UPDATE USING ((auth.uid() = id));
+CREATE POLICY profiles_atualizacao_propria ON public.profiles FOR UPDATE USING ((( SELECT auth.uid() AS uid) = id));
 
 
 --
 -- Name: profiles profiles_insercao_propria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY profiles_insercao_propria ON public.profiles FOR INSERT WITH CHECK ((auth.uid() = id));
+CREATE POLICY profiles_insercao_propria ON public.profiles FOR INSERT WITH CHECK ((( SELECT auth.uid() AS uid) = id));
 
 
 --
 -- Name: profiles profiles_leitura_dev; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY profiles_leitura_dev ON public.profiles FOR SELECT TO authenticated USING (public.sou_dev());
+CREATE POLICY profiles_leitura_dev ON public.profiles FOR SELECT TO authenticated USING (( SELECT public.sou_dev() AS sou_dev));
 
 
 --
 -- Name: profiles profiles_leitura_mesma_casa; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY profiles_leitura_mesma_casa ON public.profiles FOR SELECT TO authenticated USING (((sigla_casa IS NOT NULL) AND (sigla_casa = public.minha_sigla_casa())));
+CREATE POLICY profiles_leitura_mesma_casa ON public.profiles FOR SELECT TO authenticated USING (((sigla_casa IS NOT NULL) AND (sigla_casa = ( SELECT public.minha_sigla_casa() AS minha_sigla_casa))));
 
 
 --
 -- Name: profiles profiles_leitura_propria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY profiles_leitura_propria ON public.profiles FOR SELECT USING ((auth.uid() = id));
+CREATE POLICY profiles_leitura_propria ON public.profiles FOR SELECT USING ((( SELECT auth.uid() AS uid) = id));
 
 
 --
@@ -6064,7 +7103,7 @@ CREATE POLICY publicacoes_update ON public.publicacoes_casa FOR UPDATE TO authen
 
 CREATE POLICY "qualquer membro atualiza" ON public.kanban_eventos FOR UPDATE USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6073,7 +7112,7 @@ CREATE POLICY "qualquer membro atualiza" ON public.kanban_eventos FOR UPDATE USI
 
 CREATE POLICY "qualquer membro atualiza grupos" ON public.kanban_grupos FOR UPDATE USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6082,7 +7121,7 @@ CREATE POLICY "qualquer membro atualiza grupos" ON public.kanban_grupos FOR UPDA
 
 CREATE POLICY "qualquer membro atualiza tarefas" ON public.kanban_tarefas FOR UPDATE USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6091,7 +7130,7 @@ CREATE POLICY "qualquer membro atualiza tarefas" ON public.kanban_tarefas FOR UP
 
 CREATE POLICY "qualquer membro exclui grupos" ON public.kanban_grupos FOR DELETE USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6100,7 +7139,7 @@ CREATE POLICY "qualquer membro exclui grupos" ON public.kanban_grupos FOR DELETE
 
 CREATE POLICY "qualquer membro exclui tarefas" ON public.kanban_tarefas FOR DELETE USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6114,16 +7153,16 @@ CREATE POLICY "qualquer um pode inserir sugestao" ON public.site_suggestions FOR
 -- Name: apresentacao_sessoes sessoes_comanda_quem_apresenta; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY sessoes_comanda_quem_apresenta ON public.apresentacao_sessoes FOR UPDATE TO authenticated USING ((iniciada_por = auth.uid()));
+CREATE POLICY sessoes_comanda_quem_apresenta ON public.apresentacao_sessoes FOR UPDATE TO authenticated USING ((iniciada_por = ( SELECT auth.uid() AS uid)));
 
 
 --
 -- Name: apresentacao_sessoes sessoes_cria; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY sessoes_cria ON public.apresentacao_sessoes FOR INSERT TO authenticated WITH CHECK (((iniciada_por = auth.uid()) AND (EXISTS ( SELECT 1
+CREATE POLICY sessoes_cria ON public.apresentacao_sessoes FOR INSERT TO authenticated WITH CHECK (((iniciada_por = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1
    FROM (public.apresentacoes a
-     JOIN public.profiles p ON ((p.id = auth.uid())))
+     JOIN public.profiles p ON ((p.id = ( SELECT auth.uid() AS uid))))
   WHERE ((a.id = apresentacao_sessoes.apresentacao_id) AND (a.sigla_casa = p.sigla_casa))))));
 
 
@@ -6131,7 +7170,7 @@ CREATE POLICY sessoes_cria ON public.apresentacao_sessoes FOR INSERT TO authenti
 -- Name: apresentacao_sessoes sessoes_leitura_do_dono; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY sessoes_leitura_do_dono ON public.apresentacao_sessoes FOR SELECT TO authenticated USING ((iniciada_por = auth.uid()));
+CREATE POLICY sessoes_leitura_do_dono ON public.apresentacao_sessoes FOR SELECT TO authenticated USING ((iniciada_por = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -6177,7 +7216,7 @@ ALTER TABLE public.solicitacoes_dev ENABLE ROW LEVEL SECURITY;
 -- Name: kanban_eventos somente criador exclui; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "somente criador exclui" ON public.kanban_eventos FOR DELETE USING ((criador_id = auth.uid()));
+CREATE POLICY "somente criador exclui" ON public.kanban_eventos FOR DELETE USING ((criador_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -6193,7 +7232,7 @@ CREATE POLICY tes_autoriz_modify ON public.tesouraria_autorizacoes USING (public
 
 CREATE POLICY tes_autoriz_select ON public.tesouraria_autorizacoes FOR SELECT USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6206,7 +7245,7 @@ ALTER TABLE public.tesouraria_autorizacoes ENABLE ROW LEVEL SECURITY;
 -- Name: tesouraria_transacoes tesouraria_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY tesouraria_delete ON public.tesouraria_transacoes FOR DELETE TO authenticated USING ((criador_id = auth.uid()));
+CREATE POLICY tesouraria_delete ON public.tesouraria_transacoes FOR DELETE TO authenticated USING ((criador_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -6215,7 +7254,7 @@ CREATE POLICY tesouraria_delete ON public.tesouraria_transacoes FOR DELETE TO au
 
 CREATE POLICY tesouraria_insert ON public.tesouraria_transacoes FOR INSERT TO authenticated WITH CHECK (((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))) AND (criador_id = auth.uid())));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))) AND (criador_id = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -6224,7 +7263,7 @@ CREATE POLICY tesouraria_insert ON public.tesouraria_transacoes FOR INSERT TO au
 
 CREATE POLICY tesouraria_select ON public.tesouraria_transacoes FOR SELECT TO authenticated USING ((sigla_casa = ( SELECT profiles.sigla_casa
    FROM public.profiles
-  WHERE (profiles.id = auth.uid()))));
+  WHERE (profiles.id = ( SELECT auth.uid() AS uid)))));
 
 
 --
@@ -6237,7 +7276,7 @@ ALTER TABLE public.tesouraria_transacoes ENABLE ROW LEVEL SECURITY;
 -- Name: tesouraria_transacoes tesouraria_update; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY tesouraria_update ON public.tesouraria_transacoes FOR UPDATE TO authenticated USING ((criador_id = auth.uid()));
+CREATE POLICY tesouraria_update ON public.tesouraria_transacoes FOR UPDATE TO authenticated USING ((criador_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -6250,19 +7289,19 @@ ALTER TABLE public.usuarios_sancoes ENABLE ROW LEVEL SECURITY;
 -- Name: usuarios_sancoes usuarios_sancoes_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY usuarios_sancoes_insert ON public.usuarios_sancoes FOR INSERT WITH CHECK (((aplicada_por = auth.uid()) AND public.pode_sancionar(user_id)));
+CREATE POLICY usuarios_sancoes_insert ON public.usuarios_sancoes FOR INSERT WITH CHECK (((aplicada_por = ( SELECT auth.uid() AS uid)) AND public.pode_sancionar(user_id)));
 
 
 --
 -- Name: usuarios_sancoes usuarios_sancoes_select; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY usuarios_sancoes_select ON public.usuarios_sancoes FOR SELECT USING (((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+CREATE POLICY usuarios_sancoes_select ON public.usuarios_sancoes FOR SELECT USING (((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1
    FROM public.profiles p
-  WHERE ((p.id = auth.uid()) AND (p.cargo_principal = 'DEV'::text)))) OR (EXISTS ( SELECT 1
+  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.cargo_principal = 'DEV'::text)))) OR (EXISTS ( SELECT 1
    FROM (public.profiles p
      JOIN public.profiles alvo ON ((alvo.id = usuarios_sancoes.user_id)))
-  WHERE ((p.id = auth.uid()) AND (p.sigla_casa = alvo.sigla_casa) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text])))))));
+  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.sigla_casa = alvo.sigla_casa) AND (p.cargo_principal = ANY (ARRAY['Presidente'::text, 'Vice-presidente'::text])))))));
 
 
 --
@@ -6276,7 +7315,7 @@ CREATE POLICY usuarios_sancoes_update ON public.usuarios_sancoes FOR UPDATE USIN
 -- Name: solicitacoes_dev ver proprias solicitacoes; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY "ver proprias solicitacoes" ON public.solicitacoes_dev FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+CREATE POLICY "ver proprias solicitacoes" ON public.solicitacoes_dev FOR SELECT TO authenticated USING ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -6308,14 +7347,14 @@ ALTER TABLE public.voluntariado_ofertas ENABLE ROW LEVEL SECURITY;
 -- Name: painel_votes votos_delete; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY votos_delete ON public.painel_votes FOR DELETE USING ((auth.uid() = user_id));
+CREATE POLICY votos_delete ON public.painel_votes FOR DELETE USING ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
 -- Name: painel_votes votos_insert; Type: POLICY; Schema: public; Owner: -
 --
 
-CREATE POLICY votos_insert ON public.painel_votes FOR INSERT WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY votos_insert ON public.painel_votes FOR INSERT WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -6329,5 +7368,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Qj4y44hdHbefIS9EDzCi23q8haU6Znr4gu6vyTqNR20GnEBWWrZGiOVWgsEEpqd
+\unrestrict ZWDLJhmqjY5MzWRHXcfPPB2XVdebjgPWhsbRttuwyhD3mN6TU4M68OOM8WNElCW
 
