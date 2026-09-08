@@ -137,7 +137,7 @@ export const Route = createFileRoute("/casa/$sigla")({
         "nome_completo, descricao, missao, cidade, uf, bairro, endereco, telefone, site, ano_fundacao, updated_at",
       )
       .eq("sigla_casa", params.sigla)
-      .eq("publicada", true)
+      .neq("publicada", false)
       .maybeSingle();
     return (data as CabecalhoDaCasa | null) ?? null;
   },
@@ -693,8 +693,8 @@ function PaginaCasa() {
 
   // Visitante sem sessao vendo a versao publica da casa.
   const visitantePublico = !user;
-  // A pagina so aparece a quem nao esta logado se a casa tiver publicado.
-  const paginaPublica = !!pagina?.publicada;
+  // A página é pública por padrão para qualquer pessoa na internet (a menos que a direção tenha configurado explicitamente como privada, ou seja, publicada === false).
+  const paginaPublica = pagina ? pagina.publicada !== false : true;
 
   /* ── Auth guard ── */
   // Visitante anonimo NAO e mais expulso: se a casa publicou a pagina, ele ve a
