@@ -605,11 +605,13 @@ function NavBar() {
         <Link
           to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
           params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
-          className="flex items-center gap-2 shrink-0"
+          className="flex items-center gap-2 shrink-0 min-w-0"
           onClick={() => setMenuOpen(false)}
         >
-          <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto" />
-          <span className="text-sm font-semibold text-gray-800 tracking-tight">Apoio Espírita</span>
+          <img src="/logomarca.png" alt="Apoio Espírita" className="h-8 w-auto shrink-0" />
+          <span className="text-sm font-semibold text-gray-800 tracking-tight truncate max-w-[130px] sm:max-w-none">
+            Apoio Espírita
+          </span>
         </Link>
 
         {/* Campo de busca. Largura fixa e shrink-0: com largura elástica ele
@@ -884,7 +886,7 @@ function NavBar() {
         </nav>
 
         {/* Busca e menu, no celular */}
-        <div className="lg:hidden flex items-center gap-1">
+        <div className="lg:hidden flex items-center gap-1 shrink-0">
           <Link
             to="/busca"
             search={{}}
@@ -908,11 +910,16 @@ function NavBar() {
       {/* Mobile dropdown */}
       {menuOpen && (
         <div
-          className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-none animate-fade-in-up"
+          className="lg:hidden absolute top-14 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-lg z-40 py-2 rounded-none animate-fade-in-up max-h-[calc(100vh-4rem)] overflow-y-auto pb-10"
           style={{ animationDuration: "200ms" }}
         >
           <div className="max-w-7xl mx-auto px-4 flex flex-col">
-            <Link to="/busca" search={{}} className={`${itemMobileCls} flex items-center gap-2`}>
+            <Link
+              to="/busca"
+              search={{}}
+              className={`${itemMobileCls} flex items-center gap-2`}
+              onClick={() => setMenuOpen(false)}
+            >
               <Search size={15} strokeWidth={2} className="text-gray-400" />
               Buscar no site
             </Link>
@@ -920,6 +927,7 @@ function NavBar() {
               to={profile?.sigla_casa ? "/casa/$sigla" : "/inicio"}
               params={profile?.sigla_casa ? { sigla: profile.sigla_casa } : undefined}
               className={itemMobileCls}
+              onClick={() => setMenuOpen(false)}
             >
               Casa
             </Link>
@@ -934,13 +942,17 @@ function NavBar() {
             </button>
             {abertoMobile === "recursos" && (
               <>
-                <Link to="/agenda" className={subItemMobileCls}>
+                <Link to="/agenda" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Agenda
                 </Link>
-                <Link to="/kanban" className={subItemMobileCls}>
+                <Link to="/kanban" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Projetos
                 </Link>
-                <Link to="/apresentacoes" className={subItemMobileCls}>
+                <Link
+                  to="/apresentacoes"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Apresentações
                 </Link>
               </>
@@ -956,34 +968,50 @@ function NavBar() {
             </button>
             {abertoMobile === "comunidade" && (
               <>
-                <Link to="/forum" className={subItemMobileCls}>
+                <Link to="/forum" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Fórum de Apoio
                 </Link>
-                <Link to="/grupos" className={subItemMobileCls}>
+                <Link to="/grupos" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Grupos
                 </Link>
-                <Link to="/voluntariado" className={subItemMobileCls}>
+                <Link
+                  to="/voluntariado"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Voluntariado
                 </Link>
-                <Link to="/bazar" className={subItemMobileCls}>
+                <Link to="/bazar" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Bazar On-line
                 </Link>
-                <Link to="/caronas" className={subItemMobileCls}>
+                <Link to="/caronas" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Carona Solidária
                 </Link>
-                <Link to="/entregas" className={subItemMobileCls}>
+                <Link
+                  to="/entregas"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Entrega Solidária
                 </Link>
-                <Link to="/aniversariantes" className={subItemMobileCls}>
+                <Link
+                  to="/aniversariantes"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Aniversariantes
                 </Link>
-                <Link to="/oracoes" className={subItemMobileCls}>
+                <Link to="/oracoes" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Plantão de Orações
                 </Link>
-                <Link to="/jovens" className={subItemMobileCls}>
+                <Link to="/jovens" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Área de Jovens
                 </Link>
-                <Link to="/atendimento-fraterno" className={subItemMobileCls}>
+                <Link
+                  to="/atendimento-fraterno"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Atendimento Fraterno
                 </Link>
               </>
@@ -999,22 +1027,34 @@ function NavBar() {
             </button>
             {abertoMobile === "estudo" && (
               <>
-                <Link to="/feb" className={subItemMobileCls}>
+                <Link to="/feb" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Biblioteca
                 </Link>
-                <Link to="/artigos" className={subItemMobileCls}>
+                <Link to="/artigos" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Artigos
                 </Link>
-                <Link to="/perguntas" className={subItemMobileCls}>
+                <Link
+                  to="/perguntas"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Perguntas sobre a doutrina
                 </Link>
-                <Link to="/evangelizacao" className={subItemMobileCls}>
+                <Link
+                  to="/evangelizacao"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Evangelização
                 </Link>
-                <Link to="/musicas-cifras" className={subItemMobileCls}>
+                <Link
+                  to="/musicas-cifras"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Músicas e Cifras
                 </Link>
-                <Link to="/radio" className={subItemMobileCls}>
+                <Link to="/radio" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Rádio
                 </Link>
               </>
@@ -1030,25 +1070,49 @@ function NavBar() {
             </button>
             {abertoMobile === "jogos" && (
               <>
-                <Link to="/jogos" className={subItemMobileCls}>
+                <Link to="/jogos" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Todos os jogos
                 </Link>
-                <Link to="/jogos/caminho-da-luz" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/caminho-da-luz"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Caminho da Luz
                 </Link>
-                <Link to="/jogos/semeador-mensagens" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/semeador-mensagens"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Semeador de Mensagens
                 </Link>
-                <Link to="/jogos/caca-palavras" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/caca-palavras"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Caça-Palavras
                 </Link>
-                <Link to="/jogos/plante-a-semente" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/plante-a-semente"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Plante a Semente
                 </Link>
-                <Link to="/jogos/memoria-evangelizacao" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/memoria-evangelizacao"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Jogo da Memória
                 </Link>
-                <Link to="/jogos/quiz-espirita" className={subItemMobileCls}>
+                <Link
+                  to="/jogos/quiz-espirita"
+                  className={subItemMobileCls}
+                  onClick={() => setMenuOpen(false)}
+                >
                   Quiz Espírita
                 </Link>
               </>
@@ -1065,50 +1129,64 @@ function NavBar() {
             {abertoMobile === "ajuda" && (
               <>
                 {isDev && (
-                  <Link to="/admin" className={subItemMobileCls}>
+                  <Link to="/admin" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                     Painel do Administrador
                   </Link>
                 )}
                 {canTesouraria && (
-                  <Link to="/tesouraria" className={subItemMobileCls}>
+                  <Link
+                    to="/tesouraria"
+                    className={subItemMobileCls}
+                    onClick={() => setMenuOpen(false)}
+                  >
                     Tesouraria
                   </Link>
                 )}
-                <Link to="/painel" className={subItemMobileCls}>
+                <Link to="/painel" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Status do Projeto
                 </Link>
-                <Link to="/casas" className={subItemMobileCls}>
+                <Link to="/casas" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Casas espíritas
                 </Link>
-                <Link to="/ajuda" className={subItemMobileCls}>
+                <Link to="/ajuda" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   FAQ / Dúvidas
                 </Link>
-                <Link to="/avisos" className={subItemMobileCls}>
+                <Link to="/avisos" className={subItemMobileCls} onClick={() => setMenuOpen(false)}>
                   Avisos por e-mail
                 </Link>
                 {instalavel && (
                   <button
                     type="button"
-                    onClick={() => void instalar()}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void instalar();
+                    }}
                     className={`${subItemMobileCls} text-left`}
                   >
                     Instalar aplicativo
                   </button>
                 )}
                 {isDecisao && (
-                  <Link to="/permissoes" className={subItemMobileCls}>
+                  <Link
+                    to="/permissoes"
+                    className={subItemMobileCls}
+                    onClick={() => setMenuOpen(false)}
+                  >
                     Permissões
                   </Link>
                 )}
               </>
             )}
 
-            <Link to="/perfil" className={itemMobileCls}>
+            <Link to="/perfil" className={itemMobileCls} onClick={() => setMenuOpen(false)}>
               Perfil
             </Link>
 
             <button
-              onClick={() => signOut()}
+              onClick={() => {
+                setMenuOpen(false);
+                signOut();
+              }}
               className="py-3 px-2 text-sm font-medium text-left text-red-400 hover:text-red-600 transition-colors"
             >
               Sair
