@@ -94,18 +94,7 @@ function CompletarPerfil() {
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
-    if (
-      !loading &&
-      user &&
-      profile?.sigla_casa &&
-      profile?.nome &&
-      profile?.cargo_principal &&
-      profile?.uf &&
-      profile?.cidade
-    ) {
-      navigate({ to: "/inicio" });
-    }
-  }, [user, profile, loading, navigate]);
+  }, [user, loading, navigate]);
 
   useEffect(() => {
     if (profile) {
@@ -454,8 +443,7 @@ function CompletarPerfil() {
                 setCargo(e.target.value);
                 setError("");
               }}
-              disabled={profile?.atividades?.includes("cargo_definido_por_admin")}
-              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm focus:outline-none focus:border-cyan-glow/40 transition-colors"
             >
               <option value="">Selecione sua função…</option>
               {CARGOS.map((c) => (
@@ -464,13 +452,6 @@ function CompletarPerfil() {
                 </option>
               ))}
             </select>
-            {profile?.atividades?.includes("cargo_definido_por_admin") && (
-              <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
-                Sua função foi definida pela administração da casa espírita e não pode ser alterada
-                por você. Caso precise alterar, entre em contato com o Presidente ou administradores
-                autorizados.
-              </p>
-            )}
           </div>
 
           {error && <p className="text-xs text-red-400 text-center">{error}</p>}

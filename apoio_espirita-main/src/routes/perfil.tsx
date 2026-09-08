@@ -14,13 +14,11 @@ function Perfil() {
     if (!loading) {
       if (!user) {
         navigate({ to: "/login" });
-      } else if (profile?.sigla_casa) {
-        navigate({ to: "/casa/$sigla", params: { sigla: profile.sigla_casa } });
       } else {
-        navigate({ to: "/inicio" });
+        navigate({ to: "/completar-perfil" });
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, loading, navigate]);
 
   return null;
 }

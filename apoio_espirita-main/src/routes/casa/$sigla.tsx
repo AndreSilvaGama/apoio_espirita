@@ -563,7 +563,7 @@ function fmtHora(h: string | null) {
 function PaginaCasa() {
   const { sigla } = Route.useParams();
   const { aba: abaDaUrl } = Route.useSearch();
-  const { user, profile, loading, isPresident } = useAuth();
+  const { user, profile, loading, isPresident, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   /* UI */
@@ -1392,6 +1392,9 @@ function PaginaCasa() {
       if (updateError) throw updateError;
 
       toast.success("Função do tarefeiro atualizada com sucesso!");
+      if (membroId === profile?.id) {
+        await refreshProfile();
+      }
       await garantirMembros(true);
     } catch (err: unknown) {
       console.error("Erro ao alterar função:", err);
@@ -3001,9 +3004,7 @@ function PaginaCasa() {
               <div className="space-y-4">
                 {modoAdmin && (
                   <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200/50 rounded-xl p-3 leading-relaxed">
-                    <strong>Painel Administrativo Ativo:</strong> Você pode atribuir funções
-                    oficiais aos membros. Ao definir a função de um membro, a edição do próprio
-                    cargo será bloqueada na tela dele para garantir a segurança organizacional.
+                    <strong>Painel Administrativo Ativo:</strong> Você pode atribuir funções oficiais aos membros.
                   </p>
                 )}
 
@@ -3031,7 +3032,7 @@ function PaginaCasa() {
                         </div>
 
                         <div className="shrink-0 flex items-center gap-2">
-                          {modoAdmin ? (
+                          {modoAdmin || m.id === profile?.id ? (
                             <select
                               value={m.cargo_principal || ""}
                               onChange={(e) => alterarFuncaoMembro(m.id, e.target.value)}
@@ -3045,8 +3046,8 @@ function PaginaCasa() {
                               ))}
                             </select>
                           ) : (
-                            <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg">
-                              Trabalhador
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg">
+                              {m.cargo_principal || "Trabalhador"}
                             </span>
                           )}
                         </div>
