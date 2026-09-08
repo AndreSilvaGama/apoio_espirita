@@ -617,7 +617,7 @@ function Bazar() {
   const minhasReservas = reservas.filter((r) => r.criado_por === user?.id);
   const disponiveis = itens.filter((i) => i.disponivel);
   const vitrine =
-    alcance === "casa"
+    alcance === "casa" && profile?.sigla_casa
       ? disponiveis.filter((i) => i.sigla_casa === profile?.sigla_casa)
       : disponiveis;
 

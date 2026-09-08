@@ -308,9 +308,9 @@ export const MANUAL: ModuloDoManual[] = [
       },
     ],
     observacoes: [
-      "No modo 'Qualquer pessoa na internet', a página exibe publicamente apenas: nome, descrição, missão, ano de fundação, endereço, telefone, e-mail, site e a grade de horários.",
+      "No modo 'Qualquer pessoa na internet', a página exibe publicamente: nome, descrição, missão, ano de fundação, endereço, telefone, e-mail, site, horários das atividades e a vitrine do Bazar On-line da casa.",
       "No modo 'Visível apenas para os membros', nem o público geral nem pessoas cadastradas em outras casas conseguem abrir a página.",
-      "Continuam invisíveis para visitantes em qualquer modo: o mural, a lista de tarefeiros e cargos, a agenda interna, o Kanban, a tesouraria e a chave PIX.",
+      "Continuam invisíveis para visitantes sem vinculo: o mural de avisos, a lista de tarefeiros e cargos, a agenda interna, a tesouraria e o Kanban.",
       "O presidente pode alterar entre pública e privada a qualquer momento.",
     ],
   },

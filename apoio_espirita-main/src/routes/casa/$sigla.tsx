@@ -247,6 +247,26 @@ interface PaginaData {
   publicada: boolean;
 }
 
+interface ItemBazarCasa {
+  id: string;
+  sigla_casa: string;
+  titulo: string;
+  descricao: string;
+  categoria: string;
+  estado: string;
+  valor: number | null;
+  doacao: boolean;
+  foto_url: string | null;
+  chave_pix: string | null;
+  pix_nome: string | null;
+  pix_cidade: string | null;
+  disponivel: boolean;
+  aberto: boolean;
+  criado_por: string;
+  autor_nome: string;
+  created_at: string;
+}
+
 /**
  * A coluna `horarios` guarda dois tipos de item: os horários fixos da casa e os
  * itens do mural (escalas). Estes últimos trazem `tipo` e `id`.
@@ -714,10 +734,12 @@ function PaginaCasa() {
     }
   }, [user, profile, loading, navigate]);
 
+  const [bazarItens, setBazarItens] = useState<ItemBazarCasa[]>([]);
+
   /* ── Load data ── */
   const carregar = useCallback(async () => {
     setCarregando(true);
-    const [pRes, posRes, aRes, evRes, mCountRes, eCountRes] = await Promise.all([
+    const [pRes, posRes, aRes, evRes, mCountRes, eCountRes, bazRes] = await Promise.all([
       supabase.from("paginas_casas").select("*").eq("sigla_casa", sigla).maybeSingle(),
       supabase
         .from("publicacoes_casa")
@@ -732,11 +754,6 @@ function PaginaCasa() {
         .eq("sigla_casa", sigla)
         .order("data_evento", { ascending: true })
         .order("hora_inicio", { ascending: true }),
-      // O contador precisa filtrar o perfil DEV pelo mesmo motivo que a lista
-      // de membros o filtra: ele e um cargo tecnico de suporte, nao alguem que
-      // frequenta a casa. Sem isto a vitrine anunciava 5 membros onde havia 4.
-      // O `or` (em vez de um neq simples) preserva quem ainda nao escolheu
-      // cargo: no Postgres, `cargo_principal <> 'DEV'` descarta os nulos.
       supabase
         .from("profiles")
         .select("id", { count: "exact", head: true })
@@ -747,6 +764,12 @@ function PaginaCasa() {
         .select("id", { count: "exact", head: true })
         .eq("sigla_casa", sigla)
         .gte("data_evento", new Date().toISOString().slice(0, 10)),
+      supabase
+        .from("bazar_itens")
+        .select("id, sigla_casa, titulo, descricao, categoria, estado, valor, doacao, foto_url, chave_pix, pix_nome, pix_cidade, disponivel, aberto, criado_por, autor_nome, created_at")
+        .eq("sigla_casa", sigla)
+        .eq("disponivel", true)
+        .order("created_at", { ascending: false }),
     ]);
     if (pRes.data) setPagina(pRes.data as unknown as PaginaData);
     if (posRes.data) setPosts(posRes.data as Post[]);
@@ -754,6 +777,7 @@ function PaginaCasa() {
     if (evRes.data) setEventos(evRes.data as Evento[]);
     if (mCountRes.count !== null) setMembrosCount(mCountRes.count);
     if (eCountRes.count !== null) setEventosCount(eCountRes.count);
+    if (bazRes.data) setBazarItens(bazRes.data as ItemBazarCasa[]);
     setCarregando(false);
   }, [sigla]);
 
@@ -2591,22 +2615,73 @@ function PaginaCasa() {
                 borderB="border-cyan-200"
               >
                 <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Disponível
+                  {bazarItens.length > 0 ? `${bazarItens.length} ${bazarItens.length === 1 ? 'item' : 'itens'}` : 'Disponível'}
                 </span>
               </DashSectionHeader>
-              <div className="glass-premium rounded-2xl p-6 text-center">
-                <p className="text-sm text-gray-600 font-light max-w-xl mx-auto">
-                  Livros, artesanatos e itens arrecadados pela casa, com foto, reserva e QR Code do
-                  PIX gerado na hora. O pagamento vai direto para a chave de quem anuncia — a
-                  plataforma não recebe, não retém e não cobra nada.
-                </p>
-                <Link
-                  to="/bazar"
-                  className="mt-5 inline-block px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border border-cyan-200 text-cyan-700 hover:bg-cyan-50 transition-colors"
-                >
-                  Abrir o bazar da casa
-                </Link>
-              </div>
+
+              {bazarItens.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {bazarItens.map((item) => (
+                      <div key={item.id} className="glass rounded-2xl p-4 flex flex-col justify-between border border-cyan-100/60 shadow-sm hover:shadow-md transition-all">
+                        <div>
+                          {item.foto_url && (
+                            <img
+                              src={item.foto_url}
+                              alt={item.titulo}
+                              loading="lazy"
+                              className="w-full h-36 object-cover rounded-xl mb-3"
+                            />
+                          )}
+                          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-800">
+                              {item.categoria}
+                            </span>
+                            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-gray-50 border border-gray-200 text-gray-600">
+                              {item.estado === "novo" ? "Novo" : "Usado"}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-semibold text-gray-900 line-clamp-1">{item.titulo}</h4>
+                          <p className="text-xs text-gray-600 font-light mt-1 line-clamp-2 leading-relaxed">{item.descricao}</p>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-cyan-100/40 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-emerald-700">
+                            {item.doacao ? "Contribuição livre" : item.valor ? `R$ ${item.valor.toFixed(2)}` : "A combinar"}
+                          </span>
+                          <Link
+                            to="/bazar"
+                            className="text-xs font-medium text-cyan-700 hover:text-cyan-900 transition-colors flex items-center gap-1"
+                          >
+                            Ver detalhes →
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-center pt-2">
+                    <Link
+                      to="/bazar"
+                      className="inline-block px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest border border-cyan-300 text-cyan-800 hover:bg-cyan-50 transition-colors"
+                    >
+                      Ver todos os itens no Bazar On-line
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="glass-premium rounded-2xl p-6 text-center">
+                  <p className="text-sm text-gray-600 font-light max-w-xl mx-auto">
+                    Livros, artesanatos e itens arrecadados pela casa, com foto, reserva e QR Code do
+                    PIX gerado na hora. O pagamento vai direto para a chave de quem anuncia — a
+                    plataforma não recebe, não retém e não cobra nada.
+                  </p>
+                  <Link
+                    to="/bazar"
+                    className="mt-5 inline-block px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest border border-cyan-200 text-cyan-700 hover:bg-cyan-50 transition-colors"
+                  >
+                    Abrir o bazar da casa
+                  </Link>
+                </div>
+              )}
             </section>
           </div>
         )}
