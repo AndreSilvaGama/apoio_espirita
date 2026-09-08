@@ -280,7 +280,7 @@ export const MANUAL: ModuloDoManual[] = [
     grupo: "A sua casa espírita",
     ondeFica: "apoioespirita.com.br/casa/SIGLA",
     resumo:
-      "Cada casa tem uma página própria. Ela nasce privada: só quem tem conta e pertence à casa a vê. A direção pode publicá-la, e aí qualquer pessoa a encontra, inclusive pelos buscadores.",
+      "Cada casa tem uma página própria. Por padrão, ela nasce pública para qualquer pessoa na internet encontrar. O Presidente pode alterá-la para privada a qualquer momento na aba Configurações.",
     tarefas: [
       {
         titulo: "Editar informações e cadastrar a casa",

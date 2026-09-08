@@ -1657,8 +1657,8 @@ function PaginaCasa() {
                   chave_pix: "",
                   texto_doacao:
                     "Sua contribuição ajuda a manter os trabalhos espíritas. Qualquer valor é bem-vindo. Gratidão.",
-                  // Nasce privada: nenhuma casa e exposta sem alguem da direcao decidir.
-                  publicada: false,
+                  // Nasce pública por padrão: qualquer pessoa na internet pode encontrar a casa.
+                  publicada: true,
                 });
                 if (!error) carregar();
                 else toast.error("Erro ao criar página.");

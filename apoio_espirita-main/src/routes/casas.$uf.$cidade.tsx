@@ -304,8 +304,8 @@ function DiretorioCasasDaCidade() {
  * Assume a página de uma casa listada no diretório.
  *
  * A casa é assumida na hora, sem conferência humana — decisão do dono do
- * projeto. A página nasce privada, como toda página de casa, então nada é dito
- * em nome da casa até que alguém publique.
+ * projeto. A página nasce pública por padrão, podendo ser alterada para privada
+ * na aba de configurações.
  */
 function FormularioReivindicacao({
   casa,
