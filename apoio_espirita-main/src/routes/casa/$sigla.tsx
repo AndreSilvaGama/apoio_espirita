@@ -1581,6 +1581,38 @@ function PaginaCasa() {
       </main>
     );
   }
+
+  // Usuario logado tentando acessar uma casa privada da qual NAO e membro nem admin:
+  if (user && !carregando && !paginaPublica && !isSameCasa && !isAdmin) {
+    return (
+      <main className="page-light min-h-screen px-6 flex items-center justify-center">
+        <div className="glass rounded-3xl p-8 max-w-md text-center space-y-5 border border-violet-100/50 shadow-md">
+          <Lock size={36} strokeWidth={1.5} className="text-violet-600/70 mx-auto" />
+          <div>
+            <h1 className="text-lg font-medium text-foreground">{pagina?.nome_completo || sigla}</h1>
+            <p className="text-sm text-muted-foreground/80 font-light mt-2 leading-relaxed">
+              Esta página está configurada como <strong>privada</strong> e é visível apenas para os membros e tarefeiros desta Casa Espírita.
+            </p>
+          </div>
+          <div className="pt-2 space-y-2">
+            <Link
+              to="/inicio"
+              className="block w-full py-2.5 rounded-xl text-xs uppercase tracking-widest text-white bg-violet-600 hover:bg-violet-700 transition-colors shadow-sm font-medium"
+            >
+              ← Voltar ao início
+            </Link>
+            <Link
+              to="/completar-perfil"
+              className="block w-full py-2.5 rounded-xl text-xs uppercase tracking-widest text-violet-700 border border-violet-200 hover:bg-violet-50 transition-colors font-medium"
+            >
+              Alterar minha Casa no Perfil
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (carregando)
     return (
       <main className="page-light min-h-screen pt-20 pb-20 flex items-center justify-center">
@@ -3222,51 +3254,113 @@ function PaginaCasa() {
                 Visibilidade da página
               </h3>
 
-              <div className="space-y-5">
-                <div className="flex items-start gap-3">
-                  <span
-                    className={`mt-0.5 shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+              <div className="space-y-6">
+                <p className="text-sm text-gray-600 font-light leading-relaxed">
+                  Como presidente ou administrador, escolha quem pode visualizar a página da sua Casa Espírita no site:
+                </p>
+
+                {/* Opções de Visibilidade */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Opção 1: Qualquer pessoa na internet */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!pagina.publicada && !salvandoPublicacao) {
+                        alternarPublicacao();
+                      }
+                    }}
+                    disabled={salvandoPublicacao}
+                    className={`text-left p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-3 cursor-pointer ${
                       pagina.publicada
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-200 text-slate-600"
+                        ? "border-emerald-500 bg-emerald-50/40 shadow-sm"
+                        : "border-gray-200 bg-white/60 hover:border-violet-300 opacity-80"
                     }`}
                   >
-                    {pagina.publicada ? "Pública" : "Privada"}
-                  </span>
-                  <p className="text-sm text-gray-600 font-light leading-relaxed">
-                    {pagina.publicada
-                      ? "Qualquer pessoa pode ver esta página, inclusive pelo Google. É assim que quem procura um centro espírita na região encontra a casa."
-                      : "Somente membros da casa com conta no site conseguem ver esta página."}
-                  </p>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2.5">
+                        <Globe className={`w-5 h-5 ${pagina.publicada ? "text-emerald-600" : "text-gray-400"}`} />
+                        <span className="font-semibold text-sm text-gray-900">
+                          Qualquer pessoa na internet
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${
+                          pagina.publicada
+                            ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                            : "bg-gray-100 border-gray-200 text-gray-500"
+                        }`}
+                      >
+                        {pagina.publicada ? "Ativo" : "Pública"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 font-light leading-relaxed">
+                      Página visível publicamente no site e buscadores (Google). Visitantes sem login encontram endereço, contatos e horários de palestras.
+                    </p>
+                  </button>
+
+                  {/* Opção 2: Apenas membros da casa */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (pagina.publicada && !salvandoPublicacao) {
+                        alternarPublicacao();
+                      }
+                    }}
+                    disabled={salvandoPublicacao}
+                    className={`text-left p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-3 cursor-pointer ${
+                      !pagina.publicada
+                        ? "border-amber-500 bg-amber-50/40 shadow-sm"
+                        : "border-gray-200 bg-white/60 hover:border-violet-300 opacity-80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2.5">
+                        <Lock className={`w-5 h-5 ${!pagina.publicada ? "text-amber-600" : "text-gray-400"}`} />
+                        <span className="font-semibold text-sm text-gray-900">
+                          Visível apenas para os membros
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${
+                          !pagina.publicada
+                            ? "bg-amber-100 border-amber-300 text-amber-800"
+                            : "bg-gray-100 border-gray-200 text-gray-500"
+                        }`}
+                      >
+                        {!pagina.publicada ? "Ativo" : "Privada"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 font-light leading-relaxed">
+                      Acesso restrito exclusivamente aos associados e tarefeiros cadastrados nesta casa. Visitantes e membros de outras casas são bloqueados.
+                    </p>
+                  </button>
                 </div>
 
                 <div className="rounded-2xl border border-violet-100/60 bg-white/50 p-4 space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                    O que fica visível ao publicar
+                    O que fica visível ao publicar para qualquer pessoa
                   </p>
                   <p className="text-sm text-gray-600 font-light leading-relaxed">
                     Nome, descrição, missão, ano de fundação, endereço, telefone, e-mail, site e os
                     horários das atividades.
                   </p>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 pt-2">
-                    O que continua privado
+                    O que continua sempre protegido
                   </p>
                   <p className="text-sm text-gray-600 font-light leading-relaxed">
-                    Mural, tarefeiros e seus cargos, agenda, projetos, tesouraria e a chave PIX —
-                    protegidos no próprio banco de dados, não apenas escondidos na tela.
+                    Mural de avisos, tarefeiros e seus cargos, agenda interna, projetos, tesouraria e a chave PIX —
+                    protegidos no banco de dados, nunca exibidos ao público.
                   </p>
                 </div>
 
-                {/* Antes era um conselho genérico em letra miúda ("preencha a
-                    descrição e os horários"). Agora diz, item a item, o que o
-                    visitante vai ou não encontrar — e onde preencher. */}
+                {/* Pendências da página */}
                 {(() => {
                   const faltando = pendenciasDaPagina(pagina);
                   const completa = faltando.length === 0;
                   return (
                     <div className="rounded-2xl border border-violet-100/60 bg-white/50 p-4 space-y-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                        O que o visitante vai encontrar
+                        Checklist do que o visitante vai encontrar
                       </p>
                       <ul className="space-y-2">
                         {ITENS_PAGINA_PUBLICA.map((item) => {
@@ -3308,35 +3402,15 @@ function PaginaCasa() {
                         }`}
                       >
                         {completa
-                          ? "A página está pronta para receber visitantes."
-                          : `Publicando assim, quem chegar vê uma página quase vazia. Nada impede publicar agora — dá para completar depois, a qualquer momento.`}
+                          ? "A página possui todas as informações para receber visitantes da internet."
+                          : `Se estiver incompleta, o visitante verá uma página simples. Você pode preencher os campos a qualquer momento.`}
                       </p>
                     </div>
                   );
                 })()}
 
-                <button
-                  onClick={alternarPublicacao}
-                  disabled={salvandoPublicacao}
-                  // Publicar é a ação construtiva e vem preenchida; tornar
-                  // privada recua um passo e fica de contorno. Com os campos
-                  // agora rebaixados, um botão vazado ao lado deles seria lido
-                  // como mais um campo em branco.
-                  className={`w-full py-3 rounded-xl text-sm uppercase tracking-widest border font-semibold transition-colors disabled:opacity-40 ${
-                    pagina.publicada
-                      ? "text-slate-600 border-slate-300 hover:bg-slate-50"
-                      : "bg-emerald-600 border-emerald-700 text-white shadow-sm hover:bg-emerald-700"
-                  }`}
-                >
-                  {salvandoPublicacao
-                    ? "Salvando…"
-                    : pagina.publicada
-                      ? "Tornar privada"
-                      : "Publicar página"}
-                </button>
-
                 <p className="text-xs text-gray-400 font-light text-center">
-                  Reversível a qualquer momento.
+                  O presidente pode alterar a visibilidade da casa entre Pública e Privada a qualquer momento.
                 </p>
               </div>
             </section>
