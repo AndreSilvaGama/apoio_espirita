@@ -277,8 +277,8 @@ export const FUNCIONALIDADES: FuncionalidadeCategoria[] = [
       {
         Icon: CalendarRange,
         title: "Escala de Trabalho",
-        desc: "Quadro de palestras e escalas da casa: dia, tema, facilitador, coordenador, passe e recepção. Quem administra a página monta, e a escala vencida se arquiva sozinha. Ainda não avisa cada tarefeiro da própria escala.",
-        status: "beta",
+        desc: "Quadro de palestras e escalas da casa: dia, tema, facilitador, coordenador, passe e recepção. Quem administra a página monta, e a escala vencida se arquiva sozinha.",
+        status: "disponivel",
         casa: true,
         casaAba: "painel",
       },

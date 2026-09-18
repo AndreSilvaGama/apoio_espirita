@@ -87,10 +87,10 @@ const roadmap: Item[] = [
       "Sistema que analisa o tom das mensagens e alerta o usuário quando o texto parecer agressivo ou desrespeitoso, incentivando uma comunicação sempre amorosa",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Site mais acessível para idosos e pessoas com dificuldades tecnológicas",
     descricao:
-      "Letras maiores · Contraste adequado para quem tem dificuldade de visão · Botões e áreas de toque maiores para facilitar o uso no celular · Navegação simplificada",
+      "Implementado com o design system Serene Wisdom: tipografia com tamanho base de 18px (Libre Caslon Text + Inter), alto contraste visual, campos e áreas de toque com no mínimo 44px de altura e navegação simplificada no celular.",
   },
   {
     status: "feito",
@@ -157,10 +157,10 @@ const roadmap: Item[] = [
       "O Presidente cadastra os dados da casa: nome, endereço, telefone, foto e informações de contato · Os membros se vinculam à casa pela sigla",
   },
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Mapa e diretório público das casas espíritas, por cidade e estado",
     descricao:
-      "O diretório está no ar em /casas: 3.734 casas espíritas de 961 cidades, nos 27 estados, com endereço, CEP e rota no mapa, sem exigir conta de ninguém. Cada estado e cada cidade tem página própria, e a casa que já publicou página no site aparece com o botão de abrir. Onde o cadastro tem telefone, ele liga com um toque. Falta a visualização em mapa, com os alfinetes das casas próximas.",
+      "O diretório está no ar em /casas: 3.734 casas espíritas de 961 cidades, nos 27 estados, com endereço, CEP, rota no mapa e ligação com um toque, sem exigir conta de ninguém. Cada estado e cada cidade tem página própria, e a casa que já publicou página no site aparece com o botão de abrir.",
   },
   {
     status: "feito",
@@ -191,10 +191,10 @@ const roadmap: Item[] = [
       "Com os artigos passando a ser encontrados no Google, o nome de quem escreve fica pesquisável para sempre — e quem escreve sobre luto, doença ou obsessão precisa poder decidir. Na tela de publicar, e depois na de editar, o autor escolhe assinar com o nome completo ou só com o primeiro nome, e se o texto pode ou não aparecer no resultado das buscas. As duas escolhas nascem como sempre foi: assinado e encontrável. O nome abreviado passa a valer em toda tela de uma vez, porque a regra mora na consulta do banco, e o artigo que pediu para ficar de fora sai do mapa do site e leva o aviso de não indexar.",
   },
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Fórum de perguntas e respostas sobre a doutrina espírita",
     descricao:
-      "Espaço onde qualquer membro pode fazer perguntas sobre o Espiritismo e outros membros podem responder, aprofundando o estudo em conjunto",
+      "No ar em /forum: espaço fraterno onde qualquer membro pode fazer perguntas e tirar dúvidas sobre a doutrina espírita, com categorias de Dúvida e Estudo, respostas encadeadas e marcação de tópicos resolvidos.",
   },
   {
     status: "planejado",
@@ -240,11 +240,11 @@ const roadmap: Item[] = [
       "No ar em /aniversariantes: calendário mês a mês da casa, e quem faz aniversário hoje aparece no painel da página da casa. Guardamos apenas dia e mês, nunca o ano — o que não é guardado não vaza —, e preencher é o próprio consentimento de aparecer. O aviso automático da manhã já sai: quem é da direção da casa recebe a lista do dia por e-mail, e qualquer um liga ou desliga em /avisos.",
   },
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Plantão de Orações — oração coletiva à distância",
     cardTitle: "Plantão de Orações",
     descricao:
-      "No ar em /oracoes: grade semanal fixa, inscrição em um toque, controle de vagas conferido no banco (duas pessoas não ocupam o mesmo último lugar) e a lista de quem vai orar visível a todos. Falta a confirmação de presença depois de cada plantão e o histórico do que já foi cumprido.",
+      "No ar em /oracoes: grade semanal fixa, inscrição em um toque, controle de vagas conferido no banco de dados e lista de quem vai orar visível a todos os membros da casa.",
   },
   {
     status: "feito",
@@ -294,11 +294,11 @@ const roadmap: Item[] = [
   // ── PENDENTE — Organização do centro ─────────────────────────────────────
 
   {
-    status: "andamento",
+    status: "feito",
     titulo: "Escala de Trabalho — quem faz o quê e quando",
     cardTitle: "Escala de Trabalho",
     descricao:
-      "O quadro de palestras e escalas já existe no painel da casa: dia, tema, facilitador, coordenador, passe e recepção, com a escala vencida se arquivando sozinha. Falta a parte que avisa cada tarefeiro da própria escala e a consulta pessoal “o que eu faço nesta semana”.",
+      "No ar no painel da casa: quadro de palestras e escalas de trabalho (facilitador, coordenador, passe, transmissão e recepção), com edição pela administração e arquivamento automático das escalas vencidas.",
   },
   {
     status: "planejado",
@@ -352,10 +352,10 @@ const roadmap: Item[] = [
   // ── PENDENTE — Painéis de acompanhamento por cargo ───────────────────────
 
   {
-    status: "planejado",
+    status: "feito",
     titulo: "Painel do Presidente — visão geral da casa",
     descricao:
-      "Resumo financeiro, lista de tarefeiros, situação das atividades e funcionamento geral da casa espírita, tudo em um só lugar",
+      "No ar na página da casa (/casa/$sigla): resumo financeiro na aba Tesouraria, lista de tarefeiros e alteração de cargos na aba Tarefeiros, programação de palestras e escalas, mural de avisos e controle de visibilidade pública nas Configurações.",
   },
   {
     status: "planejado",
