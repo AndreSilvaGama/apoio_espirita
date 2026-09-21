@@ -6,7 +6,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict zR2qZTyeKYl5ObyDywxGkkw3Nye0Hg5Uq4r5yU2af3Gltf8gCJZBV8mkbgGtX2u
+\restrict QGEsWmy5J2SWyKMhzvC3wQrImCZKLTsiZ541PbJg4E2iDUoihqWRXM1R6VhzMj6
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
@@ -7368,5 +7368,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict zR2qZTyeKYl5ObyDywxGkkw3Nye0Hg5Uq4r5yU2af3Gltf8gCJZBV8mkbgGtX2u
+\unrestrict QGEsWmy5J2SWyKMhzvC3wQrImCZKLTsiZ541PbJg4E2iDUoihqWRXM1R6VhzMj6
 
