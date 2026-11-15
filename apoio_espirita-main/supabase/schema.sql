@@ -6,10 +6,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict 6588Jpbe7BtwnWwoiFfU2bC1XsKizLrxusNCQ3QXTSiK6ZBS2dQ0TLOVzRnIzRj
+\restrict Z6Tw6REDgeugIscnDja0fv13UrJzeJZJBptAH3KAOHIAjy5z2qwdBXHem5SYikV
 
 -- Dumped from database version 17.6
--- Dumped by pg_dump version 17.12 (Ubuntu 17.12-1.pgdg24.04+1)
+-- Dumped by pg_dump version 18.6 (Ubuntu 18.6-1.pgdg26.04+2)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -7368,5 +7368,5 @@ CREATE POLICY votos_select ON public.painel_votes FOR SELECT USING ((auth.role()
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 6588Jpbe7BtwnWwoiFfU2bC1XsKizLrxusNCQ3QXTSiK6ZBS2dQ0TLOVzRnIzRj
+\unrestrict Z6Tw6REDgeugIscnDja0fv13UrJzeJZJBptAH3KAOHIAjy5z2qwdBXHem5SYikV
 
